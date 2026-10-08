@@ -1,15 +1,14 @@
 import { createServer } from 'node:http';
-import { createReadStream, createWriteStream, existsSync, readFileSync, realpathSync, statSync } from 'node:fs';
+import { createReadStream, createWriteStream, realpathSync, statSync, existsSync } from 'node:fs';
 import { unlink } from 'node:fs/promises';
-import { resolve, join, extname, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join, extname, sep } from 'node:path';
 import { randomBytes, createHash } from 'node:crypto';
 import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { ApiError, createStore, digest, secretEqual, hashPassword, verifyPassword, validateCredentials, FILE_ID, MAX_FILE_BYTES, MAX_STATE_BYTES } from './store.mjs';
 import { isCliEntry } from './is-cli.mjs';
+import { prepareDataDirectory, assertRuntimePath, assertOrdinaryPath, FRONTEND_ROOT, COOKIE_NAME } from '../runtime.mjs';
 
-const here = fileURLToPath(new URL('.', import.meta.url));
 export const VERSION = '0.15.0';
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webmanifest': 'application/manifest+json' };
 const writeMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
@@ -43,12 +42,13 @@ function normalizeOrigin(value) {
 }
 export async function createWorkbenchServer(options = {}) {
   const secureCookie = options.secureCookie ?? true;
-  const dataDir = options.dataDir || resolve(here, '../.private-cloud');
-  const frontendDir = realpathSync(options.frontendDir || resolve(here, '../frontend'));
+  const dataDir = prepareDataDirectory(options.dataDir);
+  const frontendDir = assertOrdinaryPath(options.frontendDir || FRONTEND_ROOT, FRONTEND_ROOT);
+  if (frontendDir !== FRONTEND_ROOT) throw new Error('competition_frontend_must_be_copied_frontend');
   const publicOrigin = normalizeOrigin(options.publicOrigin || '');
   if (!secureCookie && publicOrigin && !localHostnames.has(new URL(publicOrigin).hostname)) throw new Error('Insecure cookies are allowed only on localhost');
   const setupToken = options.setupToken || '';
-  const cookieName = secureCookie ? '__Host-shiguang_session' : 'shiguang_session';
+  const cookieName = secureCookie ? `__Host-${COOKIE_NAME}` : COOKIE_NAME;
   const store = createStore(dataDir, options.storeOptions);
   const modelService = options.modelService || (options.modelFactory ? await options.modelFactory({ dataDir: store.directory, store }) : null);
   const fileUploadCounts = new Map();
@@ -95,7 +95,7 @@ export async function createWorkbenchServer(options = {}) {
     const count = fileUploadCounts.get(session.username) || 0;
     if (count >= 3) throw new ApiError(429, 'too_many_uploads');
     fileUploadCounts.set(session.username, count + 1);
-    const temporaryPath = join(store.tempDir, `${randomBytes(24).toString('hex')}.part`);
+    const temporaryPath = assertRuntimePath(join(store.tempDir, `${randomBytes(24).toString('hex')}.part`));
     const sha = createHash('sha256'); let size = 0;
     const meter = new Transform({ transform(chunk, encoding, callback) { size += chunk.length; if (size > MAX_FILE_BYTES) callback(new ApiError(413, 'file_too_large')); else { sha.update(chunk); callback(null, chunk); } } });
     try {
@@ -122,6 +122,7 @@ export async function createWorkbenchServer(options = {}) {
     createReadStream(store.filePath(id)).on('error', () => res.destroy()).pipe(res);
   }
   async function handle(req, res) {
+    assertRuntimePath(store.directory);
     securityHeaders(res);
     // API paths do not use URL normalization, so traversal cannot become another endpoint.
     const rawPath = (req.url || '/').split('?')[0];
@@ -129,10 +130,10 @@ export async function createWorkbenchServer(options = {}) {
     try { path = decodeURIComponent(rawPath); } catch { throw new ApiError(400, 'invalid_path'); }
     if (path.includes('\\') || path.includes('\0') || path.split('/').some(part => part === '..' || part === '.')) throw new ApiError(400, 'invalid_path');
     const url = new URL(req.url || '/', 'http://localhost');
-    if (path === '/api/health' && req.method === 'GET') { json(res, 200, { ok: true, mode: 'cloud', version: VERSION }); return; }
+    if (path === '/api/health' && req.method === 'GET') { json(res, 200, { ok: true, mode: 'cloud', version: VERSION, edition: 'competition-copy' }); return; }
     if (path === '/version.json') {
       if (!['GET', 'HEAD'].includes(req.method)) throw new ApiError(405, 'method_not_allowed');
-      json(res, 200, { version: VERSION, mode: 'cloud', edition: 'private-cloud' }); return;
+      json(res, 200, { version: VERSION, mode: 'cloud', edition: 'competition-copy' }); return;
     }
     if (path.startsWith('/api/')) {
       const session = store.getSession(cookieValue(req, cookieName));
@@ -195,7 +196,7 @@ export async function createWorkbenchServer(options = {}) {
     if (!permitted) throw new ApiError(404, 'not_found');
     const candidate = join(frontendDir, asset.slice(1));
     let real;
-    try { real = realpathSync(candidate); if (!real.startsWith(frontendDir + sep) || !statSync(real).isFile()) throw new Error(); } catch { throw new ApiError(404, 'not_found'); }
+    try { assertOrdinaryPath(candidate, FRONTEND_ROOT); real = realpathSync(candidate); if (!real.startsWith(frontendDir + sep) || !statSync(real).isFile()) throw new Error(); } catch { throw new ApiError(404, 'not_found'); }
     res.setHeader('Content-Type', mime[extname(real)] || 'application/octet-stream');
     res.setHeader('Content-Length', statSync(real).size);
     res.writeHead(200);
@@ -212,6 +213,19 @@ export async function createWorkbenchServer(options = {}) {
       if (!known && options.onError) options.onError({ code: 'internal_error' });
     });
   });
+  const listen = server.listen.bind(server);
+  server.listen = (...args) => {
+    // Never inherit a wildcard bind from callers or Node's omitted-host default.
+    if (typeof args[0] === 'object') {
+      const value = args[0];
+      if (Object.hasOwn(value, 'path') || Object.hasOwn(value, 'fd') || (value.host && value.host !== '127.0.0.1')) throw new Error('competition_localhost_only');
+      args[0] = { ...value, host: '127.0.0.1' };
+    } else {
+      if (typeof args[0] !== 'number' || (typeof args[1] === 'string' && args[1] !== '127.0.0.1')) throw new Error('competition_localhost_only');
+      if (typeof args[1] !== 'string') args.splice(1, 0, '127.0.0.1');
+    }
+    return listen(...args);
+  };
   server.requestTimeout = 120000; server.headersTimeout = 15000; server.keepAliveTimeout = 5000; server.maxRequestsPerSocket = 100;
   server.on('clientError', (_error, socket) => { if (socket.writable) socket.end('HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n'); });
   let closed = false;
@@ -219,18 +233,9 @@ export async function createWorkbenchServer(options = {}) {
 }
 
 if (isCliEntry(import.meta.url)) {
-  const env = process.env;
-  let setupToken = env.SETUP_TOKEN || '';
-  if (env.SETUP_TOKEN_FILE) {
-    const mode = statSync(env.SETUP_TOKEN_FILE).mode;
-    if (process.platform !== 'win32' && (mode & 0o077)) throw new Error('SETUP_TOKEN_FILE must have private permissions');
-    setupToken = readFileSync(env.SETUP_TOKEN_FILE, 'utf8').trim();
-  }
-  let modelFactory;
-  const hermesPath = new URL('./hermes.mjs', import.meta.url);
-  if (existsSync(hermesPath)) modelFactory = (await import(hermesPath.href)).createHermesService;
-  const app = await createWorkbenchServer({ dataDir: env.DATA_DIR, frontendDir: env.FRONTEND_DIR, publicOrigin: env.PUBLIC_ORIGIN, secureCookie: env.SECURE_COOKIE !== 'false', setupToken, modelFactory, onError: value => console.error(JSON.stringify(value)) });
-  const host = env.HOST || '127.0.0.1'; const port = Number(env.PORT || 4180);
-  app.server.listen(port, host, () => console.log(`Yuzhou ${VERSION} listening on ${host}:${port}`));
-  for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, async () => { await app.close(); process.exit(0); });
+  // Import only after this module has finished evaluating; start.mjs imports this factory.
+  setImmediate(async () => {
+    try { await (await import('../start.mjs')).startCompetitionWorkbench(); }
+    catch { console.error('传智杯副本启动失败：检查本地端口及独立目录配置。'); process.exitCode = 1; }
+  });
 }

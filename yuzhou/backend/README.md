@@ -1,4 +1,6 @@
-# 宇宙私人云后端 0.3.0
+# 宇宙完整副本后端 · 基于0.15.0
+
+这是传智杯目录中的独立复制件。原业务API保留；当前只在本机运行，不连接原服务器。数据、文件、模型配置、备份和引擎都限定在相邻 `../.cu-runtime/`，禁止外部路径和链接。AI引擎尚未独立配置，真实模型与PDF解析未验证。
 
 Node.js 22.13+（部署建议采用受支持的 Node 22 或 24 版本），使用内置 HTTP、SQLite 和密码学模块。没有 npm 运行依赖。Node 22 的 SQLite 模块可能输出实验性功能提示。
 
@@ -7,20 +9,19 @@ Node.js 22.13+（部署建议采用受支持的 Node 22 或 24 版本），使�
 ## 启动
 
 ```
-node backend/server.mjs
+node yuzhou/start.mjs
 ```
 
-由 systemd 或其他服务管理器设置环境变量：
+在比赛根目录执行以上命令，默认地址 `http://127.0.0.1:4397/`。也可在本目录执行 `npm start`。当前允许的独立配置如下；不沿用其他项目的环境变量或初始化口令：
 
 | 环境变量 | 含义 |
 | --- | --- |
-| `HOST` | 默认 `127.0.0.1`；保留回环绑定，由 HTTPS 反向代理对外服务 |
-| `PORT` | 默认 `4180` |
-| `DATA_DIR` | 独立于代码发布目录的持久私有目录；目录 0700，数据库和附件 0600 |
-| `FRONTEND_DIR` | 前端目录；默认相邻 `frontend/` |
-| `PUBLIC_ORIGIN` | 唯一 HTTPS 访问源，例如 `https://workbench.example`，不能包含子路径 |
-| `SETUP_TOKEN_FILE` | 首次注册凭据文件路径；Unix 权限必须 0600 或更严格 |
-| `SECURE_COOKIE` | 默认开启；仅回环开发环境可以设为 `false` |
+| `CZB_YUZHOU_HOST` | 仅允许 `127.0.0.1` |
+| `CZB_YUZHOU_PORT` | 默认4397；仅允许4396—4399，4398保留给合成浏览器验证 |
+| `CZB_YUZHOU_DATA_DIR` | 默认 `yuzhou/.cu-runtime/data`；任何覆盖值也必须在本副本 `.cu-runtime` 内 |
+| `SETUP_TOKEN_FILE` | 默认数据目录下 `setup-code.txt`，首次自动生成，仅读取本副本内文件 |
+
+前端固定为本复制件 `frontend/`，访问源由回环地址和端口生成。Cookie名为 `czb_yuzhou_session`，本机HTTP不启用Secure；此配置不能直接用于公网。历史通用环境变量若指向旧端口、旧数据或外部目录会被拒绝。独立Hermes目录预留在 `.cu-runtime/engines/hermes`，启动时不继承旧引擎环境和凭据。
 
 初始管理员通过注册页面输入部署时生成的随机 setup token、自选用户名及至少 12 字符的密码。仅允许创建一个账号；账号创建和关闭注册在同一 SQLite 事务中完成。部署后可移除 setup token 文件和配置项；现有账号仍可正常登录。不要把 setup token、密码或模型 key 放进前端代码、Git、日志或公开交付文档。
 
@@ -56,18 +57,18 @@ node backend/server.mjs
 ## 测试
 
 ```
-node --test backend/tests/*.test.mjs
+node scripts/test-yuzhou.mjs
 ```
 
-集成测试使用独立临时目录和临时端口，覆盖首次注册竞态、身份验证、持久会话、暴力破解限制、CSRF、精确源检查、乐观锁、附件隐私/幂等/冲突、静态路径边界、配额及事务恢复。不会接触用户浏览器或真实服务器数据。
+在比赛根目录运行以上统一入口，或本目录执行 `npm test`。它会将TEMP/TMP限定到本副本并清除旧环境变量，运行前端、后端与移动端纯测试，保存独立时间戳报告。不要直接沿用历史 `node --test` 命令以免测试临时数据写到系统目录。测试覆盖首次注册竞态、身份验证、持久会话、暴力破解限制、CSRF、精确源检查、乐观锁、附件隐私/幂等/冲突、静态路径边界、配额及事务恢复。使用合成数据；未测试真实模型效果。
 
 ## 在线备份
 
 ```
-node backend/backup.mjs --data-dir /var/lib/shiguang --output-dir /var/backups/shiguang
+node yuzhou/backend/backup.mjs --data-dir yuzhou/.cu-runtime/data --output-dir yuzhou/.cu-runtime/backups
 ```
 
-也可使用 `DATA_DIR` 和 `BACKUP_DIR` 环境变量。备份路径必须在数据目录之外。运行账号需要读取私有数据、写入备份目录的权限；生产环境可由 root 的 systemd timer 执行，整个备份目录保持 0700、文件保持 0600。
+在比赛根目录执行。备份路径必须在数据目录之外，但仍在本副本 `.cu-runtime` 内；原生产目录、原systemd及部署脚本均不可复用。本轮仅用合成数据测试备份，没有读取或备份用户原数据库。
 
 每次生成独立的 `yuzhou-时间-随机值/` 目录，绝不覆盖旧备份。主数据库使用 Node SQLite 在线 backup API 制作一致快照并执行 quick_check；按快照内的文件元数据复制不可变原件、核验大小及 SHA-256；AI 配置、任务记录和其独立工作目录一同保存，其中 SQLite 文件也单独在线备份。AI JSON 文件通过原子写入更新，备份会保存读取时的完整版本。文件系统记录和主数据库并非一个跨存储事务，恢复时正在执行的 AI 任务会按服务逻辑标记为中断，已保存的工作区内容仍以数据库为准。
 

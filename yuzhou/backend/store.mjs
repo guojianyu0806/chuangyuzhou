@@ -1,14 +1,15 @@
 import {validateCalendar} from '../frontend/src/calendar-model.js';
 import {validateConversation} from '../frontend/src/ai-conversation-model.js';
 import { DatabaseSync } from 'node:sqlite';
-import { mkdirSync, chmodSync, existsSync, linkSync, unlinkSync } from 'node:fs';
-import { resolve, join } from 'node:path';
+import { mkdirSync, chmodSync, existsSync, copyFileSync, constants, unlinkSync } from 'node:fs';
+import { join } from 'node:path';
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import { validateLedger } from '../frontend/src/ledger-model.js';
 import { validateTimetable } from '../frontend/src/timetable-model.js';
 import { validateFitness } from '../frontend/src/fitness-model.js';
 import { validateCompetitions } from '../frontend/src/competitions-model.js';
+import { prepareDataDirectory, assertRuntimePath } from '../runtime.mjs';
 
 const scrypt = promisify(scryptCallback);
 export const MAX_STATE_BYTES = 12 * 1024 * 1024;
@@ -125,11 +126,12 @@ export function validateWorkspace(state) {
 }
 
 export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit = 20, storageLimitBytes = 10 * 1024 ** 3, now = Date.now } = {}) {
-  const directory = resolve(dataDir);
+  const directory = prepareDataDirectory(dataDir);
   const filesDir = join(directory, 'files');
   const tempDir = join(directory, 'tmp');
-  for (const dir of [directory, filesDir, tempDir]) { mkdirSync(dir, { recursive: true, mode: 0o700 }); if (process.platform !== 'win32') chmodSync(dir, 0o700); }
+  for (const dir of [directory, filesDir, tempDir]) { assertRuntimePath(dir); mkdirSync(dir, { recursive: true, mode: 0o700 }); if (process.platform !== 'win32') chmodSync(dir, 0o700); }
   const databasePath = join(directory, 'workbench.sqlite');
+  assertRuntimePath(databasePath);
   const db = new DatabaseSync(databasePath);
   if (process.platform !== 'win32') chmodSync(databasePath, 0o600);
   db.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;
@@ -142,8 +144,9 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
     INSERT OR IGNORE INTO workspace(id,revision,state,updated_at) VALUES(1,0,NULL,'');`);
   const account = () => db.prepare('SELECT username,password_hash FROM account WHERE id=1').get();
   const fileInfo = id => FILE_ID.test(id) ? (db.prepare('SELECT * FROM files WHERE id=?').get(id) || null) : null;
-  const filePath = id => { if (!FILE_ID.test(id)) throw new ApiError(400, 'invalid_file_id'); return join(filesDir, id); };
+  const filePath = id => { if (!FILE_ID.test(id)) throw new ApiError(400, 'invalid_file_id'); return assertRuntimePath(join(filesDir, id)); };
   function transaction(fn) {
+    assertRuntimePath(databasePath);
     db.exec('BEGIN IMMEDIATE');
     try { const result = fn(); db.exec('COMMIT'); return result; } catch (error) { db.exec('ROLLBACK'); throw error; }
   }
@@ -236,6 +239,7 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
       });
     },
     commitFile(id, temporaryPath, meta) {
+      assertRuntimePath(temporaryPath);
       const previous = fileInfo(id);
       if (previous) {
         if (previous.sha256 !== meta.sha256 || previous.size !== meta.size) throw new ApiError(409, 'file_content_conflict');
@@ -247,7 +251,7 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
       let linked = false;
       try {
         return transaction(() => {
-          try { linkSync(temporaryPath, path); linked = true; } catch (error) { if (error.code === 'EEXIST') throw new ApiError(409, 'file_content_conflict'); throw error; }
+          try { copyFileSync(temporaryPath, path, constants.COPYFILE_EXCL); linked = true; } catch (error) { if (error.code === 'EEXIST') throw new ApiError(409, 'file_content_conflict'); throw error; }
           const createdAt = new Date(now()).toISOString();
           db.prepare('INSERT INTO files VALUES(?,?,?,?,?,?)').run(id, meta.name, meta.type, meta.size, meta.sha256, createdAt);
           return { id, ...meta, created_at: createdAt, existed: false };

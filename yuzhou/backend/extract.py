@@ -5,6 +5,7 @@ import os
 import posixpath
 import re
 import sys
+import stat
 import zipfile
 from pathlib import Path
 from xml.etree import ElementTree as ET
@@ -18,6 +19,25 @@ MAX_UNITS = 500
 class ExtractionError(Exception):
     def __init__(self, code, message):
         self.code, self.message = code, message
+
+
+def runtime_input_path(value):
+    """The CLI only reads ordinary files belonging to this competition runtime."""
+    script = Path(os.path.abspath(__file__))
+    root = script.resolve().parent.parent / ".cu-runtime"
+    target = Path(os.path.abspath(value))
+    if not target.is_relative_to(root):
+        raise ExtractionError("COMPETITION_PATH_FORBIDDEN", "只允许读取本比赛副本运行目录中的文件。")
+    for path in [*reversed((script, *script.parents)), *reversed((target, *target.parents))]:
+        try:
+            info = path.lstat()
+        except FileNotFoundError:
+            continue
+        if (stat.S_ISLNK(info.st_mode)
+                or getattr(info, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+                or (stat.S_ISREG(info.st_mode) and info.st_nlink > 1)):
+            raise ExtractionError("COMPETITION_PATH_FORBIDDEN", "比赛副本禁止使用链接文件或目录。")
+    return target
 
 
 def clean(value):
@@ -146,13 +166,30 @@ def extract(path, name):
 
 def main():
     try:
+        sys.dont_write_bytecode = True
+        for stream in (sys.stdout, sys.stderr):
+            if hasattr(stream, "reconfigure"):
+                stream.reconfigure(encoding="utf-8", errors="strict")
         if sys.platform != "win32":
             import resource
             resource.setrlimit(resource.RLIMIT_AS, (1024 * 1024 * 1024, 1024 * 1024 * 1024))
             resource.setrlimit(resource.RLIMIT_CPU, (35, 35))
         if len(sys.argv) != 3:
             raise ExtractionError("BAD_ARGUMENTS", "文档解析参数错误。")
-        result = extract(sys.argv[1], sys.argv[2])
+        path = runtime_input_path(sys.argv[1])
+        home = runtime_input_path(Path(__file__).resolve().parent.parent / ".cu-runtime" / "python-extractor")
+        home.mkdir(parents=True, exist_ok=True)
+        system = {key: os.environ[key] for key in ("SystemRoot", "WINDIR", "COMSPEC", "PATHEXT") if key in os.environ}
+        os.environ.clear()
+        os.environ.update({**system, "PATH": str(Path(sys.executable).parent),
+                           "HOME": str(home), "USERPROFILE": str(home),
+                           "TEMP": str(home), "TMP": str(home), "TMPDIR": str(home),
+                           "PYTHONDONTWRITEBYTECODE": "1", "PYTHONIOENCODING": "utf-8"})
+        prefixes = (Path(sys.base_prefix), Path(sys.prefix))
+        sys.path[:] = [entry for entry in sys.path if entry and
+                       any(Path(os.path.abspath(entry)).is_relative_to(prefix) for prefix in prefixes)]
+        os.chdir(home)
+        result = extract(path, sys.argv[2])
         print(json.dumps({"ok": True, **result}, ensure_ascii=False))
     except ExtractionError as error:
         print(json.dumps({"ok": False, "code": error.code, "message": error.message}, ensure_ascii=False))

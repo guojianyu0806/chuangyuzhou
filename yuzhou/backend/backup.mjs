@@ -7,6 +7,7 @@ import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { FILE_ID } from './store.mjs';
 import { isCliEntry } from './is-cli.mjs';
+import { assertRuntimePath, assertOrdinaryTree, RUNTIME_ROOT, assertOrdinaryPath } from '../runtime.mjs';
 
 async function privateDirectory(path) { await mkdir(path, { recursive: true, mode: 0o700 }); if (process.platform !== 'win32') await chmod(path, 0o700); }
 async function privateFile(path) { if (process.platform !== 'win32') await chmod(path, 0o600); }
@@ -40,7 +41,8 @@ async function isSqlite(path) {
 /** Online database snapshot plus immutable originals. Output is always a new private directory. */
 export async function backupWorkbench({ dataDir, outputDir, now = new Date() }) {
   if (!dataDir || !outputDir) throw new Error('dataDir and outputDir are required');
-  const sourceRoot = resolve(dataDir); const destinationRoot = resolve(outputDir);
+  const sourceRoot = assertRuntimePath(dataDir); const destinationRoot = assertRuntimePath(outputDir);
+  assertOrdinaryTree(sourceRoot, RUNTIME_ROOT); assertOrdinaryTree(destinationRoot, RUNTIME_ROOT);
   if (destinationRoot === sourceRoot || destinationRoot.startsWith(sourceRoot + sep)) throw new Error('Backup directory must be outside DATA_DIR');
   const sourceStat = await lstat(sourceRoot);
   if (!sourceStat.isDirectory() || sourceStat.isSymbolicLink()) throw new Error('DATA_DIR must be an ordinary directory');
@@ -95,6 +97,7 @@ export async function backupWorkbench({ dataDir, outputDir, now = new Date() }) 
 }
 
 if (isCliEntry(import.meta.url)) {
+  assertOrdinaryPath(process.argv[1]);
   const args = process.argv.slice(2); const options = {};
   for (let index = 0; index < args.length; index += 2) {
     if (!['--data-dir', '--output-dir'].includes(args[index]) || !args[index + 1]) throw new Error('Usage: node backup.mjs --data-dir PRIVATE_DATA_DIR --output-dir BACKUP_DIR');

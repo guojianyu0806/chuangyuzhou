@@ -36,7 +36,7 @@ async function fixture(t, options = {}) {
 
 test('public health is minimal; private APIs require auth; setup cannot be claimed without token', async t => {
   const f = await fixture(t);
-  assert.deepEqual((await f.api('/api/health')).body, { ok: true, mode: 'cloud', version: releaseVersion });
+  assert.deepEqual((await f.api('/api/health')).body, { ok: true, mode: 'cloud', version: releaseVersion, edition: 'competition-copy' });
   assert.equal((await f.api('/api/auth/session')).body.setupRequired, true);
   for (const path of ['/api/workspace', '/api/model/status', `/api/files/${randomUUID()}`]) assert.equal((await f.api(path)).status, 401);
   const rejected = await f.api('/api/auth/setup', { method: 'POST', body: { username, password, setupToken: 'wrong' } });
@@ -78,7 +78,7 @@ test('public version metadata supports the frontend update check and rejects wri
   const f = await fixture(t);
   const version = await f.api('/version.json', { auth: false });
   assert.equal(version.status, 200);
-  assert.deepEqual(version.body, { version: releaseVersion, mode: 'cloud', edition: 'private-cloud' });
+  assert.deepEqual(version.body, { version: releaseVersion, mode: 'cloud', edition: 'competition-copy' });
   assert.equal(version.headers.get('cache-control'), 'no-store');
   assert.match(version.headers.get('content-type'), /application\/json/);
   assert.equal((await f.api('/version.json', { method: 'HEAD', auth: false })).status, 200);
@@ -195,7 +195,7 @@ test('public HTTPS uses Secure host-only cookies and rejects mismatched Origin',
   assert.equal((await f.setup()).status, 403);
   const result = await f.api('/api/auth/setup', { method: 'POST', body: { username, password, setupToken }, headers: { Origin: 'https://workbench.example' } });
   assert.equal(result.status, 201);
-  assert.match(result.headers.get('set-cookie'), /^__Host-shiguang_session=/);
+  assert.match(result.headers.get('set-cookie'), /^__Host-czb_yuzhou_session=/);
   assert.match(result.headers.get('set-cookie'), /; Secure$/);
   assert.doesNotMatch(result.headers.get('set-cookie'), /Domain=/);
 });

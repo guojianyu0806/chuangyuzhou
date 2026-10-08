@@ -7,6 +7,7 @@ import { applyOrganizedContent, validateOrganizedProposal } from '../frontend/sr
 import {validateConversation, conversationSnapshot} from '../frontend/src/ai-conversation-model.js';
 import {WORKSPACE_ACTION_CAPABILITIES,previewWorkspaceActions,listWorkspaceRecords} from '../frontend/src/workspace-actions.js';
 import {WORKSPACE_QUERY_CAPABILITIES,validateWorkspaceQueries,runWorkspaceQuery,workspaceOverview,workspaceFingerprint} from './workspace-queries.mjs';
+import { assertRuntimePath, prepareDataDirectory, RUNTIME_ROOT } from '../runtime.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BASE_URL = 'https://api.deepseek.com';
@@ -22,6 +23,7 @@ class ServiceError extends Error {
 }
 const fail = (code, message, status) => { throw new ServiceError(code, message, status); };
 function atomicJson(path, value) {
+  assertRuntimePath(path);
   const temporary = `${path}.${randomUUID()}.tmp`;
   try {
     writeFileSync(temporary, JSON.stringify(value), { mode: 0o600, flag: 'wx' });
@@ -29,7 +31,7 @@ function atomicJson(path, value) {
     chmodSync(path, 0o600);
   } finally { if (existsSync(temporary)) unlinkSync(temporary); }
 }
-function readJsonFile(path) { try { return JSON.parse(readFileSync(path, 'utf8')); } catch { return null; } }
+function readJsonFile(path) { assertRuntimePath(path); try { return JSON.parse(readFileSync(path, 'utf8')); } catch { return null; } }
 function requestSnapshot(request) {
   if (!request) return null;
   return JSON.stringify({ text: request.text || '', targetId: request.targetId || 'auto', files: (request.files || []).map(file => ({ id: file.id, blobId: file.blobId, name: file.name, type: file.type, size: file.size })) });
@@ -191,6 +193,8 @@ function completedConversationActions(state, requestId) {
 }
 
 function childJson(command, args, { input, cwd, env, timeout = 45000, maxOutput = 2 * 1024 * 1024, onChild } = {}) {
+  assertRuntimePath(command);
+  assertRuntimePath(cwd);
   return new Promise((resolveResult, reject) => {
     const child = spawn(command, args, { cwd, env, windowsHide: true, shell: false, stdio: ['pipe', 'pipe', 'pipe'] });
     onChild?.(child);
@@ -246,16 +250,16 @@ const FAILURE_MESSAGES = {
 function publicFailure(code) { return { code: Object.hasOwn(FAILURE_MESSAGES, code) ? code : 'MODEL_UNAVAILABLE', message: FAILURE_MESSAGES[code] || FAILURE_MESSAGES.MODEL_UNAVAILABLE }; }
 
 /** Auth and CSRF must be checked by the enclosing server before calling handle(). */
-export function createHermesService({ dataDir, store, runModel, extractFile, engineAvailable, env = process.env } = {}) {
-  const root = resolve(dataDir, 'ai');
+export function createHermesService({ dataDir, store, runModel, extractFile, engineAvailable, env = {} } = {}) {
+  const root = resolve(prepareDataDirectory(dataDir), 'ai');
   const jobsDir = join(root, 'jobs');
   const hermesHome = join(root, 'hermes');
-  for (const path of [root, jobsDir, hermesHome]) { mkdirSync(path, { recursive: true, mode: 0o700 }); chmodSync(path, 0o700); }
+  for (const path of [root, jobsDir, hermesHome]) { assertRuntimePath(path); mkdirSync(path, { recursive: true, mode: 0o700 }); chmodSync(path, 0o700); }
   const configPath = join(root, 'model-config.json');
-  const hermesDir = env.SHIGUANG_HERMES_DIR || '/home/ubuntu/.hermes/hermes-agent';
-  const hermesPython = env.SHIGUANG_HERMES_PYTHON || join(hermesDir, 'venv', 'bin', 'python');
-  const extractPython = env.SHIGUANG_EXTRACT_PYTHON || 'python3';
-  const available = () => engineAvailable ? Boolean(engineAvailable()) : existsSync(hermesPython) && existsSync(join(hermesDir, 'run_agent.py'));
+  const hermesDir = assertRuntimePath(env.SHIGUANG_HERMES_DIR || join(RUNTIME_ROOT, 'engines', 'hermes'));
+  const hermesPython = assertRuntimePath(env.SHIGUANG_HERMES_PYTHON || join(hermesDir, 'venv', process.platform === 'win32' ? 'Scripts' : 'bin', process.platform === 'win32' ? 'python.exe' : 'python'));
+  const extractPython = assertRuntimePath(env.SHIGUANG_EXTRACT_PYTHON || hermesPython);
+  const available = () => engineAvailable ? Boolean(engineAvailable()) : existsSync(assertRuntimePath(hermesPython)) && existsSync(assertRuntimePath(join(hermesDir, 'run_agent.py')));
   const jobs = new Map();
   let running = false, closed = false, activeChild = null;
   const config = () => {
@@ -265,7 +269,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
   };
   const status = () => {
     const current = config();
-    return { configured: Boolean(current?.apiKey), provider: 'deepseek', model: current?.model || 'deepseek-flash', baseUrl: BASE_URL, hermesAvailable: available(), extraction: ['txt', 'md', 'csv', 'pdf', 'pptx', 'docx'], ocrConfigured: false };
+    return { configured: Boolean(current?.apiKey), provider: 'deepseek', model: current?.model || 'deepseek-flash', baseUrl: BASE_URL, hermesAvailable: available(), extraction: ['txt', 'md', 'csv', 'pdf', 'pptx', 'docx'], extractionAvailable: Boolean(extractFile) || existsSync(extractPython), ocrConfigured: false, edition: 'competition-copy' };
   };
   const persist = job => atomicJson(join(jobsDir, `${job.id}.json`), job);
   const publicJob = job => {
@@ -281,7 +285,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
     }
     jobs.set(job.id, job);
   }
-  const childEnv = () => ({ PATH: env.PATH || '/usr/bin:/bin', LANG: 'C.UTF-8', LC_ALL: 'C.UTF-8', HOME: hermesHome, HERMES_HOME: hermesHome, PYTHONPATH: hermesDir, PYTHONUNBUFFERED: '1', PYTHONDONTWRITEBYTECODE: '1', PYTHONIOENCODING: 'utf-8', HERMES_API_TIMEOUT: '120', HERMES_TELEMETRY_DISABLED: '1' });
+  const childEnv = () => ({ PATH: dirname(hermesPython), ...(process.platform === 'win32' ? { SystemRoot: process.env.SystemRoot, WINDIR: process.env.WINDIR } : {}), LANG: 'C.UTF-8', LC_ALL: 'C.UTF-8', HOME: hermesHome, USERPROFILE: hermesHome, HERMES_HOME: hermesHome, TEMP: hermesHome, TMP: hermesHome, TMPDIR: hermesHome, PYTHONPATH: hermesDir, PYTHONUNBUFFERED: '1', PYTHONDONTWRITEBYTECODE: '1', PYTHONIOENCODING: 'utf-8', HERMES_API_TIMEOUT: '120', HERMES_TELEMETRY_DISABLED: '1' });
   const autoFile = () => ({autoFiled:false});
   function saveReply(job, result) {
     for(let attempt=0;attempt<2;attempt++){
@@ -327,7 +331,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
       const file = store.fileInfo(id);
       if (!file) fail('FILE_NOT_FOUND', '资料已不存在，请重新上传。');
       let result;
-      try { result = extractFile ? await extractFile(store.filePath(id), file.name) : await childJson(extractPython, [join(HERE, 'extract.py'), store.filePath(id), file.name], { env: childEnv(), timeout: 45000, onChild: child => { activeChild = child; } }); }
+      try { result = extractFile ? await extractFile(store.filePath(id), file.name) : await childJson(extractPython, [join(HERE, 'extract.py'), store.filePath(id), file.name], { cwd: hermesHome, env: childEnv(), timeout: 45000, onChild: child => { activeChild = child; } }); }
       catch (error) {
         if (job.kind === 'conversation' && inputText.trim() && ['NO_READABLE_TEXT', 'OCR_NOT_CONFIGURED'].includes(error.code)) {
           warnings.push(`${file.name}：未读到文字，本轮仅依据用户实际输入及其他可读取资料；不能猜测此附件内容。`);
@@ -386,7 +390,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
               if(queryBytes>=80000){results.push({query,result:{error:'本轮资料达到上限，请缩小范围继续查询。',truncated:true}});continue;}
               let result;try{result=await runWorkspaceQuery(workspace,query,{readFile:async(blobId)=>{
                 const file=store.fileInfo(blobId);if(!file)throw new Error('资料已不存在。');
-                try{return extractFile?await extractFile(store.filePath(blobId),file.name):await childJson(extractPython,[join(HERE,'extract.py'),store.filePath(blobId),file.name],{env:childEnv(),timeout:45000,onChild:child=>{activeChild=child;}});}
+                try{return extractFile?await extractFile(store.filePath(blobId),file.name):await childJson(extractPython,[join(HERE,'extract.py'),store.filePath(blobId),file.name],{cwd:hermesHome,env:childEnv(),timeout:45000,onChild:child=>{activeChild=child;}});}
                 catch(error){throw new Error(FAILURE_MESSAGES[error.code]||'这份资料暂时无法提取文字。');}
               }});}catch(error){result={error:error.message};}
               const bytes=JSON.stringify(result).length;

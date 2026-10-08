@@ -4,6 +4,8 @@ import contextlib
 import json
 import os
 import sys
+import stat
+from pathlib import Path
 
 
 MAX_FINAL_CHARS = 100000
@@ -12,6 +14,71 @@ TRUNCATION_ERRORS = (
     "Response truncated due to output length limit",
     "First response truncated due to output length limit",
 )
+
+
+class CompetitionPathError(Exception):
+    pass
+
+
+RUNTIME_ROOT = Path(__file__).resolve().parent.parent / ".cu-runtime"
+
+
+def runtime_path(value):
+    script = Path(os.path.abspath(__file__))
+    target = Path(os.path.abspath(value))
+    if not target.is_relative_to(RUNTIME_ROOT):
+        raise CompetitionPathError()
+    for path in [*reversed((script, *script.parents)), *reversed((target, *target.parents))]:
+        try:
+            info = path.lstat()
+        except FileNotFoundError:
+            continue
+        if (stat.S_ISLNK(info.st_mode)
+                or getattr(info, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+                or (stat.S_ISREG(info.st_mode) and info.st_nlink > 1)):
+            raise CompetitionPathError()
+    return target
+
+
+def validate_engine(value):
+    root = runtime_path(value)
+    # Dependencies imported by run_agent.py must not bridge back to another project.
+    if root.is_dir():
+        for directory, dirs, files in os.walk(root, followlinks=False):
+            for name in dirs + files:
+                runtime_path(Path(directory) / name)
+    runtime_path(root / "run_agent.py")
+    return root
+
+
+@contextlib.contextmanager
+def isolated_runtime(hermes_dir):
+    home = runtime_path(RUNTIME_ROOT / "python-runner")
+    home.mkdir(parents=True, exist_ok=True)
+    previous_env, previous_cwd, previous_path = dict(os.environ), os.getcwd(), list(sys.path)
+    previous_bytecode = sys.dont_write_bytecode
+    system = {key: os.environ[key] for key in ("SystemRoot", "WINDIR", "COMSPEC", "PATHEXT") if key in os.environ}
+    try:
+        os.environ.clear()
+        os.environ.update({**system, "PATH": str(Path(sys.executable).parent),
+                           "HOME": str(home), "USERPROFILE": str(home), "HERMES_HOME": str(home),
+                           "TEMP": str(home), "TMP": str(home), "TMPDIR": str(home),
+                           "PYTHONPATH": str(hermes_dir), "PYTHONDONTWRITEBYTECODE": "1",
+                           "PYTHONIOENCODING": "utf-8", "HERMES_API_TIMEOUT": "120",
+                           "HERMES_TELEMETRY_DISABLED": "1"})
+        # Ignore inherited PYTHONPATH entries; retain the current interpreter's libraries.
+        prefixes = (Path(sys.base_prefix), Path(sys.prefix))
+        sys.path[:] = [str(hermes_dir)] + [entry for entry in previous_path if entry and
+                     any(Path(os.path.abspath(entry)).is_relative_to(prefix) for prefix in prefixes)]
+        sys.dont_write_bytecode = True
+        os.chdir(home)
+        yield
+    finally:
+        os.chdir(previous_cwd)
+        os.environ.clear()
+        os.environ.update(previous_env)
+        sys.path[:] = previous_path
+        sys.dont_write_bytecode = previous_bytecode
 
 
 def model_output(response):
@@ -49,6 +116,9 @@ def emit(value, code=0):
 def main():
     agent = None
     try:
+        for stream in (sys.stdout, sys.stderr):
+            if hasattr(stream, "reconfigure"):
+                stream.reconfigure(encoding="utf-8", errors="strict")
         raw = sys.stdin.buffer.read(2 * 1024 * 1024 + 1)
         if len(raw) > 2 * 1024 * 1024:
             emit({"ok": False, "code": "INVALID_PROPOSAL"}, 1)
@@ -56,13 +126,12 @@ def main():
         settings = request["settings"]
         if settings.get("provider") != "deepseek" or settings.get("model") not in ("deepseek-flash", "deepseek-v4-pro", "deepseek-chat", "deepseek-reasoner") or not settings.get("apiKey"):
             emit({"ok": False, "code": "MODEL_NOT_CONFIGURED"}, 1)
-        hermes_dir = request["hermesDir"]
+        hermes_dir = str(validate_engine(request["hermesDir"]))
         if not os.path.isfile(os.path.join(hermes_dir, "run_agent.py")):
             emit({"ok": False, "code": "ENGINE_UNAVAILABLE"}, 1)
-        sys.path.insert(0, hermes_dir)
         # Imports and provider exceptions may print request metadata. Suppress diagnostics
         # entirely; the parent receives only a fixed error code and the final proposal.
-        with open(os.devnull, "w") as sink, contextlib.redirect_stdout(sink), contextlib.redirect_stderr(sink):
+        with isolated_runtime(hermes_dir), open(os.devnull, "w") as sink, contextlib.redirect_stdout(sink), contextlib.redirect_stderr(sink):
             from run_agent import AIAgent
             agent = AIAgent(
                 model=settings["model"],
@@ -100,6 +169,8 @@ def main():
         emit(result, 0 if result.get("ok") else 1)
     except (SystemExit, KeyboardInterrupt):
         raise
+    except CompetitionPathError:
+        emit({"ok": False, "code": "COMPETITION_PATH_FORBIDDEN"}, 1)
     except Exception as error:
         status = getattr(error, "status_code", None) or getattr(getattr(error, "response", None), "status_code", None)
         code = "MODEL_AUTH_FAILED" if status in (401, 403) else "MODEL_RATE_LIMIT" if status in (402, 429) else "MODEL_UNAVAILABLE"
