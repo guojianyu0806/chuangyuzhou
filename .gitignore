@@ -1,0 +1,16 @@
+# Local runtime and credentials never belong in the competition repository.
+**/.cu-runtime/
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules/
+**/*.db
+**/*.sqlite
+**/*.sqlite-wal
+**/*.sqlite-shm
+**/setup-code.txt
+**/model-config.json
+.local/
+releases/
+app/releases/
+
