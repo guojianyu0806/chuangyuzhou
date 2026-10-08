@@ -32,3 +32,24 @@ test('history merges pending plans and receipts in descending event time',()=>{
     const history=store.history();assert.equal(history[0].kind,'receipt');assert.equal(history[1].id,'older-pending');
   }finally{store.close();}
 });
+
+test('AI replacement persists atomically and a failed context insert preserves its parent draft',()=>{
+  mkdirSync(RUNTIME_ROOT,{recursive:true});const dataDir=mkdtempSync(resolve(RUNTIME_ROOT,'context-rollback-'));
+  const store=createStore(dataDir),inspector=new DatabaseSync(resolve(dataDir,'cu-workbench.sqlite'));
+  try{
+    const state=store.getState(),expiresAt=new Date(Date.now()+60000).toISOString();
+    const first={...propose(state,{requestId:'context-first',actions:[{op:'workspace.create',name:'原草稿',template:'blank'}]}),contextId:'context-first'};
+    const turn={messageId:'message-first',message:'建立空间',selectedComponentId:'',plan:{actions:first.actions,message:'fixture'}};
+    store.saveAIResult({id:'context-first',workspaceId:'',baseRevision:0,expiresAt,turns:[turn],proposalId:first.id},first);
+    const next={...propose(state,{requestId:'context-next',actions:[{op:'workspace.create',name:'修订草稿',template:'blank'}]}),contextId:'context-next'};
+    const context={id:'context-next',parentContextId:'context-first',workspaceId:'',baseRevision:0,expiresAt,turns:[turn,{...turn,messageId:'message-next'}],proposalId:next.id};
+    inspector.exec("CREATE TRIGGER synthetic_context_failure BEFORE INSERT ON ai_contexts BEGIN SELECT RAISE(ABORT,'synthetic_context_insert_failure'); END");
+    assert.throws(()=>store.saveAIResult(context,next),/synthetic_context_insert_failure/);
+    assert.equal(store.getAIContext('context-first').status,'active');assert.equal(store.getProposal(first.id).status,'pending');
+    assert.equal(store.getAIContext('context-next'),null);assert.equal(store.getProposal(next.id),null);assert.deepEqual(store.getState(),state);
+    inspector.exec('DROP TRIGGER synthetic_context_failure');
+    store.saveAIResult(context,next);assert.equal(store.getAIContext('context-first').status,'superseded');assert.equal(store.getProposal(first.id).status,'superseded');
+    assert.throws(()=>store.requireAIContext('context-next',{now:Date.parse(expiresAt)+1}),error=>error.code==='ai_context_expired');
+    store.cancelAIContext('context-next');assert.equal(store.getProposal(next.id).status,'cancelled');assert.equal(store.getAIContext('context-next').status,'cancelled');
+  }finally{inspector.close();store.close();}
+});

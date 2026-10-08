@@ -1,0 +1,292 @@
+TAP version 13
+# Subtest: AI cannot synthesize backup imports to bypass per-record source evidence
+ok 1 - AI cannot synthesize backup imports to bypass per-record source evidence
+  ---
+  duration_ms: 31.0422
+  type: 'test'
+  ...
+# Subtest: trusted clock follows workspace timezone across a local date boundary
+ok 2 - trusted clock follows workspace timezone across a local date boundary
+  ---
+  duration_ms: 2.8764
+  type: 'test'
+  ...
+# Subtest: workspace creation accepts forward creation chain refs and never mutates input
+ok 3 - workspace creation accepts forward creation chain refs and never mutates input
+  ---
+  duration_ms: 4.2176
+  type: 'test'
+  ...
+# Subtest: selected-object layout is validated through actual domain and original state is unchanged
+ok 4 - selected-object layout is validated through actual domain and original state is unchanged
+  ---
+  duration_ms: 8.1178
+  type: 'test'
+  ...
+# Subtest: existing workspace context can create a different workspace without modifying original objects
+ok 5 - existing workspace context can create a different workspace without modifying original objects
+  ---
+  duration_ms: 9.0594
+  type: 'test'
+  ...
+# Subtest: unknown modules, cross-workspace targets and missing target IDs are rejected
+ok 6 - unknown modules, cross-workspace targets and missing target IDs are rejected
+  ---
+  duration_ms: 14.0418
+  type: 'test'
+  ...
+# Subtest: workspace and selected-component checks fail before invoking model
+ok 7 - workspace and selected-component checks fail before invoking model
+  ---
+  duration_ms: 2.8786
+  type: 'test'
+  ...
+# Subtest: prompt includes current ID/schema/preferences and keeps source instructions out of system text
+ok 8 - prompt includes current ID/schema/preferences and keeps source instructions out of system text
+  ---
+  duration_ms: 3.8788
+  type: 'test'
+  ...
+# Subtest: excessive context is rejected rather than silently truncated
+ok 9 - excessive context is rejected rather than silently truncated
+  ---
+  duration_ms: 4.3055
+  type: 'test'
+  ...
+# Subtest: JSON fences, extra keys, prototype keys and invalid shapes are refused
+ok 10 - JSON fences, extra keys, prototype keys and invalid shapes are refused
+  ---
+  duration_ms: 7.1859
+  type: 'test'
+  ...
+# Subtest: five logical steps, 60 actions and complete one-to-one grouping are enforced
+ok 11 - five logical steps, 60 actions and complete one-to-one grouping are enforced
+  ---
+  duration_ms: 8.0643
+  type: 'test'
+  ...
+# Subtest: clarification is non-mutating and cannot contain executable actions
+ok 12 - clarification is non-mutating and cannot contain executable actions
+  ---
+  duration_ms: 4.9518
+  type: 'test'
+  ...
+# Subtest: record values require per-field original-message evidence
+ok 13 - record values require per-field original-message evidence
+  ---
+  duration_ms: 8.5499
+  type: 'test'
+  ...
+# Subtest: asset quote and hash are checked; non-existent quotes and stale hashes fail
+ok 14 - asset quote and hash are checked; non-existent quotes and stale hashes fail
+  ---
+  duration_ms: 11.32
+  type: 'test'
+  ...
+# Subtest: new source references can use domain-computed hash but cannot cite invented source text
+ok 15 - new source references can use domain-computed hash but cannot cite invented source text
+  ---
+  duration_ms: 6.9239
+  type: 'test'
+  ...
+# Subtest: provider errors are sanitized and retain honest failure measurement
+ok 16 - provider errors are sanitized and retain honest failure measurement
+  ---
+  duration_ms: 2.9342
+  type: 'test'
+  ...
+# Subtest: no workspace cannot mutate an arbitrary existing target
+ok 17 - no workspace cannot mutate an arbitrary existing target
+  ---
+  duration_ms: 3.5243
+  type: 'test'
+  ...
+# Subtest: revision prompt preserves server-held requests and draft while evidence resolves an exact user turn
+ok 18 - revision prompt preserves server-held requests and draft while evidence resolves an exact user turn
+  ---
+  duration_ms: 5.8125
+  type: 'test'
+  ...
+# Subtest: prior-turn evidence must name its user turn and cannot cite assistant text or invented history
+ok 19 - prior-turn evidence must name its user turn and cannot cite assistant text or invented history
+  ---
+  duration_ms: 10.0569
+  type: 'test'
+  ...
+# Subtest: new source grounding can use saved original text but not an earlier assistant draft
+ok 20 - new source grounding can use saved original text but not an earlier assistant draft
+  ---
+  duration_ms: 7.6469
+  type: 'test'
+  ...
+# Subtest: conversation size and message identity bounds fail before calling a model without truncating history
+ok 21 - conversation size and message identity bounds fail before calling a model without truncating history
+  ---
+  duration_ms: 4.4652
+  type: 'test'
+  ...
+# Subtest: manual preview rejects uploads above 18 MiB without retaining state or proposals
+ok 22 - manual preview rejects uploads above 18 MiB without retaining state or proposals
+  ---
+  duration_ms: 328.1404
+  type: 'test'
+  ...
+# Subtest: manual backup preview enforces the 8 MiB final-state ceiling before persisting a proposal
+ok 23 - manual backup preview enforces the 8 MiB final-state ceiling before persisting a proposal
+  ---
+  duration_ms: 2822.4465
+  type: 'test'
+  ...
+# Subtest: full backup restores one workspace as a new copy with preserved content and clean credentials
+ok 24 - full backup restores one workspace as a new copy with preserved content and clean credentials
+  ---
+  duration_ms: 176.5608
+  type: 'test'
+  ...
+# Subtest: manual template preview is non-mutating, idempotent, confirmable and cancellable
+ok 25 - manual template preview is non-mutating, idempotent, confirmable and cancellable
+  ---
+  duration_ms: 88.8443
+  type: 'test'
+  ...
+# Subtest: connection check does not mutate workspaces, exposes no key, and resets on configuration change
+ok 26 - connection check does not mutate workspaces, exposes no key, and resets on configuration change
+  ---
+  duration_ms: 83.3529
+  type: 'test'
+  ...
+# Subtest: a slow connection check cannot replace a newer model configuration
+ok 27 - a slow connection check cannot replace a newer model configuration
+  ---
+  duration_ms: 66.2893
+  type: 'test'
+  ...
+# Subtest: auth/CSRF and foreign origins cannot write; setup is separate and closes
+ok 28 - auth/CSRF and foreign origins cannot write; setup is separate and closes
+  ---
+  duration_ms: 79.8044
+  type: 'test'
+  ...
+# Subtest: manual writes are atomic, idempotent and persisted without adopting other app configuration
+ok 29 - manual writes are atomic, idempotent and persisted without adopting other app configuration
+  ---
+  duration_ms: 90.6941
+  type: 'test'
+  ...
+# Subtest: AI preview does not write, confirmation executes once, undo survives reload
+ok 30 - AI preview does not write, confirmation executes once, undo survives reload
+  ---
+  duration_ms: 102.6658
+  type: 'test'
+  ...
+# Subtest: AI old proposals and in-flight plans cannot overwrite later manual edits
+ok 31 - AI old proposals and in-flight plans cannot overwrite later manual edits
+  ---
+  duration_ms: 87.4653
+  type: 'test'
+  ...
+# Subtest: missing model makes no proposal; model secret absent from state/history/export
+ok 32 - missing model makes no proposal; model secret absent from state/history/export
+  ---
+  duration_ms: 77.8907
+  type: 'test'
+  ...
+# Subtest: cancelled plan cannot execute, unknown POST endpoint is rejected
+ok 33 - cancelled plan cannot execute, unknown POST endpoint is rejected
+  ---
+  duration_ms: 69.5007
+  type: 'test'
+  ...
+# Subtest: failed model metadata is retained without recording a successful state change
+ok 34 - failed model metadata is retained without recording a successful state change
+  ---
+  duration_ms: 62.4787
+  type: 'test'
+  ...
+# Subtest: pending plan capacity is checked before another model call
+ok 35 - pending plan capacity is checked before another model call
+  ---
+  duration_ms: 229.2977
+  type: 'test'
+  ...
+# Subtest: unconfirmed request can be revised after restart with original-message evidence and a full replacement
+ok 36 - unconfirmed request can be revised after restart with original-message evidence and a full replacement
+  ---
+  duration_ms: 97.067
+  type: 'test'
+  ...
+# Subtest: clarification can continue and replace an earlier draft without allowing that draft to execute
+ok 37 - clarification can continue and replace an earlier draft without allowing that draft to execute
+  ---
+  duration_ms: 71.1271
+  type: 'test'
+  ...
+# Subtest: a failed revision leaves the previous context and proposal reusable
+ok 38 - a failed revision leaves the previous context and proposal reusable
+  ---
+  duration_ms: 71.5037
+  type: 'test'
+  ...
+# Subtest: forged history, unknown context, workspace mismatch and stale revisions fail before model invocation
+ok 39 - forged history, unknown context, workspace mismatch and stale revisions fail before model invocation
+  ---
+  duration_ms: 85.7321
+  type: 'test'
+  ...
+# Subtest: cancelling a context during revision prevents the late result from recreating a proposal
+ok 40 - cancelling a context during revision prevents the late result from recreating a proposal
+  ---
+  duration_ms: 77.8089
+  type: 'test'
+  ...
+# Subtest: confirming an original proposal during revision blocks the late replacement
+ok 41 - confirming an original proposal during revision blocks the late replacement
+  ---
+  duration_ms: 86.7603
+  type: 'test'
+  ...
+# Subtest: expired contexts cannot continue or confirm, but can be cancelled
+ok 42 - expired contexts cannot continue or confirm, but can be cancelled
+  ---
+  duration_ms: 71.5097
+  type: 'test'
+  ...
+# Subtest: eight-turn limit retains the final draft and explicit new topic starts fresh
+ok 43 - eight-turn limit retains the final draft and explicit new topic starts fresh
+  ---
+  duration_ms: 96.4095
+  type: 'test'
+  ...
+# Subtest: clarification-only context is cancellable and selected target may change on an answer
+ok 44 - clarification-only context is cancellable and selected target may change on an answer
+  ---
+  duration_ms: 77.0984
+  type: 'test'
+  ...
+# Subtest: SQLite failure after state update rolls back state, receipt, request and proposal status
+ok 45 - SQLite failure after state update rolls back state, receipt, request and proposal status
+  ---
+  duration_ms: 51.5986
+  type: 'test'
+  ...
+# Subtest: history merges pending plans and receipts in descending event time
+ok 46 - history merges pending plans and receipts in descending event time
+  ---
+  duration_ms: 21.1219
+  type: 'test'
+  ...
+# Subtest: AI replacement persists atomically and a failed context insert preserves its parent draft
+ok 47 - AI replacement persists atomically and a failed context insert preserves its parent draft
+  ---
+  duration_ms: 26.8562
+  type: 'test'
+  ...
+1..47
+# tests 47
+# suites 0
+# pass 47
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5339.3239

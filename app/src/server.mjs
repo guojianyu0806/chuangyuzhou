@@ -3,7 +3,7 @@ import {readFileSync,writeFileSync,existsSync,statSync} from 'node:fs';
 import {resolve,extname} from 'node:path';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {createRuntime,runtimePath,projectPath} from './runtime.mjs';
-import {createStore,AppError,digest,secretEqual} from './store.mjs';
+import {createStore,AppError,digest,secretEqual,AI_CONTEXT_LIMITS} from './store.mjs';
 import {getCatalog,getTemplates,propose,applyProposal,undoReceipt,exportTemplate,detectScheduleConflicts} from './domain.mjs';
 import {planWithAI} from './ai-planner.mjs';
 import {SUPPORTED_MODELS} from './deepseek-provider.mjs';
@@ -11,7 +11,7 @@ import {checkModelConnection} from './model-check.mjs';
 import {getOfficeStarterStatus} from './office-starter.mjs';
 
 const MIME={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.ico':'image/x-icon','.webmanifest':'application/manifest+json'};
-const APP_VERSION='0.2.1';
+const APP_VERSION='0.3.0';
 const safeId=value=>typeof value==='string'&&value.length>0&&value.length<=160;
 const operationScope=(workspaceId,actions)=>workspaceId&&!['workspace.create','template.import','backup.import'].includes(actions?.[0]?.op)?{workspaceId}:{};
 const scheduleWarnings=state=>state.workspaces.filter(workspace=>!workspace.archived).flatMap(workspace=>detectScheduleConflicts(state,workspace.id));
@@ -166,28 +166,45 @@ export function createApp(options={}){
       respondChange(res,result,receipt);return;
     }
     if(path==='/api/ai/plan'&&req.method==='POST'){
-      const body=await readJson(req),state=store.getState();requireRevision(body,state);
+      const body=await readJson(req);
+      if(Object.keys(body).some(key=>!['baseRevision','workspaceId','selectedComponentId','message','contextId'].includes(key)))throw new AppError('ai_request_fields','请求包含不支持的字段；历史由服务器保存，请仅提交本轮请求和话题编号。');
+      if(body.contextId!==undefined&&body.contextId!==''&&!safeId(body.contextId))throw new AppError('ai_context_invalid','话题编号无效。');
+      const workspaceId=body.workspaceId??'',selectedComponentId=body.selectedComponentId??'';
+      if(typeof workspaceId!=='string'||typeof selectedComponentId!=='string')throw new AppError('ai_invalid_target','所选空间或模块无效。');
+      const state=store.getState();requireRevision(body,state);
       if(planning)throw new AppError('planning_busy','伙伴正在处理上一个请求，请稍候。',409);
-      if(store.pendingCount()>=30)throw new AppError('proposal_limit','待核对方案过多，请先处理已有方案。',409);
       if(typeof body.message!=='string'||!body.message.trim()||body.message.length>12000)throw new AppError('message_invalid','请用1至12000个字符描述请求。');
+      const parent=body.contextId?store.requireAIContext(body.contextId,{workspaceId,baseRevision:state.revision}):null;
+      if(parent?.turns.length>=AI_CONTEXT_LIMITS.turns)throw new AppError('ai_context_limit','这个话题已达到8轮，请确认当前方案或开始新话题。',409);
+      if(store.pendingCount()-(parent?.proposalId?1:0)>=30)throw new AppError('proposal_limit','待核对方案过多，请先处理已有方案。',409);
+      const contextId=randomUUID(),messageId=randomUUID(),expiresAt=parent?.expiresAt||new Date(Date.now()+AI_CONTEXT_LIMITS.lifetimeMs).toISOString();
+      const metadata={contextId,contextWorkspaceId:workspaceId,contextBaseRevision:state.revision,contextExpiresAt:expiresAt};
       planning=true;
       let lastMeasurement=null;
       try{
-        const planned=await planner({state,workspaceId:body.workspaceId,message:body.message,selectedComponentId:body.selectedComponentId,config:store.getModel()});
+        const planned=await planner({state,workspaceId,message:body.message.trim(),messageId,previousTurns:structuredClone(parent?.turns||[]),selectedComponentId,config:store.getModel()});
         lastMeasurement=planned.measurement||null;
         if(store.getState().revision!==state.revision)throw new AppError('stale_revision','伙伴思考期间空间发生变化，请根据最新内容重新提出请求。',409);
+        const turn={messageId,message:body.message.trim(),selectedComponentId,plan:Object.fromEntries(['actions','steps','message','explanation','clarification','evidence'].filter(key=>planned[key]!==undefined).map(key=>[key,structuredClone(planned[key])]))};
+        const context={id:contextId,parentContextId:parent?.id||null,workspaceId,baseRevision:state.revision,createdAt:new Date().toISOString(),expiresAt,turns:[...(parent?.turns||[]),turn],proposalId:null};
         if(!Array.isArray(planned.actions)||planned.clarification||planned.actions.length===0){
-          store.recordAIRun({status:'clarification',measurement:lastMeasurement});
-          json(res,200,{proposal:null,message:planned.message,clarification:planned.clarification||true,measurement:planned.measurement});return;
+          store.saveAIResult(context);store.recordAIRun({status:'clarification',contextId,measurement:lastMeasurement});
+          json(res,200,{...metadata,proposal:null,message:planned.message,clarification:planned.clarification||true,measurement:planned.measurement,history:store.history()});return;
         }
-        const proposal={...propose(state,{...operationScope(body.workspaceId,planned.actions),requestId:randomUUID(),actions:planned.actions}),origin:'ai',message:planned.message||'',steps:planned.steps||[],explanation:planned.explanation||'',evidence:planned.evidence||[],measurement:planned.measurement||null,preferenceContext:state.workspaces.find(w=>w.id===body.workspaceId)?.preferences||null,status:'pending'};
+        const proposal={...propose(state,{...operationScope(workspaceId,planned.actions),requestId:randomUUID(),actions:planned.actions}),...metadata,origin:'ai',message:planned.message||'',steps:planned.steps||[],explanation:planned.explanation||'',evidence:planned.evidence||[],measurement:planned.measurement||null,preferenceContext:state.workspaces.find(w=>w.id===workspaceId)?.preferences||null,status:'pending'};
         proposal.warnings=scheduleWarnings(proposal.previewState);
-        store.addProposal(proposal);store.recordAIRun({status:'proposed',proposalId:proposal.id,measurement:lastMeasurement});json(res,200,{proposal,message:planned.message,measurement:planned.measurement});return;
+        context.proposalId=proposal.id;
+        store.saveAIResult(context,proposal);store.recordAIRun({status:'proposed',contextId,proposalId:proposal.id,measurement:lastMeasurement});json(res,200,{...metadata,proposal,message:planned.message,measurement:planned.measurement,history:store.history()});return;
       }catch(error){
         const measurement=lastMeasurement||error.measurement||null;
         if(measurement){error.measurement=measurement;store.recordAIRun({status:'failed',errorCode:typeof error.code==='string'?error.code:'internal_error',measurement});}
         throw error;
       }finally{planning=false;}
+    }
+    if(path==='/api/ai/context/cancel'&&req.method==='POST'){
+      const body=await readJson(req);
+      if(!safeId(body.contextId))throw new AppError('ai_context_invalid','话题编号无效。');
+      store.cancelAIContext(body.contextId);json(res,200,{ok:true,history:store.history()});return;
     }
     if(path==='/api/proposals/cancel'&&req.method==='POST'){
       const body=await readJson(req),proposal=store.getProposal(body.proposalId||'');
@@ -203,6 +220,7 @@ export function createApp(options={}){
       const state=store.getState();
       if(proposal.status!=='pending')throw new AppError('proposal_closed','这个方案不能再执行。',409);
       if(proposal.baseRevision!==state.revision){store.setProposalStatus(proposal.id,'stale');throw new AppError('stale_revision','方案生成后空间已改变，请重新提出请求。',409);}
+      if(proposal.contextId)store.requireAIContext(proposal.contextId,{workspaceId:proposal.contextWorkspaceId,baseRevision:state.revision});
       const result=applyProposal(state,proposal);
       result.receipt={...result.receipt,origin:proposal.origin,message:proposal.message,steps:proposal.steps,explanation:proposal.explanation,measurement:proposal.measurement,evidence:proposal.evidence,preferenceContext:proposal.preferenceContext};
       const receipt=store.commit({expectedRevision:state.revision,...result,requestId,fingerprint,proposalId:proposal.id});

@@ -3,9 +3,11 @@ import assert from 'node:assert/strict';
 import {mkdirSync,mkdtempSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {randomUUID} from 'node:crypto';
+import {DatabaseSync} from 'node:sqlite';
 import {createApp} from '../src/server.mjs';
 import {RUNTIME_ROOT,COOKIE_NAME} from '../src/runtime.mjs';
 import {createState,assetHash,validateState} from '../src/domain.mjs';
+import {planWithAI} from '../src/ai-planner.mjs';
 
 async function fixture(t,planner,extraOptions={}){
   mkdirSync(RUNTIME_ROOT,{recursive:true});
@@ -229,14 +231,132 @@ test('failed model metadata is retained without recording a successful state cha
 test('pending plan capacity is checked before another model call',async t=>{
   let calls=0;
   const f=await fixture(t,async()=>{calls++;return {actions:[createAction('方案'+calls)],message:'fixture'};});await f.setup();
-  let firstId;
+  let firstId,firstContextId;
   for(let i=0;i<30;i++){
     const response=await f.request('/api/ai/plan',{baseRevision:0,message:'创建'});
-    assert.equal(response.status,200);firstId||=response.data.proposal.id;
+    assert.equal(response.status,200);firstId||=response.data.proposal.id;firstContextId||=response.data.contextId;
   }
   assert.equal((await f.request('/api/ai/plan',{baseRevision:0,message:'不应计费'})).status,409);
   assert.equal(calls,30);
-  await f.request('/api/proposals/cancel',{proposalId:firstId});
+  const replacement=await f.request('/api/ai/plan',{baseRevision:0,contextId:firstContextId,message:'修订不增加待核对数量'});
+  assert.equal(replacement.status,200);assert.equal(calls,31);
+  assert.equal((await f.request('/api/proposals/'+firstId)).data.proposal.status,'superseded');
+  await f.request('/api/proposals/cancel',{proposalId:replacement.data.proposal.id});
   assert.equal((await f.request('/api/ai/plan',{baseRevision:0,message:'恢复容量'})).status,200);
-  assert.equal(calls,31);assert.equal((await f.state()).revision,0);
+  assert.equal(calls,32);assert.equal((await f.state()).revision,0);
+});
+
+test('unconfirmed request can be revised after restart with original-message evidence and a full replacement',async t=>{
+  const received=[];
+  const f=await fixture(t,args=>planWithAI({...args,provider:async({user})=>{
+    const context=JSON.parse(user);received.push(context);
+    const prior=context.previousTurns[0],due=prior?'2026-10-09':'2026-10-08';
+    const actions=[{op:'workspace.create',name:'部门活动',template:'blank',ref:'home'},
+      {op:'collection.create',workspaceId:'$home',name:'任务',ref:'tasks',fields:[{name:'任务',type:'text',ref:'title'},{name:'日期',type:'date',ref:'due'}],semanticBindings:{title:'$title',dueDate:'$due'}},
+      {op:'record.create',collectionId:'$tasks',values:{'$title':'准备材料','$due':due}}];
+    return {model:'offline-fixture-not-ai',text:JSON.stringify({protocolVersion:1,actions,steps:[{title:'创建部门活动任务',actionIndexes:[0,1,2]}],message:'合成方案，仅待核对',evidence:[
+      {actionIndex:2,fieldId:'$title',kind:'user_message',messageId:prior?.messageId||context.messageId,quote:'准备材料'},
+      {actionIndex:2,fieldId:'$due',kind:'user_message',quote:due}]})};
+  }}));await f.setup();
+  const first=await f.request('/api/ai/plan',{baseRevision:0,message:'创建部门活动任务：准备材料，日期2026-10-08'});
+  assert.equal(first.status,200,JSON.stringify(first.data));assert.equal(first.data.contextWorkspaceId,'');
+  await f.restart();
+  const revised=await f.request('/api/ai/plan',{baseRevision:0,contextId:first.data.contextId,message:'改到2026-10-09'});
+  assert.equal(revised.status,200,JSON.stringify(revised.data));assert.notEqual(revised.data.contextId,first.data.contextId);
+  assert.equal(received[1].previousTurns[0].message,'创建部门活动任务：准备材料，日期2026-10-08');
+  assert.equal(received[1].records.length,0);assert.equal(received[1].previousTurns[0].plan.actions.length,3);
+  assert.equal((await f.state()).revision,0);
+  assert.equal((await f.request('/api/proposals/'+first.data.proposal.id)).data.proposal.status,'superseded');
+  assert.equal((await f.request('/api/proposals/confirm',{proposalId:first.data.proposal.id})).status,409);
+  assert.equal((await f.request('/api/ai/plan',{baseRevision:0,contextId:first.data.contextId,message:'重放旧话题'})).data.error.code,'ai_context_closed');
+  const saved=await f.request('/api/proposals/confirm',{proposalId:revised.data.proposal.id});
+  assert.equal(saved.status,200);assert.equal(saved.data.state.workspaces.length,1);assert.equal(saved.data.state.records.length,1);
+  const col=saved.data.state.collections[0];assert.equal(saved.data.state.records[0].values[col.semanticBindings.dueDate],'2026-10-09');
+  assert.equal(saved.data.receipt.evidence[0].messageId,received[0].messageId);
+});
+
+test('clarification can continue and replace an earlier draft without allowing that draft to execute',async t=>{
+  const received=[];
+  const f=await fixture(t,async args=>{received.push(args);return received.length===2?{actions:[],message:'请指定日期',clarification:'周五是哪一天？'}:{actions:[createAction('已澄清空间')],message:'fixture'};});await f.setup();
+  const first=await f.request('/api/ai/plan',{baseRevision:0,message:'建立活动空间'});
+  const question=await f.request('/api/ai/plan',{baseRevision:0,contextId:first.data.contextId,message:'改成周五'});
+  assert.equal(question.status,200);assert.equal(question.data.proposal,null);assert.ok(question.data.contextId);
+  assert.equal((await f.request('/api/proposals/confirm',{proposalId:first.data.proposal.id})).status,409);
+  const final=await f.request('/api/ai/plan',{baseRevision:0,contextId:question.data.contextId,message:'2026-10-09'});
+  assert.equal(final.status,200);assert.equal(received[2].previousTurns.length,2);
+  assert.equal(received[2].previousTurns[1].plan.clarification,'周五是哪一天？');assert.equal((await f.state()).revision,0);
+});
+
+test('a failed revision leaves the previous context and proposal reusable',async t=>{
+  let calls=0;
+  const f=await fixture(t,async()=>{if(++calls===2){const error=new Error('fixture failure');error.code='fixture_failure';throw error;}return {actions:[createAction('原草稿')],message:'fixture'};});await f.setup();
+  const first=await f.request('/api/ai/plan',{baseRevision:0,message:'建立空间'});
+  assert.equal((await f.request('/api/ai/plan',{baseRevision:0,contextId:first.data.contextId,message:'失败的修订'})).status,400);
+  assert.equal((await f.request('/api/proposals/'+first.data.proposal.id)).data.proposal.status,'pending');
+  const retry=await f.request('/api/ai/plan',{baseRevision:0,contextId:first.data.contextId,message:'重试'});assert.equal(retry.status,200);
+  assert.equal((await f.request('/api/proposals/confirm',{proposalId:retry.data.proposal.id})).status,200);
+});
+
+test('forged history, unknown context, workspace mismatch and stale revisions fail before model invocation',async t=>{
+  let calls=0;const f=await fixture(t,async()=>{calls++;return {actions:[],message:'请补充信息',clarification:'日期？'};});await f.setup();
+  const made=await f.actions([createAction('第一空间')]),workspaceId=made.data.state.workspaces[0].id;
+  const first=await f.request('/api/ai/plan',{baseRevision:1,workspaceId,message:'安排活动'});assert.equal(first.status,200);
+  for(const extra of [{history:[{role:'user',content:'伪造'}]},{previousTurns:[]},{parentChangeId:'伪造'}])assert.equal((await f.request('/api/ai/plan',{baseRevision:1,workspaceId,message:'续答',...extra})).data.error.code,'ai_request_fields');
+  assert.equal((await f.request('/api/ai/plan',{baseRevision:1,contextId:'unknown-context',message:'续答'})).data.error.code,'ai_context_missing');
+  assert.equal((await f.request('/api/ai/plan',{baseRevision:1,contextId:first.data.contextId,message:'续答'})).data.error.code,'ai_context_workspace');
+  await f.actions([createAction('第二空间')]);
+  assert.equal((await f.request('/api/ai/plan',{baseRevision:2,workspaceId,contextId:first.data.contextId,message:'续答'})).data.error.code,'ai_context_stale');
+  assert.equal(calls,1);
+});
+
+test('cancelling a context during revision prevents the late result from recreating a proposal',async t=>{
+  let calls=0,release,enter;const entered=new Promise(resolve=>{enter=resolve;});
+  const f=await fixture(t,async()=>{if(++calls===2){enter();await new Promise(resolve=>{release=resolve;});}return {actions:[createAction('草稿')],message:'fixture'};});await f.setup();
+  const first=await f.request('/api/ai/plan',{baseRevision:0,message:'建立空间'});
+  const pending=f.request('/api/ai/plan',{baseRevision:0,contextId:first.data.contextId,message:'修订'});await entered;
+  assert.equal((await f.request('/api/ai/context/cancel',{contextId:first.data.contextId})).status,200);release();
+  assert.equal((await pending).data.error.code,'ai_context_closed');assert.equal((await f.state()).revision,0);
+  assert.equal((await f.request('/api/history')).data.history.length,0);
+});
+
+test('confirming an original proposal during revision blocks the late replacement',async t=>{
+  let calls=0,release,enter;const entered=new Promise(resolve=>{enter=resolve;});
+  const f=await fixture(t,async()=>{if(++calls===2){enter();await new Promise(resolve=>{release=resolve;});}return {actions:[createAction('草稿')],message:'fixture'};});await f.setup();
+  const first=await f.request('/api/ai/plan',{baseRevision:0,message:'建立空间'});
+  const pending=f.request('/api/ai/plan',{baseRevision:0,contextId:first.data.contextId,message:'修订'});await entered;
+  assert.equal((await f.request('/api/proposals/confirm',{proposalId:first.data.proposal.id})).status,200);release();
+  assert.equal((await pending).status,409);assert.equal((await f.state()).workspaces.length,1);
+  assert.equal((await f.request('/api/history')).data.history.filter(item=>item.kind==='proposal').length,0);
+});
+
+test('expired contexts cannot continue or confirm, but can be cancelled',async t=>{
+  let calls=0;const f=await fixture(t,async()=>{calls++;return {actions:[createAction('过期草稿')],message:'fixture'};});await f.setup();
+  const first=await f.request('/api/ai/plan',{baseRevision:0,message:'建立空间'});
+  const inspector=new DatabaseSync(resolve(f.dataDir,'cu-workbench.sqlite'));
+  try{inspector.prepare("UPDATE ai_contexts SET data=json_set(data,'$.expiresAt',?) WHERE id=?").run('2000-01-01T00:00:00.000Z',first.data.contextId);}finally{inspector.close();}
+  assert.equal((await f.request('/api/ai/plan',{baseRevision:0,contextId:first.data.contextId,message:'续答'})).data.error.code,'ai_context_expired');
+  assert.equal((await f.request('/api/proposals/confirm',{proposalId:first.data.proposal.id})).data.error.code,'ai_context_expired');
+  assert.equal(calls,1);assert.equal((await f.state()).revision,0);
+  assert.equal((await f.request('/api/ai/context/cancel',{contextId:first.data.contextId})).status,200);
+});
+
+test('eight-turn limit retains the final draft and explicit new topic starts fresh',async t=>{
+  const received=[];const f=await fixture(t,async args=>{received.push(args);return {actions:[createAction('第'+received.length+'轮')],message:'fixture'};});await f.setup();
+  let previous;
+  for(let i=0;i<8;i++){previous=await f.request('/api/ai/plan',{baseRevision:0,message:'第'+i+'轮',...(previous?{contextId:previous.data.contextId}:{})});assert.equal(previous.status,200);}
+  assert.equal((await f.request('/api/ai/plan',{baseRevision:0,contextId:previous.data.contextId,message:'第九轮'})).data.error.code,'ai_context_limit');
+  assert.equal(received.length,8);assert.equal((await f.request('/api/proposals/'+previous.data.proposal.id)).data.proposal.status,'pending');
+  await f.request('/api/ai/context/cancel',{contextId:previous.data.contextId});
+  const fresh=await f.request('/api/ai/plan',{baseRevision:0,message:'新话题'});assert.equal(fresh.status,200);assert.equal(received[8].previousTurns.length,0);
+});
+
+test('clarification-only context is cancellable and selected target may change on an answer',async t=>{
+  const received=[];const f=await fixture(t,async args=>{received.push(args);return {actions:[],message:'请选择模块',clarification:'哪个模块？'};});await f.setup();
+  const made=await f.actions([{op:'workspace.create',name:'合成学习空间',template:'study'}]),workspaceId=made.data.state.workspaces[0].id;
+  const selectedComponentId=made.data.state.components[0].id;
+  const first=await f.request('/api/ai/plan',{baseRevision:1,workspaceId,message:'修改这个'});
+  const answer=await f.request('/api/ai/plan',{baseRevision:1,workspaceId,selectedComponentId,contextId:first.data.contextId,message:'这个模块'});
+  assert.equal(answer.status,200);assert.equal(received[1].selectedComponentId,selectedComponentId);assert.equal(received[1].previousTurns[0].selectedComponentId,'');
+  assert.equal((await f.request('/api/ai/context/cancel',{contextId:answer.data.contextId})).status,200);
+  assert.equal((await f.request('/api/ai/plan',{baseRevision:1,workspaceId,contextId:answer.data.contextId,message:'再试'})).data.error.code,'ai_context_closed');
 });

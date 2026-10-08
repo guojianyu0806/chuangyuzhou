@@ -114,3 +114,44 @@ test('provider errors are sanitized and retain honest failure measurement',async
 test('no workspace cannot mutate an arbitrary existing target',async()=>{
   const f=seeded();await assert.rejects(()=>plan({state:f.state},[{op:'component.update',id:f.component.id,patch:{title:'偷选'}}]),error=>error.code==='ai_missing_workspace');
 });
+
+test('revision prompt preserves server-held requests and draft while evidence resolves an exact user turn',async()=>{
+  const f=seeded(),title=f.collection.semanticBindings.title,due=f.collection.semanticBindings.dueDate;
+  const previousTurns=[{messageId:'original-request',message:'添加队列实验，截止2026-10-08',selectedComponentId:f.component.id,plan:{actions:[],message:'AI自行补充的项目名称',clarification:'要改到哪天？'},privateCredential:'not-in-context'}];
+  const action={op:'record.create',collectionId:f.collection.id,values:{[title]:'队列实验',[due]:'2026-10-09'}};
+  let captured;
+  const result=await planWithAI({...f,messageId:'revision-request',message:'改到2026-10-09',previousTurns,provider:async input=>{
+    captured=input;return {text:JSON.stringify(rawPlan([action],{evidence:[{actionIndex:0,fieldId:title,kind:'user_message',messageId:'original-request',quote:'队列实验'},{actionIndex:0,fieldId:due,kind:'user_message',quote:'2026-10-09'}]}))};
+  }});
+  const context=JSON.parse(captured.user);
+  assert.equal(context.previousTurns[0].message,previousTurns[0].message);assert.equal(context.previousTurns[0].selectedComponentId,f.component.id);
+  assert.ok(captured.system.includes('完整替代方案'));assert.ok(!captured.user.includes('not-in-context'));
+  assert.deepEqual(result.evidence.map(item=>item.messageId),['original-request','revision-request']);
+  assert.notEqual(result.evidence[0].hash,result.evidence[1].hash);assert.equal(f.state.records.length,0);
+});
+
+test('prior-turn evidence must name its user turn and cannot cite assistant text or invented history',async()=>{
+  const f=seeded(),field=f.collection.semanticBindings.title;
+  const previousTurns=[{messageId:'original-request',message:'添加队列实验',selectedComponentId:'',plan:{actions:[],message:'AI私自发明的名称'}}];
+  const action={op:'record.create',collectionId:f.collection.id,values:{[field]:'队列实验'}};
+  for(const source of [{quote:'队列实验'},{messageId:'missing',quote:'队列实验'},{messageId:'original-request',quote:'AI私自发明的名称'}]){
+    await assert.rejects(()=>planWithAI({...f,message:'改个日期',previousTurns,provider:provider(rawPlan([action],{evidence:[{actionIndex:0,fieldId:field,kind:'user_message',...source}]}))}),error=>error.code==='ai_invalid_evidence');
+  }
+});
+
+test('new source grounding can use saved original text but not an earlier assistant draft',async()=>{
+  const f=seeded(),field=f.collection.semanticBindings.title,text='通知：完成队列实验';
+  const actions=[{op:'asset.create',title:'通知',text,ref:'source'},{op:'record.create',collectionId:f.collection.id,values:{[field]:'队列实验'},sourceRefs:[{assetId:'$source',quote:text,fieldId:field}]}];
+  const evidence=[{actionIndex:1,fieldId:field,kind:'asset',assetId:'$source',quote:text}];
+  const previousTurns=[{messageId:'original',message:text,selectedComponentId:'',plan:{actions:[],message:'待核对'}}];
+  const result=await planWithAI({...f,message:'继续保存并提取',previousTurns,provider:provider(rawPlan(actions,{evidence}))});assert.equal(result.actions.length,2);
+  previousTurns[0].message='帮我编一个通知';previousTurns[0].plan.message=text;
+  await assert.rejects(()=>planWithAI({...f,message:'继续保存并提取',previousTurns,provider:provider(rawPlan(actions,{evidence}))}),error=>error.code==='ai_unverified_new_source');
+});
+
+test('conversation size and message identity bounds fail before calling a model without truncating history',()=>{
+  const f=seeded(),turn={messageId:'older',message:'原始请求',selectedComponentId:'',plan:{actions:[],message:'x'.repeat(151000)}};
+  assert.throws(()=>buildPlannerContext({...f,message:'续答',previousTurns:[turn]}),error=>error.code==='ai_context_limit');
+  assert.throws(()=>buildPlannerContext({...f,message:'续答',messageId:'older',previousTurns:[turn]}),error=>error.code==='ai_invalid_context');
+  assert.throws(()=>buildPlannerContext({...f,message:'续答',previousTurns:Array(8).fill(turn)}),error=>error.code==='ai_invalid_context');
+});
