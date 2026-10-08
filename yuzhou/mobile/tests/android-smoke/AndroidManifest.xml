@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="cn.yuzhou.smoke">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="cn.chuanzhibei.yuzhou.smoke">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
-    <application android:label="宇宙原生集成测试" android:allowBackup="false" />
+    <application android:label="传智杯宇宙原生集成测试" android:allowBackup="false" />
     <instrumentation
-        android:name="cn.yuzhou.smoke.NativeSmoke"
-        android:targetPackage="cn.yuzhou.workbench"
+        android:name="cn.chuanzhibei.yuzhou.smoke.NativeSmoke"
+        android:targetPackage="cn.chuanzhibei.yuzhou"
         android:functionalTest="true"
         android:handleProfiling="false"
-        android:label="宇宙 WebView 与文件往返测试" />
+        android:label="传智杯宇宙 WebView 与文件往返测试" />
 </manifest>

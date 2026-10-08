@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const source = await readFile(new URL('../android/app/src/main/assets/download-bridge.js', import.meta.url), 'utf8');
-const ORIGIN = 'https://203.195.191.239';
+const ORIGIN = 'https://competition-unconfigured.invalid';
 const MAX = 256 * 1024 * 1024;
 const CHUNK = 256 * 1024;
 
@@ -150,7 +150,7 @@ test('keeps ordinary/external links untouched and rejects foreign files from the
     ['https://example.com/private.json', 'x.json'],
     ['blob:https://example.com/foreign', 'x.json'],
     ['blob:null/opaque', 'x.json'],
-    ['http://203.195.191.239/file', 'x.json'],
+    ['http://competition-unconfigured.invalid/file', 'x.json'],
     ['javascript:alert(1)', 'x.json'],
     ['data:text/html,<script>alert(1)</script>', 'x.html'],
     [ORIGIN + '/normal-page', undefined],

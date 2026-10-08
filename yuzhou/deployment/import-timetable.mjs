@@ -24,6 +24,7 @@ export function importTimetable(store,input,{dryRun=false}={}) {
 }
 
 if(isCliEntry(import.meta.url)){
+  throw new Error('COMPETITION_DEPLOYMENT_DISABLED: use the isolated workbench UI to import your own timetable; the historical deployment CLI is disabled.');
   const args=process.argv.slice(2),dataIndex=args.indexOf('--data-dir'),fileIndex=args.indexOf('--file');
   if(dataIndex<0||fileIndex<0||!args[dataIndex+1]||!args[fileIndex+1])throw new Error('Usage: --data-dir <private-data-dir> --file <private-timetable.json> [--dry-run]');
   const input=JSON.parse(readFileSync(resolve(args[fileIndex+1]),'utf8'));

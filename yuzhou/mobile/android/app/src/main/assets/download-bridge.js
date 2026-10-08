@@ -1,7 +1,8 @@
 (function installYuzhouDownloads() {
   'use strict';
 
-  const TRUSTED_ORIGIN = 'https://203.195.191.239';
+  // Reserved, non-production placeholder; mobile builds remain disabled.
+  const TRUSTED_ORIGIN = 'https://competition-unconfigured.invalid';
   const MAX_BYTES = 256 * 1024 * 1024;
   const CHUNK_BYTES = 256 * 1024;
   const PORT_TIMEOUT = 3000;

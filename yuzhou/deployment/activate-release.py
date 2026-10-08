@@ -1,4 +1,7 @@
 """Activate a previously uploaded release; keep a rollback record and old files."""
+# Competition copy: fail before reading arguments, archives, paths or credentials.
+raise SystemExit('COMPETITION_DEPLOYMENT_DISABLED: historical production deployment is disabled in this competition copy.')
+
 import json
 import os
 from pathlib import Path

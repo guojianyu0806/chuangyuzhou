@@ -3,6 +3,9 @@
 Run as root through the already authenticated SSH connection. No credentials
 are read or printed. Existing Hermes services and their configuration stay put.
 """
+# Competition copy: fail before importing platform tools or touching any path.
+raise SystemExit('COMPETITION_DEPLOYMENT_DISABLED: historical production deployment is disabled in this competition copy.')
+
 import datetime
 import json
 import os

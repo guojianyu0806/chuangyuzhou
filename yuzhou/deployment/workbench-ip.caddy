@@ -1,24 +1,26 @@
-https://203.195.191.239 {
-    tls {
-        issuer acme {
-            dir https://acme-v02.api.letsencrypt.org/directory
-            profile shortlived
-            disable_tlsalpn_challenge
-        }
-    }
-    encode zstd gzip
-    header {
-        -Server
-        X-Robots-Tag "noindex, nofollow, noarchive"
-    }
-    handle_path /apps/* {
-        root * /opt/shiguang/mobile
-        @apk path *.apk
-        header @apk Content-Type application/vnd.android.package-archive
-        header Cache-Control "no-cache"
-        file_server
-    }
-    handle {
-        reverse_proxy 127.0.0.1:4180
-    }
-}
+# DISABLED COMPETITION COPY: historical template only, never install on an existing server.
+# https://203.195.191.239 {
+#     tls {
+#         issuer acme {
+#             dir https://acme-v02.api.letsencrypt.org/directory
+#             profile shortlived
+#             disable_tlsalpn_challenge
+#         }
+#     }
+#     encode zstd gzip
+#     header {
+#         -Server
+#         X-Robots-Tag "noindex, nofollow, noarchive"
+#     }
+#     handle_path /apps/* {
+#         root * /opt/shiguang/mobile
+#         @apk path *.apk
+#         header @apk Content-Type application/vnd.android.package-archive
+#         header Cache-Control "no-cache"
+#         file_server
+#     }
+#     handle {
+#         reverse_proxy 127.0.0.1:4180
+#     }
+# }
+#

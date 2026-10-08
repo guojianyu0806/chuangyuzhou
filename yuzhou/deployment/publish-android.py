@@ -3,6 +3,9 @@
 Usage: sudo python3 publish-android.py <apk> <sha256> <index.html> <icon.svg>
 Does not read or change application databases, accounts, or model credentials.
 """
+# Competition copy: fail before importing tools or reading/publishing any file.
+raise SystemExit('COMPETITION_DEPLOYMENT_DISABLED: historical production deployment is disabled in this competition copy.')
+
 import hashlib
 import os
 from pathlib import Path

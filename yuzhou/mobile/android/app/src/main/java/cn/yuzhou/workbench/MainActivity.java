@@ -1,4 +1,4 @@
-package cn.yuzhou.workbench;
+package cn.chuanzhibei.yuzhou;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -59,7 +59,9 @@ import java.util.concurrent.Executors;
 
 /** A private-origin Android client. File access is granted only through Android's picker. */
 public final class MainActivity extends Activity {
-    private static final String ORIGIN = "https://203.195.191.239";
+    // This source copy has no mobile server. Do not inherit the personal host.
+    private static final boolean SERVER_CONFIGURED = false;
+    private static final String ORIGIN = "https://competition-unconfigured.invalid";
     private static final String HOME = ORIGIN + "/?client=android#/home";
     private static final int PICK_FILE = 41;
     private static final int SAVE_FILE = 42;
@@ -92,6 +94,10 @@ public final class MainActivity extends Activity {
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
         buildLayout();
         configureWebView();
+        if (!SERVER_CONFIGURED) {
+            showFailure("传智杯移动端尚未配置独立服务，请使用比赛目录中的本地网页版。");
+            return;
+        }
         try { bridgeScript = readAsset("download-bridge.js"); }
         catch (IOException ignored) { bridgeScript = null; }
         if (savedInstanceState != null) {
@@ -127,7 +133,7 @@ public final class MainActivity extends Activity {
         toolbar.setGravity(Gravity.CENTER_VERTICAL);
         toolbar.setPadding(dp(16), 0, dp(6), 0);
         TextView title = new TextView(this);
-        title.setText("宇宙");
+        title.setText("传智杯 · 宇宙");
         title.setTextSize(14);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         title.setTextColor(PURPLE);
@@ -182,7 +188,7 @@ public final class MainActivity extends Activity {
         background.setColor(PURPLE);
         background.setCornerRadius(dp(16));
         retry.setBackground(background);
-        retry.setOnClickListener(view -> { if (rendererGone) recreate(); else webView.loadUrl(lastTrustedUrl); });
+        retry.setOnClickListener(view -> reloadTrustedPage());
         errorOverlay.addView(retry, new LinearLayout.LayoutParams(dp(180), dp(50)));
         errorOverlay.setVisibility(View.GONE);
         content.addView(errorOverlay, new FrameLayout.LayoutParams(-1, -1));
@@ -338,10 +344,10 @@ public final class MainActivity extends Activity {
     }
 
     private static boolean isTrusted(String url) {
-        if (url == null) return false;
+        if (!SERVER_CONFIGURED || url == null) return false;
         try {
             Uri uri = Uri.parse(url);
-            return "https".equalsIgnoreCase(uri.getScheme()) && "203.195.191.239".equals(uri.getHost())
+            return "https".equalsIgnoreCase(uri.getScheme()) && Uri.parse(ORIGIN).getHost().equals(uri.getHost())
                 && (uri.getPort() == -1 || uri.getPort() == 443) && uri.getUserInfo() == null;
         } catch (RuntimeException ignored) { return false; }
     }
@@ -356,7 +362,7 @@ public final class MainActivity extends Activity {
                 if (!rendererGone && !pageFailed && isTrusted(webView.getUrl())) webView.evaluateJavascript("location.hash='/home'", null);
                 else confirmReload();
             } else if (item.getItemId() == 2) confirmReload();
-            else new AlertDialog.Builder(this).setTitle("宇宙 · " + BuildConfig.VERSION_NAME)
+            else new AlertDialog.Builder(this).setTitle("传智杯 · 宇宙 · " + BuildConfig.VERSION_NAME)
                 .setMessage("手机与平板共用你的私人工作台。\n\n登录同一账号即可同步资料。界面功能由服务器更新，重新打开或检查界面更新即可加载。\n\n文件通过系统选择器导入和保存。应用不读取通讯录、短信、微信或 QQ 消息。\n\n需要网络连接；没有后台推送通知。")
                 .setPositiveButton("知道了", null).show();
             return true;
@@ -365,10 +371,20 @@ public final class MainActivity extends Activity {
     }
 
     private void confirmReload() {
+        if (!SERVER_CONFIGURED) { reloadTrustedPage(); return; }
         new AlertDialog.Builder(this).setTitle("加载最新界面？")
             .setMessage("请先保存正在编辑的内容，并等待同步完成。刷新后会从服务器加载最新界面。")
-            .setPositiveButton("刷新", (dialog, which) -> { if (rendererGone) recreate(); else webView.loadUrl(lastTrustedUrl); })
+            .setPositiveButton("刷新", (dialog, which) -> reloadTrustedPage())
             .setNegativeButton("取消", null).show();
+    }
+
+    private void reloadTrustedPage() {
+        if (!SERVER_CONFIGURED) {
+            showFailure("传智杯移动端尚未配置独立服务，请使用比赛目录中的本地网页版。");
+            return;
+        }
+        if (rendererGone) recreate();
+        else if (isTrusted(lastTrustedUrl)) webView.loadUrl(lastTrustedUrl);
     }
 
     @Override public void onBackPressed() { handleBack(); }
@@ -544,7 +560,7 @@ public final class MainActivity extends Activity {
     private static boolean isContentUri(Uri uri) {
         if (uri == null || !"content".equals(uri.getScheme()) || uri.getAuthority() == null || uri.getAuthority().isEmpty()) return false;
         String authority = uri.getAuthority();
-        return !authority.equals("cn.yuzhou.workbench") && !authority.startsWith("cn.yuzhou.workbench.");
+        return !authority.equals("cn.chuanzhibei.yuzhou") && !authority.startsWith("cn.chuanzhibei.yuzhou.");
     }
 
     private static String safeFileName(String name) {

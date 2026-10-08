@@ -1,4 +1,4 @@
-package cn.yuzhou.smoke;
+package cn.chuanzhibei.yuzhou.smoke;
 
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -15,7 +15,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /** Emulator-only instrumentation; does not inspect accounts, cookies or credentials. */
 public final class NativeSmoke extends Instrumentation {
-    private static final String ORIGIN = "https://203.195.191.239";
+    private static final boolean COMPETITION_SMOKE_ENABLED = false;
+    private static final String ORIGIN = "https://competition-unconfigured.invalid";
     private WebView webView;
     private Activity activity;
 
@@ -23,9 +24,14 @@ public final class NativeSmoke extends Instrumentation {
 
     @Override public void onStart() {
         Bundle result = new Bundle();
+        if (!COMPETITION_SMOKE_ENABLED) {
+            result.putString("result", "DISABLED: competition mobile environment is not configured");
+            finish(Activity.RESULT_CANCELED, result);
+            return;
+        }
         try {
             Intent launch = new Intent(Intent.ACTION_MAIN)
-                .setClassName("cn.yuzhou.workbench", "cn.yuzhou.workbench.MainActivity")
+                .setClassName("cn.chuanzhibei.yuzhou", "cn.chuanzhibei.yuzhou.MainActivity")
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             activity = startActivitySync(launch);
             Field field = activity.getClass().getDeclaredField("webView");
@@ -45,7 +51,7 @@ public final class NativeSmoke extends Instrumentation {
             Method trusted = activity.getClass().getDeclaredMethod("isTrusted", String.class);
             trusted.setAccessible(true);
             require(Boolean.TRUE.equals(trusted.invoke(activity, ORIGIN + "/#/home")), "Trusted origin rejected");
-            for (String url : new String[]{"http://203.195.191.239/", "https://203.195.191.239.evil.example/", "file:///sdcard/test", "https://example.com/"})
+            for (String url : new String[]{"http://competition-unconfigured.invalid/", "https://competition-unconfigured.invalid.evil.example/", "file:///sdcard/test", "https://example.com/"})
                 require(Boolean.FALSE.equals(trusted.invoke(activity, url)), "Foreign origin accepted");
             await("Boolean(window.__yuzhouDownloads&&window.__yuzhouDownloads.ready)", 20000);
             eval("location.hash='/native-test';true");

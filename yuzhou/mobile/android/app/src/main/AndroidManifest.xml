@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="cn.yuzhou.workbench">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="cn.chuanzhibei.yuzhou">
     <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:allowBackup="false"
