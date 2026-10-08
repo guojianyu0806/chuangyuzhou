@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 
 export const PROJECT_ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const RUNTIME_ROOT=resolve(PROJECT_ROOT,'.cu-runtime');
-export const COOKIE_NAME='cu_original_workbench_session';
+export const COOKIE_NAME='czb_workbench_session';
 const canonical=p=>process.platform==='win32'?p.toLowerCase():p;
 function below(root,path,allowRoot=false){
   const rel=relative(root,path);
@@ -29,7 +29,7 @@ export function runtimePath(path){
   if(!below(RUNTIME_ROOT,absolute))throw new Error('运行数据只能写入创宇宙的 .cu-runtime 子目录。');
   return absolute;
 }
-export function createRuntime({port=4391,dataDir}={}){
+export function createRuntime({port=4395,dataDir}={}){
   if(!Number.isInteger(port)||port<4380||port>4399)throw new Error('创宇宙本地端口限4380至4399。');
   const directory=runtimePath(dataDir||resolve(RUNTIME_ROOT,'data'));
   mkdirSync(directory,{recursive:true});

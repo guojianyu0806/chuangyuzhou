@@ -11,9 +11,9 @@ test('runtime is confined to new project and ignores legacy environment',()=>{
     const runtime=createRuntime();
     assert.equal(runtime.dataDir,resolve(RUNTIME_ROOT,'data'));
     assert.equal(runtime.frontendDir,resolve(PROJECT_ROOT,'frontend'));
-    assert.equal(runtime.cookieName,'cu_original_workbench_session');
-    assert.equal(runtime.port,4391);
-    assert.equal(runtime.origin,'http://127.0.0.1:4391');
+    assert.equal(runtime.cookieName,'czb_workbench_session');
+    assert.equal(runtime.port,4395);
+    assert.equal(runtime.origin,'http://127.0.0.1:4395');
     for(const path of [PROJECT_ROOT,resolve(PROJECT_ROOT,'..','.aic-runtime'),resolve(PROJECT_ROOT,'frontend')])assert.throws(()=>runtimePath(path));
     for(const port of [4173,4180,4280,4380.5,4400])assert.throws(()=>createRuntime({port}));
   }finally{for(const key of Object.keys(old)){if(old[key]===undefined)delete process.env[key];else process.env[key]=old[key];}}

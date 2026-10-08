@@ -25,10 +25,10 @@ function below(root,path){
 
 test('original-style copy has its own default origin, cookie and physical runtime',()=>{
   const runtime=createRuntime();
-  assert.equal(runtime.port,4391);
-  assert.equal(runtime.origin,'http://127.0.0.1:4391');
-  assert.equal(runtime.cookieName,'cu_original_workbench_session');
-  assert.equal(COOKIE_NAME,'cu_original_workbench_session');
+  assert.equal(runtime.port,4395);
+  assert.equal(runtime.origin,'http://127.0.0.1:4395');
+  assert.equal(runtime.cookieName,'czb_workbench_session');
+  assert.equal(COOKIE_NAME,'czb_workbench_session');
   assert.equal(runtime.host,'127.0.0.1');
   assert.equal(runtime.dataDir,resolve(PROJECT_ROOT,'.cu-runtime','data'));
   assert.ok(below(PROJECT_ROOT,RUNTIME_ROOT));
@@ -93,7 +93,7 @@ test('safe frontend compatibility entry starts only the competition backend with
     });
   });
   const health=await fetch('http://127.0.0.1:4394/api/health').then(response=>response.json());
-  assert.deepEqual(health,{productId:'chuang-universe',version:'0.2.1',mode:'local-independent'});
+  assert.deepEqual(health,{productId:'chuang-universe',version:JSON.parse(readFileSync(resolve(PROJECT_ROOT,'package.json'),'utf8')).version,mode:'local-independent'});
   const auth=await fetch('http://127.0.0.1:4394/api/auth').then(response=>response.json());
   assert.equal(auth.setupRequired,true);
   assert.equal(auth.authenticated,false);
@@ -114,7 +114,7 @@ test('new API ignores both former cookies and serves the copied web manifest',as
   const cookie=setup.headers.get('set-cookie').split(';')[0];
   assert.ok(cookie.startsWith(COOKIE_NAME+'='));
   const token=cookie.slice(COOKIE_NAME.length+1);
-  for(const name of ['cu_workbench_session','shiguang_session']){
+  for(const name of ['cu_original_workbench_session','cu_workbench_session','shiguang_session']){
     const auth=await fetch(app.runtime.origin+'/api/auth',{headers:{Cookie:name+'='+token}}).then(response=>response.json());
     assert.equal(auth.authenticated,false);
   }
