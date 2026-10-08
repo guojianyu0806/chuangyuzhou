@@ -43,14 +43,16 @@ export function createReviewRenderer({esc,icon,state}){
   for(const d of diffs.filter(d=>d.entity==='records')){
    for(const side of ['before','after'])for(const ref of d[side]?.sourceRefs||[])refs.push({...ref,side:side==='before'?'修改前的引用':'修改后的引用',recordId:d.id});
   }
-  const seen=new Set(),unique=refs.filter(r=>{const key=JSON.stringify([r.kind,r.assetId,r.fieldId,r.quote,r.actionIndex,r.recordId,r.side]);if(seen.has(key))return false;seen.add(key);return true;});
+  const seen=new Set(),unique=refs.filter(r=>{const key=JSON.stringify([r.kind,r.messageId,r.assetId,r.fieldId,r.quote,r.actionIndex,r.recordId,r.side]);if(seen.has(key))return false;seen.add(key);return true;});
   if(!unique.length)return '';
   return `<section class="review-evidence"><h3>原文与来源核对</h3><p class="evidence-limit">系统仅校验引文逐字存在及来源版本；引文是否支持这项修改，仍需你核对语义。</p>${unique.map(r=>{
    const asset=(after.assets||[]).find(a=>a.id===r.assetId)||(contexts.before.assets||[]).find(a=>a.id===r.assetId);
    const refAction=(review.actions||[]).find(a=>r.assetId==='$'+a.ref&&a.op==='asset.create');
-   const title=r.kind==='user_message'?'本次用户请求':asset?.title||refAction?.title||lookup.get(r.assetId)||'资料引用';
+   const title=r.kind==='user_message'?'用户原始输入':asset?.title||refAction?.title||lookup.get(r.assetId)||'资料引用';
+   const messageId=r.kind==='user_message'&&typeof r.messageId==='string'?r.messageId:'';
+   const messageLabel=messageId?' · 输入标识 '+messageId.slice(0,8)+(messageId.length>8?'…':''):'';
    const recordLabel=r.recordId?' · '+(lookup.get(r.recordId)||r.recordId):'';
-   return `<article class="evidence-item"><header><strong>${esc(title)}</strong><span>${esc(lookup.get(r.fieldId)||r.fieldId||'记录整体')}</span></header><blockquote>${esc(r.quote||'未提供引句')}</blockquote><small>${esc(r.side+recordLabel)}${Number.isInteger(r.actionIndex)?' · 第 '+(r.actionIndex+1)+' 个动作':''}</small>${asset?.text||refAction?.text?`<details><summary>查看保存的全文</summary><pre>${esc(asset?.text||refAction.text)}</pre></details>`:''}</article>`;
+   return `<article class="evidence-item"${messageId?` data-message-id="${esc(messageId)}"`:''}><header><strong>${esc(title)}</strong><span>${esc(lookup.get(r.fieldId)||r.fieldId||'记录整体')}</span></header><blockquote>${esc(r.quote||'未提供引句')}</blockquote><small>${esc(r.side+recordLabel+messageLabel)}${Number.isInteger(r.actionIndex)?' · 第 '+(r.actionIndex+1)+' 个动作':''}</small>${messageId?`<details><summary>查看完整输入标识</summary><pre>${esc(messageId)}</pre></details>`:''}${asset?.text||refAction?.text?`<details><summary>查看保存的全文</summary><pre>${esc(asset?.text||refAction.text)}</pre></details>`:''}</article>`;
   }).join('')}</section>`;
  }
  function recordEvidence(record,s){

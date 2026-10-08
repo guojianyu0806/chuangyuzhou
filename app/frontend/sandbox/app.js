@@ -2,22 +2,25 @@
 import {createRenderers,getTodayRecords} from '../renderers.js';
 import {createForms} from '../forms.js';
 import {createReviewRenderer} from '../review.js';
+import {conversationFrom,continuationProblem,proposalCanConfirm,savedSelectionId,requestPlan} from './ai-conversation.js';
 import {icon as originalIcon} from '../src/icons.js';
 import {mountCanvas} from '../src/canvas.js';
 const root=document.querySelector('#app'),dialog=document.querySelector('#modal');
 let canvasCleanup=null;
-const storagePrefix='cu_original_workbench:';
+const storagePrefix='czb_workbench:';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const aliases={spark:'sparkles',text:'file',board:'columns',resources:'folder',template:'layers',chevron:'chevron-right',arrow:'arrow-right',grip:'move',history:'clock',eye:'eye',logout:'log-out',send:'arrow-right',expand:'maximize',warning:'alert-circle'};
 const icon=(name,extra='')=>originalIcon(aliases[name]||name,typeof extra==='number'?extra:18).replace('<svg ', '<svg class="icon '+(typeof extra==='string'?extra:'')+'" ');
 const typeLabels={text:'文本笔记',list:'记录列表',board:'看板',calendar:'日历',resources:'资料链接'};
 const typeLabel=type=>typeLabels[type]||type;
 let auth={},state={revision:0,workspaces:[],components:[],collections:[],records:[],assets:[]},meta={catalog:{components:[]},templates:[],history:[],model:{configured:false},officeStarter:{installed:false}},drag=null,resize=null;
-const ui={route:'home',sidebarPinned:false,navOpen:false,workspaceId:'',pageId:'',arrange:false,selected:'',partner:false,preview:false,proposal:null,proposalDirty:false,message:'',messages:[],busy:'',error:'',lastReceipt:null,months:new Map(),warnings:[],previewReturn:null,historyWorkspace:'',historyStatus:''};
+const ui={route:'home',sidebarPinned:false,navOpen:false,workspaceId:'',pageId:'',arrange:false,selected:'',partner:false,preview:false,proposal:null,proposalDirty:false,conversation:null,message:'',messages:[],busy:'',error:'',lastReceipt:null,months:new Map(),warnings:[],previewReturn:null,historyWorkspace:'',historyStatus:''};
 try{const saved=JSON.parse(localStorage.getItem(storagePrefix+'selection')||'null');if(saved){ui.workspaceId=saved.workspaceId||'';ui.pageId=saved.pageId||'';ui.route=saved.route==='workspace'?'workspace':'home';}ui.sidebarPinned=localStorage.getItem(storagePrefix+'sidebar-pinned')==='true';}catch{}
 const shownState=()=>ui.preview&&ui.proposal?.previewState?ui.proposal.previewState:state;
 const workspace=()=>shownState().workspaces.find(w=>w.id===ui.workspaceId&&!w.archived)||shownState().workspaces.find(w=>!w.archived);
 const liveWorkspace=()=>state.workspaces.find(w=>w.id===ui.workspaceId&&!w.archived)||state.workspaces.find(w=>!w.archived);
+const planningWorkspaceId=()=>{const id=ui.preview?ui.previewReturn?.workspaceId:ui.workspaceId;return (state.workspaces.find(w=>w.id===id&&!w.archived)||state.workspaces.find(w=>!w.archived))?.id||'';};
+const conversationProblem=()=>continuationProblem(ui.conversation,{baseRevision:state.revision,workspaceId:planningWorkspaceId()});
 const page=()=>workspace()?.pages.find(p=>p.id===ui.pageId)||workspace()?.pages[0];
 const components=()=>shownState().components.filter(c=>c.workspaceId===workspace()?.id&&c.pageId===page()?.id&&!c.archived);
 const month=id=>{if(!ui.months.has(id)){const d=new Date();ui.months.set(id,d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}return ui.months.get(id);};
@@ -25,7 +28,7 @@ const renderers=createRenderers({esc,icon,state:shownState,preview:()=>ui.previe
 const reviewRenderer=createReviewRenderer({esc,icon,state:()=>state});
 const forms=createForms({esc,icon,root,dialog,openDialog,toast,state:()=>state,workspace:liveWorkspace,pageId:()=>page()?.id,meta:()=>meta,typeLabel,recordLabel:renderers.label,arrange:()=>ui.arrange,run:runActions,preview:previewActions,openWorkspace,openPage});
 function persistSelection(){if(ui.preview)return;try{localStorage.setItem(storagePrefix+'selection',JSON.stringify({workspaceId:ui.workspaceId,pageId:ui.pageId,route:ui.route}));}catch{}}
-function openWorkspace(id){ui.route='workspace';ui.navOpen=false;ui.workspaceId=id||'';ui.pageId='';ui.selected='';persistSelection();render();}
+function openWorkspace(id){setPreview(false);ui.route='workspace';ui.navOpen=false;ui.workspaceId=id||'';ui.pageId='';ui.selected='';persistSelection();render();}
 function openPage(id){ui.route='workspace';ui.pageId=id||'';ui.selected='';persistSelection();render();}
 function toast(message,bad=false){const el=document.createElement('div');el.className='toast'+(bad?' bad':'');el.textContent=message;document.querySelector('#toasts').replaceChildren(el);setTimeout(()=>el.remove(),4500);}
 function openDialog(title,body){if(dialog.open)dialog.close();dialog.innerHTML=`<div class="dialog-head modal-head"><h2 id="modal-title">${esc(title)}</h2><button class="icon-button" data-action="dialog-close" aria-label="关闭">${icon('close')}</button></div><div class="dialog-body modal-body">${body}</div>`;dialog.showModal();}
@@ -34,7 +37,7 @@ async function request(path,{method='GET',body}={}){
  let result;try{result=await res.json();}catch{throw Error('工作台没有返回可读取的结果，请检查独立服务是否正在运行。');}
  if(!res.ok){const e=Error(result.error?.message||result.message||'操作未完成，请重试。');e.code=result.error?.code||result.error;e.status=res.status;if(res.status===401&&auth.authenticated)expireAuthentication();throw e;}return result;
 }
-function expireAuthentication(){auth={authenticated:false};state={revision:0,workspaces:[],components:[],collections:[],records:[],assets:[]};ui.proposal=null;ui.preview=false;ui.previewReturn=null;ui.selected='';ui.message='';ui.messages=[];loginView('登录已过期，请重新输入独立工作台密码。');}
+function expireAuthentication(){auth={authenticated:false};state={revision:0,workspaces:[],components:[],collections:[],records:[],assets:[]};ui.proposal=null;ui.conversation=null;ui.preview=false;ui.previewReturn=null;ui.selected='';ui.message='';ui.messages=[];loginView('登录已过期，请重新输入独立工作台密码。');}
 function apply(result){if(result.state)state=result.state;if(result.warnings)ui.warnings=result.warnings;if(result.officeStarter)meta.officeStarter=result.officeStarter;if(result.receipt){ui.lastReceipt=result.receipt;meta.history=[result.receipt,...meta.history.filter(h=>h.id!==result.receipt.id)];}if(result.history)meta.history=result.history;if(ui.proposal&&ui.proposal.baseRevision!==state.revision)setPreview(false);}
 async function refresh(){const result=await request('/api/state');state=result.state;ui.warnings=result.warnings||[];meta={catalog:result.catalog||meta.catalog,templates:result.templates||[],history:result.history||[],model:result.model||meta.model,officeStarter:result.officeStarter||{installed:false}};}
 async function runActions(actions,{baseRevision=state.revision,success='已保存。',workspaceId=liveWorkspace()?.id}={}){
@@ -47,7 +50,17 @@ async function runActions(actions,{baseRevision=state.revision,success='已保�
  catch(e){ui.error=e.message;if(['revision_conflict','stale_revision','stale_proposal'].includes(e.code)){try{await refresh();}catch{}}throw e;}
  finally{ui.busy='';render();}
 }
-async function operation(name,fn){if(ui.busy)return;ui.busy=name;ui.error='';render();try{await fn();}catch(e){ui.error=e.message;toast(e.message,true);if(['revision_conflict','stale_revision','stale_proposal','proposal_stale'].includes(e.code)){setPreview(false);if(ui.proposal)ui.proposalDirty=true;try{await refresh();}catch{}}if(e.status===401){auth={};loginView();}}finally{ui.busy='';if(auth.authenticated)render();}}
+async function operation(name,fn){
+ if(ui.busy)return;ui.busy=name;ui.error='';render();
+ try{await fn();}
+ catch(e){
+  ui.error=e.message;toast(e.message,true);
+  if(['revision_conflict','stale_revision','stale_proposal','proposal_stale','ai_context_stale'].includes(e.code)){setPreview(false);try{await refresh();}catch{}}
+  if(['ai_context_expired','ai_context_closed','ai_context_missing'].includes(e.code)&&ui.conversation)ui.conversation.error=e.message;
+  if(['proposal_closed','proposal_missing'].includes(e.code)&&ui.proposal){ui.proposal.status='closed';if(ui.conversation)ui.conversation.error=e.message;}
+  if(e.status===401){auth={};loginView();}
+ }finally{ui.busy='';if(auth.authenticated)render();}
+}
 async function previewActions(actions,{baseRevision=state.revision,workspaceId=liveWorkspace()?.id}={}){
  if(ui.busy)throw Error('还有一项操作正在处理，请稍候。');
  if(['workspace.create','template.import','backup.import'].includes(actions[0]?.op))workspaceId=undefined;
@@ -55,7 +68,7 @@ async function previewActions(actions,{baseRevision=state.revision,workspaceId=l
  try{
   const result=await request('/api/actions/preview',{method:'POST',body:{baseRevision,requestId:crypto.randomUUID(),...(workspaceId?{workspaceId}:{}),actions}});
   if(!result.proposal?.previewState)throw Error('未取得可核对的草稿，请重新打开后再试。');
-  ui.proposal={...result.proposal,origin:'manual'};ui.proposalDirty=false;ui.message='';ui.partner=true;
+  ui.proposal={...result.proposal,origin:'manual'};ui.conversation=null;ui.messages=[];ui.proposalDirty=false;ui.message='';ui.partner=true;
   meta.history=result.history||[{...ui.proposal,kind:'proposal'},...meta.history.filter(h=>h.id!==ui.proposal.id)];
   dialog.close();setPreview(true);return result;
  }catch(error){if(['stale_revision','revision_conflict'].includes(error.code)){try{await refresh();}catch{}}throw error;}
@@ -98,7 +111,7 @@ function shell(){
  <div class="app-main"><header class="topbar"><div class="breadcrumb"><button class="mobile-menu icon-btn" data-action="toggle-nav" aria-label="展开导航">${icon('menu')}</button><a href="#/home" data-action="home" class="desktop-label">我的创宇宙</a><span class="slash desktop-label">/</span><strong id="current-page">${inSpace?esc(w.name):'空间主页'}</strong></div><button class="search-trigger" data-action="search" aria-label="搜索所有空间">${icon('search',17)}<span>搜索所有空间…</span><kbd>Ctrl K</kbd></button><div class="topbar-actions"><button class="sync-indicator" data-action="settings"><span class="status-dot"></span><span>独立工作台已就绪</span></button><button class="icon-btn" data-action="history" aria-label="修改记录">${icon('history')}</button><button class="icon-btn" data-action="partner" aria-label="${ui.partner?'收起AI伙伴':'打开AI伙伴'}">${icon('sparkles')}</button><button class="avatar small-avatar" data-action="settings" aria-label="偏好与连接">我</button></div></header>
  <div class="mode-banner personal-banner">${icon(ui.preview?'eye':'shield',15)}<span>${ui.preview?'方案预览 · 还没有保存，确认后才会改变空间。':'创宇宙 · 在熟悉的工作台里，自由搭建属于自己的空间。'}</span><button data-action="${ui.preview?'preview-off':'workspace-new'}">${ui.preview?'返回当前内容':'新建空间'} ${icon('arrow-right',14)}</button></div>
  ${ui.error?`<div class="error-banner" role="alert">${icon('warning')}<span>${esc(ui.error)}</span><button class="icon-button" data-action="dismiss-error" aria-label="关闭提示">${icon('close')}</button></div>`:''}
- <main id="main" tabindex="-1">${inSpace?spaceView(w,p):'<div id="home-canvas"></div>'}</main><footer class="page-footer"><span>一点一滴，都是你的积累。</span><span>创宇宙 v0.2.1 · 智能沙盒工作台</span></footer></div>
+ <main id="main" tabindex="-1">${inSpace?spaceView(w,p):'<div id="home-canvas"></div>'}</main><footer class="page-footer"><span>一点一滴，都是你的积累。</span><span>创宇宙 v0.3.0 · 传智杯开发版</span></footer></div>
  <nav class="bottom-nav" aria-label="移动导航">${[['partner-focus','sparkles','AI'],['templates','layers','模板'],['home','orbit','空间'],['history','clock','记录']].map(([action,i,label])=>`<a href="#/${action}" data-action="${action}" class="${action==='home'&&!inSpace?'active':''}">${icon(i,21)}<span>${label}</span></a>`).join('')}<button data-action="toggle-nav">${icon('menu',21)}<span>更多</span></button></nav>
  <button class="assistant-fab" data-action="partner-focus" aria-label="打开AI伙伴">${icon('sparkles',22)}<span>交给 AI</span></button>${ui.partner?partnerView():''}`;
 }
@@ -180,7 +193,7 @@ function homeCard(item){
  const summary=item.summary;
  return `<div class="cv-card-copy cu-home-content-copy"><span class="cv-card-kicker">${item.page?'页面快捷入口':item.workspace.id===meta.officeStarter?.workspaceId?'普通上班族 · 虚构示例':'MY OWN SPACE'}</span><h2>${esc(item.title)}</h2><p>${esc(item.subtitle)}</p></div>${summary?.pending.length?`<ul class="cu-home-records">${summary.pending.slice(0,item.page?3:2).map(row=>`<li><span>${esc(row.title)}</span><small>${esc(row.date?row.date.slice(5,10):row.status||'未定日期')}</small></li>`).join('')}</ul>`:`<p class="cu-home-record-empty">${summary?.rows.length?'这一页的事项已完成。':'进入空间，放下你的第一件事。'}</p>`}<div class="cv-space-counts cu-home-record-counts"><span>${summary?.rows.length||0} 条记录</span><span>${summary?.pending.length||0} 条待处理</span></div>`;
 }
-function homeComposer(){return `<form id="home-ai-form" class="ai-composer cu-home-composer"><label class="sr-only" for="home-ai-message">告诉伙伴你的想法</label><textarea id="home-ai-message" name="message" rows="3" maxlength="12000" placeholder="想搭建什么样的空间？也可以告诉我，哪些东西需要重新整理。">${esc(ui.message)}</textarea><div class="ai-compose-footer"><span>${meta.model.configured?'修改前先核对方案':'配置模型后即可一起搭建'}</span><button class="btn primary ai-send" type="submit" ${ui.busy?'disabled':''}>${icon('sparkles',15)}交给伙伴</button></div></form>${!meta.model.configured?'<button class="text-btn cu-home-connect" data-action="settings">连接创宇宙专用模型 →</button>':''}`;}
+function homeComposer(){const problem=conversationProblem();return `<form id="home-ai-form" class="ai-composer cu-home-composer"><label class="sr-only" for="home-ai-message">告诉伙伴你的想法</label><textarea id="home-ai-message" name="message" rows="3" maxlength="12000"${ui.busy?' readonly':''} placeholder="${ui.conversation?'继续当前话题，告诉伙伴还需要怎样调整。':'想搭建什么样的空间？也可以告诉我，哪些东西需要重新整理。'}">${esc(ui.message)}</textarea><div class="ai-compose-footer"><span>${esc(problem||(ui.conversation?'继续当前话题 · 修改前先核对':meta.model.configured?'修改前先核对方案':'配置模型后即可一起搭建'))}</span><button class="btn primary ai-send" type="submit" ${ui.busy||problem?'disabled':''}>${icon('sparkles',15)}交给伙伴</button></div></form>${ui.conversation?'<button class="text-btn cu-home-connect" data-action="partner-focus">查看当前话题或开启新话题 →</button>':''}${!meta.model.configured?'<button class="text-btn cu-home-connect" data-action="settings">连接创宇宙专用模型 →</button>':''}`;}
 function syncNavigationState(){
  const mobile=matchMedia('(max-width:760px)').matches,open=mobile&&ui.navOpen;
  document.body.classList.toggle('rail-open',open);
@@ -201,16 +214,16 @@ function componentCard(c){
  return `<section class="component cu-paper-module type-${esc(c.type)} ${ui.selected===c.id?'is-selected':''}" data-component="${esc(c.id)}" style="grid-column:${c.layout.x+1} / span ${c.layout.w};grid-row:${c.layout.y+1} / span ${c.layout.h};${c.props?.color?'--module-color:'+esc(c.props.color):''}"><header class="component-head"><button class="module-mark" data-action="select" data-id="${esc(c.id)}" aria-label="选中${esc(c.title)}">${icon(c.type)}</button><h2>${esc(c.title)}</h2>${count!==null?`<span class="record-count">${count}</span>`:''}<div class="component-tools">${ui.arrange?`<button class="icon-button drag-handle" draggable="true" data-drag-component="${esc(c.id)}" aria-label="拖动${esc(c.title)}">${icon('grip')}</button>`:''}<button class="icon-button" data-action="component-edit" data-id="${esc(c.id)}" aria-label="设置${esc(c.title)}" title="模块设置">${icon('more')}</button></div></header><div class="component-body">${renderers.body(c)}</div><footer class="component-foot"><span>${col?esc(col.name):c.type==='text'?'给想法一个落点':'随时回看的线索'}</span><div>${col?`<button class="text-button" data-action="collection-edit" data-id="${esc(col.id)}">字段</button><button class="text-button" data-action="record-new" data-id="${esc(c.id)}">${icon('plus')}记录</button>`:c.type==='resources'?`<button class="text-button" data-action="asset-new" data-id="${esc(c.id)}">${icon('plus')}资料</button>`:`<button class="text-button" data-action="note-edit" data-id="${esc(c.id)}">编辑笔记</button>`}</div></footer>${ui.arrange&&!ui.preview?`<button class="resize-handle" data-resize="${esc(c.id)}" aria-label="调整模块尺寸"></button>`:''}</section>`;
 }
 function layoutToolbar(c){return `<div class="selection-toolbar"><strong>${esc(c.title)}</strong><span>${c.layout.w} × ${c.layout.h}</span><div>${[['left','←'],['up','↑'],['down','↓'],['right','→']].map(([d,label])=>`<button class="icon-button" data-action="nudge" data-direction="${d}" data-id="${esc(c.id)}" aria-label="${{left:'左移',right:'右移',up:'上移',down:'下移'}[d]}">${label}</button>`).join('')}</div><button class="text-button" data-action="component-edit" data-id="${esc(c.id)}">位置与尺寸</button><button class="icon-button" data-action="deselect" aria-label="取消选择">${icon('close')}</button></div>`;}
-function proposalFresh(){return ui.proposal&&ui.proposal.status!=='stale'&&ui.proposal.baseRevision===state.revision&&!ui.proposalDirty;}
+function proposalFresh(){return proposalCanConfirm(ui.proposal,{baseRevision:state.revision,message:ui.message,busy:!!ui.busy})&&!ui.proposalDirty&&!conversationProblem();}
 function partnerView(){
- const p=ui.proposal,selected=state.components.find(c=>c.id===ui.selected),fresh=proposalFresh();
+ const p=ui.proposal,selected=state.components.find(c=>c.id===ui.selected),fresh=proposalFresh(),problem=conversationProblem();
  return `<aside class="partner-panel" aria-label="AI伙伴"><header class="partner-head"><span class="partner-star">${icon('spark')}</span><div><strong>${p?.origin==='manual'?'变更核对':'宇宙伙伴'}</strong><small>${ui.busy==='ai'?'正在理解你的想法…':p?'有一份方案待你核对':meta.model.configured?'已配置 · '+esc(meta.model.model):'AI 尚未连接'}</small></div><button class="icon-button" data-action="partner" aria-label="收起AI伙伴">${icon('close')}</button></header><div class="partner-scroll"><div class="partner-intro"><img src="./icon.svg" width="140" height="130" alt=""><h2>一起把想法，搭起来。</h2><p>描述你想改变什么。先看预览，<br>再决定让它发生。</p></div>
  ${!meta.model.configured&&p?.origin!=='manual'?`<div class="connection-note"><span class="status-light"></span><p>还没有配置模型。你可以先手动搭建，或设置创宇宙专用连接。</p><button class="text-button" data-action="settings">配置模型 ${icon('arrow')}</button></div>`:''}
  ${ui.messages.length?`<div class="chat-messages">${ui.messages.map(m=>`<div class="chat-message ${m.role}"><span>${m.role==='user'?'你':'伙伴'}</span><p>${esc(m.text)}</p></div>`).join('')}</div>`:`<div class="prompt-starters"><button data-action="prompt-fill" data-value="帮我建立一个个人项目空间，放上目标笔记、任务看板和日历。">${icon('template')}帮我搭一个项目空间</button><button data-action="prompt-fill" data-value="根据当前空间，建议怎样安排这些模块更清楚。">${icon('move')}一起调整这个空间</button></div>`}
  ${ui.busy==='ai'?'<div class="ai-working" role="status"><span class="spinner"></span>正在读取当前空间并整理方案…</div>':''}
- ${p?`<section class="proposal-card"><div class="proposal-heading"><span>${p.origin==='manual'?'手动创建的草稿':'待核对方案'}</span><strong>${p.diff?.length||0} 处变化</strong></div>${p.explanation?`<p>${esc(p.explanation)}</p>`:''}${p.steps?.length?`<ol class="proposal-steps">${p.steps.map(step=>`<li>${esc(typeof step==='string'?step:step.description||step.title||'执行步骤')}</li>`).join('')}</ol>`:''}<div class="proposal-diff">${proposalDiff(p)}</div>${reviewRenderer.evidence(p)}${reviewRenderer.preferences(p)}${p.measurement?.executionMode==='offline_fixture'?'<p class="test-label">工程测试方案，未调用真实模型。</p>':''}${!fresh?'<p class="stale-note">空间或请求已变化，请重新生成方案后再确认。</p>':''}<button class="button secondary full" data-action="preview-toggle"${!p.previewState?' disabled':''}>${icon('eye')}${ui.preview?'返回当前画布':'在画布上预览'}</button><div class="proposal-actions"><button class="button primary" data-action="proposal-confirm"${!fresh||ui.busy?' disabled':''}>${icon('check')}确认执行</button><button class="button quiet" data-action="proposal-cancel"${ui.busy?' disabled':''}>取消</button></div></section>`:''}
+ ${p?`<section class="proposal-card"><div class="proposal-heading"><span>${p.origin==='manual'?'手动创建的草稿':'待核对方案'}</span><strong>${p.diff?.length||0} 处变化</strong></div>${p.explanation?`<p>${esc(p.explanation)}</p>`:''}${p.steps?.length?`<ol class="proposal-steps">${p.steps.map(step=>`<li>${esc(typeof step==='string'?step:step.description||step.title||'执行步骤')}</li>`).join('')}</ol>`:''}<div class="proposal-diff">${proposalDiff(p)}</div>${reviewRenderer.evidence(p)}${reviewRenderer.preferences(p)}${p.measurement?.executionMode==='offline_fixture'?'<p class="test-label">工程测试方案，未调用真实模型。</p>':''}${p.baseRevision!==state.revision||p.status&&p.status!=='pending'?'<p class="stale-note">这份方案已失效，无法执行。请开启新话题。</p>':''}<p class="proposal-edit-note"${!ui.proposalDirty?' hidden':''}>输入中有修改要求，请先发送，或清空输入后确认当前方案。</p><button class="button secondary full" data-action="preview-toggle"${!p.previewState?' disabled':''}>${icon('eye')}${ui.preview?'返回当前画布':'在画布上预览'}</button>${p.origin!=='manual'&&ui.conversation?`<button class="text-button proposal-revise" data-action="proposal-revise"${problem||ui.busy?' disabled':''}>${icon('spark')}继续修改此方案</button>`:''}<div class="proposal-actions"><button class="button primary" data-action="proposal-confirm"${!fresh?' disabled':''}>${icon('check')}确认执行</button><button class="button quiet" data-action="proposal-cancel"${ui.busy?' disabled':''}>取消</button></div></section>`:''}
  ${ui.lastReceipt?`<div class="last-receipt"><span>${icon('check')}${ui.lastReceipt.status==='undone'?'已撤销这次修改':'最近一次修改已保存'}</span>${ui.lastReceipt.status!=='undone'?`<button class="text-button" data-action="undo" data-id="${esc(ui.lastReceipt.id)}">${icon('undo')}撤销</button>`:''}</div>`:''}</div>
- <form id="ai-form" class="partner-composer">${selected?`<div class="selected-context">${icon(selected.type)}正在看「${esc(selected.title)}」<button type="button" class="icon-button" data-action="deselect" aria-label="清除选中对象">${icon('close')}</button></div>`:''}<label class="sr-only" for="ai-message">告诉伙伴你的想法</label><textarea id="ai-message" name="message" rows="3" maxlength="12000" placeholder="想在这个空间里做些什么？">${esc(ui.message)}</textarea><div><span>${meta.model.configured?'每次修改由你确认':'配置模型后即可一起搭建'}</span><button class="send-button" type="submit" aria-label="发送请求"${ui.busy?' disabled':''}>${icon('send')}</button></div></form></aside>`;
+ <form id="ai-form" class="partner-composer">${ui.conversation||ui.messages.length?`<div class="conversation-context"><div><strong>${ui.conversation?(p?'继续修改这份方案':'补充当前话题'):'上一话题已结束'}</strong><span>${esc(problem||(ui.conversation?(p?'修改后仍需重新核对，再确认执行。':'补充信息后，伙伴会继续整理方案。'):'下一次请求将根据当前空间重新开始。'))}</span></div><button type="button" class="text-button" data-action="conversation-new" title="结束当前话题，未确认方案不会执行"${ui.busy?' disabled':''}>新话题</button></div>`:''}${selected?`<div class="selected-context">${icon(selected.type)}正在看「${esc(selected.title)}」<button type="button" class="icon-button" data-action="deselect" aria-label="清除选中对象">${icon('close')}</button></div>`:''}<label class="sr-only" for="ai-message">告诉伙伴你的想法</label><textarea id="ai-message" name="message" rows="3" maxlength="12000"${ui.busy?' readonly':''} placeholder="${ui.conversation?(p?'例如：把刚才的截止日期改成周五。':'补充刚才问题中需要的信息。'):'想在这个空间里做些什么？'}">${esc(ui.message)}</textarea><div><span>${meta.model.configured?'每次修改由你确认':'配置模型后即可一起搭建'}</span><button class="send-button" type="submit" aria-label="发送请求"${ui.busy||problem?' disabled':''}>${icon('send')}</button></div></form></aside>`;
 }
 function loginView(error=''){if(dialog.open)dialog.close();canvasCleanup?.();canvasCleanup=null;document.body.className='space-shell';root.innerHTML=`<main id="main" class="auth-layout original-auth"><section class="auth-brand"><a class="brand" href="#"><img src="./icon.svg" width="45" height="45" alt=""><span>创宇宙<small>MAKE ROOM FOR YOU</small></span></a><div><span class="eyebrow">YOUR SPACE. YOUR WAY.</span><h1>给你的想法，<br>留一整个宇宙。</h1><p>自由组合模块，与 AI 伙伴一起，<br>搭建更适合自己的工作台。</p><img src="./icon.svg" width="200" height="190" alt=""></div><span class="auth-caption">创宇宙 · 更加个性化的智能沙盒工作台</span></section><section class="auth-form"><div><span class="eyebrow">${auth.setupRequired?'FIRST CONTACT':'WELCOME BACK'}</span><h2>${auth.setupRequired?'开启你的创宇宙':'回到自己的空间'}</h2><p>${auth.setupRequired?'为这个独立工作台设置一个密码。':'输入密码，继续你上次的想法。'}</p><form id="auth-form">${auth.setupRequired?'<label class="field">初始化口令<input type="password" name="setupCode" required autocomplete="off"><span class="small-note">请在当前创宇宙目录打开 .cu-runtime/data/setup-code.txt，复制其中口令。</span></label>':''}<label class="field">密码<input name="password" type="password" required minlength="${auth.setupRequired?'10':'1'}" autocomplete="${auth.setupRequired?'new-password':'current-password'}">${auth.setupRequired?'<span class="small-note">至少 10 位字符</span>':''}</label><p class="form-error" role="alert">${esc(error)}</p><button class="button dark full" type="submit">${auth.setupRequired?'建立工作台':'进入工作台'}${icon('arrow')}</button></form><p class="auth-note">专属于这个实例的账号、资料与模型连接。</p></div></section></main>`;}
 function connectionStatus(){
@@ -230,7 +243,17 @@ async function testConnection(button){
  catch(error){try{meta.model=await request('/api/model');}catch{}if(resultArea?.isConnected){resultArea.textContent=error.message;resultArea.className='form-error';dialog.querySelector('.settings-status>span:last-child').textContent=connectionStatus();}else toast(error.message,true);}
  finally{button.disabled=false;button.textContent='测试已保存的连接';render();}
 }
-function historyStatus(h){return h.kind==='proposal'?(h.status==='stale'||h.baseRevision!==state.revision?'stale':'pending'):h.status;}
+async function endConversation(){
+ let result;
+ try{
+  if(ui.conversation)result=await request('/api/ai/context/cancel',{method:'POST',body:{contextId:ui.conversation.id}});
+  else if(ui.proposal)result=await request('/api/proposals/cancel',{method:'POST',body:{proposalId:ui.proposal.id}});
+ }catch(error){if(!['ai_context_closed','ai_context_missing','ai_context_expired','proposal_closed','proposal_missing'].includes(error.code))throw error;}
+ if(result?.history)meta.history=result.history;
+ else if(ui.proposal)meta.history=meta.history.filter(h=>h.id!==ui.proposal.id);
+ setPreview(false);ui.proposal=null;ui.conversation=null;ui.proposalDirty=false;ui.messages=[];ui.message='';
+}
+function historyStatus(h){return h.kind==='proposal'&&(!h.status||['pending','stale'].includes(h.status))?(h.status==='stale'||h.baseRevision!==state.revision?'stale':'pending'):h.status;}
 function historyBody(){
  const statusNames={pending:'方案待核对',stale:'方案已过期',applied:'已保存的修改',undone:'已撤销'};
  const workspaces=new Map(state.workspaces.map(w=>[w.id,w.name]));
@@ -268,11 +291,20 @@ document.addEventListener('submit',event=>{
  if(form.id==='ai-form'||form.id==='home-ai-form'){ui.partner=true;
   const message=values.message.trim();if(!message)return;
   if(!meta.model.configured){toast('请先配置创宇宙专用模型连接。',true);settings();return;}
-  return operation('ai',async()=>{if(ui.proposal){await request('/api/proposals/cancel',{method:'POST',body:{proposalId:ui.proposal.id}});meta.history=meta.history.filter(h=>h.id!==ui.proposal.id);}setPreview(false);ui.proposal=null;ui.messages.push({role:'user',text:message});ui.message='';ui.proposalDirty=false;const result=await request('/api/ai/plan',{method:'POST',body:{baseRevision:state.revision,workspaceId:liveWorkspace()?.id,message,...(ui.selected?{selectedComponentId:ui.selected}:{})}});ui.proposal=result.proposal||null;if(ui.proposal){if(result.measurement)ui.proposal.measurement=result.measurement;meta.history=[{...ui.proposal,kind:'proposal'},...meta.history.filter(h=>h.id!==ui.proposal.id)];}ui.messages.push({role:'assistant',text:result.message||result.clarification||'已准备好方案，请先核对变化。'});});
+  ui.message=message;ui.proposalDirty=!!ui.proposal&&ui.proposal.origin!=='manual';
+  return operation('ai',async()=>{
+   const workspaceId=planningWorkspaceId(),selectedComponentId=savedSelectionId(state,ui.selected,workspaceId);
+   const result=await requestPlan({baseRevision:state.revision,workspaceId,selectedComponentId,message,context:ui.conversation},request);
+   setPreview(false);ui.proposal=result.proposal;ui.conversation=result.conversation;ui.proposalDirty=false;ui.message='';
+   if(ui.proposal&&result.measurement)ui.proposal.measurement=result.measurement;
+   if(result.history)meta.history=result.history;
+   else if(ui.proposal)meta.history=[{...ui.proposal,kind:'proposal'},...meta.history.filter(h=>h.id!==ui.proposal.id)];
+   ui.messages.push({role:'user',text:message},{role:'assistant',text:result.message||(typeof result.clarification==='string'?result.clarification:'')||(result.proposal?'已准备好方案，请先核对变化。':'请补充信息，我会继续整理方案。')});
+  });
  }
 });
 dialog.addEventListener('change',event=>{const target=event.target;if(target.id==='history-workspace'||target.id==='history-status'){if(target.id==='history-workspace')ui.historyWorkspace=target.value;else ui.historyStatus=target.value;dialog.querySelector('.dialog-body').innerHTML=historyBody();dialog.querySelector('#'+target.id)?.focus();}else if(target.form?.id==='backup-import-form'){if(target.name==='file')readBackupFile(target.form);if(target.name==='sourceWorkspaceId'){const backup=backupFiles.get(target.form),source=backup?.state.workspaces.find(w=>w.id===target.value);if(source)target.form.elements.name.value=(source.name+' · 恢复副本').slice(0,120);}}});
-root.addEventListener('input',event=>{if(['ai-message','home-ai-message'].includes(event.target.id)){ui.message=event.target.value;if(ui.proposal&&ui.proposal.origin!=='manual'){ui.proposalDirty=true;const b=root.querySelector('[data-action=proposal-confirm]');if(b)b.disabled=true;}}});
+root.addEventListener('input',event=>{if(['ai-message','home-ai-message'].includes(event.target.id)){ui.message=event.target.value;if(ui.proposal&&ui.proposal.origin!=='manual'){ui.proposalDirty=!!ui.message.trim();const b=root.querySelector('[data-action=proposal-confirm]');if(b)b.disabled=!proposalFresh();const note=root.querySelector('.proposal-edit-note');if(note)note.hidden=!ui.proposalDirty;}}});
 const editingActions=new Set(['workspace-new','page-new','page-edit','workspace-edit','module-library','component-edit','note-edit','record-new','record-edit','asset-new','asset-edit','collection-edit','nudge','template-create','archives','backup-import','import','office-starter-open']);
 document.addEventListener('click',async event=>{
  const b=event.target.closest('[data-action]');if(!b||b.disabled)return;event.preventDefault();const action=b.dataset.action;
@@ -285,7 +317,7 @@ document.addEventListener('click',async event=>{
  else if(action==='search')searchView();
  else if(action==='templates')forms.workspaceCreate();
  else if(action==='office-starter-open'){const office=officeWorkspace();if(office){try{if(office.archived)await runActions([{op:'workspace.archive',id:office.id,archived:false}],{workspaceId:office.id,success:'示例工作台已恢复。'});dialog.close();openWorkspace(office.id);}catch(error){toast(error.message,true);}}}
- else if(action==='home-page'){ui.navOpen=false;ui.workspaceId=b.dataset.workspace;openPage(b.dataset.id);}
+ else if(action==='home-page'){setPreview(false);ui.navOpen=false;ui.workspaceId=b.dataset.workspace;openPage(b.dataset.id);}
  else if(action==='workspace')openWorkspace(b.dataset.id);
  else if(action==='page')openPage(b.dataset.id);
  else if(action==='workspace-new')forms.workspaceCreate();
@@ -307,24 +339,26 @@ document.addEventListener('click',async event=>{
  else if(action==='mode'){ui.arrange=b.dataset.value==='arrange';render();}
  else if(action==='partner'){ui.partner=!ui.partner;ui.navOpen=false;render();}
  else if(action==='partner-focus'){ui.partner=true;ui.navOpen=false;render();root.querySelector('#ai-message')?.focus();}
- else if(action==='prompt-fill'){ui.message=b.dataset.value;ui.proposalDirty=!!ui.proposal&&ui.proposal.origin!=='manual';render();root.querySelector('#ai-message')?.focus();}
+ else if(action==='prompt-fill'){ui.message=b.dataset.value;ui.proposalDirty=!!ui.proposal&&ui.proposal.origin!=='manual'&&!!ui.message.trim();render();root.querySelector('#ai-message')?.focus();}
+ else if(action==='proposal-revise'){const problem=conversationProblem();if(problem){toast(problem,true);render();return;}root.querySelector('#ai-message')?.focus();}
+ else if(action==='conversation-new')await operation('new-conversation',async()=>{await endConversation();toast('已开启新话题，未确认的方案没有执行。');});
  else if(action==='settings')settings();
  else if(action==='model-test')await testConnection(b);
  else if(action==='backup-import')importBackup();
  else if(action==='backup-export')await operation('backup-export',async()=>{exportJson(await request('/api/export'),'创宇宙-完整备份-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json');toast('完整数据备份已下载。');});
  else if(action==='history')await historyView();
  else if(action==='preview-record')previewRecord(b.dataset.id);
- else if(action==='proposal-open')await operation('open-proposal',async()=>{setPreview(false);const result=await request('/api/proposals/'+encodeURIComponent(b.dataset.id));ui.proposal=result.proposal;ui.proposalDirty=false;ui.message='';ui.partner=true;dialog.close();});
+ else if(action==='proposal-open')await operation('open-proposal',async()=>{const result=await request('/api/proposals/'+encodeURIComponent(b.dataset.id));setPreview(false);ui.proposal=result.proposal;ui.conversation=ui.proposal.origin!=='manual'?conversationFrom(ui.proposal):null;ui.messages=[];ui.proposalDirty=false;ui.message='';ui.partner=true;if(ui.conversation?.workspaceId&&state.workspaces.some(w=>w.id===ui.conversation.workspaceId&&!w.archived)){ui.workspaceId=ui.conversation.workspaceId;ui.pageId='';ui.route='workspace';ui.selected='';persistSelection();}dialog.close();});
  else if(action==='dismiss-error'){ui.error='';render();}
  else if(action==='preview-toggle'){setPreview(!ui.preview);render();}
  else if(action==='preview-off'){setPreview(false);render();}
- else if(action==='proposal-cancel')await operation('cancel',async()=>{await request('/api/proposals/cancel',{method:'POST',body:{proposalId:ui.proposal.id}});meta.history=meta.history.filter(h=>h.id!==ui.proposal.id);setPreview(false);ui.proposal=null;toast('方案已取消，内容没有变化。');});
- else if(action==='proposal-confirm'){if(!proposalFresh())return;await operation('confirm',async()=>{const result=await request('/api/proposals/confirm',{method:'POST',body:{proposalId:ui.proposal.id}});const target=ui.proposal.workspaceId,manual=ui.proposal.origin==='manual';setPreview(false);apply(result);ui.proposal=null;if(target&&target!==ui.workspaceId)openWorkspace(target);if(manual)toast('草稿已保存，可从修改记录撤销。');else ui.messages.push({role:'assistant',text:'修改已保存。你可以继续调整，也可以撤销这次修改。'});});}
+ else if(action==='proposal-cancel')await operation('cancel',async()=>{await endConversation();toast('方案已取消，内容没有变化。');});
+ else if(action==='proposal-confirm'){if(!proposalFresh()){const problem=conversationProblem();if(problem)toast(problem,true);render();return;}await operation('confirm',async()=>{const result=await request('/api/proposals/confirm',{method:'POST',body:{proposalId:ui.proposal.id}});const target=ui.proposal.workspaceId,manual=ui.proposal.origin==='manual';setPreview(false);apply(result);ui.proposal=null;ui.conversation=null;ui.proposalDirty=false;if(target&&target!==ui.workspaceId)openWorkspace(target);if(manual)toast('草稿已保存，可从修改记录撤销。');else ui.messages.push({role:'assistant',text:'修改已保存。下一次请求将根据当前空间重新开始，也可以撤销这次修改。'});});}
  else if(action==='undo')await operation('undo',async()=>{setPreview(false);apply(await request('/api/undo',{method:'POST',body:{receiptId:b.dataset.id}}));if(dialog.open)dialog.close();toast('这次修改已撤销。');});
  else if(action==='export'&&!liveWorkspace())toast('先创建一个空间，再导出模板。');
  else if(action==='export')await operation('export',async()=>{const result=await request('/api/template?workspaceId='+encodeURIComponent(liveWorkspace().id));exportJson(result,'创宇宙-模板-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json');toast('空间结构已导出，模板不包含真实记录。');});
  else if(action==='import')importTemplate();
- else if(action==='logout')await operation('logout',async()=>{await request('/api/logout',{method:'POST',body:{}});auth=await request('/api/auth');state={revision:0,workspaces:[],components:[],collections:[],records:[],assets:[]};ui.proposal=null;ui.messages=[];ui.message='';loginView();});
+ else if(action==='logout')await operation('logout',async()=>{await request('/api/logout',{method:'POST',body:{}});auth=await request('/api/auth');state={revision:0,workspaces:[],components:[],collections:[],records:[],assets:[]};setPreview(false);ui.proposal=null;ui.conversation=null;ui.messages=[];ui.message='';loginView();});
  else if(action==='calendar-month'){const [y,m]=month(b.dataset.id).split('-').map(Number),d=new Date(y,m-1+Number(b.dataset.offset),1);ui.months.set(b.dataset.id,d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));render();}
  else if(action==='nudge'){const c=state.components.find(c=>c.id===b.dataset.id),layout={...c.layout};layout.x+=b.dataset.direction==='left'?-1:b.dataset.direction==='right'?1:0;layout.y+=b.dataset.direction==='up'?-1:b.dataset.direction==='down'?1:0;try{await runActions([{op:'component.update',id:c.id,patch:{layout}}],{success:'模块位置已保存。'});}catch(e){toast(e.message,true);}}
 });
