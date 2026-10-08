@@ -1,0 +1,11 @@
+{
+  "importedAtUtc": "2026-10-08T13:37:35.1142072Z",
+  "sourceZip": "E:\\AIC工作台\\06_创宇宙\\versions\\chuang-universe-original-v0.2.0-2026-10-02T13-00-26-974Z-de2cb78e\\releases\\chuang-universe-0.2.1-2026-10-02T14-35-33-691Z-130d1642\\chuang-universe-0.2.1-2026-10-02T14-35-33-691Z-130d1642.zip",
+  "sourceZipSha256": "6b40554f6505bfb069b072ca3266b3a377fd49ffbac642dfc4407348cb060852",
+  "importedVersion": "0.2.1",
+  "extractedFiles": 88,
+  "verifiedSourceFiles": 87,
+  "originalProjectModified": false,
+  "privateRuntimeImported": false,
+  "interpretation": "Existing code baseline imported on the recorded date; not a reconstructed original Git history."
+}

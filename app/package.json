@@ -1,0 +1,9 @@
+{
+  "name": "chuang-universe",
+  "version": "0.2.1",
+  "private": true,
+  "type": "module",
+  "description": "创宇宙——更加个性化的智能沙盒工作台",
+  "engines": { "node": ">=22.13" },
+  "scripts": { "start": "node start.mjs", "test": "node --test tests/*.test.mjs evaluation/*.test.mjs" }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "创宇宙——智能沙盒工作台",
+  "short_name": "创宇宙",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f5fd",
+  "theme_color": "#7950f2",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

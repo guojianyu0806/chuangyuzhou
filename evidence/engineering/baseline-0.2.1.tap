@@ -1,0 +1,892 @@
+TAP version 13
+# Subtest: advice generator defaults to 22 public development tasks and no outcomes
+ok 1 - advice generator defaults to 22 public development tasks and no outcomes
+  ---
+  duration_ms: 22.5987
+  type: 'test'
+  ...
+# Subtest: fixed clock produces reproducible packet and same full-planner context
+ok 2 - fixed clock produces reproducible packet and same full-planner context
+  ---
+  duration_ms: 15.3444
+  type: 'test'
+  ...
+# Subtest: context contains source attachments but no gold or researcher phases
+ok 3 - context contains source attachments but no gold or researcher phases
+  ---
+  duration_ms: 5.0424
+  type: 'test'
+  ...
+# Subtest: public config excludes credentials without reading their values
+ok 4 - public config excludes credentials without reading their values
+  ---
+  duration_ms: 0.4667
+  type: 'test'
+  ...
+# Subtest: only known development IDs and explicit timezone clock are accepted
+ok 5 - only known development IDs and explicit timezone clock are accepted
+  ---
+  duration_ms: 7.3662
+  type: 'test'
+  ...
+# Subtest: provider input preserves hashes and gives advice only
+ok 6 - provider input preserves hashes and gives advice only
+  ---
+  duration_ms: 4.765
+  type: 'test'
+  ...
+# Subtest: B and C share the actual filtered action catalog and exclude manual backup restore
+ok 7 - B and C share the actual filtered action catalog and exclude manual backup restore
+  ---
+  duration_ms: 8.952
+  type: 'test'
+  ...
+# Subtest: packet parameter snapshot matches injected provider transport, with zero real network
+ok 8 - packet parameter snapshot matches injected provider transport, with zero real network
+  ---
+  duration_ms: 5.2968
+  type: 'test'
+  ...
+# Subtest: CLI preview does not write and refuses live/config arguments
+ok 9 - CLI preview does not write and refuses live/config arguments
+  ---
+  duration_ms: 640.0996
+  type: 'test'
+  ...
+# Subtest: live-evaluation config permits only explicit new-runtime regular files
+ok 10 - live-evaluation config permits only explicit new-runtime regular files
+  ---
+  duration_ms: 3.8799
+  type: 'test'
+  ...
+# Subtest: bad config and parser errors never include secret values or raw JSON
+ok 11 - bad config and parser errors never include secret values or raw JSON
+  ---
+  duration_ms: 2.1698
+  type: 'test'
+  ...
+# Subtest: linked config files are refused
+ok 12 - linked config files are refused
+  ---
+  duration_ms: 1.9227
+  type: 'test'
+  ...
+# Subtest: default evaluation ignores config-file without live and reports zero real model calls
+ok 13 - default evaluation ignores config-file without live and reports zero real model calls
+  ---
+  duration_ms: 281.1314
+  type: 'test'
+  ...
+# Subtest: six offline cases exercise proposed and applied states without claiming AI performance
+ok 14 - six offline cases exercise proposed and applied states without claiming AI performance
+  ---
+  duration_ms: 52.3035
+  type: 'test'
+  ...
+# Subtest: platform defaults list only and never inspect supplied configuration
+ok 15 - platform defaults list only and never inspect supplied configuration
+  ---
+  duration_ms: 3.7544
+  type: 'test'
+  ...
+# Subtest: 24 fixtures pass only mechanical development checks with human review outstanding
+ok 16 - 24 fixtures pass only mechanical development checks with human review outstanding
+  ---
+  duration_ms: 159.2272
+  type: 'test'
+  ...
+# Subtest: selection and live/fixture injection cannot silently relax evaluation mode
+ok 17 - selection and live/fixture injection cannot silently relax evaluation mode
+  ---
+  duration_ms: 9.2598
+  type: 'test'
+  ...
+# Subtest: wrong expected date is a failed field, separate from protected extra writes
+ok 18 - wrong expected date is a failed field, separate from protected extra writes
+  ---
+  duration_ms: 4.1441
+  type: 'test'
+  ...
+# Subtest: preserve catches unrelated fields, deletions and unrequested new records
+ok 19 - preserve catches unrelated fields, deletions and unrequested new records
+  ---
+  duration_ms: 4.4078
+  type: 'test'
+  ...
+# Subtest: new-field exception does not permit changing existing dates or adding unrelated fields
+ok 20 - new-field exception does not permit changing existing dates or adding unrelated fields
+  ---
+  duration_ms: 3.7559
+  type: 'test'
+  ...
+# Subtest: layout, same collection binding and stable option identity are checked
+ok 21 - layout, same collection binding and stable option identity are checked
+  ---
+  duration_ms: 8.4288
+  type: 'test'
+  ...
+# Subtest: template equivalence verifies structure and remapped IDs beyond object counts
+ok 22 - template equivalence verifies structure and remapped IDs beyond object counts
+  ---
+  duration_ms: 8.2064
+  type: 'test'
+  ...
+# Subtest: sources require current hash and literal quote but meaning stays pending
+ok 23 - sources require current hash and literal quote but meaning stays pending
+  ---
+  duration_ms: 7.6442
+  type: 'test'
+  ...
+# Subtest: clarification requires zero writes; content is never graded by keywords
+ok 24 - clarification requires zero writes; content is never graded by keywords
+  ---
+  duration_ms: 2.414
+  type: 'test'
+  ...
+# Subtest: unknown declarative checks remain pending and cannot count as mechanical success
+ok 25 - unknown declarative checks remain pending and cannot count as mechanical success
+  ---
+  duration_ms: 3.4205
+  type: 'test'
+  ...
+# Subtest: 023 and 024 execute actual domain rejections without counting them as ordinary failures
+ok 26 - 023 and 024 execute actual domain rejections without counting them as ordinary failures
+  ---
+  duration_ms: 10.2369
+  type: 'test'
+  ...
+# Subtest: invalid fixture responses produce errors rather than fabricated states or passing checks
+ok 27 - invalid fixture responses produce errors rather than fabricated states or passing checks
+  ---
+  duration_ms: 5.7732
+  type: 'test'
+  ...
+# Subtest: timeouts and refusal metrics are explicit; unattempted IDs remain in denominator metadata
+ok 28 - timeouts and refusal metrics are explicit; unattempted IDs remain in denominator metadata
+  ---
+  duration_ms: 5.9817
+  type: 'test'
+  ...
+# Subtest: model-facing task material excludes gold and researcher recovery phases
+ok 29 - model-facing task material excludes gold and researcher recovery phases
+  ---
+  duration_ms: 0.2554
+  type: 'test'
+  ...
+# Subtest: CLI lists by default and rejects config outside runtime before any API call
+ok 30 - CLI lists by default and rejects config outside runtime before any API call
+  ---
+  duration_ms: 546.5382
+  type: 'test'
+  ...
+# Subtest: AI cannot synthesize backup imports to bypass per-record source evidence
+ok 31 - AI cannot synthesize backup imports to bypass per-record source evidence
+  ---
+  duration_ms: 31.8129
+  type: 'test'
+  ...
+# Subtest: trusted clock follows workspace timezone across a local date boundary
+ok 32 - trusted clock follows workspace timezone across a local date boundary
+  ---
+  duration_ms: 4.855
+  type: 'test'
+  ...
+# Subtest: workspace creation accepts forward creation chain refs and never mutates input
+ok 33 - workspace creation accepts forward creation chain refs and never mutates input
+  ---
+  duration_ms: 2.8913
+  type: 'test'
+  ...
+# Subtest: selected-object layout is validated through actual domain and original state is unchanged
+ok 34 - selected-object layout is validated through actual domain and original state is unchanged
+  ---
+  duration_ms: 7.0358
+  type: 'test'
+  ...
+# Subtest: existing workspace context can create a different workspace without modifying original objects
+ok 35 - existing workspace context can create a different workspace without modifying original objects
+  ---
+  duration_ms: 7.8033
+  type: 'test'
+  ...
+# Subtest: unknown modules, cross-workspace targets and missing target IDs are rejected
+ok 36 - unknown modules, cross-workspace targets and missing target IDs are rejected
+  ---
+  duration_ms: 14.3628
+  type: 'test'
+  ...
+# Subtest: workspace and selected-component checks fail before invoking model
+ok 37 - workspace and selected-component checks fail before invoking model
+  ---
+  duration_ms: 2.9951
+  type: 'test'
+  ...
+# Subtest: prompt includes current ID/schema/preferences and keeps source instructions out of system text
+ok 38 - prompt includes current ID/schema/preferences and keeps source instructions out of system text
+  ---
+  duration_ms: 5.2731
+  type: 'test'
+  ...
+# Subtest: excessive context is rejected rather than silently truncated
+ok 39 - excessive context is rejected rather than silently truncated
+  ---
+  duration_ms: 5.2014
+  type: 'test'
+  ...
+# Subtest: JSON fences, extra keys, prototype keys and invalid shapes are refused
+ok 40 - JSON fences, extra keys, prototype keys and invalid shapes are refused
+  ---
+  duration_ms: 7.0536
+  type: 'test'
+  ...
+# Subtest: five logical steps, 60 actions and complete one-to-one grouping are enforced
+ok 41 - five logical steps, 60 actions and complete one-to-one grouping are enforced
+  ---
+  duration_ms: 7.4471
+  type: 'test'
+  ...
+# Subtest: clarification is non-mutating and cannot contain executable actions
+ok 42 - clarification is non-mutating and cannot contain executable actions
+  ---
+  duration_ms: 4.8405
+  type: 'test'
+  ...
+# Subtest: record values require per-field original-message evidence
+ok 43 - record values require per-field original-message evidence
+  ---
+  duration_ms: 6.3644
+  type: 'test'
+  ...
+# Subtest: asset quote and hash are checked; non-existent quotes and stale hashes fail
+ok 44 - asset quote and hash are checked; non-existent quotes and stale hashes fail
+  ---
+  duration_ms: 9.0995
+  type: 'test'
+  ...
+# Subtest: new source references can use domain-computed hash but cannot cite invented source text
+ok 45 - new source references can use domain-computed hash but cannot cite invented source text
+  ---
+  duration_ms: 5.9753
+  type: 'test'
+  ...
+# Subtest: provider errors are sanitized and retain honest failure measurement
+ok 46 - provider errors are sanitized and retain honest failure measurement
+  ---
+  duration_ms: 3.0198
+  type: 'test'
+  ...
+# Subtest: no workspace cannot mutate an arbitrary existing target
+ok 47 - no workspace cannot mutate an arbitrary existing target
+  ---
+  duration_ms: 2.9239
+  type: 'test'
+  ...
+# Subtest: empty state and registered catalog are independent JSON values
+ok 48 - empty state and registered catalog are independent JSON values
+  ---
+  duration_ms: 4.2599
+  type: 'test'
+  ...
+# Subtest: blank preview is pure and commit increments only its returned state
+ok 49 - blank preview is pure and commit increments only its returned state
+  ---
+  duration_ms: 21.6732
+  type: 'test'
+  ...
+# Subtest: both templates use shared records through several views without demo records
+ok 50 - both templates use shared records through several views without demo records
+  ---
+  duration_ms: 6.2119
+  type: 'test'
+  ...
+# Subtest: office template expands atomically, keeps outer aliases and rejects duplicates without touching existing content
+ok 51 - office template expands atomically, keeps outer aliases and rejects duplicates without touching existing content
+  ---
+  duration_ms: 40.4198
+  type: 'test'
+  ...
+# Subtest: aliases resolve workspace/page/collection/fields/options/records and keep literal text
+ok 52 - aliases resolve workspace/page/collection/fields/options/records and keep literal text
+  ---
+  duration_ms: 1.8512
+  type: 'test'
+  ...
+# Subtest: all steps fail atomically if a later action has an unknown property
+ok 53 - all steps fail atomically if a later action has an unknown property
+  ---
+  duration_ms: 0.3288
+  type: 'test'
+  ...
+# Subtest: unknown operation, nested unknown field, forbidden keys, overlong action list fail
+ok 54 - unknown operation, nested unknown field, forbidden keys, overlong action list fail
+  ---
+  duration_ms: 3.8232
+  type: 'test'
+  ...
+# Subtest: new IDs cannot be supplied and aliases cannot point forward or collide
+ok 55 - new IDs cannot be supplied and aliases cannot point forward or collide
+  ---
+  duration_ms: 1.7202
+  type: 'test'
+  ...
+# Subtest: global revision and baseline content invalidate stale proposals
+ok 56 - global revision and baseline content invalidate stale proposals
+  ---
+  duration_ms: 7.0785
+  type: 'test'
+  ...
+# Subtest: preview tampering is rejected and repeat apply is stale
+ok 57 - preview tampering is rejected and repeat apply is stale
+  ---
+  duration_ms: 4.7246
+  type: 'test'
+  ...
+# Subtest: field/option rename preserve IDs, used option deletion and type change fail
+ok 58 - field/option rename preserve IDs, used option deletion and type change fail
+  ---
+  duration_ms: 6.672
+  type: 'test'
+  ...
+# Subtest: new fields and options can be referenced later in the same transaction
+ok 59 - new fields and options can be referenced later in the same transaction
+  ---
+  duration_ms: 6.6436
+  type: 'test'
+  ...
+# Subtest: strict date and datetime validation rejects impossible or ambiguous dates
+ok 60 - strict date and datetime validation rejects impossible or ambiguous dates
+  ---
+  duration_ms: 14.144
+  type: 'test'
+  ...
+# Subtest: interval semantic fields validate local date precision and ordering
+ok 61 - interval semantic fields validate local date precision and ordering
+  ---
+  duration_ms: 2.9939
+  type: 'test'
+  ...
+# Subtest: relations target records in the right collection with stable IDs
+ok 62 - relations target records in the right collection with stable IDs
+  ---
+  duration_ms: 7.5194
+  type: 'test'
+  ...
+# Subtest: all references and mixed action batches reject cross-space targets
+ok 63 - all references and mixed action batches reject cross-space targets
+  ---
+  duration_ms: 7.6633
+  type: 'test'
+  ...
+# Subtest: source hash ignores IDs/title; new aliases auto-fill hash and quote references verify
+ok 64 - source hash ignores IDs/title; new aliases auto-fill hash and quote references verify
+  ---
+  duration_ms: 7.2586
+  type: 'test'
+  ...
+# Subtest: editing referenced source requires coherent evidence update; link protocols are constrained
+ok 65 - editing referenced source requires coherent evidence update; link protocols are constrained
+  ---
+  duration_ms: 8.285
+  type: 'test'
+  ...
+# Subtest: automatic layout is deterministic and explicit overlap/out-of-bounds fail
+ok 66 - automatic layout is deterministic and explicit overlap/out-of-bounds fail
+  ---
+  duration_ms: 3.56
+  type: 'test'
+  ...
+# Subtest: view archive never deletes shared data; restore collision rejects cleanly
+ok 67 - view archive never deletes shared data; restore collision rejects cleanly
+  ---
+  duration_ms: 9.4364
+  type: 'test'
+  ...
+# Subtest: field-level undo preserves unrelated subsequent record edits
+ok 68 - field-level undo preserves unrelated subsequent record edits
+  ---
+  duration_ms: 8.1528
+  type: 'test'
+  ...
+# Subtest: same-field undo conflict stops the entire transaction without partial reversal
+ok 69 - same-field undo conflict stops the entire transaction without partial reversal
+  ---
+  duration_ms: 8.5438
+  type: 'test'
+  ...
+# Subtest: undo new collection rejects a later view dependency
+ok 70 - undo new collection rejects a later view dependency
+  ---
+  duration_ms: 2.4032
+  type: 'test'
+  ...
+# Subtest: undo new field rejects later values but preserves independent added fields
+ok 71 - undo new field rejects later values but preserves independent added fields
+  ---
+  duration_ms: 9.7632
+  type: 'test'
+  ...
+# Subtest: archive undo retains later unrelated content
+ok 72 - archive undo retains later unrelated content
+  ---
+  duration_ms: 6.6463
+  type: 'test'
+  ...
+# Subtest: template export strips real records, assets and notes; import generates all new IDs
+ok 73 - template export strips real records, assets and notes; import generates all new IDs
+  ---
+  duration_ms: 13.6644
+  type: 'test'
+  ...
+# Subtest: template remaps option filters and relation field targets; malicious templates reject
+ok 74 - template remaps option filters and relation field targets; malicious templates reject
+  ---
+  duration_ms: 10.6927
+  type: 'test'
+  ...
+# Subtest: workspace archive keeps all objects and disallows edits until restored
+ok 75 - workspace archive keeps all objects and disallows edits until restored
+  ---
+  duration_ms: 6.2436
+  type: 'test'
+  ...
+# Subtest: schema rejects dangling/cross-typed bindings and unrecognized preferences
+ok 76 - schema rejects dangling/cross-typed bindings and unrecognized preferences
+  ---
+  duration_ms: 2.7903
+  type: 'test'
+  ...
+# Subtest: filters and sorting can be cleared and text dollar values are preserved
+ok 77 - filters and sorting can be cleared and text dollar values are preserved
+  ---
+  duration_ms: 6.517
+  type: 'test'
+  ...
+# Subtest: type conversion preserves common props and shared data without obsolete properties
+ok 78 - type conversion preserves common props and shared data without obsolete properties
+  ---
+  duration_ms: 4.9745
+  type: 'test'
+  ...
+# Subtest: schedule overlap is precise across midnight; adjacent intervals do not overlap
+ok 79 - schedule overlap is precise across midnight; adjacent intervals do not overlap
+  ---
+  duration_ms: 2.4534
+  type: 'test'
+  ...
+# Subtest: all-day schedules occupy complete inclusive days; later days remain free
+ok 80 - all-day schedules occupy complete inclusive days; later days remain free
+  ---
+  duration_ms: 2.1624
+  type: 'test'
+  ...
+# Subtest: schedule ignores done/archived records, reports missing endpoint, never treats dueDate as occupancy
+ok 81 - schedule ignores done/archived records, reports missing endpoint, never treats dueDate as occupancy
+  ---
+  duration_ms: 7.5757
+  type: 'test'
+  ...
+# Subtest: deadline tasks and meetings can share interval fields without warnings for an unset interval
+ok 82 - deadline tasks and meetings can share interval fields without warnings for an unset interval
+  ---
+  duration_ms: 2.1747
+  type: 'test'
+  ...
+# Subtest: catalog includes typed nested schemas and excludes external execution capabilities
+ok 83 - catalog includes typed nested schemas and excludes external execution capabilities
+  ---
+  duration_ms: 0.9442
+  type: 'test'
+  ...
+# Subtest: wrong optional types fail with domain errors rather than being silently replaced
+ok 84 - wrong optional types fail with domain errors rather than being silently replaced
+  ---
+  duration_ms: 5.9873
+  type: 'test'
+  ...
+# Subtest: undo option reorder restores order and preserves later independent new option
+ok 85 - undo option reorder restores order and preserves later independent new option
+  ---
+  duration_ms: 9.8449
+  type: 'test'
+  ...
+# Subtest: undo entire new template preserves an independently edited older workspace
+ok 86 - undo entire new template preserves an independently edited older workspace
+  ---
+  duration_ms: 7.8081
+  type: 'test'
+  ...
+# Subtest: backup import round-trips content, pages, preferences, cycles, source hashes and archive states with fresh IDs
+ok 87 - backup import round-trips content, pages, preferences, cycles, source hashes and archive states with fresh IDs
+  ---
+  duration_ms: 18.7608
+  type: 'test'
+  ...
+# Subtest: backup proposal stores only selected workspace while validating the entire original file
+ok 88 - backup proposal stores only selected workspace while validating the entire original file
+  ---
+  duration_ms: 13.9223
+  type: 'test'
+  ...
+# Subtest: backup rejects private configuration, extra properties, invalid dates and foreign application state
+ok 89 - backup rejects private configuration, extra properties, invalid dates and foreign application state
+  ---
+  duration_ms: 12.5657
+  type: 'test'
+  ...
+# Subtest: backup rejects cross-space links, dangling references and wrong source hashes before any state change
+ok 90 - backup rejects cross-space links, dangling references and wrong source hashes before any state change
+  ---
+  duration_ms: 11.8528
+  type: 'test'
+  ...
+# Subtest: backup import follows creation scope, atomic batches, stale protection and once-only apply
+ok 91 - backup import follows creation scope, atomic batches, stale protection and once-only apply
+  ---
+  duration_ms: 8.8424
+  type: 'test'
+  ...
+# Subtest: undo restored backup preserves existing spaces and refuses later dependencies
+ok 92 - undo restored backup preserves existing spaces and refuses later dependencies
+  ---
+  duration_ms: 17.7004
+  type: 'test'
+  ...
+# Subtest: backup restores source limits without the ordinary 1 MB action ceiling, but destination caps still apply
+ok 93 - backup restores source limits without the ordinary 1 MB action ceiling, but destination caps still apply
+  ---
+  duration_ms: 82.2121
+  type: 'test'
+  ...
+# Subtest: explicit priorities validate, round-trip through templates, and reset through all supported default fields
+ok 94 - explicit priorities validate, round-trip through templates, and reset through all supported default fields
+  ---
+  duration_ms: 9.3014
+  type: 'test'
+  ...
+# Subtest: connection check sends only a minimal fixed prompt and records actual returned usage
+ok 95 - connection check sends only a minimal fixed prompt and records actual returned usage
+  ---
+  duration_ms: 3.1799
+  type: 'test'
+  ...
+# Subtest: connection checks do not accept arbitrary successful model text or expose it on failure
+ok 96 - connection checks do not accept arbitrary successful model text or expose it on failure
+  ---
+  duration_ms: 1.5328
+  type: 'test'
+  ...
+# Subtest: office starter content is reproducible, synthetic and within one transaction limit
+ok 97 - office starter content is reproducible, synthetic and within one transaction limit
+  ---
+  duration_ms: 6.9286
+  type: 'test'
+  ...
+# Subtest: one confirmed starter adds three pages without modifying existing workspaces or records
+ok 98 - one confirmed starter adds three pages without modifying existing workspaces or records
+  ---
+  duration_ms: 40.6726
+  type: 'test'
+  ...
+# Subtest: each page shares its records among list, board and calendar with stable status and date semantics
+ok 99 - each page shares its records among list, board and calendar with stable status and date semantics
+  ---
+  duration_ms: 16.0077
+  type: 'test'
+  ...
+# Subtest: starter task evidence resolves to its own synthetic source with verified content hashes
+ok 100 - starter task evidence resolves to its own synthetic source with verified content hashes
+  ---
+  duration_ms: 15.1324
+  type: 'test'
+  ...
+# Subtest: duplicate detection survives workspace renaming and archive and does not confuse a same-name user workspace
+ok 101 - duplicate detection survives workspace renaming and archive and does not confuse a same-name user workspace
+  ---
+  duration_ms: 31.9347
+  type: 'test'
+  ...
+# Subtest: undo removes only the starter batch and allows a later fresh creation
+ok 102 - undo removes only the starter batch and allows a later fresh creation
+  ---
+  duration_ms: 44.9893
+  type: 'test'
+  ...
+# Subtest: date arithmetic respects leap years and month boundaries and rejects impossible base dates
+ok 103 - date arithmetic respects leap years and month boundaries and rejects impossible base dates
+  ---
+  duration_ms: 29.5712
+  type: 'test'
+  ...
+# Subtest: today is resolved in Asia/Shanghai rather than the execution host timezone
+ok 104 - today is resolved in Asia/Shanghai rather than the execution host timezone
+  ---
+  duration_ms: 1.4291
+  type: 'test'
+  ...
+# Subtest: original-style copy has its own default origin, cookie and physical runtime
+ok 105 - original-style copy has its own default origin, cookie and physical runtime
+  ---
+  duration_ms: 2.5349
+  type: 'test'
+  ...
+# Subtest: archived personal backend CLI refuses before any private data or token access
+ok 106 - archived personal backend CLI refuses before any private data or token access
+  ---
+  duration_ms: 219.244
+  type: 'test'
+  ...
+# Subtest: copied frontend entries reject personal ports and delegate to the isolated root
+ok 107 - copied frontend entries reject personal ports and delegate to the isolated root
+  ---
+  duration_ms: 281.9897
+  type: 'test'
+  ...
+# Subtest: safe frontend compatibility entry starts only the competition backend with clean data
+ok 108 - safe frontend compatibility entry starts only the competition backend with clean data
+  ---
+  duration_ms: 207.758
+  type: 'test'
+  ...
+# Subtest: new API ignores both former cookies and serves the copied web manifest
+ok 109 - new API ignores both former cookies and serves the copied web manifest
+  ---
+  duration_ms: 107.6307
+  type: 'test'
+  ...
+# Subtest: active competition modules never import the archived personal backend or cloud client
+ok 110 - active competition modules never import the archived personal backend or cloud client
+  ---
+  duration_ms: 2.4816
+  type: 'test'
+  ...
+# Subtest: official JSON protocol uses explicit config, fixed endpoint and no redirects
+ok 111 - official JSON protocol uses explicit config, fixed endpoint and no redirects
+  ---
+  duration_ms: 23.7379
+  type: 'test'
+  ...
+# Subtest: only new-project current supported models and explicit valid key are accepted
+ok 112 - only new-project current supported models and explicit valid key are accepted
+  ---
+  duration_ms: 0.5717
+  type: 'test'
+  ...
+# Subtest: remote authentication, balance and throttling errors do not expose response contents
+ok 113 - remote authentication, balance and throttling errors do not expose response contents
+  ---
+  duration_ms: 1.3187
+  type: 'test'
+  ...
+# Subtest: network errors are sanitized
+ok 114 - network errors are sanitized
+  ---
+  duration_ms: 0.404
+  type: 'test'
+  ...
+# Subtest: timeout bounds an injected transport even if it does not honor abort
+ok 115 - timeout bounds an injected transport even if it does not honor abort
+  ---
+  duration_ms: 21.0439
+  type: 'test'
+  ...
+# Subtest: truncated, refused, empty and tool-call responses cannot become plans
+ok 116 - truncated, refused, empty and tool-call responses cannot become plans
+  ---
+  duration_ms: 1.7234
+  type: 'test'
+  ...
+# Subtest: invalid transport JSON is rejected without echoing raw content
+ok 117 - invalid transport JSON is rejected without echoing raw content
+  ---
+  duration_ms: 0.5533
+  type: 'test'
+  ...
+# Subtest: both streaming-body and text fallback are bounded
+ok 118 - both streaming-body and text fallback are bounded
+  ---
+  duration_ms: 2.6789
+  type: 'test'
+  ...
+# Subtest: unknown usage stays unknown, invalid counters and arbitrary remote model names are discarded
+ok 119 - unknown usage stays unknown, invalid counters and arbitrary remote model names are discarded
+  ---
+  duration_ms: 0.5873
+  type: 'test'
+  ...
+# Subtest: number ordering uses numeric values and keeps null last in both directions
+ok 120 - number ordering uses numeric values and keeps null last in both directions
+  ---
+  duration_ms: 1.4991
+  type: 'test'
+  ...
+# Subtest: numeric before/after never treats empty values as zero
+ok 121 - numeric before/after never treats empty values as zero
+  ---
+  duration_ms: 0.2521
+  type: 'test'
+  ...
+# Subtest: select ordering follows declared options rather than opaque identifiers
+ok 122 - select ordering follows declared options rather than opaque identifiers
+  ---
+  duration_ms: 0.2527
+  type: 'test'
+  ...
+# Subtest: normalized dates compare chronologically while excluding missing dates
+ok 123 - normalized dates compare chronologically while excluding missing dates
+  ---
+  duration_ms: 10.6966
+  type: 'test'
+  ...
+# Subtest: list displays all selected fields beyond five and excludes unselected fields
+ok 124 - list displays all selected fields beyond five and excludes unselected fields
+  ---
+  duration_ms: 0.8587
+  type: 'test'
+  ...
+# Subtest: field diff preserves settings, bindings, preferences, options and nested sources
+ok 125 - field diff preserves settings, bindings, preferences, options and nested sources
+  ---
+  duration_ms: 2.2349
+  type: 'test'
+  ...
+# Subtest: review renders every changed field and includes untruncated JSON fallback safely
+ok 126 - review renders every changed field and includes untruncated JSON fallback safely
+  ---
+  duration_ms: 0.9043
+  type: 'test'
+  ...
+# Subtest: proposal and saved source evidence show original title, field, quote and semantic limitation
+ok 127 - proposal and saved source evidence show original title, field, quote and semantic limitation
+  ---
+  duration_ms: 0.4643
+  type: 'test'
+  ...
+# Subtest: only collections with status and nonempty completion rules contribute to today
+ok 128 - only collections with status and nonempty completion rules contribute to today
+  ---
+  duration_ms: 0.2274
+  type: 'test'
+  ...
+# Subtest: equal quotes for different actions, records and before/after remain individually reviewable
+ok 129 - equal quotes for different actions, records and before/after remain individually reviewable
+  ---
+  duration_ms: 0.4543
+  type: 'test'
+  ...
+# Subtest: runtime is confined to new project and ignores legacy environment
+ok 130 - runtime is confined to new project and ignores legacy environment
+  ---
+  duration_ms: 3.399
+  type: 'test'
+  ...
+# Subtest: linked writable files and directory junctions are refused
+ok 131 - linked writable files and directory junctions are refused
+  ---
+  duration_ms: 3.7704
+  type: 'test'
+  ...
+# Subtest: manual preview rejects uploads above 18 MiB without retaining state or proposals
+ok 132 - manual preview rejects uploads above 18 MiB without retaining state or proposals
+  ---
+  duration_ms: 317.3895
+  type: 'test'
+  ...
+# Subtest: manual backup preview enforces the 8 MiB final-state ceiling before persisting a proposal
+ok 133 - manual backup preview enforces the 8 MiB final-state ceiling before persisting a proposal
+  ---
+  duration_ms: 2378.9954
+  type: 'test'
+  ...
+# Subtest: full backup restores one workspace as a new copy with preserved content and clean credentials
+ok 134 - full backup restores one workspace as a new copy with preserved content and clean credentials
+  ---
+  duration_ms: 141.105
+  type: 'test'
+  ...
+# Subtest: manual template preview is non-mutating, idempotent, confirmable and cancellable
+ok 135 - manual template preview is non-mutating, idempotent, confirmable and cancellable
+  ---
+  duration_ms: 94.5201
+  type: 'test'
+  ...
+# Subtest: connection check does not mutate workspaces, exposes no key, and resets on configuration change
+ok 136 - connection check does not mutate workspaces, exposes no key, and resets on configuration change
+  ---
+  duration_ms: 88.7836
+  type: 'test'
+  ...
+# Subtest: a slow connection check cannot replace a newer model configuration
+ok 137 - a slow connection check cannot replace a newer model configuration
+  ---
+  duration_ms: 87.6375
+  type: 'test'
+  ...
+# Subtest: auth/CSRF and foreign origins cannot write; setup is separate and closes
+ok 138 - auth/CSRF and foreign origins cannot write; setup is separate and closes
+  ---
+  duration_ms: 78.0912
+  type: 'test'
+  ...
+# Subtest: manual writes are atomic, idempotent and persisted without adopting other app configuration
+ok 139 - manual writes are atomic, idempotent and persisted without adopting other app configuration
+  ---
+  duration_ms: 119.4812
+  type: 'test'
+  ...
+# Subtest: AI preview does not write, confirmation executes once, undo survives reload
+ok 140 - AI preview does not write, confirmation executes once, undo survives reload
+  ---
+  duration_ms: 111.4769
+  type: 'test'
+  ...
+# Subtest: AI old proposals and in-flight plans cannot overwrite later manual edits
+ok 141 - AI old proposals and in-flight plans cannot overwrite later manual edits
+  ---
+  duration_ms: 100.9847
+  type: 'test'
+  ...
+# Subtest: missing model makes no proposal; model secret absent from state/history/export
+ok 142 - missing model makes no proposal; model secret absent from state/history/export
+  ---
+  duration_ms: 90.2715
+  type: 'test'
+  ...
+# Subtest: cancelled plan cannot execute, unknown POST endpoint is rejected
+ok 143 - cancelled plan cannot execute, unknown POST endpoint is rejected
+  ---
+  duration_ms: 75.5292
+  type: 'test'
+  ...
+# Subtest: failed model metadata is retained without recording a successful state change
+ok 144 - failed model metadata is retained without recording a successful state change
+  ---
+  duration_ms: 80.7079
+  type: 'test'
+  ...
+# Subtest: pending plan capacity is checked before another model call
+ok 145 - pending plan capacity is checked before another model call
+  ---
+  duration_ms: 220.7951
+  type: 'test'
+  ...
+# Subtest: SQLite failure after state update rolls back state, receipt, request and proposal status
+ok 146 - SQLite failure after state update rolls back state, receipt, request and proposal status
+  ---
+  duration_ms: 45.424
+  type: 'test'
+  ...
+# Subtest: history merges pending plans and receipts in descending event time
+ok 147 - history merges pending plans and receipts in descending event time
+  ---
+  duration_ms: 15.9633
+  type: 'test'
+  ...
+1..147
+# tests 147
+# suites 0
+# pass 147
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9352.7589
