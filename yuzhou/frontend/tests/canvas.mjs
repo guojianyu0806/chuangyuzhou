@@ -23,9 +23,9 @@ for(const source of ['#000000','#ffffff','#7900ff','#003300','#ff0080','#040020'
 const require=createRequire(import.meta.url);
 const {chromium}=require('C:/Users/g2806/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const browser=await chromium.launch({channel:'msedge',headless:true});
-const base=process.env.TEST_BASE_URL||'http://127.0.0.1:4173';
+const base=process.env.TEST_BASE_URL||'http://127.0.0.1:4397';
 const errors=[];
-const readState=page=>page.evaluate(()=>JSON.parse(localStorage.getItem('lumi-workspace-v1-demo')));
+const readState=page=>page.evaluate(()=>JSON.parse(localStorage.getItem('czb-yuzhou-workspace-v1-demo')));
 const cardFrom=async(page,id)=>(await readState(page)).canvas.cards.find(c=>c.id===id);
 const pointerDrag=async(page,locator,dx,dy)=>{
   const rect=await locator.boundingBox();assert.ok(rect);
@@ -96,7 +96,7 @@ try {
   await page.goto(`${base}/#/home`,{waitUntil:'networkidle'});
   const spaceId=(await readState(page)).spaces[0]?.id;
   assert.ok(spaceId,'Demo workspace must contain a custom space for archive coverage.');
-  await page.evaluate(id=>{const k='lumi-workspace-v1-demo',s=JSON.parse(localStorage.getItem(k));s.spaces.find(x=>x.id===id).archived=true;localStorage.setItem(k,JSON.stringify(s));},spaceId);
+  await page.evaluate(id=>{const k='czb-yuzhou-workspace-v1-demo',s=JSON.parse(localStorage.getItem(k));s.spaces.find(x=>x.id===id).archived=true;localStorage.setItem(k,JSON.stringify(s));},spaceId);
   await page.reload({waitUntil:'networkidle'});await page.locator('[data-cv=archives]').click();
   await page.locator(`[data-archive-space="${spaceId}"]`).click();await page.waitForURL(`**/#/space/${spaceId}`);
 

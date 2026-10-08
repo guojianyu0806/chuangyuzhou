@@ -144,7 +144,7 @@ export function mountLedger(ctx, destination='') {
       if (action === 'add-entry') openEntry();
       if (action === 'ai-entry') {
         const project=view.scope==='projects'&&state.ledger.projects.find(p=>p.id===view.projectId&&!p.archived);
-        try{sessionStorage.removeItem('yuzhou-active-ai-'+state.mode);}catch{}
+        try{sessionStorage.removeItem('czb-yuzhou-active-ai-'+state.mode);}catch{}
         ctx.go('ai',project?`ledger:${project.id}`:view.scope==='daily'?'ledger':'auto');
       }
       if (action === 'add-project') openProject();

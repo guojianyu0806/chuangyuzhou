@@ -7,7 +7,7 @@ const page=await browser.newPage({viewport:{width:1440,height:1000}});
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 const width=()=>page.locator('.sidebar').evaluate(el=>el.getBoundingClientRect().width);
 try{
-  await page.goto('http://127.0.0.1:4173/');
+  await page.goto('http://127.0.0.1:4397/');
   await page.locator('.cv-card').first().waitFor();
   assert.equal(await width(),80);
   const mainLeft=await page.locator('.app-main').evaluate(el=>el.getBoundingClientRect().left);

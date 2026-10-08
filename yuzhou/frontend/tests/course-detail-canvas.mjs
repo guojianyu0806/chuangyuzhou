@@ -7,10 +7,10 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('C:/Users/g2806/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const browser = await chromium.launch({ channel: 'msedge', headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, hasTouch: true });
-const base = process.env.TEST_BASE_URL || 'http://127.0.0.1:4173';
+const base = process.env.TEST_BASE_URL || 'http://127.0.0.1:4397';
 const errors = [];
 page.on('pageerror', error => errors.push(error.message));
-const state = () => page.evaluate(() => JSON.parse(localStorage.getItem('lumi-workspace-v1-demo')));
+const state = () => page.evaluate(() => JSON.parse(localStorage.getItem('czb-yuzhou-workspace-v1-demo')));
 const board = async type => (await state()).boards[`course:course-data-structures:${type}`];
 const holdMove = async (locator, dx, dy) => {
   const rect = await locator.boundingBox();

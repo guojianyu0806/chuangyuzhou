@@ -4,15 +4,15 @@ import { readFile } from 'node:fs/promises';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('C:/Users/g2806/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const base = process.env.WORKBENCH_TEST_URL || 'http://127.0.0.1:4173';
-const storageKey = 'lumi-workspace-v1-personal';
+const base = process.env.WORKBENCH_TEST_URL || 'http://127.0.0.1:4397';
+const storageKey = 'czb-yuzhou-workspace-v1-personal';
 const browser = await chromium.launch({ headless: true, channel: 'msedge' });
 const contexts = [];
 const log = message => console.log(`PASS ${message}`);
 
 async function createContext() {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'zh-CN', timezoneId: 'Asia/Shanghai', acceptDownloads: true });
-  await context.addInitScript(() => localStorage.setItem('lumi-mode', 'personal'));
+  await context.addInitScript(() => localStorage.setItem('czb-yuzhou-mode', 'personal'));
   contexts.push(context);
   return context;
 }
@@ -45,7 +45,7 @@ try {
   const primary = await readState(pageA);
   assert.equal(primary.tasks.length, 1);
   assert.equal(primary.tasks[0].title, '窗口 A：必须保留的记录');
-  const recoveries = await pageB.evaluate(() => Object.keys(localStorage).filter(k => k.startsWith('lumi-recovery-personal-')).map(k => ({ key: k, state: JSON.parse(localStorage.getItem(k)) })));
+  const recoveries = await pageB.evaluate(() => Object.keys(localStorage).filter(k => k.startsWith('czb-yuzhou-recovery-personal-')).map(k => ({ key: k, state: JSON.parse(localStorage.getItem(k)) })));
   assert.equal(recoveries.length, 1);
   assert.ok(recoveries[0].state.tasks.some(t => t.title === '窗口 B：发生冲突的草稿'));
   log('stale tab cannot overwrite A; B changes preserved in a recovery copy');
@@ -89,11 +89,11 @@ try {
   const audio = Buffer.alloc(44 + 16000);
   audio.write('RIFF', 0); audio.writeUInt32LE(audio.length - 8, 4); audio.write('WAVE', 8); audio.write('fmt ', 12); audio.writeUInt32LE(16, 16); audio.writeUInt16LE(1, 20); audio.writeUInt16LE(1, 22); audio.writeUInt32LE(8000, 24); audio.writeUInt32LE(16000, 28); audio.writeUInt16LE(2, 32); audio.writeUInt16LE(16, 34); audio.write('data', 36); audio.writeUInt32LE(16000, 40);
   await page.locator('[data-en-file="audio"]').setInputFiles({ name: 'attachment-to-remove.wav', mimeType: 'audio/wav', buffer: audio });
-  await page.waitForFunction(() => JSON.parse(localStorage.getItem('lumi-workspace-v1-personal') || 'null')?.english?.audio?.persistent);
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('czb-yuzhou-workspace-v1-personal') || 'null')?.english?.audio?.persistent);
   const audioId = (await readState(page)).english.audio.blobId;
   assert.ok(audioId);
   await page.evaluate(async id => {
-    const db = await new Promise((resolve, reject) => { const r = indexedDB.open('lumi-files', 1); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error); });
+    const db = await new Promise((resolve, reject) => { const r = indexedDB.open('czb-yuzhou-files', 1); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error); });
     await new Promise((resolve, reject) => { const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').delete(id); tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); });
     db.close();
   }, audioId);

@@ -6,7 +6,7 @@ const browser=await chromium.launch({channel:'msedge',headless:true});
 const context=await browser.newContext({viewport:{width:1280,height:980}});
 const page=await context.newPage();
 const errors=[];page.on('pageerror',error=>errors.push(error.message));
-const url=process.env.TEST_BASE_URL||'http://127.0.0.1:4173';
+const url=process.env.TEST_BASE_URL||'http://127.0.0.1:4397';
 const harness=`
 import {mountSpace,openSpaceDialog,saveSpaceFiles} from './spaces.js';
 import {icon} from './icons.js';

@@ -6,8 +6,8 @@ const {chromium}=require('C:/Users/g2806/.cache/codex-runtimes/codex-primary-run
 const browser=await chromium.launch({channel:'msedge',headless:true});
 const context=await browser.newContext({viewport:{width:1440,height:960}});
 const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-const base=process.env.TEST_URL||'http://127.0.0.1:4173';
-const snapshot=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('lumi-workspace-v1-demo')));
+const base=process.env.TEST_URL||'http://127.0.0.1:4397';
+const snapshot=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('czb-yuzhou-workspace-v1-demo')));
 const overlapping=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 async function holdMove(board){
   const card=page.locator('.cv-card').first(),id=await card.getAttribute('data-card');
@@ -38,7 +38,7 @@ try{
   await page.goto(`${base}/#/inbox`);await holdMove('inbox');
   const drop=await page.evaluateHandle(()=>{const dt=new DataTransfer();dt.items.add(new File(['inner drop bytes'],'inner.txt',{type:'text/plain'}));return dt;});
   await page.locator('.cv-viewport').dispatchEvent('drop',{dataTransfer:drop});await drop.dispose();
-  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('lumi-workspace-v1-demo')).captures.some(c=>c.fileName==='inner.txt'));
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('czb-yuzhou-workspace-v1-demo')).captures.some(c=>c.fileName==='inner.txt'));
   const file=(await snapshot()).captures.find(c=>c.fileName==='inner.txt');assert.ok(file.blobId);
   await page.screenshot({path:'.runtime/interior-inbox-desktop.png',fullPage:true});console.log('PASS inbox original file drop');
   for(const route of ['review','settings']){

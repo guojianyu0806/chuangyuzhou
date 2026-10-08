@@ -35,7 +35,7 @@ export function openAIConversation(ctx,{targetId='auto',text='',files=[]}={}){
   ensure(ctx.state);
   const previous=ctx.state.aiDraft, previousUpdatedAt=ctx.state.updatedAt;
   if(previous.text?.trim()||previous.files?.length){
-    try{sessionStorage.removeItem('yuzhou-active-ai-'+ctx.state.mode);}catch{}
+    try{sessionStorage.removeItem('czb-yuzhou-active-ai-'+ctx.state.mode);}catch{}
     ctx.toast('已保留你尚未发送的草稿，请先处理草稿，再加入这次内容。');
     ctx.go('ai',previous.targetId||'auto');return false;
   }
@@ -43,7 +43,7 @@ export function openAIConversation(ctx,{targetId='auto',text='',files=[]}={}){
   if(text.length>30000)throw new Error('本次文字较长，请分段发送。');
   ctx.state.aiDraft={text,files:files.map(file=>({id:file.id,blobId:file.blobId||file.id,name:file.name,size:file.size||0,type:file.type||'',createdAt:file.createdAt||stamp()})),targetId};
   try{ctx.save(ctx.state);}catch(error){ctx.state.aiDraft=previous;ctx.state.updatedAt=previousUpdatedAt;throw error;}
-  try{sessionStorage.removeItem('yuzhou-active-ai-'+ctx.state.mode);}catch{}
+  try{sessionStorage.removeItem('czb-yuzhou-active-ai-'+ctx.state.mode);}catch{}
   ctx.go('ai',targetId);return true;
 }
 
@@ -115,7 +115,7 @@ function matchedDestinations(state, text) {
 export function mountAIComposer(ctx, host, settings={}) {
   const { state, esc, icon, save, uid, toast, go } = ctx;
   const activity = ensure(state),followRequest=settings.request;
-  const draftKey=ctx.cloud?.draftKey(`conversation-${followRequest?.id}`)||`yuzhou-conversation-${state.mode}-${followRequest?.id}`;
+  const draftKey=ctx.cloud?.draftKey(`conversation-${followRequest?.id}`)||`czb-yuzhou-conversation-${state.mode}-${followRequest?.id}`;
   const owner=followRequest?{aiDraft:{text:'',files:[],targetId:followRequest.targetId}}:state;
   if(followRequest)try{const cached=JSON.parse(localStorage.getItem(draftKey));if(cached&&typeof cached.text==='string'&&Array.isArray(cached.files))owner.aiDraft=cached;}catch{}
   const saveDraft=()=>{if(followRequest)localStorage.setItem(draftKey,JSON.stringify(owner.aiDraft));else save(state);};
@@ -134,7 +134,7 @@ export function mountAIComposer(ctx, host, settings={}) {
     <div class="ai-drop-target"><span>${icon('upload', 18)} 拖入文件、截图或课件</span><button type="button" class="ai-attach-button" data-ai="attach">选择附件 ${icon('plus', 15)}</button><input type="file" multiple hidden data-ai-files><small>每个文件最多 40 MB · 仅保存到当前浏览器</small></div>
     <div class="ai-attachment-chips" aria-live="polite"></div>
     <div class="ai-compose-footer"><label class="ai-destination"><span>放到</span><select name="destination" aria-label="内容归属">${options(ctx, owner.aiDraft.targetId)}</select></label><button class="btn ai-send" type="submit">${icon('sparkles', 17)}${followRequest?'发送补充':'发送'} ${icon('arrow-right', 16)}</button></div>
-    <div class="ai-compose-note">${icon('shield', 13)} 先收好原文与附件，连接大模型后才能自动理解和整理。</div>
+    <div class="ai-compose-note">${icon('shield', 13)} 先收好原文与附件，本比赛实例独立配置 AI 引擎与模型后才能自动整理。</div>
     <div class="ai-compose-live" role="status" aria-live="polite"></div>
   </form>`;
   const form = host.querySelector('form');
@@ -214,7 +214,7 @@ export function mountAIComposer(ctx, host, settings={}) {
       toast('消息已发送，AI 正在结合前文回复。');
       startAIJob(ctx, request).catch(error => toast(error.message));
     } else toast('已收到，原文和附件已保存。连接 AI 后才能自动整理。');
-    try{sessionStorage.setItem('yuzhou-active-ai-'+state.mode,request.id);}catch{}
+    try{sessionStorage.setItem('czb-yuzhou-active-ai-'+state.mode,request.id);}catch{}
     host.dispatchEvent(new CustomEvent('ai-request-added', { bubbles: true, detail: { id: request.id } }));
     if (alive && !host.closest('.ai-page')) go('ai');
   };

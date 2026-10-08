@@ -2,14 +2,14 @@
 export const VERSION = '0.15.0';
 export const cloud = {
   connected: false,
-  async organizeCourse() { throw new Error('请在服务器部署后连接大模型。当前资料已保存到本机。'); },
+  async organizeCourse() { throw new Error('请先配置本比赛独立 AI 引擎与模型。当前资料已保存到本机。'); },
   async sync() { throw new Error('云端尚未连接，当前数据仅保存在这个浏览器。'); }
 };
 const databases = new Map();
 let fileScope = '', remoteFile = null;
 export function configureFileStore(scope = '', fetchFile = null) { fileScope = scope; remoteFile = fetchFile; }
 function database(scope=fileScope) {
-  const name = scope ? `lumi-files-${scope}` : 'lumi-files';
+  const name = scope ? `czb-yuzhou-files-${scope}` : 'czb-yuzhou-files';
   if (!databases.has(name)) databases.set(name,new Promise((resolve,reject)=>{
     const request=indexedDB.open(name,1);
     request.onupgradeneeded=()=>request.result.createObjectStore('files');

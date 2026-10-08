@@ -4,15 +4,15 @@ import { readFile } from 'node:fs/promises';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('C:/Users/g2806/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const base = process.env.WORKBENCH_TEST_URL || 'http://127.0.0.1:4173';
+const base = process.env.WORKBENCH_TEST_URL || 'http://127.0.0.1:4397';
 const browser = await chromium.launch({ headless: true, channel: 'msedge' });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'zh-CN', timezoneId: 'Asia/Shanghai', acceptDownloads: true });
-await context.addInitScript(() => localStorage.setItem('lumi-mode', 'personal'));
+await context.addInitScript(() => localStorage.setItem('czb-yuzhou-mode', 'personal'));
 const page = await context.newPage();
 const errors = [];
 page.on('pageerror', error => errors.push(error.message));
 const action = (name) => page.locator(`[data-en="${name}"]`);
-const enState = () => page.evaluate(() => JSON.parse(localStorage.getItem('lumi-workspace-v1-personal')).english);
+const enState = () => page.evaluate(() => JSON.parse(localStorage.getItem('czb-yuzhou-workspace-v1-personal')).english);
 const readSection = key => page.locator(`[data-en="section"][data-key="${key}"]`).click();
 const exercise = key => page.locator(`[data-en="exercise"][data-key="${key}"]`).click();
 const log = name => console.log(`PASS ${name}`);

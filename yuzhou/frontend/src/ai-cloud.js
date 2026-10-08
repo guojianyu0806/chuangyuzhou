@@ -7,14 +7,14 @@ export const cloudAIEnabled = ctx => !!ctx.cloud?.enabled && ctx.state.mode === 
 export const jobWorking = job => !!job && ['queued','running'].includes(job.status);
 
 export async function startAIJob(ctx, request) {
-  if (!cloudAIEnabled(ctx)) throw new Error(ctx.cloud?.enabled ? '请先进入“我的工作台”，再提交真实资料。' : '请在云端工作台连接大模型后使用自动整理。');
+  if (!cloudAIEnabled(ctx)) throw new Error(ctx.cloud?.enabled ? '请先进入“我的工作台”，再提交真实资料。' : '请在本比赛实例独立配置 AI 引擎与模型后使用自动整理。');
   const cache = entry(ctx.state);
   if (jobWorking(cache.jobs.get(request.id))) return;
   cache.jobs.set(request.id, {requestId:request.id,status:'queued',starting:true}); emit(ctx.state);
   try {
     const status = await ctx.cloud.request('/api/model/status'); ctx.cloud.modelStatus = status;
     if (!status.configured) throw new Error('请先在“偏好与连接”中保存 DeepSeek API Key。原文已收好。');
-    if (!status.hermesAvailable) throw new Error('Hermes 服务尚未就绪，原文和附件已保留。');
+    if (!status.hermesAvailable) throw new Error('本比赛独立 AI 引擎待配置，原文和附件已保留。');
     ensureConversation(request,ctx.uid);ctx.save(ctx.state);
     await ctx.cloud.flush();
     const {job} = await ctx.cloud.request('/api/ai/jobs', {method:'POST',body:{requestId:request.id,text:request.text,

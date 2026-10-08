@@ -1,5 +1,5 @@
 // Device display preferences stay outside the workspace, cloud saves and backups.
-export const TIMETABLE_DISPLAY_KEY = 'yuzhou-timetable-display-v1';
+export const TIMETABLE_DISPLAY_KEY = 'czb-yuzhou-timetable-display-v1';
 export const TIMETABLE_SCALE = Object.freeze({min:30, max:180, step:5, default:100});
 
 export function normalizeTimetableScale(value) {

@@ -9,7 +9,7 @@ Object.assign(apiMessages,{invalid_ledger:'账目格式有误，请检查金额�
 Object.assign(apiMessages,{invalid_fitness:'运动记录格式有误，请检查日期、时长、里程和热量。',invalid_fitness_reference:'运动记录关联的空间已不存在，请同步最新工作区后重试。',invalid_space_fitness_enabled:'运动统计开关格式有误，请重新保存空间设置。'});
 Object.assign(apiMessages,{invalid_competitions:'比赛记录格式有误，请检查比赛、截止日期和准备事项的关联。'});
 function errorMessage(result,fallback){const value=typeof result.error==='string'?result.error:result.error?.message;return apiMessages[value]||result.message||value||fallback;}
-const statusNames = {ready:'云端已就绪',saved:'已同步',saving:'正在同步',pending:'等待同步',offline:'离线 · 待同步',conflict:'同步冲突 · 已保留',remote:'其他设备有更新',auth:'请重新登录'};
+const statusNames = {ready:'比赛实例已连接',saved:'已同步',saving:'正在同步',pending:'等待同步',offline:'离线 · 待同步',conflict:'同步冲突 · 已保留',remote:'其他设备有更新',auth:'请重新登录'};
 
 // Each tab owns its revision and pending snapshot. Sharing a browser cache must
 // never make an old tab inherit a newer revision and overwrite another device.
@@ -27,16 +27,16 @@ export class CloudClient {
     this.account = encodeURIComponent(session.username);
     // A duplicated browser tab may inherit sessionStorage. Give every loaded
     // document its own cache, carrying the previous document's pending work.
-    const previousTab=sessionStorage.getItem(`lumi-cloud-tab-${this.account}`);
+    const previousTab=sessionStorage.getItem(`czb-yuzhou-cloud-tab-${this.account}`);
     const reloading=performance.getEntriesByType('navigation')[0]?.type==='reload';
-    const tab=reloading&&previousTab?previousTab:crypto.randomUUID();sessionStorage.setItem(`lumi-cloud-tab-${this.account}`,tab);
-    this.prefix = `lumi-cloud-v1-${this.account}-${tab}`;
+    const tab=reloading&&previousTab?previousTab:crypto.randomUUID();sessionStorage.setItem(`czb-yuzhou-cloud-tab-${this.account}`,tab);
+    this.prefix = `czb-yuzhou-cloud-v1-${this.account}-${tab}`;
     this.cacheKey = `${this.prefix}-sync`;
     if(previousTab&&previousTab!==tab){
-      const previousPrefix=`lumi-cloud-v1-${this.account}-${previousTab}`;
+      const previousPrefix=`czb-yuzhou-cloud-v1-${this.account}-${previousTab}`;
       for(const suffix of ['sync','workspace-personal','workspace-demo']){const value=localStorage.getItem(`${previousPrefix}-${suffix}`);if(value)localStorage.setItem(`${this.prefix}-${suffix}`,value);}
     }
-    this.recoveryPrefix = `lumi-cloud-recovery-${this.account}-`;
+    this.recoveryPrefix = `czb-yuzhou-cloud-recovery-${this.account}-`;
     this.scope = `cloud-${this.account}`;
     this.mode = 'personal';
     this.setMode('personal');
@@ -48,7 +48,7 @@ export class CloudClient {
   draftKey(value) {return `${this.prefix}-draft-${value}`;}
   recoveryCopies() {
     const copies=[];
-    const accountPrefix=`lumi-cloud-v1-${this.account}-`;
+    const accountPrefix=`czb-yuzhou-cloud-v1-${this.account}-`;
     for(const key of Object.keys(localStorage)){
       if(key.startsWith(this.recoveryPrefix)){const state=read(key);if(state)copies.push({key,state,label:'冲突恢复副本'});}
       else if(key!==this.cacheKey&&key.startsWith(accountPrefix)&&key.slice(accountPrefix.length).length===41&&key.endsWith('-sync')){
@@ -194,7 +194,7 @@ export class CloudClient {
 
 function authView(setup,error='') {
   const app=document.querySelector('#app');
-  app.innerHTML=`<main class="cloud-entry" id="main"><section class="cloud-welcome"><img src="./icon.svg" alt="" width="56" height="56"><span class="eyebrow">宇宙 · YOUR OWN UNIVERSE</span><h1>你的每一种日常，<br>都在这里相遇。</h1><p>课程、灵感、学生会和自己的小计划。<br>登录后，在每台设备上继续。</p><div class="cloud-entry-tags"><span>课程空间</span><span>六级计划</span><span>AI 收件台</span></div></section><section class="cloud-login-card"><span class="cloud-entry-mark">✳</span><h2>${setup?'建立你的私人宇宙':'欢迎回到宇宙'}</h2><p class="muted">${setup?'设置一个账号，用于你的电脑、手机与平板。':'用同一个账号，连接你的空间。'}</p><form id="cloud-auth-form"><label class="field">账号<input name="username" required minlength="2" maxlength="64" autocomplete="username" placeholder="例如 yuzhou"></label><label class="field">密码<input name="password" type="password" required ${setup?'minlength="12"':''} maxlength="256" autocomplete="${setup?'new-password':'current-password'}" placeholder="${setup?'至少 12 位字符':'输入你的密码'}"></label>${setup?'<label class="field">初始化口令<input name="setupToken" type="password" required autocomplete="off" placeholder="部署时生成的初始化口令"></label><p class="small muted">口令仅用于首次建立账号，不会保存到浏览器。</p>':''}<p id="cloud-auth-error" class="cloud-error" role="alert">${esc(error)}</p><button class="btn primary full" type="submit">${setup?'创建账号并进入':'登录工作台'} →</button></form><p class="cloud-entry-foot">资料归你 · 各设备同步 · 独立私人空间</p></section></main>`;
+  app.innerHTML=`<main class="cloud-entry" id="main"><section class="cloud-welcome"><img src="./icon.svg" alt="" width="56" height="56"><span class="eyebrow">宇宙 · 传智杯独立副本</span><h1>你的每一种日常，<br>都在这里相遇。</h1><p>课程、灵感、学生会和自己的小计划。<br>登录本比赛实例，原工作台保持独立。</p><div class="cloud-entry-tags"><span>课程空间</span><span>六级计划</span><span>AI 收件台</span></div></section><section class="cloud-login-card"><span class="cloud-entry-mark">✳</span><h2>${setup?'建立你的私人宇宙':'欢迎回到宇宙'}</h2><p class="muted">${setup?'为本比赛副本设置新账号，不继承原账号。':'用本比赛副本的账号，连接你的空间。'}</p><form id="cloud-auth-form"><label class="field">账号<input name="username" required minlength="2" maxlength="64" autocomplete="username" placeholder="例如 yuzhou"></label><label class="field">密码<input name="password" type="password" required ${setup?'minlength="12"':''} maxlength="256" autocomplete="${setup?'new-password':'current-password'}" placeholder="${setup?'至少 12 位字符':'输入你的密码'}"></label>${setup?'<label class="field">初始化口令<input name="setupToken" type="password" required autocomplete="off" placeholder="部署时生成的初始化口令"></label><p class="small muted">口令仅用于首次建立账号，不会保存到浏览器。</p>':''}<p id="cloud-auth-error" class="cloud-error" role="alert">${esc(error)}</p><button class="btn primary full" type="submit">${setup?'创建账号并进入':'登录工作台'} →</button></form><p class="cloud-entry-foot">传智杯独立副本 · 当前仅本机访问</p></section></main>`;
   return app.querySelector('form');
 }
 
@@ -223,10 +223,10 @@ export async function bootstrapCloud() {
   try{
     const response=await fetch('/api/health',{cache:'no-store',signal:AbortSignal.timeout(6000)});
     if(!response.ok)throw new Error('云端服务暂时无法连接。');health=await response.json();
-    if(health.mode!=='cloud'){sessionStorage.removeItem('lumi-cloud-server');return null;}
-    sessionStorage.setItem('lumi-cloud-server','1');
+    if(health.mode!=='cloud'){sessionStorage.removeItem('czb-yuzhou-cloud-server');return null;}
+    sessionStorage.setItem('czb-yuzhou-cloud-server','1');
   }catch(error){
-    if(['127.0.0.1','localhost','[::1]'].includes(location.hostname)&&!sessionStorage.getItem('lumi-cloud-server'))return null;
+    if(['127.0.0.1','localhost','[::1]'].includes(location.hostname)&&!sessionStorage.getItem('czb-yuzhou-cloud-server'))return null;
     document.querySelector('#app').innerHTML='<main class="cloud-entry cloud-unavailable"><section class="cloud-login-card"><h1>暂时无法连接工作台</h1><p>请检查网络后重新加载。你的设备缓存仍然保留。</p><button class="btn primary" id="cloud-retry">重新连接</button></section></main>';
     document.querySelector('#cloud-retry').onclick=()=>location.reload();return new Promise(()=>{});
   }
@@ -238,13 +238,13 @@ export async function bootstrapCloud() {
 }
 
 export function mountModelSettings(container,client,toast) {
-  container.innerHTML=`<div class="section-head"><h2>DeepSeek 与 AI 管家</h2><span class="badge" id="cloud-model-badge">检查连接中</span></div><p class="muted">API 密钥仅保存在你的服务器。课程整理与碎片归档共用这个连接。</p><form id="cloud-model-form" autocomplete="off"><label class="field">DeepSeek API Key<input type="password" name="apiKey" autocomplete="new-password" spellcheck="false" placeholder="输入新的 API Key；留空保留现有密钥"></label><label class="field">模型<select name="model"><option value="deepseek-flash">DeepSeek Flash</option><option value="deepseek-v4-pro">DeepSeek V4 Pro</option></select></label><p class="small muted" id="cloud-hermes-state"></p><p class="cloud-error" role="alert"></p><button class="btn primary" type="submit">保存连接</button></form>`;
+  container.innerHTML=`<div class="section-head"><h2>DeepSeek 与 AI 管家</h2><span class="badge" id="cloud-model-badge">检查连接中</span></div><p class="muted">专用 API 密钥仅保存在本比赛实例。还需单独配置 AI 引擎；保存密钥不代表引擎可用，也不代表完成真实模型验证。</p><form id="cloud-model-form" autocomplete="off"><label class="field">DeepSeek API Key<input type="password" name="apiKey" autocomplete="new-password" spellcheck="false" placeholder="输入新的 API Key；留空保留现有密钥"></label><label class="field">模型<select name="model"><option value="deepseek-flash">DeepSeek Flash</option><option value="deepseek-v4-pro">DeepSeek V4 Pro</option></select></label><p class="small muted" id="cloud-hermes-state"></p><p class="cloud-error" role="alert"></p><button class="btn primary" type="submit">保存连接</button></form>`;
   const form=container.querySelector('form');
-  function show(info){client.modelStatus=info;if(!container.isConnected)return;container.querySelector('#cloud-model-badge').textContent=info.configured?'已配置':'尚未接入';container.querySelector('#cloud-hermes-state').textContent=info.hermesAvailable?'Hermes 已就绪':'Hermes 尚未就绪';if(info.model)form.elements.model.value=info.model;}
+  function show(info){client.modelStatus=info;if(!container.isConnected)return;container.querySelector('#cloud-model-badge').textContent=info.configured?'密钥已保存':'尚未配置';container.querySelector('#cloud-hermes-state').textContent=info.hermesAvailable?'独立 AI 引擎已配置，真实调用效果仍待验证。':'独立 AI 引擎待配置。原工作台引擎不会自动复用；当前可使用手动整理与全部本地管理功能。';if(info.model)form.elements.model.value=info.model;}
   client.request('/api/model/status').then(show).catch(error=>{if(container.isConnected)container.querySelector('.cloud-error').textContent=error.message;});
   form.onsubmit=async event=>{
     event.preventDefault();const button=form.querySelector('button');button.disabled=true;
-    try{const result=await client.request('/api/model/config',{method:'PUT',body:{provider:'deepseek',apiKey:form.elements.apiKey.value,model:form.elements.model.value}});form.elements.apiKey.value='';show(result);toast('模型连接配置已保存到服务器。');container.querySelector('.cloud-error').textContent='';}
+    try{const result=await client.request('/api/model/config',{method:'PUT',body:{provider:'deepseek',apiKey:form.elements.apiKey.value,model:form.elements.model.value}});form.elements.apiKey.value='';show(result);toast('模型配置已保存到本比赛实例，未触发模型调用。');container.querySelector('.cloud-error').textContent='';}
     catch(error){container.querySelector('.cloud-error').textContent=error.message;}
     finally{button.disabled=false;}
   };

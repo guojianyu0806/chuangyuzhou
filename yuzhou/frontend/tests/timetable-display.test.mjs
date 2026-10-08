@@ -9,14 +9,14 @@ function memoryStorage() {
 
 test('timetable size persists on the current device without mutating or copying workspace data', () => {
   const phone = memoryStorage(), tablet = memoryStorage();
-  phone.setItem('lumi-workspace-v1-personal', JSON.stringify({timetable:{terms:[]},ui:{theme:'light'}}));
-  const workspaceBefore = phone.getItem('lumi-workspace-v1-personal');
+  phone.setItem('czb-yuzhou-workspace-v1-personal', JSON.stringify({timetable:{terms:[]},ui:{theme:'light'}}));
+  const workspaceBefore = phone.getItem('czb-yuzhou-workspace-v1-personal');
   const onPhone = createTimetableDisplay(()=>phone), onTablet = createTimetableDisplay(()=>tablet);
   assert.equal(onPhone.read(),100); assert.equal(onTablet.read(),100);
   assert.deepEqual(onPhone.write(65), {scale:65,saved:true});
   assert.equal(createTimetableDisplay(()=>phone).read(),65);
   assert.equal(onTablet.read(),100);
-  assert.equal(phone.getItem('lumi-workspace-v1-personal'),workspaceBefore);
+  assert.equal(phone.getItem('czb-yuzhou-workspace-v1-personal'),workspaceBefore);
   assert.deepEqual(JSON.parse(phone.getItem(TIMETABLE_DISPLAY_KEY)),{version:1,scale:65});
   assert.equal(tablet.data.size,0);
   assert.equal(onPhone.write(100).scale,100); assert.equal(createTimetableDisplay(()=>phone).read(),100);

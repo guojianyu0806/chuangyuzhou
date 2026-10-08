@@ -9,7 +9,7 @@ export function mountConversationPage(ctx,spaceId,helpers){
   const {mountAIComposer,downloadAttachment,destinations,destinationLabel}=helpers;
   state.aiRequests||=[];state.aiDraft||={text:'',files:[],targetId:'auto'};
   if(spaceId&&destinations(state).some(d=>d.id===spaceId)&&!state.aiDraft.text&&!state.aiDraft.files.length)state.aiDraft.targetId=spaceId;
-  const selectionKey='yuzhou-active-ai-'+state.mode;
+  const selectionKey='czb-yuzhou-active-ai-'+state.mode;
   let active='',alive=true,disposeComposer=null,composerKey=null,busy=false,transcriptKey='';
   try{active=sessionStorage.getItem(selectionKey)||'';}catch{}
   if(active&&!state.aiRequests.some(r=>r.id===active))active='';

@@ -64,7 +64,7 @@ export function mountDream(ctx, options={}) {
     detail.innerHTML=`<header class="dream-detail-head"><span class="dream-detail-symbol">${icon('cloud',24)}</span><div><span>${esc(item.category||'灵感')}${date?` · ${esc(date)}`:''}</span><h2 id="dream-detail-title">这一刻的想法</h2></div><button type="button" class="icon-btn" data-dream="close" data-close aria-label="收起云朵">${icon('close',20)}</button></header><div class="dream-detail-scroll"><div class="dream-detail-text">${esc(item.text||item.fileName||'这条灵感还没有文字。')}</div>${item.tags?`<p class="dream-detail-tags"># ${esc(item.tags)}</p>`:''}${item.fileName?`<button type="button" class="dream-attachment" data-dream="download" ${options.onDownload?'':'disabled'}>${icon('file',20)}<span>${esc(item.fileName)}</span>${icon('download',17)}</button>`:''}</div><footer class="dream-detail-foot"><button type="button" class="btn" data-dream="edit">${icon('edit',16)} 编辑灵感</button>${options.onArchive?`<button type="button" class="text-btn" data-dream="archive">${icon(item.archived?'refresh':'archive',16)} ${item.archived?'恢复':'归档'}</button>`:''}<button type="button" class="text-btn dream-return" data-dream="close">回到梦境 ${icon('arrow-left',15)}</button></footer>`;
     surface.classList.add('has-dream-open');surface.setAttribute('data-dream-detail-open','');setPaused();dialog.showModal();
     // A same-URL history entry lets Android/browser Back fold the cloud first.
-    history.pushState({...history.state,__yuzhouDream:token},'',location.href);
+    history.pushState({...history.state,__czbYuzhouDream:token},'',location.href);
     detail.querySelector('[data-dream="close"]').focus({preventScroll:true});
     animateZoom(true);
   }
@@ -80,9 +80,9 @@ export function mountDream(ctx, options={}) {
   }
   function dismiss(callback){
     if(!selected||closing||historyPending)return;afterClose=typeof callback==='function'?callback:null;
-    if(history.state?.__yuzhouDream===token){historyPending=true;history.back();closeTimer=setTimeout(()=>finishClose(),220);}else finishClose();
+    if(history.state?.__czbYuzhouDream===token){historyPending=true;history.back();closeTimer=setTimeout(()=>finishClose(),220);}else finishClose();
   }
-  const popstate=()=>{if(selected&&history.state?.__yuzhouDream!==token)finishClose();};
+  const popstate=()=>{if(selected&&history.state?.__czbYuzhouDream!==token)finishClose();};
   const cancel=event=>{event.preventDefault();dismiss();};
   const unexpectedClose=()=>{if(selected&&!closing)dismiss();};
   const click=event=>{
@@ -110,7 +110,7 @@ export function mountDream(ctx, options={}) {
   draw();
   return ()=>{
     alive=false;clearTimeout(closeTimer);stopAnimation();observer?.disconnect();fullscreen.destroy();
-    if(history.state?.__yuzhouDream===token){const next={...history.state};delete next.__yuzhouDream;history.replaceState(next,'',location.href);}
+    if(history.state?.__czbYuzhouDream===token){const next={...history.state};delete next.__czbYuzhouDream;history.replaceState(next,'',location.href);}
     if(dialog.open)dialog.close();
     surface.removeEventListener('click',click);search.removeEventListener('input',searchChange);dialog.removeEventListener('cancel',cancel);dialog.removeEventListener('close',unexpectedClose);
     window.removeEventListener('popstate',popstate);document.removeEventListener('visibilitychange',setPaused);small.removeEventListener('change',resize);reduced.removeEventListener('change',setPaused);

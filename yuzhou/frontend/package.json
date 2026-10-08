@@ -1,9 +1,9 @@
 {
-  "name": "personal-learning-workbench",
+  "name": "czb-yuzhou-workbench-frontend",
   "version": "0.15.0",
   "private": true,
   "type": "module",
-  "description": "宇宙私人工作台的本地界面版，无第三方运行依赖。",
+  "description": "宇宙 · 传智杯独立副本的完整前端，基于个人工作台0.15.0。",
   "scripts": {
     "start": "node server.mjs"
   }

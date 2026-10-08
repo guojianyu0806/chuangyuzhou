@@ -6,12 +6,12 @@ import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const { chromium } = require('C:/Users/g2806/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const browser = await chromium.launch({ channel: 'msedge', headless: true });
-const base = process.env.TEST_BASE_URL || 'http://127.0.0.1:4173';
+const base = process.env.TEST_BASE_URL || 'http://127.0.0.1:4397';
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 const page = await context.newPage();
 const errors = [];
 page.on('pageerror', error => errors.push(error.message));
-const readState = () => page.evaluate(() => JSON.parse(localStorage.getItem('lumi-workspace-v1-demo')));
+const readState = () => page.evaluate(() => JSON.parse(localStorage.getItem('czb-yuzhou-workspace-v1-demo')));
 const cardFrom = async id => (await readState()).courseCanvas.cards.find(card => card.id === id);
 
 try {
@@ -60,7 +60,7 @@ try {
     return data;
   });
   await page.locator('[data-card="course-data-structures"]').dispatchEvent('drop', { dataTransfer: transfer });
-  await page.waitForFunction(() => JSON.parse(localStorage.getItem('lumi-workspace-v1-demo')).courses.find(c => c.id === 'course-data-structures').files.length === 1);
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('czb-yuzhou-workspace-v1-demo')).courses.find(c => c.id === 'course-data-structures').files.length === 1);
   assert.match(await page.locator('[data-card="course-data-structures"] .cv-space-counts').innerText(), /1 份资料/);
   assert.equal((await readState()).courses.find(c => c.id === 'course-operating-systems').files.length, 0);
   await page.getByRole('button', { name: '数据结构', exact: true }).click();

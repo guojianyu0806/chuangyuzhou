@@ -2,15 +2,15 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const {chromium} = require('C:/Users/g2806/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const base = process.env.TEST_URL || 'http://127.0.0.1:4173';
-const key = 'lumi-workspace-v1-personal';
+const base = process.env.TEST_URL || 'http://127.0.0.1:4397';
+const key = 'czb-yuzhou-workspace-v1-personal';
 let browser;
 try { browser = await chromium.launch({headless:true}); }
 catch { browser = await chromium.launch({headless:true,channel:'msedge'}); }
 const contexts = [], errors = [];
 async function context() {
   const result = await browser.newContext({acceptDownloads:true,viewport:{width:1440,height:1100}});
-  await result.addInitScript(()=>localStorage.setItem('lumi-mode','personal'));
+  await result.addInitScript(()=>localStorage.setItem('czb-yuzhou-mode','personal'));
   contexts.push(result);
   const page = await result.newPage(); page.setDefaultTimeout(15000);
   page.on('pageerror',error=>errors.push(error.message));
