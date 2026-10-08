@@ -1,5 +1,11 @@
 # Local runtime and credentials never belong in the competition repository.
 **/.cu-runtime/
+**/.runtime/
+**/.private-cloud/
+**/__pycache__/
+**/*.pyc
+**/*.keystore
+**/*.jks
 **/.env
 **/.env.*
 !**/.env.example
@@ -13,4 +19,5 @@
 .local/
 releases/
 app/releases/
+yuzhou/mobile/releases/
 
