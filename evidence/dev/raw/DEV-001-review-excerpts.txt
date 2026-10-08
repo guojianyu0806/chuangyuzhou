@@ -1,0 +1,20 @@
+DEV-001 原始审查消息与实际修复指令摘录
+日期：2026-10-08；来源：本次Codex任务及其子任务。
+范围：以下为本轮真实收到或发出的消息逐字摘录，按所示先后排列；不是完整对话导出。不包含内部推理、工具输出、账号设置及无关内容。代理之间的指令明确标为代理发出，不能归为用户原话。代码与验证对应Git提交87bc2b1、5f8832e。
+
+[审查代理 → 主代理]
+静态审查发现一个可复现前端缺陷：app/frontend/sandbox/app.js:326 允许在未保存预览里点击新模块的「选中」按钮，ui.selected 变成仅存在于 previewState 的新 ID；:286 连续修订请求把该 ID 原样发送，但 planner.mjs:36 只允许已保存 state 的模块，因此「预览新建模块→选中→继续修改」会固定 ai_unknown_component。建议预览里的选择不发作 selectedComponentId（或建立可信草稿选择映射），并补此交互回归。另在查证来源展示问题。
+
+[主代理 → 前端代理，实际发出的修复指令]
+审查发现请修复并加纯测试：app.js:326 未保存预览新模块可选中，使ui.selected为previewState临时ID；:286连续修订把该ID发送，但planner仅允许saved state组件，导致ai_unknown_component。提交请求前对selectedComponentId只允许在saved中存在且workspace匹配；或明确预览选择语义，不要声称临时模块是已保存。请核查最小修复。
+
+[审查代理 → 主代理]
+第二个实质问题（展示证据）：新增历史用户引用已有 messageId，但 app/frontend/review.js:46 的去重键不包含 messageId，:51 仍把所有 user_message 标成「本次用户请求」，:53 也完全不显示轮次。触发：第1轮「准备材料，10月8日」→第2轮「改到10月9日」，任务名实际来自第1轮，核对界面却标成本次请求，历史回执亦如此；相同引句来自不同轮还会被合并。建议 renderer 显示「用户请求·轮次标识/轮次」且去重含 messageId，增加混合旧/新引文渲染测试。
+
+[主代理 → 前端代理，实际发出的修复指令]
+继续处理最后审查修复，刚发消息可能你结束未看到：授权修改frontend/review.js及对应测试，去重key包含messageId；旧无messageId可标用户原始输入，有messageId显示可追溯的轮次标识（不要编数字轮次）；完整ID可展开或title避免UUID淹没界面。补混合旧新引文、不同messageId相同quote不合并回归。完成不用commit。
+
+[前端代理 → 主代理]
+review.js追加审查修复完成：去重键已加入messageId；用户引文统一“用户原始输入”，有ID显示8字符输入标识，完整ID在可展开details内并存data-message-id，未伪造轮数。新加2项回归覆盖相同quote不同messageId、同ID真重复去重、旧无ID/新ID/资料混合及ID转义。7会话+7review共14纯测试全过，语法与diff空白检查通过。未commit，未运行HTTP/浏览器。
+
+注：上述“未commit，未运行HTTP/浏览器”是该代理当时的分工状态。主代理之后进行了完整回归、浏览器验证及真实提交，结果另存工程证据；此处保留原句，不事后改写。
