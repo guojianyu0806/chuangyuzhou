@@ -1,0 +1,609 @@
+{
+  "checkedAtUtc": "2026-10-08T15:19:25.463Z",
+  "sourceRoot": "C:\\Users\\g2806\\Desktop\\工作台",
+  "checkedFiles": 150,
+  "allUnchanged": true,
+  "scope": "Only the 150 public files selected in the import manifest; no claim about uninspected private data.",
+  "results": [
+    {
+      "path": "backend/README.md",
+      "unchanged": true
+    },
+    {
+      "path": "backend/backup.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/extract.py",
+      "unchanged": true
+    },
+    {
+      "path": "backend/hermes.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/hermes_runner.py",
+      "unchanged": true
+    },
+    {
+      "path": "backend/is-cli.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/package.json",
+      "unchanged": true
+    },
+    {
+      "path": "backend/server.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/store.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/backup.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/calendar-links-query.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/canvas-layout.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/cli-symlink.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/competitions-ai.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/competitions-persistence.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/extract_test.py",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/fitness-persistence.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/fitness-queries.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/hermes.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/hermes_runner_test.py",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/ledger.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/server.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/timetable-import.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/timetable.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/workspace-ai.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/tests/workspace-queries.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "backend/workspace-queries.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "deployment/README.md",
+      "unchanged": true
+    },
+    {
+      "path": "deployment/activate-release.py",
+      "unchanged": true
+    },
+    {
+      "path": "deployment/import-timetable.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "deployment/prepare-server.py",
+      "unchanged": true
+    },
+    {
+      "path": "deployment/publish-android.py",
+      "unchanged": true
+    },
+    {
+      "path": "deployment/shiguang.service",
+      "unchanged": true
+    },
+    {
+      "path": "deployment/workbench-ip.caddy",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/.gitignore",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/README.md",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/icon.svg",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/index.html",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/launch.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/manifest.webmanifest",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/package.json",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/server.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/ai-chat.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/ai-chat.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/ai-cloud.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/ai-conversation-model.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/ai-organizer.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/ai.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/ai.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/app.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/app.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/backup.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/calendar-links.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/calendar-model.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/calendar.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/calendar.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/canvas-controls.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/canvas.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/canvas.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/card-layouts.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/cloud.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/cloud.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/competitions-model.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/competitions.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/competitions.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/courses.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/courses.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/creation-colors.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/dream.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/dream.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/english.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/english.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/fitness-model.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/fitness.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/fitness.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/fullscreen.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/fullscreen.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/icons.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/interior.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/ledger-model.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/ledger.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/ledger.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/services.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/shell.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/spaces.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/spaces.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/timetable-display.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/timetable-model.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/timetable.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/timetable.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/updates.css",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/workspace-actions-competitions.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/workspace-actions-core.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/workspace-actions-fitness.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/workspace-actions-study.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/workspace-actions.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/src/workspace-model.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/start.cmd",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/ai-cloud.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/ai-integration.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/ai-ledger.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/ai-organizer-colors.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/ai-review.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/backup.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/calendar-links.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/calendar.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/canvas.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/card-layouts.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/cloud-real.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/cloud.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/competitions-backup.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/competitions-model.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/course-canvas.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/course-detail-canvas.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/courses.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/creation-colors.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/english.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/fitness-backup.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/fitness-model.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/flows.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/interior.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/layout.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/ledger-cloud.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/ledger-model.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/longpress.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/migration.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/navigation.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/spaces.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/storage.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/timetable-display.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/timetable-model.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/workspace-actions-competitions.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/workspace-actions-core.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/workspace-actions-fitness.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/workspace-actions-study.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/tests/workspace-model.test.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/README.md",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/android/app/src/main/AndroidManifest.xml",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/android/app/src/main/assets/download-bridge.js",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/android/app/src/main/java/cn/yuzhou/workbench/MainActivity.java",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/android/app/src/main/res/drawable/ic_universe_foreground.xml",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/android/app/src/main/res/values/colors.xml",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/android/app/src/main/res/values/strings.xml",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/android/app/src/main/res/values/styles.xml",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/build-android.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/download-page/index.template.html",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/tests/android-smoke/AndroidManifest.xml",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/tests/android-smoke/NativeSmoke.java",
+      "unchanged": true
+    },
+    {
+      "path": "mobile/tests/download-bridge.test.mjs",
+      "unchanged": true
+    }
+  ]
+}
