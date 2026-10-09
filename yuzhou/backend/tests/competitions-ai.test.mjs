@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,rmSync} from 'node:fs';
+import fs,{mkdtempSync,rmSync} from 'node:fs';
+import {syncBuiltinESMExports} from 'node:module';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {validateWorkspaceQueries,runWorkspaceQuery,workspaceFingerprint} from '../workspace-queries.mjs';
@@ -46,12 +47,21 @@ test('generic search/get reads real competition children and all competition cha
 
 function serviceFixture(t,runModel){
   const dataDir=mkdtempSync(join(tmpdir(),'universe-competitions-ai-'));let state={aiRequests:[],courses:[],spaces:[],tasks:[],captures:[],competitions:{version:1,items:[],milestones:[],tasks:[]}},revision=1;
+  const ioErrors=[];
+  // The production API deliberately redacts internal errors. Record only safe
+  // filesystem error metadata for this synthetic fixture so regressions identify
+  // their real cause instead of looking like a provider outage.
+  for(const operation of ['writeFileSync','renameSync','chmodSync']){
+    const original=fs[operation];
+    t.mock.method(fs,operation,(...args)=>{try{return original(...args);}catch(error){if(String(args[0]).startsWith(dataDir))ioErrors.push({operation,code:error.code,syscall:error.syscall});throw error;}});
+  }
+  syncBuiltinESMExports();
   const store={getWorkspace:()=>({state:structuredClone(state),revision}),saveWorkspace:(base,value)=>{assert.equal(base,revision);state=structuredClone(value);return {revision:++revision};},fileInfo:()=>null,filePath:id=>join(dataDir,id)};
   const service=createHermesService({dataDir,store,engineAvailable:()=>true,runModel});
-  t.after(()=>{service.close();assert.ok(dataDir.startsWith(join(tmpdir(),'universe-competitions-ai-')));rmSync(dataDir,{recursive:true,force:true});});
+  t.after(()=>{service.close();t.mock.restoreAll();syncBuiltinESMExports();assert.ok(dataDir.startsWith(join(tmpdir(),'universe-competitions-ai-')));rmSync(dataDir,{recursive:true,force:true});});
   async function call(method,path,body){let response;assert.equal(await service.handle({method},{},{url:new URL(path,'https://localhost'),readJson:async()=>body,json:(_res,status,value)=>{response={status,body:structuredClone(value)};}}),true);return response;}
   async function finish(id){for(let n=0;n<100;n++){const result=await call('GET',`/api/ai/jobs/${id}`);if(['succeeded','failed'].includes(result.body.job.status))return result.body.job;await new Promise(resolve=>setTimeout(resolve,3));}assert.fail('Competition AI fixture timed out');}
-  return {call,finish,state:()=>state,change:fn=>{fn(state);revision++;}};
+  return {call,finish,state:()=>state,change:fn=>{fn(state);revision++;},ioErrors};
 }
 const plan=()=>({title:'比赛准备',summary:'新增比赛、提交节点和材料任务，等待审核。',destinationId:'workspace',reason:'按用户明确要求',warnings:[],actions:[
   {entity:'competition',operation:'create',ref:'contest',data:{title:'软件设计大赛'}},
@@ -67,7 +77,7 @@ async function ready(t){
   const text='确认创建软件设计大赛，通知提交日期2026-10-15，帮我加材料准备任务。';
   f.change(state=>state.aiRequests.push({id:'request-1',text,targetId:'auto',files:[],status:'waiting_model',createdAt:NOW,updatedAt:NOW,conversation:{version:1,messages:[{id:'turn-1',role:'user',text,createdAt:NOW}]}}));
   const start=await f.call('POST','/api/ai/jobs',{requestId:'request-1',turnId:'turn-1',text,kind:'conversation',autoFile:true});assert.equal(start.status,202);
-  const job=await f.finish(start.body.job.id);assert.equal(job.status,'succeeded',JSON.stringify(job.error));assert.equal(f.state().competitions.items.length,0);assert.equal(job.queryRounds,1);
+  const job=await f.finish(start.body.job.id);assert.equal(job.status,'succeeded',JSON.stringify({error:job.error,ioErrors:f.ioErrors}));assert.equal(f.state().competitions.items.length,0);assert.equal(job.queryRounds,1);
   return {f,job};
 }
 

@@ -1,0 +1,1679 @@
+DIAGNOSTIC RUN 1: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 12.7938
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 14.1557
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 7.6013
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 265.636
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 313.6458
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1056.1853
+
+DIAGNOSTIC RUN 2: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 13.0759
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 15.9078
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 11.0004
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 292.4531
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 461.684
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1256.5277
+
+DIAGNOSTIC RUN 3: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 11.8442
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 10.9408
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 13.3295
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 310.8692
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 403.2206
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1225.9829
+
+DIAGNOSTIC RUN 4: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 14.6345
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 10.5744
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 10.2896
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 469.2822
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 345.7354
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1314.431
+
+DIAGNOSTIC RUN 5: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 12.8883
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 8.3464
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 7.9527
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 499.3288
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 306.0493
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1284.5071
+
+DIAGNOSTIC RUN 6: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 10.0352
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 23.4785
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 8.9635
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 506.7936
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 278.1787
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1261.3065
+
+DIAGNOSTIC RUN 7: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 14.4257
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 10.6926
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 7.903
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 486.086
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 283.2525
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1277.9085
+
+DIAGNOSTIC RUN 8: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 13.7734
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 11.1882
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 8.6899
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 383.9569
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 232.6287
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1169.7039
+
+DIAGNOSTIC RUN 9: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 14.512
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 11.9715
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 9.6347
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 300.2496
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 286.454
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1077.0437
+
+DIAGNOSTIC RUN 10: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 13.2758
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 9.661
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 12.6967
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 359.7997
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 339.5909
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1247.9759
+
+DIAGNOSTIC RUN 11: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 13.0534
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 11.2755
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 9.7457
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 363.0863
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 344.665
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1231.0816
+
+DIAGNOSTIC RUN 12: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 12.417
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 18.2831
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 11.6306
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 368.8563
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 323.912
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1286.0275
+
+DIAGNOSTIC RUN 13: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 11.9854
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 14.3405
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 20.3396
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 340.8193
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 289.4847
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1208.6169
+
+DIAGNOSTIC RUN 14: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 13.5169
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 10.3121
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 8.9279
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 377.1703
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 316.6591
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1187.0859
+
+DIAGNOSTIC RUN 15: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 10.6894
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 9.2078
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 11.1996
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 357.9107
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 329.1901
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1211.1964
+
+DIAGNOSTIC RUN 16: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 16.7329
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 16.397
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 11.2518
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 361.3494
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 330.4254
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1241.2977
+
+DIAGNOSTIC RUN 17: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 13.4802
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 14.0722
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 12.4669
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 399.4085
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 317.2275
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1212.3307
+
+DIAGNOSTIC RUN 18: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 14.0127
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 28.5947
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 9.086
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 340.8404
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 264.174
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1129.4255
+
+DIAGNOSTIC RUN 19: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 10.741
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 10.1247
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 14.9494
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 340.5643
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 290.8523
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1148.9847
+
+DIAGNOSTIC RUN 20: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 12.8548
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 12.7598
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 10.5346
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 356.6768
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 327.9162
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1252.2014
+
+DIAGNOSTIC RUN 21: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 10.4564
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 9.8505
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 7.9378
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 366.1782
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 329.0211
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1246.196
+
+DIAGNOSTIC RUN 22: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 9.9921
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 10.9368
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 9.1738
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 366.8127
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 326.6662
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1173.0174
+
+DIAGNOSTIC RUN 23: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 10.6552
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 8.98
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 9.3759
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 361.9385
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 320.2617
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1106.616
+
+DIAGNOSTIC RUN 24: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 12.8977
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 10.7251
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 12.394
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 355.4192
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 292.9241
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1118.1503
+
+DIAGNOSTIC RUN 25: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 13.2945
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 10.202
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 7.8903
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 298.2938
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 273.8618
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1078.7546
+
+DIAGNOSTIC RUN 26: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 9.5393
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 13.8877
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 12.6436
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 324.8775
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 253.5744
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1065.8662
+
+DIAGNOSTIC RUN 27: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 15.8002
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 9.5792
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 10.5908
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 318.7971
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 252.5546
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 999.8032
+
+DIAGNOSTIC RUN 28: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 24.2883
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 10.3064
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 8.3425
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 281.4464
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 320.2558
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1156.674
+
+DIAGNOSTIC RUN 29: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 11.0636
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 11.3999
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 13.4729
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 300.1229
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 323.1628
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1168.1733
+
+DIAGNOSTIC RUN 30: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 11.4806
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 10.4807
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 14.8553
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 310.6956
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 305.7505
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1121.3097
+
+DIAGNOSTIC RUN 31: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 19.9386
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 12.0123
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 8.7971
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 341.3149
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 290.5875
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1085.2569
+
+DIAGNOSTIC RUN 32: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 16.0277
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 10.4279
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 9.4526
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 340.1035
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 273.1154
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1074.3307
+
+DIAGNOSTIC RUN 33: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 10.7522
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 9.7708
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 8.1505
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 334.8619
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 257.9945
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1092.0484
+
+DIAGNOSTIC RUN 34: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 11.4183
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 8.6894
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 9.3689
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 316.7067
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 248.7525
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1016.4418
+
+DIAGNOSTIC RUN 35: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 12.7594
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 12.6623
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 12.6617
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 307.8548
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 251.8794
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1016.8796
+
+DIAGNOSTIC RUN 36: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 9.3902
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 10.5403
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 8.2379
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 228.1486
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 210.1181
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 904.7954
+
+DIAGNOSTIC RUN 37: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 6.2866
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 10.8321
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 7.1207
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 233.0087
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 236.386
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 937.6184
+
+DIAGNOSTIC RUN 38: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 5.8381
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 9.4305
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 5.5547
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 232.9617
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 236.0194
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 869.556
+
+DIAGNOSTIC RUN 39: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 11.1332
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 6.6283
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 8.9148
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 269.2845
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 183.5318
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 873.0661
+
+DIAGNOSTIC RUN 40: exit 0
+TAP version 13
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 1 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 9.4883
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 2 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 6.6871
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 3 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 8.3898
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 4 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 265.8467
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 5 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 178.9188
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 832.3984
