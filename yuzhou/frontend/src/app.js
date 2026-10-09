@@ -19,6 +19,8 @@ import {mountBuilder} from './builder.js';
 import {companionButton,openCompanion} from './companion.js';
 import {createSidebarNavigation} from './sidebar-navigation.js';
 import {mountSidebarResize} from './sidebar-resize.js';
+import {getCustomBlocks} from './custom-blocks-model.js';
+import {customBlockEditor,mountCustomBlockPage} from './custom-blocks.js';
 
 const cloudClient=await bootstrapCloud();
 
@@ -86,10 +88,12 @@ function insertColoredRecord(target,list,entry){
   try{save(target);}catch(error){list.splice(list.indexOf(entry),1);target.updatedAt=updatedAt;if(previous===undefined)delete target.ui.lastCreatedColor;else target.ui.lastCreatedColor=previous;throw error;}
   return entry;
 }
-let modalReturnFocus;
-function closeModal(){dialog.close();dialog.innerHTML='';modalReturnFocus?.focus?.();}
-function modal({title,body,submitLabel='保存',onSubmit}){
+let modalReturnFocus,modalCleanup;
+function closeModal(){const cleanup=modalCleanup;modalCleanup=null;cleanup?.();dialog.close();dialog.innerHTML='';modalReturnFocus?.focus?.();}
+function modal({title,body,submitLabel='保存',onSubmit,onClose}){
+  const cleanup=modalCleanup;modalCleanup=null;cleanup?.();
   if(dialog.open)dialog.close();
+  modalCleanup=onClose;
   modalReturnFocus=document.activeElement;
   dialog.innerHTML=`<form class="modal-form"><header class="modal-head"><h2 id="modal-title">${esc(title)}</h2><button type="button" class="icon-btn" data-close aria-label="关闭">${icon('close')}</button></header><div class="modal-body">${body}</div>${onSubmit?`<footer class="modal-foot"><span class="muted small">${cloudClient&&mode==='personal'?'保存到本比赛实例':'修改保存在本机'}</span><button type="button" class="btn" data-close>取消</button><button type="submit" class="btn primary">${esc(submitLabel)}</button></footer>`:''}</form>`;
   dialog.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModal);
@@ -117,6 +121,9 @@ function makeContext(){
   const viewState=state, viewRoot=ctx.root;
   const local={...ctx,state:viewState,root:viewRoot,save:()=>save(viewState),
     refresh:()=>{if(state===viewState){updateModuleNavigation();render();}}};
+  local.isCurrent=()=>state===viewState;
+  local.ensureCustomBlockLayout=()=>ensureCanvas(viewState);
+  local.openCustomBlockEditor=input=>customBlockEditor(local,input);
   local.openBuilder=()=>go('builder');
   local.askAssistant=prompt=>openAIConversation(local,{text:prompt,targetId:'workspace'});
   local.showExample=()=>{if(mode!=='demo')switchWorkspace();else go('home');};
@@ -141,6 +148,7 @@ function makeContext(){
   local.dropOnCard=(id,files)=>dropOnCard(local,id,files);
   local.enterCard=async(id,element)=>{
     const currentHash=location.hash;
+    if(getCustomBlocks(viewState).items.some(block=>block.id===id)){if(state===viewState)go('block',id);return;}
     if(element&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
       const stage=element.closest('.cv-viewport')||viewRoot;
       const from=element.getBoundingClientRect(),to=stage.getBoundingClientRect();
@@ -158,6 +166,7 @@ function makeContext(){
 }
 async function dropOnCard(local,id,input){
   const files=Array.from(input||[]),space=local.state.spaces.find(s=>s.id===id);
+  if(id.startsWith('block:')){toast('自定义方块不接收文件；可将资料保存到工作区或收集箱。');return {saved:0,rejected:files.length};}
   if(id==='ledger'){toast('打开记账，点「记一笔」录入金额、日期和项目。');return {saved:0,rejected:files.length};}
   if(id==='calendar'){toast('打开日历，选择日期即可添加计划、标注和注意事项。');return {saved:0,rejected:files.length};}
   if(id==='timetable'){toast('打开学期课表，可查看每周安排并新增或修改课程。');return {saved:0,rejected:files.length};}
@@ -430,11 +439,11 @@ function render(){
   sidebarResize?.sync();
   cleanupView?.();cleanupView=null;
   const [page,id]=location.hash.replace(/^#\/?/,'').split('/');
-  route=nav.some(n=>n[0]===page)||['settings','space'].includes(page)?page:'home';
+  route=nav.some(n=>n[0]===page)||['settings','space','block'].includes(page)?page:'home';
   try{subroute=id?decodeURIComponent(id):'';}catch{subroute='';}
   ctx.root.onclick=null;ctx.root.onchange=null;ctx.root.oninput=null;ctx.root.ondragover=null;ctx.root.ondragleave=null;ctx.root.ondrop=null;
   if(route==='home'&&!getWorkbench(state).onboardingComplete){route='builder';history.replaceState(null,'','#/builder');}
-  const label=route==='space'?(state.spaces.find(s=>s.id===subroute)?.title||'工作区'):navigationLabel(route);
+  const label=route==='space'?(state.spaces.find(s=>s.id===subroute)?.title||'工作区'):route==='block'?(getCustomBlocks(state).items.find(block=>block.id===subroute)?.title||'自定义方块'):navigationLabel(route);
   document.title=label+' · 宇宙 · 传智杯独立副本';document.querySelector('#current-page').textContent=label;
   document.body.classList.toggle('on-canvas',route==='home');document.body.classList.toggle('on-ai',route==='ai');
   document.querySelectorAll('[data-nav]').forEach(a=>{a.classList.toggle('active',a.dataset.nav===route);if(a.dataset.nav===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
@@ -453,6 +462,7 @@ function render(){
   if(route==='home'){ensureCanvas(state);cleanupView=mountCanvas({...view,fitOnMount:subroute==='layout'});if(subroute==='layout')history.replaceState(null,'','#/home');}
   if(route==='ai')cleanupView=mountAI(view,state.spaces.some(s=>s.id===subroute)?`space:${subroute}`:subroute);
   if(route==='space')cleanupView=mountSpace(view,subroute);
+  if(route==='block')cleanupView=mountCustomBlockPage(view,subroute);
   if(route==='courses')cleanupView=mountCourses(view,subroute);
   if(route==='english')cleanupView=mountEnglish(view,subroute);
   if(route==='ledger')cleanupView=mountLedger(view,subroute);

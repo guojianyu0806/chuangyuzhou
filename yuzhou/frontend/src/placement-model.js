@@ -1,5 +1,6 @@
 import {ensureCanvas,visibleCanvasCards} from './canvas.js';
 import {WORKBENCH_MODULES,getWorkbench,configureWorkbench} from './workbench-model.js';
+import {getCustomBlocks,CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
 
 const clone=value=>structuredClone(value);
 const knownModules=new Map(WORKBENCH_MODULES.map(module=>[module.id,module]));
@@ -13,7 +14,7 @@ function markLayout(canvas){canvas.presentation='canvas';canvas.initialized=true
 
 /** Read geometry without initializing or normalizing the user's saved workspace. */
 export function placementLayout(state) {
-  const copy={canvas:clone(state?.canvas),spaces:(state?.spaces||[]).map(space=>({id:space.id,color:space.color}))};
+  const copy={canvas:clone(state?.canvas),spaces:(state?.spaces||[]).map(space=>({id:space.id,color:space.color})),customBlocks:getCustomBlocks(state)};
   return ensureCanvas(copy);
 }
 
@@ -21,7 +22,10 @@ export function placementLayout(state) {
 export function placementCards(state) {
   const modules=new Map(getWorkbench(state).modules.map(module=>[module.id,module]));
   const spaces=new Map((state?.spaces||[]).map(space=>[space.id,space]));
+  const blocks=new Map(getCustomBlocks(state).items.map(block=>[block.id,block]));
   return visibleCanvasCards(state,placementLayout(state)).map(card=>{
+    const block=blocks.get(card.id);
+    if(block){const type=CUSTOM_BLOCK_KINDS.find(type=>type.kind===block.kind||type.id===block.kind);return {...card,title:block.title,icon:type?.icon||'layers',description:block.description||type?.description||'自定义方块',kind:'block'};}
     const module=knownModules.get(card.id),item=module?modules.get(card.id):spaces.get(card.id);
     return {...card,title:item?.title||module?.title||'未命名空间',icon:module?.icon||item?.icon||'folder',description:module?.description||item?.description||'保存这个主题的文件、笔记与待办。',kind:module?'module':'space'};
   });
@@ -35,7 +39,8 @@ function position(value){
 /** Commit one drop atomically; other cards, including hidden modules, retain their positions. */
 export function placeBlock(state,id,point) {
   const module=knownModules.get(id),space=(state?.spaces||[]).find(item=>item.id===id&&!item.archived);
-  if(!module&&!space)throw new Error('这个方块已不存在或已归档。');
+  const block=getCustomBlocks(state).items.find(item=>item.id===id&&!item.archived);
+  if(!module&&!space&&!block)throw new Error('这个方块已不存在或已归档。');
   if(!point||typeof point!=='object'||Array.isArray(point))throw new Error('请先选择画布上的位置。');
   const x=position(point.x),y=position(point.y),next={workbench:getWorkbench(state),canvas:placementLayout(state)};
   const card=next.canvas.cards.find(item=>item.id===id);
@@ -48,7 +53,7 @@ export function placeBlock(state,id,point) {
 
 /** Arrange visible cards only. Fixed column widths prevent overlaps across mixed card sizes. */
 export function arrangeBlocks(state) {
-  const next={workbench:getWorkbench(state),canvas:placementLayout(state),spaces:state.spaces||[]};
+  const next={workbench:getWorkbench(state),canvas:placementLayout(state),spaces:state.spaces||[],customBlocks:getCustomBlocks(state)};
   const cards=visibleCanvasCards(next,next.canvas),widths=[0,0,0];
   cards.forEach((card,index)=>{widths[index%3]=Math.max(widths[index%3],card.w);});
   let y=40;

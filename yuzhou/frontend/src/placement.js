@@ -4,6 +4,8 @@ import {placementCards,placementLayout,placeBlock,arrangeBlocks,savePlacement,un
 import {escapeHTML as esc} from './services.js';
 import {icon} from './icons.js';
 import {zoomPlacementView,panPlacementView,PLACEMENT_MIN_SCALE,PLACEMENT_MAX_SCALE} from './placement-camera.js';
+import {getCustomBlocks,CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
+import {CUSTOM_BLOCK_PRESETS} from './custom-block-presets.js';
 
 const mini='<span class="wb-block-mini" aria-hidden="true"><i></i><i></i><i></i></span>';
 const glyph=(item)=>`<span class="wb-block-icon" style="--block-color:${canvasCardFill(item.color)}">${icon(item.icon||'folder',20)}</span>`;
@@ -11,10 +13,15 @@ export function placementHTML(state){
   const config=getWorkbench(state),visible=placementCards(state);
   return `<section class="wb-placement" aria-labelledby="wb-placement-title">
     <div class="wb-placement-heading"><div><h2 id="wb-placement-title">像摆积木一样，搭好你的工作台</h2><p>选一块，放到右边。这里的位置，会直接成为你的工作台布局。</p></div><span class="wb-placement-count">${visible.length} 块已放置</span></div>
-    <div class="wb-placement-workspace"><aside class="wb-palette" aria-label="方块库"><header><h3>拿一块</h3><p>点击选择，也可以直接拖过去</p></header><div class="wb-palette-list">${WORKBENCH_MODULES.map(item=>{
+    <div class="wb-placement-workspace"><aside class="wb-palette" aria-label="方块库"><header><h3>方块库</h3><p>从常用场景创建，再自由摆放</p><button type="button" class="wb-palette-create" data-wb-action="create-block">${icon('plus',15)} 自定义方块</button><button type="button" class="wb-palette-ai" data-wb-action="ask-miniapp">${icon('sparkles',15)} 让 AI 造小工具</button></header>
+    <label class="wb-palette-search"><span class="sr-only">搜索方块</span><input type="search" data-palette-search placeholder="搜索用途或名称" aria-label="搜索方块"></label>
+    <div class="wb-palette-tabs" role="group" aria-label="方块分类"><button type="button" data-palette-tab="scene" aria-pressed="true">场景</button><button type="button" data-palette-tab="mine" aria-pressed="false">我的</button><button type="button" data-palette-tab="builtin" aria-pressed="false">原有</button></div>
+    <div class="wb-palette-list">${CUSTOM_BLOCK_PRESETS.map(item=>`<button type="button" class="wb-palette-item" data-palette-group="scene" data-palette-search-text="${esc(item.title+' '+item.description+' '+item.category)}" data-wb-action="create-preset" data-id="${esc(item.id)}" aria-label="创建${esc(item.title)}方块" title="${esc(item.description)}">${glyph(item)}<span class="wb-palette-copy"><strong>${esc(item.title)}</strong><small>${esc(item.category)} · 点击创建</small></span>${icon('plus',16)}</button>`).join('')}
+    ${getCustomBlocks(state).items.filter(item=>!item.archived).map(item=>{const type=CUSTOM_BLOCK_KINDS.find(type=>type.kind===item.kind||type.id===item.kind);return `<button type="button" hidden class="wb-palette-item is-placed" data-palette-group="mine" data-palette-search-text="${esc(item.title+' '+item.description)}" data-place-source="${esc(item.id)}" aria-label="选择${esc(item.title)}方块" aria-pressed="false" title="${esc(item.description)}">${glyph({...item,icon:type?.icon||'layers'})}<span class="wb-palette-copy"><strong>${esc(item.title)}</strong><small>${esc(type?.title||'自定义')} · 可以挪动</small></span>${mini}</button>`;}).join('')}
+    ${WORKBENCH_MODULES.map(item=>{
       const module=config.modules.find(row=>row.id===item.id);
-      return `<button type="button" class="wb-palette-item ${module.enabled?'is-placed':''}" data-place-source="${esc(item.id)}" aria-label="选择${esc(module.title)}方块" aria-pressed="false" title="${esc(item.description)}">${glyph(item)}<span class="wb-palette-copy"><strong>${esc(module.title)}</strong><small>${module.enabled?'已放置 · 可以挪动':'选择位置后放入'}</small></span>${mini}</button>`;
-    }).join('')}</div></aside>
+      return `<button type="button" hidden class="wb-palette-item ${module.enabled?'is-placed':''}" data-palette-group="builtin" data-palette-search-text="${esc(module.title+' '+item.description)}" data-place-source="${esc(item.id)}" aria-label="选择${esc(module.title)}方块" aria-pressed="false" title="${esc(item.description)}">${glyph(item)}<span class="wb-palette-copy"><strong>${esc(module.title)}</strong><small>${module.enabled?'已放置 · 可以挪动':'选择位置后放入'}</small></span>${mini}</button>`;
+    }).join('')}</div><p class="wb-palette-empty" data-palette-empty hidden>这里还没有匹配的方块。试试其他分类或创建一个。</p></aside>
     <section class="wb-placement-board" aria-label="摆放工作台方块"><div class="wb-placement-toolbar"><strong>你的工作台</strong><div class="wb-placement-navigation" role="group" aria-label="搭建画布视野"><button type="button" data-place-action="zoom-out" aria-label="缩小搭建画布">−</button><button type="button" data-place-action="zoom-reset" aria-label="恢复搭建画布为100%" title="恢复100%大小">100%</button><button type="button" data-place-action="zoom-in" aria-label="放大搭建画布">+</button><button type="button" class="btn" data-place-action="fit">看全画布</button></div><div class="wb-placement-layout-actions"><button type="button" class="btn" data-place-action="arrange">整齐排列</button><button type="button" class="btn" data-place-action="undo" disabled>撤销上次摆放</button></div></div>
     <p class="wb-placement-hint" role="status" aria-live="polite">先在左边选一个方块，再点击画布放下。</p>
     <div class="wb-placement-stage" tabindex="0" aria-label="方块摆放画布；选择方块后点击位置，方向键微调，回车放下，Escape取消" aria-describedby="wb-placement-help"><div class="wb-placement-ghost" hidden aria-hidden="true"></div><p class="wb-stage-empty" hidden>从左边拿一个方块，放在这里。</p></div>
@@ -41,7 +48,14 @@ export function mountPlacement(ctx,session={}){
   session.placingId=null;
   const ghost=stage.querySelector('.wb-placement-ghost'),hint=root.querySelector('.wb-placement-hint');
   const selected=()=>placementLayout(state).cards.find(card=>card.id===(session.placingId||session.selectedId));
-  const titleFor=id=>getWorkbench(state).modules.find(item=>item.id===id)?.title||(state.spaces||[]).find(item=>item.id===id)?.title||'方块';
+  const titleFor=id=>getWorkbench(state).modules.find(item=>item.id===id)?.title||getCustomBlocks(state).items.find(item=>item.id===id)?.title||(state.spaces||[]).find(item=>item.id===id)?.title||'方块';
+  function filterPalette(){
+    const group=session.paletteGroup||'scene',search=String(session.paletteSearch||'').trim().toLowerCase();let count=0;
+    root.querySelectorAll('[data-palette-group]').forEach(button=>{button.hidden=button.dataset.paletteGroup!==group||!String(button.dataset.paletteSearchText||'').toLowerCase().includes(search);if(!button.hidden)count++;});
+    root.querySelectorAll('[data-palette-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.paletteTab===group)));
+    const empty=root.querySelector('[data-palette-empty]');if(empty)empty.hidden=count>0;
+  }
+  function searchPalette(event){if(event.target.matches?.('[data-palette-search]')){session.paletteSearch=event.target.value;filterPalette();}}
   function geometry(element,card){
     Object.assign(element.style,{left:`${view.left+(card.x-view.x)*view.scale}px`,top:`${view.top+(card.y-view.y)*view.scale}px`,width:`${card.w*view.scale}px`,height:`${card.h*view.scale}px`});
     element.classList.toggle('is-small',card.w*view.scale<120||card.h*view.scale<110);
@@ -165,6 +179,7 @@ export function mountPlacement(ctx,session={}){
     if(inside(event))commit(current.id,placementPoint(view,stage.getBoundingClientRect(),event.clientX,event.clientY,current.offset));else cancel('未放入画布，原来的位置保持不变。');
   }
   function click(event){
+    const tab=event.target.closest('[data-palette-tab]');if(tab){session.paletteGroup=tab.dataset.paletteTab;filterPalette();return;}
     if(Date.now()<(session.suppressClickUntil||0)&&!event.target.closest('[data-place-action]')){
       if(!session.suppressPanClick||stage.contains(event.target))return;
       session.suppressClickUntil=0;
@@ -215,10 +230,11 @@ export function mountPlacement(ctx,session={}){
   }
   const resize=new ResizeObserver(()=>{const rect=stage.getBoundingClientRect();if(!gesture&&`${rect.width},${rect.height}`!==lastSize)draw();});resize.observe(stage);
   root.addEventListener('click',click);root.addEventListener('pointerdown',begin);root.addEventListener('pointermove',move);root.addEventListener('pointerup',finish);root.addEventListener('pointercancel',finish);root.addEventListener('keydown',keydown);
+  root.addEventListener('input',searchPalette);
   stage.addEventListener('wheel',wheel,{passive:false});
   const keyup=event=>{if(event.code==='Space'||event.key===' '){if(spaceHeld&&stage.contains(event.target))event.preventDefault();spaceHeld=false;stage.classList.remove('can-pan');}};window.addEventListener('keyup',keyup);
   const blur=()=>{spaceHeld=false;stage.classList.remove('can-pan');if(gesture)cancel();};window.addEventListener('blur',blur);
   const lost=event=>{if(gesture?.pointerId===event.pointerId)cancel();};root.addEventListener('lostpointercapture',lost);
-  draw();if(session.message)status(session.message);
-  return ()=>{active=false;const current=gesture;gesture=null;if(current?.element.hasPointerCapture?.(current.pointerId))current.element.releasePointerCapture(current.pointerId);resize.disconnect();window.removeEventListener('blur',blur);window.removeEventListener('keyup',keyup);stage.removeEventListener('wheel',wheel);for(const [name,listener] of [['click',click],['pointerdown',begin],['pointermove',move],['pointerup',finish],['pointercancel',finish],['lostpointercapture',lost],['keydown',keydown]])root.removeEventListener(name,listener);};
+  draw();filterPalette();const search=root.querySelector('[data-palette-search]');if(search)search.value=session.paletteSearch||'';if(session.message)status(session.message);
+  return ()=>{active=false;const current=gesture;gesture=null;if(current?.element.hasPointerCapture?.(current.pointerId))current.element.releasePointerCapture(current.pointerId);resize.disconnect();window.removeEventListener('blur',blur);window.removeEventListener('keyup',keyup);stage.removeEventListener('wheel',wheel);for(const [name,listener] of [['click',click],['input',searchPalette],['pointerdown',begin],['pointermove',move],['pointerup',finish],['pointercancel',finish],['lostpointercapture',lost],['keydown',keydown]])root.removeEventListener(name,listener);};
 }

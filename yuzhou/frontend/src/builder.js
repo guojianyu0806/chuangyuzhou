@@ -2,6 +2,8 @@ import {WORKBENCH_MODULES,WORKBENCH_TEMPLATES,getWorkbench,getVisibleModules,con
 import {escapeHTML as esc} from './services.js';
 import {icon} from './icons.js';
 import {placementHTML,mountPlacement} from './placement.js';
+import {getCustomBlocks,CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
+import {createPresetInput} from './custom-block-presets.js';
 
 const byId=id=>WORKBENCH_MODULES.find(module=>module.id===id);
 const moduleTitle=(config,id)=>config.modules.find(module=>module.id===id)?.title||byId(id)?.title||id;
@@ -38,6 +40,7 @@ export function builderHTML(state,{showExample=false}={}) {
     <header class="wb-heading"><div><p class="wb-kicker">搭建台</p><div class="wb-title-row"><h1 id="wb-heading">${esc(config.title)}</h1><button type="button" class="wb-icon-button" data-wb-action="rename-workbench" aria-label="修改工作台名称" title="修改工作台名称">${icon('edit',18)}</button></div><p class="wb-intro">选择需要的模块，把这里搭成适合自己的样子。</p></div><button class="btn primary" type="button" data-wb-action="home">进入我的画布 ${icon('arrow-right',17)}</button></header>
     <div class="wb-assistant-invite"><span class="wb-assistant-mark" aria-hidden="true">${icon('sparkles',26)}</span><div><strong>也可以和 AI 一起搭建</strong><p>告诉它你的场景，先看方案，再决定如何调整。</p></div><button type="button" class="btn" data-wb-action="ask-ai">${icon('message',17)} 让 AI 帮我搭建</button></div>
     <div data-wb-placement-host>${placementHTML(state)}</div>
+    <section class="wb-custom-list" aria-label="我的自定义方块"><div class="wb-section-head"><div><h2>我的自定义方块</h2><p>同一场景可以创建多份；编辑内容、让 AI 改造，或收起后保留记录。</p></div><button type="button" class="btn" data-wb-action="create-block">${icon('plus',16)} 创建方块</button></div>${getCustomBlocks(state).items.length?`<ul>${getCustomBlocks(state).items.map(block=>`<li><span><strong>${esc(block.title)}</strong><small>${esc(CUSTOM_BLOCK_KINDS.find(item=>item.kind===block.kind||item.id===block.kind)?.title||block.kind)}${block.archived?' · 已收起':''}</small></span><button type="button" class="btn" data-wb-action="open-block" data-id="${esc(block.id)}">打开</button><button type="button" class="btn" data-wb-action="edit-block" data-id="${esc(block.id)}">编辑</button></li>`).join('')}</ul>`:'<p class="muted">从左侧场景创建第一个方块，或告诉 AI 你需要什么。</p>'}</section>
     <details class="wb-advanced"><summary>模板与更多设置 <span>更换组合、修改名称、管理模块和空间</span></summary><div class="wb-columns"><div class="wb-materials">
       <section class="wb-library" aria-labelledby="wb-library-heading"><div class="wb-section-head"><div><h2 id="wb-library-heading">模块库</h2><p>按需加入；收起后，已有资料仍然保留。</p></div><span class="wb-section-caption">${catalog.length} 种可选模块</span></div>
         <div class="wb-library-list">${catalog.map(module=>{
@@ -102,9 +105,16 @@ export function mountBuilder(ctx) {
         ctx.go('home','layout');
       }
       if(action==='ask-ai'){
-        if(ctx.askAssistant)ctx.askAssistant('我想搭建适合自己的工作台，请先了解我的使用场景和目标，再给出模块组合与安排建议。');
+        if(ctx.askAssistant)ctx.askAssistant('我想搭建适合自己的工作台，请先了解我的使用场景和目标，再建议现有模块或创建自定义方块。普通内容可使用笔记、清单、链接、进度、倒计时、记录表；有新交互需求时可提出小工具方案。先展示方案，等我确认后再写入。');
         else ctx.go('ai');
       }
+      if(action==='ask-miniapp'){
+        if(ctx.askAssistant)ctx.askAssistant('我想为工作台创建一个可以交互的小工具。请先帮我明确用途、需要输入什么、显示什么结果，以及哪些数据需要记住。根据这些要求设计界面和操作，先给出可审核的方案，等我确认后创建。');else ctx.go('ai');
+      }
+      if(action==='create-block')ctx.openCustomBlockEditor?.();
+      if(action==='create-preset')ctx.openCustomBlockEditor?.(createPresetInput(id));
+      if(action==='edit-block')ctx.openCustomBlockEditor?.(id);
+      if(action==='open-block')ctx.go('block',id);
       if(action==='rename-workbench')rename();
       if(action==='rename-module')rename(id);
       if(action==='template')reviewTemplate(id);

@@ -7,6 +7,8 @@ import {CARD_PRESENTATIONS,normalizePresentation,normalizeStackPointer,stackMetr
 import {weekForDate,entriesForWeek} from './timetable-model.js';
 import {mountSurfaceFullscreen} from './fullscreen.js';
 import {WORKBENCH_MODULES,getWorkbench} from './workbench-model.js';
+import {getCustomBlocks,updateCustomBlock,CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
+import {customBlockSummary,customBlockType} from './custom-blocks.js';
 const POSITIONS = {
   ai:      { x:36, y:40, w:540, h:380, label:'把零散，变有序。' },
   courses: { x:612, y:40, w:310, h:272, label:'让知识，连成线。' },
@@ -41,7 +43,8 @@ export function ensureCanvas(state, presets = PRESETS) {
   if(!Array.isArray(canvas.cards))canvas.cards=[];
   const seen=new Set();
   canvas.cards=canvas.cards.filter(card=>card&&typeof card.id==='string'&&!seen.has(card.id)&&seen.add(card.id));
-  const defaults=[...Object.entries(presets).map(([id,p])=>({id,...p})),...state.spaces.map((space,index)=>({id:space.id,...customSpot(index),color:color(space.color)}))];
+  const blocks=getCustomBlocks(state).items;
+  const defaults=[...Object.entries(presets).map(([id,p])=>({id,...p})),...state.spaces.map((space,index)=>({id:space.id,...customSpot(index),color:color(space.color)})),...blocks.map((block,index)=>({id:block.id,...customSpot(state.spaces.length+index),w:340,h:280,color:color(block.color)}))];
   for(const def of defaults){
     let card=canvas.cards.find(c=>c.id===def.id);
     if(!card){
@@ -77,13 +80,15 @@ export function zoomAt(view,zoom,point) {
 export function visibleCanvasCards(state,canvas=state.canvas) {
   const modules=getWorkbench(state).modules,byId=new Map(modules.map((module,index)=>[module.id,{...module,index}]));
   const spaces=new Map((state.spaces||[]).map(space=>[space.id,space]));
-  return (canvas?.cards||[]).filter(card=>byId.has(card.id)?byId.get(card.id).enabled:spaces.has(card.id)&&!spaces.get(card.id).archived)
+  const blocks=new Map(getCustomBlocks(state).items.map(block=>[block.id,block]));
+  return (canvas?.cards||[]).filter(card=>byId.has(card.id)?byId.get(card.id).enabled:blocks.has(card.id)?!blocks.get(card.id).archived:spaces.has(card.id)&&!spaces.get(card.id).archived)
     .sort((a,b)=>(byId.get(a.id)?.index??modules.length)-(byId.get(b.id)?.index??modules.length));
 }
 
 export function mountCanvas(ctx, collection) {
   const {root,state,save,icon,esc,toast,modal,go}=ctx;
-  const itemById=new Map((collection?.items||state.spaces||[]).map(item=>[item.id,item]));
+  const homeItems=()=>[...(state.spaces||[]),...getCustomBlocks(state).items];
+  const itemById=new Map((collection?.items||homeItems()).map(item=>[item.id,item]));
   const presets=collection?Object.fromEntries(collection.items.map((item,index)=>[item.id,{...item,x:36+(index%3)*380,y:40+Math.floor(index/3)*366,w:340,h:330,label:item.subtitle||''}])):PRESETS;
   const addedCard=collection?.layout?.initialized?collection.items.find(item=>!collection.layout.cards?.some(card=>card.id===item.id)):null;
   if(collection&&collection.layout?.cards?.length){
@@ -108,6 +113,7 @@ export function mountCanvas(ctx, collection) {
     const preset=presets[card.id];
     if(preset)return {...preset,title:getWorkbench(state).modules.find(module=>module.id===card.id)?.title||preset.title,color:color(card.color||preset.color),id:card.id};
     const space=itemById.get(card.id);
+    if(card.id.startsWith('block:'))return {...space,color:color(space?.color||card.color),icon:CUSTOM_BLOCK_KINDS.find(type=>type.kind===space?.kind)?.icon||'layers',label:space?.description||customBlockType(space?.kind)};
     return {...space,color:color(space?.color||card.color),icon:space?.icon||'folder',label:space?.description||'文件、笔记和事务，都有自己的位置。'};
   };
   const persist=()=>{if(!alive)return false;try{save();return true;}catch{return false;/* App save handler explains quota or concurrent-window errors. */}};
@@ -174,6 +180,7 @@ export function mountCanvas(ctx, collection) {
   function cardContent(card) {
     if(collection?.renderCard)return collection.renderCard(card,dataFor(card));
     const d=dataFor(card),courseCount=(state.courses||[]).filter(course=>!course.archived).length,taskCount=(state.tasks||[]).filter(t=>!t.done&&!t.archived).length,captureCount=(state.captures||[]).filter(c=>!c.archived).length;
+    if(card.id.startsWith('block:'))return `<div class="cv-card-copy cb-card-preview"><span class="cv-card-kicker">${esc(customBlockType(d.kind))}</span><h2>${esc(d.title)}</h2><p>${esc(customBlockSummary(d))}</p></div>`;
     if(card.id==='ai')return `<div class="cv-ai-title"><span class="cv-ai-orbit" aria-hidden="true">${icon('sparkles',29)}</span><div><h2>${esc(d.title)}</h2><p>先聊清楚，再归入你的空间。</p></div></div><div class="cv-ai-host" data-ai-host></div>`;
     if(card.id==='competitions'){
       const summary=summarizeCompetitions(state.competitions);
@@ -203,13 +210,13 @@ export function mountCanvas(ctx, collection) {
 
   function drawCards() {
     stackReady=false;
-    itemById.clear();for(const item of collection?.items||state.spaces||[])itemById.set(item.id,item);
+    itemById.clear();for(const item of collection?.items||homeItems())itemById.set(item.id,item);
     composerCleanup?.();composerCleanup=null;
     world.innerHTML=visibleCards().map((card,index)=>{
       const d=dataFor(card);
       return `<article class="cv-card cv-card-${collection?'collection':presets[card.id]?card.id:'custom'} ${card.h<260?'cv-compact':''} ${card.h<330?'cv-short':''}" data-card="${esc(card.id)}" style="--card-color:${color(d.color)};--card-fill:${canvasCardFill(d.color)};--card-order:${index};width:${card.w}px;height:${card.h}px;transform:translate(${card.x}px,${card.y}px)" tabindex="0" aria-label="${esc(d.title)}，按Enter打开">
-      <header class="cv-card-head"><span class="cv-space-symbol">${safeIcon(d.icon,20)}</span><span class="cv-stack-title">${esc(d.title)}</span><span class="cv-card-top-label">${collection?esc(collectionText('cardLabel',d,'内容卡片')):card.id==='ai'?'智能伙伴':presets[card.id]?'工作台模块':'自建空间'}</span><button type="button" class="cv-drag" data-cv="drag" title="拖动卡片；方向键移动" aria-label="拖动${esc(d.title)}卡片，或使用方向键调整位置">${dragIcon}</button><button type="button" class="cv-card-menu" data-cv="card-menu" title="卡片设置" aria-label="设置${esc(d.title)}卡片">${icon('more',19)}</button></header>
-      <div class="cv-card-body">${cardContent(card)}</div><footer class="cv-card-foot"><span>${esc(collectionText('footLabel',d,card.id==='ai'?'对话 → 确认 → 归档':card.id==='competitions'?'截止 · 清单 · 参赛档案':card.id==='calendar'?'计划 · 标注 · 注意事项':card.id==='ledger'?'按日期记录 · 按项目汇总':card.id==='timetable'?'教学周 · 单双周 · 上课地点':'拖入文件，直接收进这里'))}</span><button type="button" data-cv="enter" aria-label="进入${esc(d.title)}">${esc(collectionText('enterLabel',d,card.id==='ai'?'打开伙伴':'进入空间'))}${icon('arrow-right',17)}</button></footer>
+      <header class="cv-card-head"><span class="cv-space-symbol">${safeIcon(d.icon,20)}</span><span class="cv-stack-title">${esc(d.title)}</span><span class="cv-card-top-label">${collection?esc(collectionText('cardLabel',d,'内容卡片')):card.id==='ai'?'智能伙伴':presets[card.id]?'工作台模块':card.id.startsWith('block:')?'自定义方块':'自建空间'}</span><button type="button" class="cv-drag" data-cv="drag" title="拖动卡片；方向键移动" aria-label="拖动${esc(d.title)}卡片，或使用方向键调整位置">${dragIcon}</button><button type="button" class="cv-card-menu" data-cv="card-menu" title="卡片设置" aria-label="设置${esc(d.title)}卡片">${icon('more',19)}</button></header>
+      <div class="cv-card-body">${cardContent(card)}</div><footer class="cv-card-foot"><span>${esc(collectionText('footLabel',d,card.id==='ai'?'对话 → 确认 → 归档':card.id.startsWith('block:')?'自己定义内容与交互':card.id==='competitions'?'截止 · 清单 · 参赛档案':card.id==='calendar'?'计划 · 标注 · 注意事项':card.id==='ledger'?'按日期记录 · 按项目汇总':card.id==='timetable'?'教学周 · 单双周 · 上课地点':'拖入文件，直接收进这里'))}</span><button type="button" data-cv="enter" aria-label="进入${esc(d.title)}">${esc(collectionText('enterLabel',d,card.id==='ai'?'打开伙伴':card.id.startsWith('block:')?'打开方块':'进入空间'))}${icon('arrow-right',17)}</button></footer>
       <button class="cv-resize" type="button" data-cv="resize" title="拖动调整大小；方向键微调" aria-label="调整${esc(d.title)}卡片大小">${resizeIcon}</button><div class="cv-drop-overlay">${icon('upload',34)}<strong>松手，放入${esc(d.title)}</strong><span>文件保存在本机</span></div></article>`;
     }).join('');
     cardElements.clear();for(const element of world.querySelectorAll('[data-card]'))cardElements.set(element.dataset.card,element);
@@ -332,18 +339,19 @@ export function mountCanvas(ctx, collection) {
   function cardSettings(card) {
     const d=dataFor(card),minWidth=card.id==='ai'?390:220,minHeight=card.id==='ai'?350:220;
     modal({title:`${d.title} · 卡片外观`,body:`<p class="cv-settings-hint">调节这张卡片的颜色、尺寸和摆放位置。</p><label class="field">卡片颜色<div class="cv-color-options">${COLORS.map(c=>`<button type="button" class="cv-color-swatch" data-pick-color="${c}" style="--swatch:${c}" aria-label="选择颜色 ${c}">${c===d.color?icon('check',17):''}</button>`).join('')}<input type="color" name="color" value="${color(d.color)}" aria-label="自定义卡片颜色"></div></label><div class="form-grid"><label class="field">宽度<input type="number" name="width" value="${Math.round(card.w)}" min="${minWidth}" max="1100" step="1" required></label><label class="field">高度<input type="number" name="height" value="${Math.round(card.h)}" min="${minHeight}" max="850" step="1" required></label><label class="field">横向位置<input type="number" name="x" value="${Math.round(card.x)}" min="-100000" max="100000" step="1" required></label><label class="field">纵向位置<input type="number" name="y" value="${Math.round(card.y)}" min="-100000" max="100000" step="1" required></label></div>${(collection?(collection.onEdit!==undefined?collection.onEdit:ctx.editSpace):!presets[card.id]&&ctx.editSpace)?`<button type="button" class="btn" data-manage-space>${esc(collection?.manageLabel||'编辑卡片内容')}</button>`:''}`,onSubmit:form=>{
-      const previous={...card},space=(collection?.items||state.spaces).find(s=>s.id===card.id),previousSpaceColor=space?.color;
+      const previous={...card},previousCustomBlocks=state.customBlocks,previousStamp=state.updatedAt,space=(collection?.items||state.spaces).find(s=>s.id===card.id),previousSpaceColor=space?.color;
+      const previousLayoutMeta=Object.fromEntries(['customized','modifiedAt'].map(key=>[key,{present:Object.hasOwn(canvas,key),value:canvas[key]}]));
       // Collection cards are display copies. Persist their color on the real
       // record too, so its dream view and later layouts keep a manual choice.
       const record=(collection?.sourceItems||collection?.items||state.spaces).find(item=>item.id===card.id),previousRecordColor=record?.color;
       card.color=color(form.get('color'));card.w=clamp(Number(form.get('width')),minWidth,1100);card.h=clamp(Number(form.get('height')),minHeight,850);card.x=clamp(Number(form.get('x')),-100000,100000);card.y=clamp(Number(form.get('y')),-100000,100000);
       if(space)space.color=card.color;if(record)record.color=card.color;
-      markCustomized();try{save();}catch(error){Object.assign(card,previous);if(space){if(previousSpaceColor===undefined)delete space.color;else space.color=previousSpaceColor;}if(record){if(previousRecordColor===undefined)delete record.color;else record.color=previousRecordColor;}throw error;}
+      markCustomized();try{if(!collection&&card.id.startsWith('block:'))updateCustomBlock(state,card.id,{color:card.color});save();}catch(error){Object.assign(card,previous);if(previousCustomBlocks===undefined)delete state.customBlocks;else state.customBlocks=previousCustomBlocks;if(previousStamp===undefined)delete state.updatedAt;else state.updatedAt=previousStamp;for(const [key,entry] of Object.entries(previousLayoutMeta)){if(entry.present)canvas[key]=entry.value;else delete canvas[key];}if(space){if(previousSpaceColor===undefined)delete space.color;else space.color=previousSpaceColor;}if(record){if(previousRecordColor===undefined)delete record.color;else record.color=previousRecordColor;}throw error;}
       placeCard(card);const el=cardEl(card.id);if(el){el.style.setProperty('--card-color',card.color);el.style.setProperty('--card-fill',canvasCardFill(card.color));}announce('卡片外观已保存');
     }});
     const dialog=document.querySelector('#modal');
     dialog?.querySelectorAll('[data-pick-color]').forEach(button=>button.onclick=()=>{const input=dialog.querySelector('[name="color"]');input.value=button.dataset.pickColor;input.dispatchEvent(new Event('input',{bubbles:true}));dialog.querySelectorAll('[data-pick-color]').forEach(b=>b.innerHTML=b===button?icon('check',17):'');});
-    const manage=dialog?.querySelector('[data-manage-space]');if(manage)manage.onclick=()=>{ctx.closeModal();(collection?.onEdit!==undefined?collection.onEdit:ctx.editSpace)?.(card.id);};
+    const manage=dialog?.querySelector('[data-manage-space]');if(manage)manage.onclick=()=>{ctx.closeModal();if(!collection&&card.id.startsWith('block:'))ctx.openCustomBlockEditor?.(card.id);else (collection?.onEdit!==undefined?collection.onEdit:ctx.editSpace)?.(card.id);};
   }
 
   function onClick(event) {
@@ -519,7 +527,7 @@ export function mountCanvas(ctx, collection) {
     if(![...(event.dataTransfer?.types||[])].includes('Files'))return;
     event.preventDefault();if(event.dataTransfer)event.dataTransfer.dropEffect='copy';
     const el=event.target.closest('[data-card]');
-    if(!collection&&['ledger','timetable','calendar','competitions'].includes(el?.dataset.card)){if(event.dataTransfer)event.dataTransfer.dropEffect='none';return;}
+    if(!collection&&(['ledger','timetable','calendar','competitions'].includes(el?.dataset.card)||el?.dataset.card?.startsWith('block:'))){if(event.dataTransfer)event.dataTransfer.dropEffect='none';return;}
     if(event.type==='dragenter'&&el){dragDepth.set(el,(dragDepth.get(el)||0)+1);el.classList.add('is-drop-target');}
     if(event.type==='dragleave'&&el){const depth=(dragDepth.get(el)||1)-1;dragDepth.set(el,depth);if(depth<=0)el.classList.remove('is-drop-target');}
   }

@@ -6,6 +6,7 @@ import {FITNESS_ACTION_ADAPTERS} from './workspace-actions-fitness.js';
 import {COMPETITION_ACTION_ADAPTERS} from './workspace-actions-competitions.js';
 import {PLATFORM_ACTION_ADAPTERS} from './workspace-actions-platform.js';
 import {CUSTOM_BLOCK_ACTION_ADAPTERS} from './workspace-actions-custom-blocks.js';
+import {CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
 import {assignRecordColor} from './creation-colors.js';
 import {formatMoney} from './ledger-model.js';
 
@@ -88,11 +89,36 @@ export function applyWorkspaceActions(state,requestId,actions,options={}){
 const FIELD_LABEL={title:'名称',description:'说明',subtitle:'课程简介',prompt:'助教偏好',content:'正文',chapter:'章节',source:'来源',color:'卡片颜色',type:'类型',text:'内容',tags:'标签',category:'分类',date:'日期',priority:'优先级',done:'完成状态',archived:'归档状态',spaceId:'所属空间',projectId:'所属账本',amount:'金额',amountCents:'金额',includeInTotal:'计入总账单',name:'文件名称',blobId:'原文件',size:'文件大小',icon:'图标',note:'备注',targetContainerId:'移动到',containerId:'所属位置',startDate:'开始日期',endDate:'结束日期',startTime:'开始时间',endTime:'结束时间',allDay:'全天',kind:'安排类型',important:'重要标记',location:'地点',notes:'备注',teacher:'教师',room:'教室',weeks:'周次',day:'星期',weekday:'星期',startPeriod:'开始节次',endPeriod:'结束节次',campus:'校区',word:'单词',meaning:'释义',phonetic:'音标',example:'例句',translation:'译文',status:'学习状态',duration:'学习时长',minutes:'学习分钟',reviewed:'已回顾',targetScore:'目标分数',examDate:'考试日期',dailyMinutes:'每日时长',vocabularyTarget:'词汇目标',contentGoal:'学习内容',enabled:'启用',scale:'缩放',x:'横向位置',y:'纵向位置',w:'宽度',h:'高度',width:'宽度',height:'高度',layout:'排列方式',snap:'网格吸附',sidebarPinned:'固定侧边栏',displayName:'显示名称'};
 const SKIP_FIELDS=new Set(['id','updatedAt','createdAt','sourceRequestId','revisions','completedAt','configuration']);
 Object.assign(FIELD_LABEL,{major:'专业',weekOne:'第一周开始日期',totalWeeks:'学期总周数',teachingWeeks:'教学周数',periods:'节次时间',entries:'课程安排',activeTermId:'当前学期',target:'目标分数',focus:'练习重点',question:'题目',selected:'作答内容',correct:'正确答案',explanation:'解析',questionId:'题目编号',fileName:'附件名称',fileType:'文件类型',files:'文件',cards:'卡片',snap:'网格吸附',initialized:'画布已初始化',customized:'已自定义布局',presentation:'排列方式',stackPointer:'堆叠指针',view:'画布视角',zoom:'缩放',inboxView:'灵感显示方式',evidence:'用户原话依据',fitnessEnabled:'开启运动记录',activity:'运动项目',distanceKm:'距离（公里）',caloriesKcal:'消耗热量（千卡）'});
-function human(value,key,state){
+function blockConfigText(value){
+  if(!plain(value))return typeof value==='object'?JSON.stringify(value,null,2):String(value);
+  const display=value=>value===''?'（空）':String(value);
+  if(typeof value.code==='string')return `程序代码：\n${value.code}`;
+  if(typeof value.text==='string')return `正文：\n${display(value.text)}`;
+  if(Array.isArray(value.items))return value.items.length?value.items.map((item,index)=>{
+    const lines=[`${index+1}. ${display(item.label)}`,`编号：${display(item.id)}`];
+    if(Object.hasOwn(item,'done'))lines.push(`完成状态：${item.done?'已完成':'未完成'}`);
+    if(Object.hasOwn(item,'url'))lines.push(`网址：${display(item.url)}`);
+    return lines.join('\n');
+  }).join('\n\n'):'条目：（空）';
+  if(Object.hasOwn(value,'target'))return `当前值：${value.value}\n目标值：${value.target}\n单位：${display(value.unit)}`;
+  if(typeof value.date==='string')return `日期：${display(value.date)}`;
+  if(Array.isArray(value.columns)&&Array.isArray(value.rows)){
+    const columns=value.columns.map((column,index)=>`${index+1}. ${display(column.label)}（编号：${display(column.id)}）`).join('\n')||'（空）';
+    const rows=value.rows.map((row,index)=>[`${index+1}. 行编号：${display(row.id)}`,...row.cells.map((cell,column)=>`${value.columns[column]?.label||`第${column+1}列`}：${display(cell)}`)].join('\n')).join('\n\n')||'（空）';
+    return `表头：\n${columns}\n\n记录：\n${rows}`;
+  }
+  return JSON.stringify(value,null,2);
+}
+function human(value,key,state,entity){
   if(key==='position'&&Number.isSafeInteger(value))return `第 ${value+1} 位`;
   if(key==='projectId'&&value==='')return '日常零钱';
   if(['distanceKm','caloriesKcal'].includes(key)&&value===null)return '未提供（不计入已知合计）';
   if(value===undefined||value===null||value==='')return '未设置';
+  if(entity==='customBlock'){
+    if(key==='kind')return CUSTOM_BLOCK_KINDS.find(kind=>kind.id===value)?.title||String(value);
+    if(key==='config')return blockConfigText(value);
+    if(key==='data')return JSON.stringify(value,null,2);
+  }
   if(key==='amountCents')return `¥${formatMoney(value)}`;
   if(key==='amount')return `¥${value}`;
   if(typeof value==='boolean')return value?'是':'否';
@@ -119,7 +145,7 @@ function destinationLabel(state,containerId,entity){
 }
 function fields(before,after,entity,state){
   const labels={...FIELD_LABEL,...(['space','course'].includes(entity)?{notes:'笔记'}:{}),...(entity==='profileSettings'?{name:'称呼'}:{}),...Object.fromEntries(Object.entries(ADAPTERS[entity].fields||{}).filter(([key,label])=>key!==label))};
-  return [...new Set([...Object.keys(before||{}),...Object.keys(after||{})])].filter(key=>!SKIP_FIELDS.has(key)&&JSON.stringify(before?.[key])!==JSON.stringify(after?.[key])).map(key=>({label:labels[key]||key,before:human(before?.[key],key,state),after:human(after?.[key],key,state)}));
+  return [...new Set([...Object.keys(before||{}),...Object.keys(after||{})])].filter(key=>!SKIP_FIELDS.has(key)&&JSON.stringify(before?.[key])!==JSON.stringify(after?.[key])).map(key=>({label:labels[key]||key,before:human(before?.[key],key,state,entity),after:human(after?.[key],key,state,entity)}));
 }
 export function previewWorkspaceActions(state,actions,options={}){
   const requestId=options.requestId||state.aiRequests?.findLast(row=>row.status==='waiting_model')?.id;
@@ -129,7 +155,7 @@ export function previewWorkspaceActions(state,actions,options={}){
 }
 export function describeWorkspaceAction(action){
   const adapter=Object.hasOwn(ADAPTERS,action?.entity)?ADAPTERS[action.entity]:null;if(!adapter)return {type:'工作台操作',title:'未知操作',destination:'工作台',fields:[]};
-  const data=action.data||{};return {type:`${OP_LABEL[action.operation]||'操作'}${adapter.label||action.entity}`,title:recordTitle({...data,id:action.id||data.id||adapter.label}),destination:action.containerId||'工作台',fields:Object.entries(data).map(([key,value])=>({label:FIELD_LABEL[key]||adapter.fields?.[key]||key,before:'',after:human(value,key)}))};
+  const data=action.data||{};return {type:`${OP_LABEL[action.operation]||'操作'}${adapter.label||action.entity}`,title:recordTitle({...data,id:action.id||data.id||adapter.label}),destination:action.containerId||'工作台',fields:Object.entries(data).map(([key,value])=>({label:(action.entity==='customBlock'?adapter.fields?.[key]:null)||FIELD_LABEL[key]||adapter.fields?.[key]||key,before:'',after:human(value,key,undefined,action.entity)}))};
 }
 export async function undoWorkspaceActions(ctx,receipt,requestId){
   if(!receipt||receipt.destinationId!=='workspace'||!Array.isArray(receipt.items)||receipt.items.length>50)fail('行动回执无效。');

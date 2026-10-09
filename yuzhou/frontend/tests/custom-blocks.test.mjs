@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CUSTOM_BLOCK_KINDS,createCustomBlock,updateCustomBlock,getCustomBlocks,validateCustomBlocks,validateBlockData,mergeCustomBlocks} from '../src/custom-blocks-model.js';
-import {applyWorkspaceActions,previewWorkspaceActions,undoWorkspaceActions,validateWorkspaceActions,validateWorkspaceActionSnapshot} from '../src/workspace-actions.js';
+import {applyWorkspaceActions,previewWorkspaceActions,describeWorkspaceAction,undoWorkspaceActions,validateWorkspaceActions,validateWorkspaceActionSnapshot} from '../src/workspace-actions.js';
 import {validateBackup,mergeBackup} from '../src/backup.js';
 
 const now='2026-10-09T10:00:00.000Z';
@@ -11,6 +11,48 @@ const create=(target,id='one',extra={})=>createCustomBlock(target,input(extra),{
 const proposal=(data=input())=>({entity:'customBlock',operation:'create',data});
 const options=()=>{let n=0;return {uid:()=>`test-${++n}`,now};};
 const backup=target=>({format:'lumi-backup',version:1,exportedAt:now,state:target,files:[]});
+
+test('custom-block previews and descriptions use all seven Chinese kind names without changing calendar terminology',()=>{
+  const names={note:'便签',checklist:'清单',links:'网址收藏',progress:'进度',countdown:'重要日期',table:'记录表',miniapp:'交互小程序'},target=state(),before=structuredClone(target);
+  for(const kind of CUSTOM_BLOCK_KINDS){
+    const config=kind.id==='countdown'?{date:'2026-11-01'}:structuredClone(kind.config),action=proposal(input({kind:kind.id,config}));
+    const preview=previewWorkspaceActions(target,[action])[0],description=describeWorkspaceAction(action);
+    assert.equal(preview.fields.find(field=>field.label==='方块类型').after,names[kind.id]);assert.equal(description.fields.find(field=>field.label==='方块类型').after,names[kind.id]);
+  }
+  const calendarAction={entity:'calendarEvent',operation:'create',data:{title:'合成提醒',kind:'note',startDate:'2026-11-01'}};
+  assert.equal(previewWorkspaceActions(target,[calendarAction])[0].fields.find(field=>field.label==='日历类型').after,'注意事项');
+  assert.equal(describeWorkspaceAction(calendarAction).fields.find(field=>field.label==='安排类型').after,'注意事项');assert.deepEqual(target,before);
+});
+
+test('review configuration text retains every checklist, link, progress, date, table and note value',()=>{
+  const fixtures=[
+    ['note',{text:'第一行\n第二行'},['正文：\n第一行\n第二行']],
+    ['checklist',{items:[{id:'todo-1',label:'核对材料',done:false},{id:'todo-2',label:'复查',done:true}]},['todo-1','核对材料','未完成','todo-2','复查','已完成']],
+    ['links',{items:[{id:'link-1',label:'官方页面',url:'https://example.org/path?a=1&b=2'}]},['link-1','官方页面','https://example.org/path?a=1&b=2']],
+    ['progress',{value:12.5,target:40,unit:'页'},['当前值：12.5','目标值：40','单位：页']],
+    ['countdown',{date:'2026-11-01'},['日期：2026-11-01']],
+    ['table',{columns:[{id:'name',label:'名称'},{id:'memo',label:'备注'}],rows:[{id:'row-1',cells:['调研','含换行\n的备注']},{id:'row-2',cells:['复核','']}]},['name','名称','memo','备注','row-1','调研','含换行\n的备注','row-2','复核','备注：（空）']],
+  ];
+  for(const [kind,config,values] of fixtures){
+    const action=proposal(input({kind,config})),copy=structuredClone(action);
+    for(const review of [previewWorkspaceActions(state(),[action])[0],describeWorkspaceAction(action)]){
+      const field=review.fields.find(field=>field.label==='方块配置与内容');assert.ok(field);
+      for(const value of values)assert.ok(field.after.includes(value),`${kind} review must include ${value}`);
+    }
+    assert.deepEqual(action,copy);
+  }
+});
+
+test('long miniapp code is fully reviewable with original line breaks in create, update and fallback descriptions',()=>{
+  const code='// 第一行\nconst value = "含\\n字面转义";\n'+ '// marker\n'.repeat(1200)+'app.render([{type:"text",text:value}]);';
+  const action=proposal(input({config:{code}})),preview=previewWorkspaceActions(state(),[action])[0];
+  assert.equal(preview.fields.find(field=>field.label==='方块配置与内容').after,`程序代码：\n${code}`);
+  assert.equal(describeWorkspaceAction(action).fields.find(field=>field.label==='方块配置与内容').after,`程序代码：\n${code}`);
+  const target=state(),record=create(target),updated={entity:'customBlock',operation:'update',id:record.id,data:{config:{code}}},before=structuredClone(target);
+  const difference=previewWorkspaceActions(target,[updated])[0].fields.find(field=>field.label==='方块配置与内容');
+  assert.equal(difference.before,`程序代码：\n${record.config.code}`);assert.equal(difference.after,`程序代码：\n${code}`);
+  assert.equal(describeWorkspaceAction(updated).fields.find(field=>field.label==='方块配置与内容').after,`程序代码：\n${code}`);assert.deepEqual(target,before);
+});
 
 test('legacy reads and type metadata are isolated; all seven valid block kinds round-trip',()=>{
   const target=state(),before=structuredClone(target);assert.deepEqual(getCustomBlocks(target),{version:1,items:[]});assert.deepEqual(target,before);
