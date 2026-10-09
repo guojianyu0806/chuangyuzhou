@@ -24,7 +24,7 @@
 .cv-open-settings>span{flex:1}
 .cv-setting-switch{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px;padding:8px 0;color:#55436e}
 .cv-setting-switch input{width:24px;height:24px;min-height:24px;accent-color:#7950f2}
-@media(min-width:761px){.space-shell:has(.sidebar.rail-pinned) .app-main{margin-left:254px}}
+
 @media(max-width:1000px){.cv-compact-header .cv-heading{display:none}}
 @media(max-width:760px){
  .space-desktop>.cv-pagehead.cv-compact-header{gap:6px!important}

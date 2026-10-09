@@ -18,6 +18,7 @@ import {WORKBENCH_MODULES,createWorkbench,getVisibleModules,getWorkbench,configu
 import {mountBuilder} from './builder.js';
 import {companionButton,openCompanion} from './companion.js';
 import {createSidebarNavigation} from './sidebar-navigation.js';
+import {mountSidebarResize} from './sidebar-resize.js';
 
 const cloudClient=await bootstrapCloud();
 
@@ -30,6 +31,7 @@ let mode=cloudClient?'personal':localStorage.getItem('czb-yuzhou-mode')||'demo';
 if(!['demo','personal'].includes(mode))mode='demo';
 let route='home',subroute='',filter='all';
 let cleanupView=null;
+let sidebarResize=null;
 let lastStored=localStorage.getItem(key(mode));
 const nav=[['home','orbit','我的工作台'],['builder','layers','搭建台'],...WORKBENCH_MODULES.map(item=>[item.id,item.icon,item.title])];
 const visibleNavigation=()=>[...nav.slice(0,2),...getVisibleModules(state).map(item=>[item.id,item.icon,item.title])];
@@ -187,14 +189,15 @@ async function dropOnCard(local,id,input){
 }
 
 function shell(){
+  sidebarResize?.destroy();
   document.body.classList.add('space-shell');
   document.querySelector('#app').innerHTML=`
   <button class="rail-scrim" data-action="close-nav" aria-label="关闭导航" hidden></button>
   <aside class="sidebar ${state.ui.sidebarPinned?'rail-pinned':''}" aria-label="空间导航"><a href="#/home" class="brand" aria-label="宇宙空间主页"><img src="./icon.svg" alt="" width="39" height="39"><span>宇宙<small>传智杯独立副本</small></span></a>
   <button class="rail-pin" data-action="pin-nav" aria-label="${state.ui.sidebarPinned?'收起侧边栏':'展开侧边栏'}" aria-pressed="${!!state.ui.sidebarPinned}">${icon('pin',17)}<span>${state.ui.sidebarPinned?'收起侧边栏':'展开侧边栏'}</span></button>
   <button class="workspace-switch" data-action="switch-workspace" aria-label="切换示例与个人空间"><span class="workspace-avatar">${mode==='demo'?'例':'我'}</span><span><strong data-workbench-title>${mode==='demo'?'完整宇宙示例':esc(getWorkbench(state).title)}</strong><small>按你的方式搭建</small></span>${icon('chevron-down',16)}</button>
-  <nav class="primary-nav" aria-label="主导航"></nav>
-  <div class="rail-spaces"><div class="rail-section-title"><span>我的工作区</span><button class="icon-btn" data-action="new-space" aria-label="新建工作区">${icon('plus',15)}</button></div><div id="rail-space-links"></div></div>
+  <div class="rail-scroll"><nav class="primary-nav" aria-label="主导航"></nav>
+  <div class="rail-spaces"><div class="rail-section-title"><span>我的工作区</span><button class="icon-btn" data-action="new-space" aria-label="新建工作区">${icon('plus',15)}</button></div><div id="rail-space-links"></div></div></div>
   <div class="sidebar-bottom"><button class="settings-link rail-update" data-action="check-update" aria-label="检查更新" title="检查更新">${icon('refresh')}<span>检查更新</span></button><button class="rail-new" data-action="new-space" aria-label="新建工作区">${icon('plus',20)}<span>新建工作区</span></button><a class="settings-link" href="#/settings" aria-label="偏好与连接" title="偏好与连接">${icon('settings')}<span>偏好与连接</span></a><button class="profile" data-go="settings" aria-label="个人设置"><span class="avatar">${esc(state.profile.name.slice(0,1))}</span><span><strong>${esc(state.profile.name)}</strong><small>你的私人工作台</small></span></button></div></aside>
   <div class="app-main"><header class="topbar"><div class="breadcrumb"><button class="mobile-menu icon-btn" data-action="toggle-nav" aria-label="展开导航">${icon('menu')}</button><a href="#/home" class="desktop-label">我的宇宙</a><span class="slash desktop-label">/</span><strong id="current-page">空间主页</strong></div><button class="search-trigger" data-action="search" aria-label="搜索所有空间">${icon('search',17)}<span>搜索所有空间…</span><kbd>Ctrl K</kbd></button><div class="topbar-actions"><button class="app-update-trigger" data-action="check-update" aria-label="检查界面更新" title="检查界面更新">${icon('refresh',16)}<span>更新</span></button><button class="sync-indicator" data-go="settings"><span class="status-dot"></span><span>本机已就绪</span></button><button class="icon-btn" data-action="notifications" aria-label="通知">${icon('bell')}</button><button class="avatar small-avatar" data-go="settings" aria-label="个人设置">${esc(state.profile.name.slice(0,1))}</button></div></header>
   <div class="mode-banner ${mode==='personal'?'personal-banner':''}">${icon(mode==='demo'?'layers':'shield',15)}<span>${mode==='demo'?'当前为示例工作区，内容用于体验界面。':'个人空间 · 数据保存在当前浏览器，云端连接后可跨设备同步。'}</span><button data-action="switch-workspace">${mode==='demo'?'进入我的工作台':'查看示例'} ${icon('arrow-right',14)}</button></div>
@@ -202,6 +205,11 @@ function shell(){
   <nav class="bottom-nav" aria-label="移动导航">${[['home','orbit','工作台'],['builder','layers','搭建'],['ai','sparkles','AI伙伴']].map(([id,i,label])=>`<a href="#/${id}" data-nav="${id}">${icon(i,21)}<span>${label}</span></a>`).join('')}<button data-action="toggle-nav">${icon('menu',21)}<span>更多</span></button></nav>
   ${companionButton()}`;
   ctx.root=document.querySelector('#main');
+  const sidebar=document.querySelector('.sidebar'),handle=document.createElement('div');
+  handle.className='rail-resize';handle.tabIndex=0;handle.setAttribute('role','separator');
+  sidebar.id='workspace-sidebar';handle.setAttribute('aria-label','调整侧边栏宽度');handle.setAttribute('aria-orientation','vertical');handle.setAttribute('aria-valuemin','80');handle.setAttribute('aria-controls','workspace-sidebar');
+  handle.title='拖动调节宽度，双击恢复默认；也可用左右方向键调节';sidebar.append(handle);
+  sidebarResize=mountSidebarResize({body:document.body,sidebar,handle,pinButton:document.querySelector('[data-action="pin-nav"]'),readExpanded:()=>state.ui.sidebarPinned,writeExpanded:setSidebarExpanded,readWidth:()=>localStorage.getItem(`${key(mode)}:sidebar-width`),writeWidth:width=>localStorage.setItem(`${key(mode)}:sidebar-width`,String(width)),onError:error=>toast(error.message)});
   updateModuleNavigation();
   renderSpaceLinks();
   updateShellCounts();
@@ -419,6 +427,7 @@ function moreMenu(){modal({title:'我的空间',body:`<div class="more-menu">${[
 function notifications(){modal({title:'通知与动态',body:`<div class="notification-item"><span class="summary-icon violet">${icon('sparkles',23)}</span><div><strong>欢迎来到宇宙</strong><p>${cloudClient?'个人空间已接入本比赛独立服务；当前仅供本机访问。':'完整界面已就绪，可以开始记录与整理。当前内容仅保存在本机；AI 需独立配置。'}</p><small>界面版本 ${VERSION}</small></div></div><div class="notification-item"><span class="summary-icon cyan">${icon('cloud',23)}</span><div><strong>${cloudClient?esc(cloudClient.label):'云端连接待完成'}</strong><p>${cloudClient?'在偏好与连接中管理 DeepSeek、查看同步状态与导出备份。':'服务器部署后，可启用跨设备同步、模型任务和版本更新通知。'}</p><button class="text-btn" data-go="settings">查看连接状态 ${icon('arrow-right',16)}</button></div></div>`});}
 function render(){
   if(!ctx.root)return;
+  sidebarResize?.sync();
   cleanupView?.();cleanupView=null;
   const [page,id]=location.hash.replace(/^#\/?/,'').split('/');
   route=nav.some(n=>n[0]===page)||['settings','space'].includes(page)?page:'home';
@@ -456,12 +465,9 @@ function render(){
   if(cloudClient)updateCloudShell();
 }
 function setSidebarExpanded(expanded){
-  state.ui.sidebarPinned=expanded;save();
-  document.querySelector('.sidebar')?.classList.toggle('rail-pinned',expanded);
-  const button=document.querySelector('[data-action="pin-nav"]');
-  button?.setAttribute('aria-pressed',String(expanded));
-  button?.setAttribute('aria-label',expanded?'收起侧边栏':'展开侧边栏');
-  if(button)button.querySelector('span').textContent=expanded?'收起侧边栏':'展开侧边栏';
+  const previous=state.ui.sidebarPinned,updatedAt=state.updatedAt;state.ui.sidebarPinned=expanded;
+  try{save();}catch(error){state.ui.sidebarPinned=previous;state.updatedAt=updatedAt;sidebarResize?.sync();throw error;}
+  sidebarResize?.sync();
 }
 document.addEventListener('click',createSidebarNavigation({
   navigate:href=>{closeAssistant();setMobileNav(false);if(location.hash===href)render();else location.hash=href;},
