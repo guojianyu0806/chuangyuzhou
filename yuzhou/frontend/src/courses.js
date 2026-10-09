@@ -1,6 +1,7 @@
 import { mountCanvas, canvasCardFill } from './canvas.js';
 import { assignRecordColor, createColorDraft } from './creation-colors.js';
 import { openAIConversation } from './ai.js';
+import { mountFileText } from './file-text.js';
 
 const DEFAULT_PROMPT = `你是我的软件工程课程助教。请以我上传的课程资料和课堂笔记为依据，按章节整理：
 1. 核心概念、概念关系与适用条件。
@@ -163,11 +164,11 @@ export function mountCourses(ctx, courseId) {
     root.innerHTML = `<section class="courses-page course-detail course-card-workspace" style="--course-color:${colorOf(course)};--course-fill:${canvasCardFill(colorOf(course))}"><button class="course-back" data-course-action="back">${glyph('arrow-left', 17)} 全部课程</button><header class="page-head course-detail-head course-detail-hero"><div class="course-detail-title"><span class="course-symbol">${glyph(course.icon || 'book', 25)}</span><div><div class="eyebrow">${course.example ? '示例课程 · 软件工程' : '我的课程空间'}</div><h1>${esc(course.title)}</h1><p>${esc(course.subtitle || '让每一份资料、每一次理解，都有自己的位置。')}</p></div></div><div class="course-head-actions"><button class="btn" data-course-action="preferences">${glyph('settings', 17)} 助教偏好</button><button class="btn primary" data-course-action="upload">${glyph('upload', 17)} 上传资料</button></div></header>
       <div class="course-detail-navigation"><div class="tabs" aria-label="课程内容"><button class="tab ${isNote ? 'active' : ''}" data-course-action="tab" data-tab="notes">学习笔记 <span>${visibleRecords(course.notes).length}</span></button><button class="tab ${!isNote ? 'active' : ''}" data-course-action="tab" data-tab="files">课程资料 <span>${visibleRecords(course.files).length}</span></button></div><div class="course-detail-navigation-actions"><button class="btn course-ai-entry" data-course-action="ai">${glyph('sparkles', 17)} 整理课程资料</button>${isNote ? `<button class="btn primary" data-course-action="new-note">${glyph('plus', 17)} 新建笔记</button>` : ''}</div></div>
       <div class="course-workspace ${detailView === 'board' ? 'course-board-workspace' : 'course-reader-workspace'}">${detailView === 'board' ? '<div data-course-detail-canvas></div>' : `<div class="course-reader-card" style="--reader-color:${colorOf({ color: selectedColor })};--reader-fill:${canvasCardFill(selectedColor)}"><div class="course-reader-top"><button class="course-reader-return" data-course-action="back-board">${glyph('arrow-left', 17)} 返回${isNote ? '笔记' : '资料'}卡片</button><span>${glyph(isNote ? 'book' : 'file', 16)} ${isNote ? '学习笔记' : '课程资料'}</span></div><div class="course-reading-panel ${!isNote ? 'course-file-reader' : ''}">${isNote ? noteReading(note) : fileReader}</div></div>`}</div>
-      <p class="course-board-footnote">${glyph('info', 15)} 资料和布局仅保存在本机；模型接入后才能自动整理。文件可以拖入这个课程空间。</p><input type="file" class="course-file-input" data-course-files multiple accept=".ppt,.pptx,.pdf,.txt,.md,.png,.jpg,.jpeg,.webp,.gif" aria-label="选择课程资料"></section>`;
+      <p class="course-board-footnote">${glyph('info', 15)} 文件可以拖入这个课程空间。正文提取不调用模型；AI 整理需单独连接模型。</p><input type="file" class="course-file-input" data-course-files multiple accept=".ppt,.pptx,.docx,.pdf,.txt,.md,.csv,.png,.jpg,.jpeg,.webp,.gif" aria-label="选择课程资料"></section>`;
     if (detailView === 'reader') { if (!isNote && file) showFile(file); return; }
     const palette = ['#B3A0FF', '#63E6DC', '#FF9CCE', '#D8F649', '#9DC5FF', '#FFBC7C'];
     const items = (isNote ? course.notes : course.files).map((item, index) => ({ ...item, title: isNote ? item.title : item.name, color: item.color || palette[index % palette.length], icon: isNote ? 'book' : 'file' }));
-    const emptyHTML = isNote ? `<div class="course-board-empty">${glyph('book', 37)}<h2>把这门课的理解铺开</h2><p>每篇笔记都是一张可以摆放的卡片。</p><button class="btn primary" data-course-action="new-note">${glyph('plus', 17)} 写第一篇笔记</button></div>` : `<div class="course-board-empty" data-course-dropzone>${glyph('upload', 37)}<h2>把这一门课的资料放进来</h2><p>拖入课件、课堂记录或截图，原件会留在这里。</p><button class="btn primary" data-course-action="upload">选择文件</button><small>PPT / PDF / TXT / 图片 · 单文件不超过 40 MB</small></div>`;
+    const emptyHTML = isNote ? `<div class="course-board-empty">${glyph('book', 37)}<h2>把这门课的理解铺开</h2><p>每篇笔记都是一张可以摆放的卡片。</p><button class="btn primary" data-course-action="new-note">${glyph('plus', 17)} 写第一篇笔记</button></div>` : `<div class="course-board-empty" data-course-dropzone>${glyph('upload', 37)}<h2>把这一门课的资料放进来</h2><p>拖入课件、课堂记录或截图，原件会留在这里。</p><button class="btn primary" data-course-action="upload">选择文件</button><small>PPT / DOCX / PDF / TXT / CSV / 图片 · 单文件不超过 40 MB</small></div>`;
     const host = root.querySelector('[data-course-detail-canvas]');
     canvasCleanup = mountCanvas({ ...ctx, root: host, createSpace: () => isNote ? editNote() : root.querySelector('[data-course-files]').click(), editSpace: id => isNote && editNote(course.notes.find(item => item.id === id)), enterCard: showDetailItem }, {
       layout: state.boards[boardKey], sourceItems: isNote ? course.notes : course.files, items, title: isNote ? '笔记卡片' : '资料卡片', hideHeader: true, createLabel: false, cardLabel: isNote ? '学习笔记' : '原始资料', footLabel: isNote ? '留下自己的理解' : '保留上传原件', enterLabel: isNote ? '阅读笔记' : '打开资料', emptyHTML, canDrop: false, matches:item=>!item.archived, onEdit: isNote ? id => editNote(course.notes.find(item => item.id === id)) : null, manageLabel: '编辑笔记', renderCard: detailCard
@@ -182,7 +183,7 @@ export function mountCourses(ctx, courseId) {
       if (request !== previewRequest || !host?.isConnected) return;
       if (!blob) throw new Error('not-found');
       const ext = file.name.split('.').pop().toLowerCase();
-      if (['txt', 'md'].includes(ext)) {
+      if (['txt', 'md', 'csv'].includes(ext)) {
         const text = await blob.slice(0, 500000).text();
         if (request !== previewRequest || !host.isConnected) return;
         host.innerHTML = `<pre class="course-text-preview">${esc(text)}</pre>${blob.size > 500000 ? '<p class="course-preview-note">预览显示前 500 KB，请下载查看完整文件。</p>' : ''}`;
@@ -193,8 +194,9 @@ export function mountCourses(ctx, courseId) {
         objectUrl = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
         host.innerHTML = `<iframe class="course-pdf-preview" src="${esc(objectUrl)}" title="${esc(file.name)}"></iframe><p class="course-preview-note">若浏览器无法显示 PDF，请点击“下载原件”查看。</p>`;
       } else {
-        host.innerHTML = `<div class="empty-state course-ppt-empty"><span class="course-ppt-symbol">P</span><h3>课件原件已保存</h3><p>PPT 可下载后用 PowerPoint 或 WPS 打开。<br>在线解析和 AI 整理将在服务接入后启用。</p><button class="btn soft" data-course-action="download-file" data-id="${esc(file.id)}">${glyph('download', 17)} 下载课件</button></div>`;
+        host.innerHTML = `<div class="empty-state course-ppt-empty"><span class="course-ppt-symbol">${ext==='docx'?'W':'P'}</span><h3>文档原件已保存</h3><p>可下载后用对应软件打开。${ext==='ppt'?'旧版 PPT 暂不支持正文提取，可先另存为 PPTX 后重新上传。':'下方可提取正文，不调用模型。'}</p><button class="btn soft" data-course-action="download-file" data-id="${esc(file.id)}">${glyph('download', 17)} 下载原件</button></div>`;
       }
+      mountFileText(ctx, host, file);
     } catch {
       if (request === previewRequest && host?.isConnected) host.innerHTML = `<div class="empty-state"><h3>这份文件暂时无法读取</h3><p>本机文件可能已被浏览器清理，请重新上传原件。</p><button class="btn primary" data-course-action="upload">重新上传</button></div>`;
     }
@@ -276,7 +278,7 @@ export function mountCourses(ctx, courseId) {
     try {
       for (const file of files) {
         const ext = file.name.split('.').pop().toLowerCase();
-        if (!['ppt', 'pptx', 'pdf', 'txt', 'md', 'png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext) || file.size > 40 * 1024 * 1024) { rejected++; continue; }
+        if (!['ppt', 'pptx', 'docx', 'pdf', 'txt', 'md', 'csv', 'png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext) || file.size > 40 * 1024 * 1024) { rejected++; continue; }
         try {
           const blobId = await putFile(file);
           const previousColor = state.ui?.lastCreatedColor, previousUpdatedAt = target.updatedAt, previousStateUpdatedAt = state.updatedAt, previousSelection = selectedFileId;

@@ -1,4 +1,5 @@
 import {ensureConversation} from './ai-conversation-model.js';
+import {engineAvailable} from './model-status.js';
 const byState = new WeakMap();
 const entry = state => { if (!byState.has(state)) byState.set(state, {jobs:new Map(), listeners:new Set()}); return byState.get(state); };
 const emit = state => entry(state).listeners.forEach(fn => fn());
@@ -9,12 +10,13 @@ export const jobWorking = job => !!job && ['queued','running'].includes(job.stat
 export async function startAIJob(ctx, request) {
   if (!cloudAIEnabled(ctx)) throw new Error(ctx.cloud?.enabled ? '请先进入“我的工作台”，再提交真实资料。' : '请在本比赛实例独立配置 AI 引擎与模型后使用自动整理。');
   const cache = entry(ctx.state);
-  if (jobWorking(cache.jobs.get(request.id))) return;
-  cache.jobs.set(request.id, {requestId:request.id,status:'queued',starting:true}); emit(ctx.state);
+  if (jobWorking(cache.jobs.get(request.id)) || cache.jobs.get(request.id)?.starting) return;
+  cache.jobs.set(request.id, {requestId:request.id,status:'checking',starting:true}); emit(ctx.state);
   try {
     const status = await ctx.cloud.request('/api/model/status'); ctx.cloud.modelStatus = status;
     if (!status.configured) throw new Error('请先在“偏好与连接”中保存 DeepSeek API Key。原文已收好。');
-    if (!status.hermesAvailable) throw new Error('本比赛独立 AI 引擎待配置，原文和附件已保留。');
+    if (!engineAvailable(status)) throw new Error('本比赛独立 AI 引擎待配置，原文和附件已保留。');
+    cache.jobs.set(request.id, {requestId:request.id,status:'queued',starting:true}); emit(ctx.state);
     ensureConversation(request,ctx.uid);ctx.save(ctx.state);
     await ctx.cloud.flush();
     const {job} = await ctx.cloud.request('/api/ai/jobs', {method:'POST',body:{requestId:request.id,text:request.text,

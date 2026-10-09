@@ -2,6 +2,7 @@ import {ensureConversation,validateConversation} from './ai-conversation-model.j
 import {mountConversationPage} from './ai-chat.js';
 // The composer is a real local inbox. AI execution starts only after a backend is connected.
 import {cloudAIEnabled, jobFor, jobWorking, startAIJob} from './ai-cloud.js';
+import {modelStatusLabel} from './model-status.js';
 const activityByState = new WeakMap();
 const stamp = () => new Date().toISOString();
 const sizeLabel = n => n < 1048576 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1048576).toFixed(1)} MB`;
@@ -146,9 +147,9 @@ export function mountAIComposer(ctx, host, settings={}) {
     if (!alive) return;
     const draft = owner.aiDraft;
     if (cloudAIEnabled(ctx)) {
-      form.querySelector('.ai-local-status').innerHTML = `<i></i>${ctx.cloud.modelStatus?.configured ? 'DeepSeek 已接入' : '云端已连接'}`;
+      form.querySelector('.ai-local-status').innerHTML = `<i></i>${esc(modelStatusLabel(ctx.cloud.modelStatus))}`;
       form.querySelector('.ai-drop-target small').textContent = '每个文件最多 40 MB · 登录后自动同步';
-      form.querySelector('.ai-compose-note').textContent = '发送只用于对话。审核行动方案并点击「确认执行」后，才会改动工作区。';
+      form.querySelector('.ai-compose-note').textContent = '消息和附件会先保存，再检查模型状态。AI 就绪时发送会调用模型；审核行动方案并点击「确认执行」后，才会改动工作区。';
     }
     const chips = form.querySelector('.ai-attachment-chips');
     chips.innerHTML = draft.files.map(f => `<span class="ai-attachment-chip" title="${esc(f.name)}">${icon('file', 14)}<span>${esc(f.name)}</span><small>${sizeLabel(f.size)}</small><button type="button" data-ai="remove-attachment" data-id="${esc(f.id)}" aria-label="移除附件 ${esc(f.name)}">${icon('close', 13)}</button></span>`).join('');
@@ -211,8 +212,8 @@ export function mountAIComposer(ctx, host, settings={}) {
     sending = false;
     emit(state);
     if (cloudAIEnabled(ctx)) {
-      toast('消息已发送，AI 正在结合前文回复。');
-      startAIJob(ctx, request).catch(error => toast(error.message));
+      toast('消息已保存，正在检查 AI 调用条件。');
+      startAIJob(ctx, request).then(job => { if(job)toast('AI 请求已提交，请等待回复。'); }).catch(error => toast(error.message));
     } else toast('已收到，原文和附件已保存。连接 AI 后才能自动整理。');
     try{sessionStorage.setItem('czb-yuzhou-active-ai-'+state.mode,request.id);}catch{}
     host.dispatchEvent(new CustomEvent('ai-request-added', { bubbles: true, detail: { id: request.id } }));

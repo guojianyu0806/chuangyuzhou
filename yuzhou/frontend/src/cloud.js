@@ -1,6 +1,9 @@
 import {escapeHTML as esc, configureFileStore, getLocalFile} from './services.js';
+import {modelStatusLabel,modelEngineDescription} from './model-status.js';
 
 const stamp = () => new Date().toISOString();
+const isLocalInstance=()=>['127.0.0.1','localhost','[::1]'].includes(globalThis.location?.hostname);
+const connectionUnavailable=()=>isLocalInstance()?'暂时无法连接本比赛实例。电脑重启或服务窗口关闭后，请运行比赛目录中的“启动宇宙完整副本.cmd”，再重试；本设备改动仍保留。':'暂时无法连接工作台，请检查网络后重试；本设备改动仍保留。';
 const clone = value => JSON.parse(JSON.stringify(value));
 const read = key => { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } };
 const apiMessages={unauthorized:'登录已过期，请重新登录。',invalid_credentials:'账号或密码不正确。',setup_token_invalid:'初始化口令不正确，请检查后重试。',setup_closed:'账号已经建立，请刷新页面后登录。',csrf_invalid:'登录信息已更新，请重新登录。',csrf_forbidden:'登录信息已更新，请重新登录。',rate_limited:'尝试次数较多，请稍后再试。',revision_conflict:'其他设备有新内容，请先处理同步冲突。',missing_files:'部分附件尚未上传完整，请保留本机副本后重试。',invalid_password:'密码需要包含 12 至 256 位字符。',invalid_username:'请使用 2 至 64 位用户名。',file_not_found:'附件暂时不可用。',model_not_configured:'请先在偏好与连接中配置 DeepSeek。'};
@@ -9,7 +12,7 @@ Object.assign(apiMessages,{invalid_ledger:'账目格式有误，请检查金额�
 Object.assign(apiMessages,{invalid_fitness:'运动记录格式有误，请检查日期、时长、里程和热量。',invalid_fitness_reference:'运动记录关联的空间已不存在，请同步最新工作区后重试。',invalid_space_fitness_enabled:'运动统计开关格式有误，请重新保存空间设置。'});
 Object.assign(apiMessages,{invalid_competitions:'比赛记录格式有误，请检查比赛、截止日期和准备事项的关联。'});
 function errorMessage(result,fallback){const value=typeof result.error==='string'?result.error:result.error?.message;return apiMessages[value]||result.message||value||fallback;}
-const statusNames = {ready:'比赛实例已连接',saved:'已同步',saving:'正在同步',pending:'等待同步',offline:'离线 · 待同步',conflict:'同步冲突 · 已保留',remote:'其他设备有更新',auth:'请重新登录'};
+const statusNames = {ready:'比赛实例已连接',saved:'已同步',saving:'正在同步',pending:'等待同步',offline:'离线 · 待同步',conflict:'同步冲突 · 已保留',remote:'其他设备有更新',result:'本次操作结果待加载',auth:'请重新登录'};
 
 // Each tab owns its revision and pending snapshot. Sharing a browser cache must
 // never make an old tab inherit a newer revision and overwrite another device.
@@ -89,7 +92,7 @@ export class CloudClient {
     let remote;
     try{remote=await this.request('/api/workspace');}catch(error){
       const stored=read(this.key('personal'));
-      if(error.status!==401)this.setStatus('offline','暂时无法连接云端，改动会留在此设备，恢复连接后再同步。');
+      if(error.status!==401)this.setStatus('offline',connectionUnavailable());
       return this.pending?.state||stored||empty;
     }
     if(this.pending){
@@ -106,7 +109,8 @@ export class CloudClient {
     if(state.mode!=='personal')return;
     this.pending={state:clone(state),id:crypto.randomUUID(),createdAt:stamp()};
     this.persist();
-    if(this.status==='conflict'||!this.authenticated){if(this.status==='conflict')this.preserve();return;}
+    if(['conflict','result'].includes(this.status)||!this.authenticated){if(['conflict','result'].includes(this.status))this.preserve();return;}
+    if(this.mutation)return;
     this.setStatus(navigator.onLine?'pending':'offline');
     clearTimeout(this.timer);this.timer=setTimeout(()=>this.flush().catch(()=>{}),700);
   }
@@ -139,9 +143,10 @@ export class CloudClient {
       this.uploaded.add(id);
     }
   }
-  async flush() {
+  async flush({duringMutation=false}={}) {
+    if(this.mutation&&!duringMutation)await this.mutation;
     clearTimeout(this.timer);
-    if(this.status==='conflict')throw new Error(this.error);
+    if(['conflict','result'].includes(this.status))throw new Error(this.error);
     if(!this.authenticated)throw new Error('请重新登录后继续同步。');
     if(this.sending)return this.sending;
     this.sending=(async()=>{
@@ -168,26 +173,55 @@ export class CloudClient {
   }
   start(onRemote) {this.onRemote=onRemote;this.interval=setInterval(()=>this.poll(),5000);}
   async poll() {
-    if(!this.authenticated||this.sending||this.polling||this.status==='conflict')return;
+    if(!this.authenticated||this.sending||this.polling||this.mutation||['conflict','result'].includes(this.status))return;
     if(this.pending){this.flush().catch(()=>{});return;}
     this.polling=true;
     try{
       const remote=await this.request(`/api/workspace?since=${encodeURIComponent(this.revision)}`);
-      if(this.pending||this.sending)return;
-      if(remote.revision!==this.revision){this.incoming=remote;this.setStatus('remote');this.onRemote?.(remote);}
+      if(this.pending||this.sending||this.mutation)return;
+      if(remote.revision>this.revision){this.incoming=remote;this.setStatus('remote');this.onRemote?.(remote);}
       else if(this.status==='offline')this.setStatus('saved');
-    }catch(error){if(error.status!==401)this.setStatus('offline','暂时无法连接云端。');}
+    }catch(error){if(error.status!==401)this.setStatus('offline',connectionUnavailable());}
     finally{this.polling=false;}
   }
   async acceptRemote(guard=()=>true) {
+    if(this.mutation)throw new Error('本次操作正在执行，请稍后加载结果。');
     if(this.sending)await this.sending;
     const pendingId=this.pending?.id;
     const remote=await this.request('/api/workspace');
-    if(pendingId!==this.pending?.id||!guard())throw new Error('本设备刚有新的编辑，已暂缓加载云端内容。');
+    if(this.mutation||pendingId!==this.pending?.id||!guard())throw new Error('本设备刚有新的编辑，已暂缓加载云端内容。');
     if(this.pending)this.preserve();
     this.pending=null;this.revision=remote.revision;this.incoming=null;
     this.setStatus(remote.state?'saved':'ready');this.persist();
     return remote.state;
+  }
+  async runWorkspaceMutation(operation,{canApply=()=>true,apply=()=>{}}={}) {
+    if(this.mutation)throw new Error('上一项操作还未完成，请稍候。');
+    let release;
+    this.mutation=new Promise(resolve=>{release=resolve;});
+    try {
+      // Flush the reviewed state first, then stop layout/autosave snapshots from
+      // racing a server-side write. Edits made during the request stay pending.
+      await this.flush({duringMutation:true});
+      const result=await operation();
+      const remote=await this.request('/api/workspace');
+      if(this.pending||!canApply()){
+        this.incoming=remote;
+        this.setStatus('result','本次操作已完成。期间的新编辑已保留，请先保存或导出本设备改动，再加载操作结果。');
+        if(this.pending)this.preserve();
+        this.persist();
+        return {result,applied:false};
+      }
+      this.revision=remote.revision;this.incoming=null;
+      this.setStatus(remote.state?'saved':'ready');this.persist();
+      apply(remote.state);
+      return {result,applied:true};
+    } finally {
+      this.mutation=null;release();
+      if(this.pending&&!['conflict','result'].includes(this.status)){
+        clearTimeout(this.timer);this.timer=setTimeout(()=>this.flush().catch(()=>{}),700);
+      }
+    }
   }
   async logout() {await this.flush();await this.request('/api/auth/logout',{method:'POST'});location.reload();}
 }
@@ -227,7 +261,8 @@ export async function bootstrapCloud() {
     sessionStorage.setItem('czb-yuzhou-cloud-server','1');
   }catch(error){
     if(['127.0.0.1','localhost','[::1]'].includes(location.hostname)&&!sessionStorage.getItem('czb-yuzhou-cloud-server'))return null;
-    document.querySelector('#app').innerHTML='<main class="cloud-entry cloud-unavailable"><section class="cloud-login-card"><h1>暂时无法连接工作台</h1><p>请检查网络后重新加载。你的设备缓存仍然保留。</p><button class="btn primary" id="cloud-retry">重新连接</button></section></main>';
+    const hint=connectionUnavailable();
+    document.querySelector('#app').innerHTML=`<main class="cloud-entry cloud-unavailable"><section class="cloud-login-card"><h1>暂时无法连接工作台</h1><p>${esc(hint)}</p><button class="btn primary" id="cloud-retry">重新连接</button></section></main>`;
     document.querySelector('#cloud-retry').onclick=()=>location.reload();return new Promise(()=>{});
   }
   let session;
@@ -238,9 +273,9 @@ export async function bootstrapCloud() {
 }
 
 export function mountModelSettings(container,client,toast) {
-  container.innerHTML=`<div class="section-head"><h2>DeepSeek 与 AI 管家</h2><span class="badge" id="cloud-model-badge">检查连接中</span></div><p class="muted">专用 API 密钥仅保存在本比赛实例。还需单独配置 AI 引擎；保存密钥不代表引擎可用，也不代表完成真实模型验证。</p><form id="cloud-model-form" autocomplete="off"><label class="field">DeepSeek API Key<input type="password" name="apiKey" autocomplete="new-password" spellcheck="false" placeholder="输入新的 API Key；留空保留现有密钥"></label><label class="field">模型<select name="model"><option value="deepseek-flash">DeepSeek Flash</option><option value="deepseek-v4-pro">DeepSeek V4 Pro</option></select></label><p class="small muted" id="cloud-hermes-state"></p><p class="cloud-error" role="alert"></p><button class="btn primary" type="submit">保存连接</button></form>`;
+  container.innerHTML=`<div class="section-head"><h2>DeepSeek 与 AI 管家</h2><span class="badge" id="cloud-model-badge">检查连接中</span></div><p class="muted">专用 API 密钥仅保存在本比赛实例。保存密钥不会触发模型调用，也不代表真实连接验证已通过。</p><form id="cloud-model-form" autocomplete="off"><label class="field">DeepSeek API Key<input type="password" name="apiKey" autocomplete="new-password" spellcheck="false" placeholder="输入新的 API Key；留空保留现有密钥"></label><label class="field">模型<select name="model"><option value="deepseek-flash">DeepSeek Flash</option><option value="deepseek-v4-pro">DeepSeek V4 Pro</option></select></label><p class="small muted" id="cloud-hermes-state"></p><p class="small muted" id="cloud-extraction-state"></p><p class="cloud-error" role="alert"></p><button class="btn primary" type="submit">保存连接</button></form>`;
   const form=container.querySelector('form');
-  function show(info){client.modelStatus=info;if(!container.isConnected)return;container.querySelector('#cloud-model-badge').textContent=info.configured?'密钥已保存':'尚未配置';container.querySelector('#cloud-hermes-state').textContent=info.hermesAvailable?'独立 AI 引擎已配置，真实调用效果仍待验证。':'独立 AI 引擎待配置。原工作台引擎不会自动复用；当前可使用手动整理与全部本地管理功能。';if(info.model)form.elements.model.value=info.model;}
+  function show(info){client.modelStatus=info;if(!container.isConnected)return;container.querySelector('#cloud-model-badge').textContent=modelStatusLabel(info);container.querySelector('#cloud-hermes-state').textContent=modelEngineDescription(info);const formats=Object.entries(info.extractionCapabilities||{}).filter(([,available])=>available===true).map(([name])=>name.toUpperCase());container.querySelector('#cloud-extraction-state').textContent=formats.length?`本地正文提取支持：${formats.join('、')}。可在资料预览中提取，不消耗模型额度。`:'本地正文提取能力尚未确认，可在资料预览中查看结果或具体原因。';if(info.model)form.elements.model.value=info.model;}
   client.request('/api/model/status').then(show).catch(error=>{if(container.isConnected)container.querySelector('.cloud-error').textContent=error.message;});
   form.onsubmit=async event=>{
     event.preventDefault();const button=form.querySelector('button');button.disabled=true;

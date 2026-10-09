@@ -79,7 +79,7 @@ export function mountConversationPage(ctx,spaceId,helpers){
   };
   function render(){
     if(!alive)return;
-    const request=requestNow(),job=request?jobFor(state,request.id):null,working=jobWorking(job);
+    const request=requestNow(),job=request?jobFor(state,request.id):null,working=jobWorking(job)||!!job?.starting;
     const stage=request?.status==='filed'?3:request?.conversation?.proposal?2:1;
     page.querySelector('[data-chat-count]').textContent=String(state.aiRequests.length);
     page.querySelector('[data-chat-stages]').innerHTML=['对话沟通','审核方案','确认执行'].map((label,i)=>`<span ${stage===i+1?'aria-current=step':''} class="${stage>i+1?'complete':''}"><b>${i+1}</b>${label}</span>`).join('');
@@ -96,7 +96,8 @@ export function mountConversationPage(ctx,spaceId,helpers){
     }
     let message='';
     if(request?.status==='waiting_model'){
-      if(working)message=job?.phase==='querying'?'正在查询工作台资料…':job?.phase==='repairing'?'正在校正回复格式（2/2），无需重复发送…':'正在结合前文和附件回复…';
+      if(job?.status==='checking')message='消息已保存，正在检查 AI 调用条件…';
+      else if(working)message=job?.phase==='querying'?'正在查询工作台资料…':job?.phase==='repairing'?'正在校正回复格式（2/2），无需重复发送…':'正在结合前文和附件回复…';
       else if(job?.status==='failed')message=job.error?.message||'回复未完成，可以重试。';
       else if(job?.replyError)message=job.replyError;
       else if(job?.replySaved&&request.conversation?.messages.at(-1)?.role==='user')message='回复已完成，正在同步对话。';
@@ -154,9 +155,9 @@ export function mountConversationPage(ctx,spaceId,helpers){
       if(action==='confirm'){
         if(composer.querySelector('textarea')?.value.trim()||composer.querySelector('.ai-attachment-chip')||composer.querySelector('select[name=destination]')?.value!==request.targetId||composer.querySelector('.ai-compose-live')?.textContent.trim())throw new Error('你还有未发送的补充或附件，请先发送并审核新方案，再确认执行。');
         const jobId=request.conversation?.pendingJobId;if(!jobId)throw new Error('请先等待最新一轮整理方案。');
-        busy=true;render();await ctx.cloud.flush();
-        await ctx.cloud.request(`/api/ai/jobs/${encodeURIComponent(jobId)}/confirm`,{method:'POST',body:{}});
-        toast('已按审核单执行完成。');await ctx.cloud.poll();return;
+        busy=true;render();
+        const result=await ctx.confirmAI(jobId);
+        toast(result.applied?'已按审核单执行完成。':'已执行完成；期间的新编辑已保留，请加载操作结果。');return;
       }
       if(action==='undo'&&ctx.undoRoute){
         busy=true;render();const result=await ctx.undoRoute(request.receipt,request.id);

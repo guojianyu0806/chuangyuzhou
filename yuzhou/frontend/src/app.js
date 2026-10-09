@@ -113,6 +113,13 @@ function makeContext(){
   local.editSpace=id=>openSpaceDialog(local,viewState.spaces.find(s=>s.id===id));
   local.routeContent=payload=>routeContent(local,payload);
   local.undoRoute=(receipt,id)=>undoRoute(local,receipt,id);
+  local.confirmAI=async jobId=>{
+    const editTick=cloudEditTick;
+    return cloudClient.runWorkspaceMutation(
+      ()=>cloudClient.request(`/api/ai/jobs/${encodeURIComponent(jobId)}/confirm`,{method:'POST',body:{}}),
+      {canApply:()=>mode==='personal'&&state===viewState&&cloudEditTick===editTick&&!dialog.open&&!hasUnsavedCloudFields(),apply:adoptCloudState}
+    );
+  };
   local.openDestination=id=>openDestination(local,id);
   local.openTask=id=>{
     if(state!==viewState)return;
@@ -490,9 +497,9 @@ function updateCloudShell(){
   let banner=document.querySelector('.cloud-sync-banner');
   if(!banner){banner=document.createElement('div');banner.className='cloud-sync-banner';banner.setAttribute('role','status');document.querySelector('#main')?.before(banner);}
   const status=cloudClient.status;banner.dataset.status=status;
-  banner.hidden=mode==='demo'||!['remote','conflict','offline','auth'].includes(status);
+  banner.hidden=mode==='demo'||!['remote','conflict','result','offline','auth'].includes(status);
   const message=status==='remote'?'其他设备有新内容，当前输入会保留，准备好后可以加载。':cloudClient.error||'连接暂时中断，改动将留在此设备，连接恢复后继续同步。';
-  banner.innerHTML=`<p>${esc(message)}</p>${status==='conflict'?'<button type="button" data-cloud-export>导出本设备改动</button>':''}${['remote','conflict'].includes(status)?'<button type="button" data-cloud-load>加载云端内容</button>':''}${status==='auth'?'<button type="button" data-cloud-login>重新登录</button>':''}${status==='offline'?'<button type="button" data-cloud-retry>重试连接</button>':''}`;
+  banner.innerHTML=`<p>${esc(message)}</p>${['conflict','result'].includes(status)?'<button type="button" data-cloud-export>导出本设备改动</button>':''}${['remote','conflict','result'].includes(status)?`<button type="button" data-cloud-load>${status==='result'?'加载本次操作结果':'加载云端内容'}</button>`:''}${status==='auth'?'<button type="button" data-cloud-login>重新登录</button>':''}${status==='offline'?'<button type="button" data-cloud-retry>重试连接</button>':''}`;
   banner.querySelector('[data-cloud-export]')?.addEventListener('click',()=>exportBackup(cloudClient.pending?.state||state));
   banner.querySelector('[data-cloud-load]')?.addEventListener('click',()=>loadCloudUpdate(true));
   banner.querySelector('[data-cloud-login]')?.addEventListener('click',()=>location.reload());
@@ -500,10 +507,15 @@ function updateCloudShell(){
   const label=document.querySelector('[data-cloud-status]');if(label)label.textContent=cloudClient.label;
 }
 const immersiveBusy=()=>!!document.querySelector('[data-dream-detail-open],.surface-is-fullscreen');
+function hasUnsavedCloudFields(){
+  for(const field of cloudDirtyFields)if(!field.isConnected)cloudDirtyFields.delete(field);
+  cloudEditing=cloudDirtyFields.size>0;
+  return cloudEditing;
+}
 async function loadCloudUpdate(explicit=false){
   if(mode!=='personal'||!cloudClient)return;
   if(!explicit&&immersiveBusy())return;
-  if(explicit&&(cloudEditing||dialog.open||cloudClient.status==='conflict')){
+  if(explicit&&(hasUnsavedCloudFields()||dialog.open||['conflict','result'].includes(cloudClient.status))){
     modal({title:'加载云端最新内容',body:'<p>云端内容将替换当前显示。本设备已保存的改动会保留为恢复副本；未提交的表单请先保存，或关闭此弹窗后继续编辑。</p>',submitLabel:'保留副本并加载',onSubmit:()=>applyCloudUpdate(true)});return;
   }
   try{await applyCloudUpdate(explicit);}catch(error){toast(error.message);}
@@ -518,6 +530,9 @@ async function applyCloudUpdate(allowImmersive=false){
     const focused=document.activeElement?.matches('input,textarea,select,[contenteditable]');
     return !dialog.open&&!cloudEditing&&!cloudPointer&&!focused&&!immersiveBusy();
   });
+  adoptCloudState(remote);
+}
+function adoptCloudState(remote){
   state=initializeSpaces(remote||seed('personal'));state.mode='personal';ensureCanvas(state);
   localStorage.setItem(key(mode),JSON.stringify(state));lastStored=localStorage.getItem(key(mode));baselines.set(state,lastStored);ctx.state=state;
   shell();render();

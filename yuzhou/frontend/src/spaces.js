@@ -3,6 +3,7 @@ import {openAIConversation} from './ai.js';
 import {mountFitness} from './fitness.js';
 import {isFitnessSpace} from './fitness-model.js';
 import {assignRecordColor, createColorDraft} from './creation-colors.js';
+import {mountFileText,supportsFileText} from './file-text.js';
 
 export const SPACE_COLORS = ['#7950f2', '#009eab', '#ef3f92', '#78a500', '#f08025', '#4770f5'];
 export const SPACE_ICONS = ['folder', 'book', 'flag', 'code', 'coffee', 'star', 'globe', 'target'];
@@ -211,7 +212,8 @@ export function mountSpace(ctx, id) {
         objectUrl=URL.createObjectURL(new Blob([blob],{type:ext==='jpg'||ext==='jpeg'?'image/jpeg':`image/${ext}`}));host.innerHTML=`<img src="${esc(objectUrl)}" alt="${esc(file.name)}">`;
       }else if(ext==='pdf'){
         objectUrl=URL.createObjectURL(new Blob([blob],{type:'application/pdf'}));host.innerHTML=`<iframe sandbox="" src="${esc(objectUrl)}" title="${esc(file.name)}"></iframe><p class="muted">如果当前浏览器无法预览 PDF，请下载原件查看。</p>`;
-      }else host.innerHTML=blank('file','原件已经收好','此格式暂不支持浏览器预览。可下载后使用对应软件打开；AI 解析将在服务接入后启用。')+`<button class="btn" data-sp-action="download-file" data-id="${esc(file.id)}">${icon('download',17)} 下载原件</button>`;
+      }else host.innerHTML=blank('file','原件已经收好',supportsFileText(file)?'此格式不直接展示原件，下方可提取正文。也可下载后使用对应软件打开。':'此格式暂不支持浏览器预览与正文提取，可下载后使用对应软件打开。')+`<button class="btn" data-sp-action="download-file" data-id="${esc(file.id)}">${icon('download',17)} 下载原件</button>`;
+      mountFileText(ctx,host,file);
     }catch(error){if(active&&ticket===previewRequest&&host?.isConnected)host.innerHTML=blank('file','这份文件暂时无法读取',esc(error.message));}
   }
   function noteDialog(note) {
