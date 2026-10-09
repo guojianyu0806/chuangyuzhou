@@ -5,11 +5,12 @@ import {STUDY_ACTION_ADAPTERS} from './workspace-actions-study.js';
 import {FITNESS_ACTION_ADAPTERS} from './workspace-actions-fitness.js';
 import {COMPETITION_ACTION_ADAPTERS} from './workspace-actions-competitions.js';
 import {PLATFORM_ACTION_ADAPTERS} from './workspace-actions-platform.js';
+import {CUSTOM_BLOCK_ACTION_ADAPTERS} from './workspace-actions-custom-blocks.js';
 import {assignRecordColor} from './creation-colors.js';
 import {formatMoney} from './ledger-model.js';
 
-const ADAPTERS={...CORE_ACTION_ADAPTERS,...STUDY_ACTION_ADAPTERS,...FITNESS_ACTION_ADAPTERS,...COMPETITION_ACTION_ADAPTERS,...PLATFORM_ACTION_ADAPTERS};
-const DOMAIN_KEYS=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','fitness','competitions','profile','ui','canvas','courseCanvas','boards','workbench'];
+const ADAPTERS={...CORE_ACTION_ADAPTERS,...STUDY_ACTION_ADAPTERS,...FITNESS_ACTION_ADAPTERS,...COMPETITION_ACTION_ADAPTERS,...PLATFORM_ACTION_ADAPTERS,...CUSTOM_BLOCK_ACTION_ADAPTERS};
+const DOMAIN_KEYS=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','fitness','competitions','profile','ui','canvas','courseCanvas','boards','workbench','customBlocks'];
 const OPERATIONS=['create','update','archive','restore'];
 const OP_LABEL={create:'新建',update:'修改',archive:'归档',restore:'恢复'};
 const fail=message=>{throw new Error(message);};

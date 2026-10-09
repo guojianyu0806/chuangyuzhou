@@ -10,6 +10,7 @@ import { validateTimetable } from '../frontend/src/timetable-model.js';
 import { validateFitness } from '../frontend/src/fitness-model.js';
 import { validateCompetitions } from '../frontend/src/competitions-model.js';
 import { validateWorkbench } from '../frontend/src/workbench-model.js';
+import { validateCustomBlocks } from '../frontend/src/custom-blocks-model.js';
 import { prepareDataDirectory, assertRuntimePath } from '../runtime.mjs';
 
 const scrypt = promisify(scryptCallback);
@@ -42,17 +43,17 @@ export function validateWorkspace(state) {
   const blobs = new Set();
   const stack = [[state, 0]];
   while (stack.length) {
-    const [value, depth] = stack.pop();
+    const [value, depth, customBlockDomain = false] = stack.pop();
     if (++nodes > 220000 || depth > 40) throw new ApiError(400, 'workspace_too_complex');
     if (value === null || typeof value === 'boolean') continue;
     if (typeof value === 'string') { if (value.length > 2_000_000) throw new ApiError(400, 'workspace_string_too_long'); continue; }
     if (typeof value === 'number') { if (!Number.isFinite(value)) throw new ApiError(400, 'invalid_number'); continue; }
     if (typeof value !== 'object') throw new ApiError(400, 'invalid_workspace');
     if (Array.isArray(value) && value.length > 100000) throw new ApiError(400, 'workspace_too_complex');
-    const ids = Array.isArray(value) ? new Set() : null;
+    const ids = Array.isArray(value) && !customBlockDomain ? new Set() : null;
     for (const [key, item] of Object.entries(value)) {
       if (forbidden.has(key) || key.length > 512 || /[\u0000-\u001f]/.test(key)) throw new ApiError(400, 'invalid_workspace_key');
-      if (key === 'blobId' || key === 'fileId' || key === 'audioId') {
+      if (!customBlockDomain && (key === 'blobId' || key === 'fileId' || key === 'audioId')) {
         if (typeof item !== 'string' || !FILE_ID.test(item)) throw new ApiError(400, 'invalid_file_id');
         blobs.add(item);
       }
@@ -60,7 +61,9 @@ export function validateWorkspace(state) {
         if (ids.has(item.id)) throw new ApiError(400, 'duplicate_record_id');
         ids.add(item.id);
       }
-      stack.push([item, depth + 1]);
+      // Custom-block data is plain private JSON, not a source of host file references.
+      // Its own validator enforces IDs on actual block/config records below.
+      stack.push([item, depth + 1, customBlockDomain || (depth === 0 && key === 'customBlocks')]);
     }
   }
   if (!state || Array.isArray(state) || state.schema !== 1 || state.mode !== 'personal') throw new ApiError(400, 'personal_workspace_required');
@@ -124,6 +127,12 @@ export function validateWorkspace(state) {
   if (state.workbench !== undefined) {
     try { validateWorkbench(state.workbench); }
     catch { throw new ApiError(400, 'invalid_workbench'); }
+  }
+  if (state.customBlocks !== undefined) {
+    try { validateCustomBlocks(state.customBlocks); }
+    catch { throw new ApiError(400, 'invalid_custom_blocks'); }
+    const occupied=new Set([...(state.spaces||[]).map(item=>item.id),...(state.courses||[]).map(item=>item.id)]);
+    if(state.customBlocks.items.some(item=>occupied.has(item.id)))throw new ApiError(400,'duplicate_custom_block_id');
   }
   const serialized = JSON.stringify(state);
   if (Buffer.byteLength(serialized) > MAX_STATE_BYTES) throw new ApiError(413, 'workspace_too_large');
@@ -220,6 +229,7 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
         if (current.state) {
           const previous = JSON.parse(current.state);
           if (state.workbench === undefined && previous.workbench !== undefined) throw new ApiError(409, 'workspace_update_required');
+          if (state.customBlocks === undefined && previous.customBlocks?.items?.length) throw new ApiError(409, 'workspace_update_required');
           if (state.competitions === undefined && ['items', 'milestones', 'tasks'].some(key => previous.competitions?.[key]?.length)) throw new ApiError(409, 'workspace_update_required');
           if (state.fitness === undefined && previous.fitness?.entries?.length) throw new ApiError(409, 'workspace_update_required');
           const incomingSpaces = new Map((state.spaces || []).map(space => [space.id, space]));

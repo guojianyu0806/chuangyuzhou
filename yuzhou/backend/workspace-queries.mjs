@@ -6,10 +6,11 @@ import {selectFitnessEntries,summarizeFitness,fitnessRange} from '../frontend/sr
 import {competitionToday,deadlineStatus,summarizeCompetitions,competitionProgress} from '../frontend/src/competitions-model.js';
 import {projectCalendarLinks} from '../frontend/src/calendar-links.js';
 import {WORKBENCH_MODULES,WORKBENCH_TEMPLATES,createWorkbench,validateWorkbench} from '../frontend/src/workbench-model.js';
+import {CUSTOM_BLOCK_KINDS,getCustomBlocks} from '../frontend/src/custom-blocks-model.js';
 
 export const WORKSPACE_QUERY_CAPABILITIES=[
  {kind:'search',label:'搜索工作台',description:'entity可省略；text关键词；可筛containerId、archived(false默认/true/all)、done；offset默认0，limit默认20最多50；返回真实编号和分页总数。'},
- {kind:'get',label:'读取记录详情',description:'必须entity、id；note/file/timetableEntry用containerId区分；返回完整内容（超长会注明截断）。'},
+ {kind:'get',label:'读取记录详情',description:'必须entity、id；note/file/timetableEntry用containerId区分；返回完整内容（超长会注明截断）。customBlock仅返回所选方块，miniapp代码完整提供或以truncated拒绝；data敏感字段会标redacted，遇到截断/脱敏不可替换代码或data。'},
  {kind:'ledger.summary',label:'计算收支',description:'scope:total默认(遵守项目总账设置)/daily/projects/all；projectId指定已有项目；start/end为YYYY-MM-DD；groupBy:category/project/date；程序计算精确到分，默认不含归档账目。'},
  {kind:'calendar.range',label:'查询日历与关联事项',description:'start和end为YYYY-MM-DD；默认汇总日历原安排、带日期的备忘待办、比赛节点与任务、六级考试日期。可source:all/calendar/tasks/competitions/english、kindFilter:plan/mark/note（筛全部来源：待办/比赛任务/六级为plan，比赛节点为mark）、done、archived(false默认/true/all)。归档只查询日历原安排，关联来源只显示未归档父子；不含学期课表、账单或运动学习日志。返回真实entity/id/containerId用于修改源记录；containerId为空时在后续查询/行动里省略该字段。display为只读日期展示，不可拿display.id当行动编号。'},
  {kind:'timetable.week',label:'查询一周课表',description:'termId可省略使用当前学期；week为整数或date为YYYY-MM-DD；返回当周课程、实际日期、作息时间。'},
@@ -56,7 +57,7 @@ export function validateWorkspaceQueries(value){
 // A proposal is bound to the actual domain data it read. Conversation messages,
 // timestamps and unsent drafts change independently and do not invalidate it.
 export function workspaceFingerprint(state){
- const fields=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','fitness','competitions','profile','canvas','courseCanvas','boards','ui','workbench'];
+ const fields=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','fitness','competitions','profile','canvas','courseCanvas','boards','ui','workbench','customBlocks'];
  const data=Object.fromEntries(fields.map(key=>[key,state?.[key]??null]));
  return createHash('sha256').update(JSON.stringify(data)).digest('hex');
 }
@@ -64,7 +65,7 @@ export function workspaceFingerprint(state){
 export function workspaceOverview(state){
  const rows=listWorkspaceRecords(state),counts={};for(const row of rows)counts[row.entity]=(counts[row.entity]||0)+1;
  const config=validateWorkbench(state?.workbench??createWorkbench('full'));
- return {counts,workbench:{...config,modules:config.modules.map((module,position)=>({...module,position}))},catalog:WORKBENCH_MODULES,templates:WORKBENCH_TEMPLATES,notice:'板块显示和顺序是当前配置；隐藏板块不删除业务内容。这里只是目录与数量。回答已保存内容或修改现有记录前，必须用 queries 查询，不可编造编号、金额或现有内容。'};
+ return {counts,workbench:{...config,modules:config.modules.map((module,position)=>({...module,position}))},catalog:WORKBENCH_MODULES,templates:WORKBENCH_TEMPLATES,customBlockKinds:CUSTOM_BLOCK_KINDS.map(({id,title,description})=>({id,title,description})),customBlocks:getCustomBlocks(state).items.map(({id,kind,title,archived})=>({id,kind,title,archived})),notice:'板块显示和顺序是当前配置；隐藏板块不删除业务内容。这里只是目录与数量。回答已保存内容或修改现有记录前，必须用 queries 查询，不可编造编号、金额或现有内容。'};
 }
 function paged(items,q){const offset=q.offset??0,limit=q.limit??20;return {total:items.length,offset,limit,hasMore:offset+limit<items.length,items:items.slice(offset,offset+limit)};}
 const isArchived=(record,q)=>q.archived==='all'||Boolean(record.archived)===(q.archived??false);
@@ -84,15 +85,32 @@ export function boundQueryResult(result,maxChars=36000){
  return {truncated:true,notice:'单条记录过长，请缩小查询范围或直接打开原记录核对。',preview:JSON.stringify(cropValue(result,0,600)).slice(0,maxChars-500)};
 }
 
+/** Do not replace a program or private data using a summary or truncated lookup. */
+export function validateCustomBlockReadAccess(actions,results){
+ for(const action of actions||[]){
+  if(action.entity!=='customBlock'||action.operation!=='update'||action.id?.startsWith('$')||(!Object.hasOwn(action.data||{},'config')&&!Object.hasOwn(action.data||{},'data')))continue;
+  const read=[...(results||[])].reverse().find(row=>row.query?.kind==='get'&&row.query.entity==='customBlock'&&row.query.id===action.id)?.result;
+  if(!read?.record||read.error||read.truncated||read.redacted||read.editable!==true)fail('修改方块配置或私有数据前，须在本轮完整 get 查询这个方块；截断或脱敏内容不能整包替换。');
+ }
+}
+
 export async function runWorkspaceQuery(state,q,{readFile,now=new Date()}={}){
  if(q.kind==='search'){
   const term=(q.text||'').toLocaleLowerCase('zh-CN');
   const rows=filtered(listWorkspaceRecords(state),q).filter(row=>!term||`${row.title}\n${JSON.stringify(row.record)}`.toLocaleLowerCase('zh-CN').includes(term));
-  return boundQueryResult(paged(rows.map(row=>({...row,record:cropValue(row.record,0,1600)})),q));
+  return boundQueryResult(paged(rows.map(row=>row.entity==='customBlock'?{...row,record:{id:row.id,kind:row.record.kind,title:row.title,description:row.record.description,archived:row.record.archived},notice:'目录不包含程序代码或私有数据；编辑前用get读取此方块。'}:{...row,record:cropValue(row.record,0,1600)}),q));
  }
  if(q.kind==='get'){
   const rows=listWorkspaceRecords(state).filter(row=>row.entity===q.entity&&row.id===q.id&&(!q.containerId||row.containerId===q.containerId));
   if(rows.length!==1)fail(rows.length?'同编号记录不唯一，请指定containerId。':'这条记录已不存在，请重新查询。');
+  if(q.entity==='customBlock'){
+    const row=structuredClone(rows[0]);let redacted=false;
+    const privateKeys=/^(api[_-]?key|password|token|csrf[_-]?token|secret|authorization|cookie)$/i;
+    const redact=value=>Array.isArray(value)?value.map(redact):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([key,item])=>{if(privateKeys.test(key)){redacted=true;return [key,'[敏感字段未提供]'];}return [key,redact(item)];})):value;
+    row.record.data=redact(row.record.data);
+    if(JSON.stringify(row).length>70000)return {entity:q.entity,id:q.id,truncated:true,editable:false,notice:'所选方块超过单次读取上限，未返回不完整代码或数据。请在方块中缩小内容后重新查询；不可据此替换代码或data。'};
+    return {...row,redacted,editable:!redacted,codeComplete:row.record.kind==='miniapp',notice:redacted?'仅提供所选方块；敏感数据已隐藏，不可整包替换data。':'仅提供所选方块；程序代码与数据完整，未包含其他方块或系统凭据。'};
+  }
   return boundQueryResult(rows[0]);
  }
  if(q.kind==='ledger.summary'){

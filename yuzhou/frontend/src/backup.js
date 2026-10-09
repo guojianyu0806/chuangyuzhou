@@ -8,6 +8,7 @@ import {validateTimetable, mergeTimetables} from './timetable-model.js';
 import {validateFitness, mergeFitness} from './fitness-model.js';
 import {validateCompetitions, mergeCompetitions} from './competitions-model.js';
 import {validateWorkbench} from './workbench-model.js';
+import {validateCustomBlocks,mergeCustomBlocks} from './custom-blocks-model.js';
 import {isRecordColor, assignRecordColor} from './creation-colors.js';
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
 const DRAFT_TYPES = ['writing', 'translation', 'listening'];
@@ -301,6 +302,11 @@ function workspace(value) {
   }
   if (value.competitions !== undefined) result.competitions = validateCompetitions(value.competitions);
   if (value.workbench !== undefined) result.workbench = validateWorkbench(value.workbench);
+  if (value.customBlocks !== undefined) {
+    result.customBlocks = validateCustomBlocks(value.customBlocks);
+    const occupied=new Set([...(result.spaces||[]).map(item=>item.id),...result.courses.map(item=>item.id)]);
+    if(result.customBlocks.items.some(item=>occupied.has(item.id)))fail('自定义方块编号与已有空间冲突');
+  }
   if (value.aiRequests !== undefined) result.aiRequests = records(value.aiRequests, aiRequest, 'AI 收件记录');
   if (value.aiDraft !== undefined) result.aiDraft = aiDraft(value.aiDraft);
   if (value.canvas !== undefined) result.canvas = canvas(value.canvas);
@@ -382,6 +388,13 @@ export function mergeBackup(current, incoming) {
   });
   mergeRecords(state.tasks, source.tasks);
   mergeRecords(state.captures, source.captures);
+  if(source.customBlocks){
+    const previous=state.customBlocks?.items?.length||0;
+    state.customBlocks=mergeCustomBlocks(state.customBlocks,source.customBlocks);
+    const occupied=new Set([...(state.spaces||[]).map(item=>item.id),...state.courses.map(item=>item.id)]);
+    if(state.customBlocks.items.some(item=>occupied.has(item.id)))fail('导入方块编号与已有空间冲突');
+    count+=state.customBlocks.items.length-previous;
+  }
   if (source.calendar) {
     state.calendar ||= {version:1,events:[]};
     mergeRecords(state.calendar.events, source.calendar.events);

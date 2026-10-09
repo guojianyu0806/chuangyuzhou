@@ -1,5 +1,6 @@
 // Shared by the private-cloud worker and browser. Only these records can be
-// created by an AI proposal; model output never becomes executable code.
+// created by an AI proposal; generated programs are stored as records and never
+// executed in the host page. Explicit miniapp runs use the isolated Worker runtime.
 import {assignRecordColor} from './creation-colors.js';
 import {parseAmount,formatMoney,isValidDate,validateLedger} from './ledger-model.js';
 import {validateWorkspaceActions,applyWorkspaceActions,previewWorkspaceActions} from './workspace-actions.js';
