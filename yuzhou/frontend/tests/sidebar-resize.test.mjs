@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mountSidebarResize,sidebarMaxWidth,sidebarStoredWidth,RAIL_COLLAPSED,RAIL_LABELS_AT,RAIL_DEFAULT,RAIL_MAX} from '../src/sidebar-resize.js';
+import {mountSidebarResize,sidebarMaxWidth,sidebarStoredWidth,RAIL_COLLAPSED,RAIL_LABELS_AT,RAIL_DEFAULT,RAIL_MAX,RAIL_MOTION_MS} from '../src/sidebar-resize.js';
 
 class Surface {
   constructor(){
@@ -21,9 +21,18 @@ class Surface {
     return event;
   }
 }
-function fixture(t,{expanded=false,width=null,viewport=1200,readFailure=false}={}){
+function fixture(t,{expanded=false,width=null,viewport=1200,readFailure=false,animate=false,reducedMotion=false}={}){
   const body=new Surface(),sidebar=new Surface(),handle=new Surface(),pinButton=new Surface(),win=new Surface();
   pinButton.span={textContent:''};win.innerWidth=viewport;
+  const frames=new Map(),reduced=new Surface();let elapsed=0,nextFrameId=1;
+  reduced.matches=reducedMotion;
+  if(animate){
+    win.matchMedia=query=>{assert.equal(query,'(prefers-reduced-motion: reduce)');return reduced;};
+    win.requestAnimationFrame=callback=>{const id=nextFrameId++;frames.set(id,callback);return id;};
+    win.cancelAnimationFrame=id=>frames.delete(id);
+  }
+  const step=(milliseconds=0)=>{elapsed+=milliseconds;const due=[...frames.values()];frames.clear();for(const callback of due)callback(elapsed);};
+  const setReduced=value=>{reduced.matches=value;reduced.fire('change',{matches:value});};
   const state={ui:{sidebarPinned:expanded},tasks:[{id:'existing',title:'kept'}]},writes=[],errors=[],faults={expanded:false,width:false};
   let stored=width,controller;
   controller=mountSidebarResize({body,sidebar,handle,pinButton,win,
@@ -36,7 +45,7 @@ function fixture(t,{expanded=false,width=null,viewport=1200,readFailure=false}={
   const paintWidth=()=>parseFloat(body.style['--rail-width']);
   const key=(key,extra={})=>win.fire('keydown',{target:handle,key,...extra});
   const drag=(delta,{end=true,id=1}={})=>{handle.fire('pointerdown',{pointerId:id});handle.fire('pointermove',{pointerId:id,clientX:100+delta});if(end)handle.fire('pointerup',{pointerId:id,clientX:100+delta});};
-  return {body,sidebar,handle,pinButton,win,state,writes,errors,faults,controller,paintWidth,key,drag,stored:()=>stored};
+  return {body,sidebar,handle,pinButton,win,state,writes,errors,faults,controller,paintWidth,key,drag,frames,reduced,step,setReduced,stored:()=>stored};
 }
 
 test('stored widths fall back safely and the desktop maximum reserves 480 pixels for content',()=>{
@@ -171,4 +180,98 @@ test('a pointer that never moves does not persist, and destroy releases capture 
   f.drag(-80,{end:false});f.controller.destroy();assert.equal(f.paintWidth(),300);assert.equal(f.handle.hasPointerCapture(1),false);assert.equal(f.body.classList.contains('rail-resizing'),false);
   for(const listeners of [...f.handle.listeners.values(),...f.win.listeners.values()])assert.equal(listeners.size,0);
   f.drag(50);f.key('Home');f.win.innerWidth=800;f.win.fire('resize');f.controller.sync();assert.equal(f.paintWidth(),300);assert.deepEqual(f.writes,[]);assert.deepEqual(f.state,before);
+});
+
+test('double-click reset eases through intermediate widths, rebounds gently and saves only the destination once',t=>{
+  const f=fixture(t,{expanded:true,width:360,animate:true}),before=structuredClone(f.state);
+  f.handle.fire('dblclick');
+  assert.equal(f.paintWidth(),360,'reset starts at the displayed width');
+  assert.deepEqual(f.writes,[['width',254]]);assert.equal(f.stored(),254);assert.equal(f.frames.size,1);
+  f.step();f.step(54);const early=f.paintWidth();assert.ok(early>254&&early<360);
+  f.step(126);assert.ok(f.paintWidth()<254&&f.paintWidth()>248,'a small overshoot supplies the elastic finish');
+  f.step(RAIL_MOTION_MS-180);
+  assert.equal(f.paintWidth(),254);assert.equal(f.frames.size,0);assert.equal(f.body.classList.contains('rail-animating'),false);
+  assert.deepEqual(f.writes,[['width',254]]);assert.deepEqual(f.state,before);
+});
+
+test('animated expand and collapse survive ordinary render synchronization without saving frame values',t=>{
+  const f=fixture(t,{width:300,animate:true});
+  f.state.ui.sidebarPinned=true;f.controller.sync({animate:true});assert.equal(f.paintWidth(),80);
+  assert.equal(f.pinButton.attributes['aria-pressed'],'true');f.step();f.step(72);
+  const opening=f.paintWidth();assert.ok(opening>80&&opening<300);
+  f.controller.sync();assert.equal(f.paintWidth(),opening);assert.equal(f.frames.size,1);
+  f.step(RAIL_MOTION_MS-72);assert.equal(f.paintWidth(),300);
+  f.state.ui.sidebarPinned=false;f.controller.sync({animate:true});assert.equal(f.paintWidth(),300);
+  assert.equal(f.pinButton.attributes['aria-pressed'],'false');f.step();f.step(54);
+  const closing=f.paintWidth();assert.ok(closing>80&&closing<300);
+  f.controller.sync();assert.equal(f.paintWidth(),closing);f.step(RAIL_MOTION_MS-54);
+  assert.equal(f.paintWidth(),80);assert.equal(f.frames.size,0);assert.equal(f.stored(),300);assert.deepEqual(f.writes,[]);
+});
+
+test('reversing an animated toggle begins at the current width and cancels the previous frame chain',t=>{
+  const f=fixture(t,{width:310,animate:true});
+  f.key('Enter');f.step();f.step(54);const opening=f.paintWidth();
+  assert.ok(opening>80&&opening<310);assert.deepEqual(f.writes,[['expanded',true],['width',310]]);
+  f.key('Enter');assert.equal(f.paintWidth(),opening);assert.equal(f.frames.size,1);
+  f.step();f.step(54);const closing=f.paintWidth();assert.ok(closing>80&&closing<opening);
+  f.key('Enter');assert.equal(f.paintWidth(),closing);assert.equal(f.frames.size,1);
+  f.step();f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),310);assert.equal(f.frames.size,0);
+  assert.deepEqual(f.writes,[['expanded',true],['width',310],['expanded',false],['expanded',true],['width',310]]);
+  f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),310,'cancelled chains cannot repaint later');
+});
+
+test('dragging interrupts an animation at its displayed width and persists the exact dragged result on release',t=>{
+  const f=fixture(t,{expanded:true,width:360,animate:true});
+  f.handle.fire('dblclick');f.step();f.step(54);const visual=f.paintWidth();
+  f.handle.fire('pointerdown');assert.equal(f.paintWidth(),visual);assert.equal(f.frames.size,0);
+  assert.equal(f.body.classList.contains('rail-animating'),false);assert.equal(f.body.classList.contains('rail-resizing'),true);
+  f.handle.fire('pointermove',{clientX:117.25});assert.equal(f.paintWidth(),visual+17.25);
+  f.controller.sync();assert.equal(f.paintWidth(),visual+17.25);
+  f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),visual+17.25);assert.deepEqual(f.writes,[['width',254]]);
+  f.handle.fire('pointerup',{clientX:117.25});assert.equal(f.stored(),visual+17.25);
+  assert.deepEqual(f.writes,[['width',254],['width',visual+17.25]]);assert.equal(f.frames.size,0);
+});
+
+test('reduced-motion preference settles instantly and enabling it mid-animation cancels pending frames',t=>{
+  const reduced=fixture(t,{expanded:true,width:360,animate:true,reducedMotion:true});
+  reduced.handle.fire('dblclick');assert.equal(reduced.paintWidth(),254);assert.equal(reduced.frames.size,0);
+  reduced.key('Enter');assert.equal(reduced.paintWidth(),80);assert.equal(reduced.frames.size,0);
+  const f=fixture(t,{expanded:true,width:360,animate:true});
+  f.handle.fire('dblclick');f.step();f.step(54);assert.ok(f.paintWidth()>254);
+  f.setReduced(true);assert.equal(f.paintWidth(),254);assert.equal(f.frames.size,0);
+  assert.equal(f.body.classList.contains('rail-animating'),false);assert.deepEqual(f.writes,[['width',254]]);
+  f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),254);
+  f.setReduced(false);assert.equal(f.frames.size,0,'reenabling motion does not replay completed changes');
+  f.key('Enter');assert.equal(f.frames.size,1);f.step();f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),80);
+});
+
+test('resize, window blur and destruction settle animations and remove pending work without extra persistence',t=>{
+  for(const end of ['resize','mobile','blur','destroy']){
+    const f=fixture(t,{width:360,animate:true});f.key('Enter');f.step();f.step(54);
+    const writes=structuredClone(f.writes);
+    if(end==='resize'){f.win.innerWidth=800;f.win.fire('resize');assert.equal(f.paintWidth(),320);}
+    if(end==='mobile'){f.win.innerWidth=390;f.win.fire('resize');assert.equal(f.paintWidth(),80);}
+    if(end==='blur'){f.win.fire('blur');assert.equal(f.paintWidth(),360);}
+    if(end==='destroy'){
+      f.controller.destroy();assert.equal(f.paintWidth(),360);
+      for(const listeners of [...f.handle.listeners.values(),...f.win.listeners.values(),...f.reduced.listeners.values()])assert.equal(listeners.size,0);
+    }
+    const final=f.paintWidth();assert.equal(f.frames.size,0,end);assert.equal(f.body.classList.contains('rail-animating'),false);
+    f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),final);assert.deepEqual(f.writes,writes);
+    if(end==='resize'){f.win.innerWidth=1200;f.win.fire('resize');assert.equal(f.paintWidth(),360);assert.equal(f.stored(),360);}
+  }
+});
+
+test('elastic widths stay within the live limits and never expose labels for a narrow destination',t=>{
+  for(const [initial,target,viewport] of [[80,380,1200],[380,80,1200],[80,280,800],[300,179,1200]]){
+    const f=fixture(t,{expanded:initial>80,width:initial>80?initial:target,viewport,animate:true});
+    if(target===179){f.drag(target-initial);f.key('Enter');f.step();f.step(RAIL_MOTION_MS);}
+    if(target===80)f.key('Home');else if(target===380)f.key('End');else f.key('Enter');
+    f.step();
+    for(let elapsed=12;elapsed<=RAIL_MOTION_MS;elapsed+=12){
+      f.step(12);assert.ok(f.paintWidth()>=80&&f.paintWidth()<=sidebarMaxWidth(viewport),`width ${f.paintWidth()} at ${elapsed}`);
+      if(target<180)assert.equal(f.sidebar.classList.contains('rail-pinned'),false);
+    }
+    assert.equal(f.paintWidth(),target);assert.equal(f.frames.size,0);
+  }
 });

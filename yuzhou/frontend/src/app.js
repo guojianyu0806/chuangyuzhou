@@ -477,7 +477,7 @@ function render(){
 function setSidebarExpanded(expanded){
   const previous=state.ui.sidebarPinned,updatedAt=state.updatedAt;state.ui.sidebarPinned=expanded;
   try{save();}catch(error){state.ui.sidebarPinned=previous;state.updatedAt=updatedAt;sidebarResize?.sync();throw error;}
-  sidebarResize?.sync();
+  sidebarResize?.sync({animate:true});
 }
 document.addEventListener('click',createSidebarNavigation({
   navigate:href=>{closeAssistant();setMobileNav(false);if(location.hash===href)render();else location.hash=href;},
