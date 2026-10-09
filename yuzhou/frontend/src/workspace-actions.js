@@ -4,11 +4,12 @@ import {CORE_ACTION_ADAPTERS} from './workspace-actions-core.js';
 import {STUDY_ACTION_ADAPTERS} from './workspace-actions-study.js';
 import {FITNESS_ACTION_ADAPTERS} from './workspace-actions-fitness.js';
 import {COMPETITION_ACTION_ADAPTERS} from './workspace-actions-competitions.js';
+import {PLATFORM_ACTION_ADAPTERS} from './workspace-actions-platform.js';
 import {assignRecordColor} from './creation-colors.js';
 import {formatMoney} from './ledger-model.js';
 
-const ADAPTERS={...CORE_ACTION_ADAPTERS,...STUDY_ACTION_ADAPTERS,...FITNESS_ACTION_ADAPTERS,...COMPETITION_ACTION_ADAPTERS};
-const DOMAIN_KEYS=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','fitness','competitions','profile','ui','canvas','courseCanvas','boards'];
+const ADAPTERS={...CORE_ACTION_ADAPTERS,...STUDY_ACTION_ADAPTERS,...FITNESS_ACTION_ADAPTERS,...COMPETITION_ACTION_ADAPTERS,...PLATFORM_ACTION_ADAPTERS};
+const DOMAIN_KEYS=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','fitness','competitions','profile','ui','canvas','courseCanvas','boards','workbench'];
 const OPERATIONS=['create','update','archive','restore'];
 const OP_LABEL={create:'新建',update:'修改',archive:'归档',restore:'恢复'};
 const fail=message=>{throw new Error(message);};
@@ -84,9 +85,10 @@ export function applyWorkspaceActions(state,requestId,actions,options={}){
   commit(state,copy);state.updatedAt=now;return receipt;
 }
 const FIELD_LABEL={title:'名称',description:'说明',subtitle:'课程简介',prompt:'助教偏好',content:'正文',chapter:'章节',source:'来源',color:'卡片颜色',type:'类型',text:'内容',tags:'标签',category:'分类',date:'日期',priority:'优先级',done:'完成状态',archived:'归档状态',spaceId:'所属空间',projectId:'所属账本',amount:'金额',amountCents:'金额',includeInTotal:'计入总账单',name:'文件名称',blobId:'原文件',size:'文件大小',icon:'图标',note:'备注',targetContainerId:'移动到',containerId:'所属位置',startDate:'开始日期',endDate:'结束日期',startTime:'开始时间',endTime:'结束时间',allDay:'全天',kind:'安排类型',important:'重要标记',location:'地点',notes:'备注',teacher:'教师',room:'教室',weeks:'周次',day:'星期',weekday:'星期',startPeriod:'开始节次',endPeriod:'结束节次',campus:'校区',word:'单词',meaning:'释义',phonetic:'音标',example:'例句',translation:'译文',status:'学习状态',duration:'学习时长',minutes:'学习分钟',reviewed:'已回顾',targetScore:'目标分数',examDate:'考试日期',dailyMinutes:'每日时长',vocabularyTarget:'词汇目标',contentGoal:'学习内容',enabled:'启用',scale:'缩放',x:'横向位置',y:'纵向位置',w:'宽度',h:'高度',width:'宽度',height:'高度',layout:'排列方式',snap:'网格吸附',sidebarPinned:'固定侧边栏',displayName:'显示名称'};
-const SKIP_FIELDS=new Set(['id','updatedAt','createdAt','sourceRequestId','revisions','completedAt']);
+const SKIP_FIELDS=new Set(['id','updatedAt','createdAt','sourceRequestId','revisions','completedAt','configuration']);
 Object.assign(FIELD_LABEL,{major:'专业',weekOne:'第一周开始日期',totalWeeks:'学期总周数',teachingWeeks:'教学周数',periods:'节次时间',entries:'课程安排',activeTermId:'当前学期',target:'目标分数',focus:'练习重点',question:'题目',selected:'作答内容',correct:'正确答案',explanation:'解析',questionId:'题目编号',fileName:'附件名称',fileType:'文件类型',files:'文件',cards:'卡片',snap:'网格吸附',initialized:'画布已初始化',customized:'已自定义布局',presentation:'排列方式',stackPointer:'堆叠指针',view:'画布视角',zoom:'缩放',inboxView:'灵感显示方式',evidence:'用户原话依据',fitnessEnabled:'开启运动记录',activity:'运动项目',distanceKm:'距离（公里）',caloriesKcal:'消耗热量（千卡）'});
 function human(value,key,state){
+  if(key==='position'&&Number.isSafeInteger(value))return `第 ${value+1} 位`;
   if(key==='projectId'&&value==='')return '日常零钱';
   if(['distanceKm','caloriesKcal'].includes(key)&&value===null)return '未提供（不计入已知合计）';
   if(value===undefined||value===null||value==='')return '未设置';

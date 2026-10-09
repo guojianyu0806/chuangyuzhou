@@ -5,6 +5,7 @@ import {entriesForWeek,weekForDate,dateForWeek,periodTime} from '../frontend/src
 import {selectFitnessEntries,summarizeFitness,fitnessRange} from '../frontend/src/fitness-model.js';
 import {competitionToday,deadlineStatus,summarizeCompetitions,competitionProgress} from '../frontend/src/competitions-model.js';
 import {projectCalendarLinks} from '../frontend/src/calendar-links.js';
+import {WORKBENCH_MODULES,WORKBENCH_TEMPLATES,createWorkbench,validateWorkbench} from '../frontend/src/workbench-model.js';
 
 export const WORKSPACE_QUERY_CAPABILITIES=[
  {kind:'search',label:'搜索工作台',description:'entity可省略；text关键词；可筛containerId、archived(false默认/true/all)、done；offset默认0，limit默认20最多50；返回真实编号和分页总数。'},
@@ -55,14 +56,15 @@ export function validateWorkspaceQueries(value){
 // A proposal is bound to the actual domain data it read. Conversation messages,
 // timestamps and unsent drafts change independently and do not invalidate it.
 export function workspaceFingerprint(state){
- const fields=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','fitness','competitions','profile','canvas','courseCanvas','boards','ui'];
+ const fields=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','fitness','competitions','profile','canvas','courseCanvas','boards','ui','workbench'];
  const data=Object.fromEntries(fields.map(key=>[key,state?.[key]??null]));
  return createHash('sha256').update(JSON.stringify(data)).digest('hex');
 }
 
 export function workspaceOverview(state){
  const rows=listWorkspaceRecords(state),counts={};for(const row of rows)counts[row.entity]=(counts[row.entity]||0)+1;
- return {counts,notice:'这里只是目录与数量。回答已保存内容或修改现有记录前，必须用 queries 查询，不可编造编号、金额或现有内容。'};
+ const config=validateWorkbench(state?.workbench??createWorkbench('full'));
+ return {counts,workbench:{...config,modules:config.modules.map((module,position)=>({...module,position}))},catalog:WORKBENCH_MODULES,templates:WORKBENCH_TEMPLATES,notice:'板块显示和顺序是当前配置；隐藏板块不删除业务内容。这里只是目录与数量。回答已保存内容或修改现有记录前，必须用 queries 查询，不可编造编号、金额或现有内容。'};
 }
 function paged(items,q){const offset=q.offset??0,limit=q.limit??20;return {total:items.length,offset,limit,hasMore:offset+limit<items.length,items:items.slice(offset,offset+limit)};}
 const isArchived=(record,q)=>q.archived==='all'||Boolean(record.archived)===(q.archived??false);

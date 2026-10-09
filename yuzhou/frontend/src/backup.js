@@ -7,6 +7,7 @@ import {validateLedger,validateLedgerEntry} from './ledger-model.js';
 import {validateTimetable, mergeTimetables} from './timetable-model.js';
 import {validateFitness, mergeFitness} from './fitness-model.js';
 import {validateCompetitions, mergeCompetitions} from './competitions-model.js';
+import {validateWorkbench} from './workbench-model.js';
 import {isRecordColor, assignRecordColor} from './creation-colors.js';
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
 const DRAFT_TYPES = ['writing', 'translation', 'listening'];
@@ -299,6 +300,7 @@ function workspace(value) {
     if (result.fitness.entries.some(entry => !spaceIds.has(entry.spaceId))) fail('运动记录关联工作区');
   }
   if (value.competitions !== undefined) result.competitions = validateCompetitions(value.competitions);
+  if (value.workbench !== undefined) result.workbench = validateWorkbench(value.workbench);
   if (value.aiRequests !== undefined) result.aiRequests = records(value.aiRequests, aiRequest, 'AI 收件记录');
   if (value.aiDraft !== undefined) result.aiDraft = aiDraft(value.aiDraft);
   if (value.canvas !== undefined) result.canvas = canvas(value.canvas);
@@ -462,6 +464,10 @@ export function mergeBackup(current, incoming) {
   else if(state.ui&&source.ui){
     for(const key of ['inboxView','lastCreatedColor'])if(state.ui[key]===undefined&&source.ui[key]!==undefined){state.ui[key]=source.ui[key];count++;}
   }
+  // A fresh account already has the untouched blank seed. Let it restore its
+  // saved configuration; completed current choices still win over a backup.
+  if (source.workbench !== undefined && (state.workbench === undefined || state.workbench.onboardingComplete === false)
+      && JSON.stringify(state.workbench) !== JSON.stringify(source.workbench)) { state.workbench = structuredClone(source.workbench); count++; }
   if (source.workspaceVersion && (!state.workspaceVersion || state.workspaceVersion < source.workspaceVersion)) state.workspaceVersion = source.workspaceVersion;
   const en = state.english ||= english({});
   const imported = source.english;

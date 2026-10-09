@@ -1,0 +1,262 @@
+TAP version 13
+# Subtest: platform configuration survives SQLite restart and backup without changing business records
+ok 1 - platform configuration survives SQLite restart and backup without changing business records
+  ---
+  duration_ms: 96.2548
+  type: 'test'
+  ...
+# Subtest: backup import preserves current platform choices and rejects malformed configuration
+ok 2 - backup import preserves current platform choices and rejects malformed configuration
+  ---
+  duration_ms: 1.892
+  type: 'test'
+  ...
+# Subtest: fresh initialized accounts restore a saved workbench while completed choices remain authoritative
+ok 3 - fresh initialized accounts restore a saved workbench while completed choices remain authoritative
+  ---
+  duration_ms: 2.4683
+  type: 'test'
+  ...
+# Subtest: old clients cannot silently discard an existing platform configuration
+ok 4 - old clients cannot silently discard an existing platform configuration
+  ---
+  duration_ms: 51.6208
+  type: 'test'
+  ...
+# Subtest: platform proposals preview names, visibility and positions without writes, then apply atomically
+ok 5 - platform proposals preview names, visibility and positions without writes, then apply atomically
+  ---
+  duration_ms: 5.4543
+  type: 'test'
+  ...
+# Subtest: hiding preserves content and full configuration receipts undo all positions and onboarding
+ok 6 - hiding preserves content and full configuration receipts undo all positions and onboarding
+  ---
+  duration_ms: 2.5901
+  type: 'test'
+  ...
+# Subtest: undo keeps later manual platform changes and rolls back failed persistence
+ok 7 - undo keeps later manual platform changes and rolls back failed persistence
+  ---
+  duration_ms: 3.332
+  type: 'test'
+  ...
+# Subtest: platform actions reject arbitrary fields, unknown modules, invalid positions and forged snapshots
+ok 8 - platform actions reject arbitrary fields, unknown modules, invalid positions and forged snapshots
+  ---
+  duration_ms: 4.2683
+  type: 'test'
+  ...
+# Subtest: platform actions compose with existing space, note and card operations
+ok 9 - platform actions compose with existing space, note and card operations
+  ---
+  duration_ms: 4.1201
+  type: 'test'
+  ...
+# Subtest: AI context exposes current platform settings and registered templates without assuming user identity
+ok 10 - AI context exposes current platform settings and registered templates without assuming user identity
+  ---
+  duration_ms: 5.4253
+  type: 'test'
+  ...
+# Subtest: AI platform plan stays unapplied until explicit confirmation and repeat confirm is idempotent
+ok 11 - AI platform plan stays unapplied until explicit confirmation and repeat confirm is idempotent
+  ---
+  duration_ms: 124.7589
+  type: 'test'
+  ...
+# Subtest: manual platform changes after review invalidate confirmation without overwriting them
+ok 12 - manual platform changes after review invalidate confirmation without overwriting them
+  ---
+  duration_ms: 86.4879
+  type: 'test'
+  ...
+# Subtest: ledger backups retain separate accounting choices without changing legacy defaults
+ok 13 - ledger backups retain separate accounting choices without changing legacy defaults
+  ---
+  duration_ms: 8.9898
+  type: 'test'
+  ...
+# Subtest: ledger merge fills absent accounting choices but keeps explicit current choices and is idempotent
+ok 14 - ledger merge fills absent accounting choices but keeps explicit current choices and is idempotent
+  ---
+  duration_ms: 1.6188
+  type: 'test'
+  ...
+# Subtest: conversation history survives backups and additive imports without dropping newer messages
+ok 15 - conversation history survives backups and additive imports without dropping newer messages
+  ---
+  duration_ms: 2.0737
+  type: 'test'
+  ...
+# Subtest: optional record colors and creation cursor survive backup and merge without coloring legacy data
+ok 16 - optional record colors and creation cursor survive backup and merge without coloring legacy data
+  ---
+  duration_ms: 2.4201
+  type: 'test'
+  ...
+# Subtest: dream preference roundtrips and restores only when the current choice is absent
+ok 17 - dream preference roundtrips and restores only when the current choice is absent
+  ---
+  duration_ms: 0.5579
+  type: 'test'
+  ...
+# Subtest: real example seed passes validation and unsafe course colors are normalized
+ok 18 - real example seed passes validation and unsafe course colors are normalized
+  ---
+  duration_ms: 0.6666
+  type: 'test'
+  ...
+# Subtest: nested import adds missing notes, files, revisions while preserving current title/content
+ok 19 - nested import adds missing notes, files, revisions while preserving current title/content
+  ---
+  duration_ms: 1.3945
+  type: 'test'
+  ...
+# Subtest: new records merge by ID without overwriting existing tasks or captures
+ok 20 - new records merge by ID without overwriting existing tasks or captures
+  ---
+  duration_ms: 0.7169
+  type: 'test'
+  ...
+# Subtest: English drafts restore into empty fields and conflicts become labelled captures only once
+ok 21 - English drafts restore into empty fields and conflicts become labelled captures only once
+  ---
+  duration_ms: 0.8145
+  type: 'test'
+  ...
+# Subtest: English plan restores missing/zero values without overwriting filled values
+ok 22 - English plan restores missing/zero values without overwriting filled values
+  ---
+  duration_ms: 0.3632
+  type: 'test'
+  ...
+# Subtest: builtin vocabulary status restores new cards but respects current studied status
+ok 23 - builtin vocabulary status restores new cards but respects current studied status
+  ---
+  duration_ms: 0.2438
+  type: 'test'
+  ...
+# Subtest: English records, attempts, audio, reading answers and results survive restore
+ok 24 - English records, attempts, audio, reading answers and results survive restore
+  ---
+  duration_ms: 1.2249
+  type: 'test'
+  ...
+# Subtest: invalid root, nested record types, dangerous IDs, duplicate IDs and numeric fields reject
+ok 25 - invalid root, nested record types, dangerous IDs, duplicate IDs and numeric fields reject
+  ---
+  duration_ms: 0.6588
+  type: 'test'
+  ...
+# Subtest: only base64 data URL attachments under the size limit are accepted
+ok 26 - only base64 data URL attachments under the size limit are accepted
+  ---
+  duration_ms: 77.7422
+  type: 'test'
+  ...
+# Subtest: prototype-shaped unknown properties never reach normalized records
+ok 27 - prototype-shaped unknown properties never reach normalized records
+  ---
+  duration_ms: 0.4804
+  type: 'test'
+  ...
+# Subtest: all card presentations and normalized pointer positions survive backup export and import
+ok 28 - all card presentations and normalized pointer positions survive backup export and import
+  ---
+  duration_ms: 5.367
+  type: 'test'
+  ...
+# Subtest: restoring a backup preserves current custom layouts and pointer heights while adding missing cards
+ok 29 - restoring a backup preserves current custom layouts and pointer heights while adding missing cards
+  ---
+  duration_ms: 6.1033
+  type: 'test'
+  ...
+# Subtest: backup validation rejects unsupported layouts and unsafe pointer positions on every board type
+ok 30 - backup validation rejects unsupported layouts and unsafe pointer positions on every board type
+  ---
+  duration_ms: 2.1135
+  type: 'test'
+  ...
+# Subtest: new spaces, archived notes, task relations, AI drafts and layout survive backup validation
+ok 31 - new spaces, archived notes, task relations, AI drafts and layout survive backup validation
+  ---
+  duration_ms: 1.4142
+  type: 'test'
+  ...
+# Subtest: merging existing spaces preserves current settings and only adds missing notes/files/history
+ok 32 - merging existing spaces preserves current settings and only adds missing notes/files/history
+  ---
+  duration_ms: 1.0947
+  type: 'test'
+  ...
+# Subtest: AI draft conflicts become recoverable waiting requests including attachments only once
+ok 33 - AI draft conflicts become recoverable waiting requests including attachments only once
+  ---
+  duration_ms: 0.9315
+  type: 'test'
+  ...
+# Subtest: existing AI requests preserve current instructions and keep conflicting incoming text in history
+ok 34 - existing AI requests preserve current instructions and keep conflicting incoming text in history
+  ---
+  duration_ms: 0.8632
+  type: 'test'
+  ...
+# Subtest: canvas import uses saved layout until customized, then only fills missing cards
+ok 35 - canvas import uses saved layout until customized, then only fills missing cards
+  ---
+  duration_ms: 0.6808
+  type: 'test'
+  ...
+# Subtest: course canvas restores from backups independently of the home canvas and remains optional
+ok 36 - course canvas restores from backups independently of the home canvas and remains optional
+  ---
+  duration_ms: 1.0714
+  type: 'test'
+  ...
+# Subtest: customized course canvas preserves current geometry and view, adding only missing courses
+ok 37 - customized course canvas preserves current geometry and view, adding only missing courses
+  ---
+  duration_ms: 0.7545
+  type: 'test'
+  ...
+# Subtest: inner boards restore independently and retain customized geometry on repeated import
+ok 38 - inner boards restore independently and retain customized geometry on repeated import
+  ---
+  duration_ms: 0.8203
+  type: 'test'
+  ...
+# Subtest: inner boards reject unsafe names and invalid card geometry
+ok 39 - inner boards reject unsafe names and invalid card geometry
+  ---
+  duration_ms: 0.6588
+  type: 'test'
+  ...
+# Subtest: validated receipts still undo imported unchanged content while preserving edited records and original files
+ok 40 - validated receipts still undo imported unchanged content while preserving edited records and original files
+  ---
+  duration_ms: 2.8614
+  type: 'test'
+  ...
+# Subtest: task and capture receipt snapshots survive normalization and remain reversible
+ok 41 - task and capture receipt snapshots survive normalization and remain reversible
+  ---
+  duration_ms: 1.0104
+  type: 'test'
+  ...
+# Subtest: unsafe new field types, invalid geometry, invalid states and receipt containers reject
+ok 42 - unsafe new field types, invalid geometry, invalid states and receipt containers reject
+  ---
+  duration_ms: 2.2381
+  type: 'test'
+  ...
+1..42
+# tests 42
+# suites 0
+# pass 42
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 663.13
