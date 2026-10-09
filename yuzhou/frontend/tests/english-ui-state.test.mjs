@@ -54,16 +54,22 @@ test('writing input survives switching between new questions and the original dr
   assert.equal(ui.state.english.draftExercises.translation,undefined);assert.equal(ui.saves.length,2);
 });
 
-test('review prepares an unsent AI draft for the selected English exercise and preserves other drafts',async t=>{
+test('review prepares a short unsent request to read the selected long draft without exposing technical IDs or replacing another request',async t=>{
   const ui=fixture(t,'translation'),prompt=TRANSLATION_PROMPTS[1];let requests=0;
   const original=Object.getOwnPropertyDescriptor(globalThis,'fetch');Object.defineProperty(globalThis,'fetch',{configurable:true,value:()=>{requests++;throw new Error('model must not be called');}});
   t.after(()=>{if(original)Object.defineProperty(globalThis,'fetch',original);else delete globalThis.fetch;});
-  ui.change({enPrompt:'translation'},prompt.id);ui.input('translation','Could we meet on Saturday morning instead?');
+  const longDraft='SYNTHETIC_LONG_TRANSLATION\n'+'word '.repeat(6200);
+  assert.ok(longDraft.length>31000);
+  ui.change({enPrompt:'translation'},prompt.id);ui.input('translation',longDraft);
   const englishBefore=structuredClone(ui.state.english),savedBefore=ui.saves.length;
   await ui.click('draft-review','translation');
   assert.equal(requests,0);assert.equal(ui.saves.length,savedBefore+1);assert.equal(ui.state.aiDraft.targetId,'english');
-  assert.ok(ui.state.aiDraft.text.includes(`englishDraft 编号 translation:${prompt.id}`));
-  assert.ok(ui.state.aiDraft.text.includes(prompt.prompt));assert.ok(ui.state.aiDraft.text.includes('Could we meet on Saturday morning instead?'));
+  assert.ok(ui.state.aiDraft.text.includes(prompt.title));assert.ok(ui.state.aiDraft.text.includes(prompt.prompt));
+  assert.match(ui.state.aiDraft.text,/先读取.*完整.*草稿/);
+  assert.ok(!ui.state.aiDraft.text.includes('englishDraft'));assert.ok(!ui.state.aiDraft.text.includes(`translation:${prompt.id}`));
+  assert.ok(!ui.state.aiDraft.text.includes('SYNTHETIC_LONG_TRANSLATION'));assert.ok(!ui.state.aiDraft.text.includes(longDraft));
+  assert.ok(ui.state.aiDraft.text.length<3000,'the unsent request stays comfortably below the 30k message limit');
+  assert.equal(ui.state.english.draftExercises.translation[prompt.id].text,longDraft);
   assert.deepEqual(ui.state.english,englishBefore);assert.deepEqual(ui.state.aiRequests,[]);assert.deepEqual(ui.navigations.at(-1),['ai','english']);
   const firstDraft=structuredClone(ui.state.aiDraft);ui.change({enPrompt:'translation'},TRANSLATION_PROMPTS[0].id);
   await ui.click('draft-review','translation');

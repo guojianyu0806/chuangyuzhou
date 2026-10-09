@@ -10,7 +10,7 @@ import {CUSTOM_BLOCK_KINDS,getCustomBlocks} from '../frontend/src/custom-blocks-
 
 export const WORKSPACE_QUERY_CAPABILITIES=[
  {kind:'search',label:'搜索工作台',description:'entity可省略；text关键词；可筛containerId、archived(false默认/true/all)、done；offset默认0，limit默认20最多50；返回真实编号和分页总数。'},
- {kind:'get',label:'读取记录详情',description:'必须entity、id；note/file/timetableEntry用containerId区分；返回完整内容（超长会注明截断）。customBlock仅返回所选方块，miniapp代码完整提供或以truncated拒绝；data敏感字段会标redacted，遇到截断/脱敏不可替换代码或data。'},
+ {kind:'get',label:'读取记录详情',description:'必须entity、id；note/file/timetableEntry用containerId区分；返回完整内容（超长会注明截断）。englishDraft最多20000字符且完整结果最多36000字符；editable:true且contentComplete:true才可修改，超过上限仅可分段讨论，不得整稿替换。customBlock仅返回所选方块，miniapp代码完整提供或以truncated拒绝；data敏感字段会标redacted，遇到截断/脱敏不可替换代码或data。'},
  {kind:'ledger.summary',label:'计算收支',description:'scope:total默认(遵守项目总账设置)/daily/projects/all；projectId指定已有项目；start/end为YYYY-MM-DD；groupBy:category/project/date；程序计算精确到分，默认不含归档账目。'},
  {kind:'calendar.range',label:'查询日历与关联事项',description:'start和end为YYYY-MM-DD；默认汇总日历原安排、带日期的备忘待办、比赛节点与任务、英语考试日期。可source:all/calendar/tasks/competitions/english、kindFilter:plan/mark/note（筛全部来源：待办/比赛任务/英语为plan，比赛节点为mark）、done、archived(false默认/true/all)。归档只查询日历原安排，关联来源只显示未归档父子；不含学期课表、账单或运动学习日志。返回真实entity/id/containerId用于修改源记录；containerId为空时在后续查询/行动里省略该字段。display为只读日期展示，不可拿display.id当行动编号。'},
  {kind:'timetable.week',label:'查询一周课表',description:'termId可省略使用当前学期；week为整数或date为YYYY-MM-DD；返回当周课程、实际日期、作息时间。'},
@@ -94,6 +94,15 @@ export function validateCustomBlockReadAccess(actions,results){
  }
 }
 
+/** A draft replacement must be based on the full selected exercise, never a search excerpt. */
+export function validateEnglishDraftReadAccess(actions,results){
+ for(const action of actions||[]){
+  if(action.entity!=='englishDraft'||action.operation!=='update')continue;
+  const read=[...(results||[])].reverse().find(row=>row.query?.kind==='get'&&row.query.entity==='englishDraft'&&row.query.id===action.id)?.result;
+  if(!read?.record||read.entity!=='englishDraft'||read.id!==action.id||typeof read.record.content!=='string'||read.error||read.truncated||read.editable!==true||read.contentComplete!==true)fail('修改英语草稿前，须在本轮完整 get 读取对应题目的草稿；搜索摘要、截断或读取失败不能整稿替换。超过上限可分段讨论，不自动替换原稿。');
+ }
+}
+
 export async function runWorkspaceQuery(state,q,{readFile,now=new Date()}={}){
  if(q.kind==='search'){
   const term=(q.text||'').toLocaleLowerCase('zh-CN');
@@ -103,6 +112,12 @@ export async function runWorkspaceQuery(state,q,{readFile,now=new Date()}={}){
  if(q.kind==='get'){
   const rows=listWorkspaceRecords(state).filter(row=>row.entity===q.entity&&row.id===q.id&&(!q.containerId||row.containerId===q.containerId));
   if(rows.length!==1)fail(rows.length?'同编号记录不唯一，请指定containerId。':'这条记录已不存在，请重新查询。');
+  if(q.entity==='englishDraft'){
+    const row=structuredClone(rows[0]);
+    const result={...row,contentComplete:true,editable:true,notice:'本题草稿已完整提供；仅可修改这个题目，审核确认后保存。'};
+    if(row.record.content.length>20000||JSON.stringify(result).length>36000)return {entity:q.entity,id:q.id,title:row.title,truncated:true,contentComplete:false,editable:false,notice:'本题草稿超过完整读取上限（正文20000字符、结果36000字符），未返回局部正文。可选择片段分段讨论，但不能据此自动替换整篇原稿。'};
+    return result;
+  }
   if(q.entity==='customBlock'){
     const row=structuredClone(rows[0]);let redacted=false;
     const privateKeys=/^(api[_-]?key|password|token|csrf[_-]?token|secret|authorization|cookie)$/i;

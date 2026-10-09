@@ -61,7 +61,7 @@ export function mountEnglish(ctx, initialSection = '') {
   const completedWords = () => en.words.filter(w => !w.archived&&w.status === 'mastered').length;
   function openCoach(type){
     let text='请结合我的英语学习目标、词汇和学习记录，先和我讨论需要调整什么，再列出学习计划或词汇卡片的行动方案。';
-    if(type){const draft=draftFor(type).text;if(!draft.trim()){toast('先写下一些内容，再交给 AI 一起修改。');return;}const prompt=type==='listening'?null:currentPrompt(type),draftId=prompt&&!prompt.legacy?`${type}:${prompt.id}`:type;text=`请检查这份${TYPES[type]||'英语'}草稿，给出具体修改理由。${prompt?`题目：${prompt.title}\n要求：${prompt.prompt}\n`:''}仅针对 englishDraft 编号 ${draftId} 提议修改；不能改其他题目的草稿。先讨论并展示方案，等我审核确认再保存。\n当前草稿：\n${draft}`;}
+    if(type){const draft=draftFor(type).text;if(!draft.trim()){toast('先写下一些内容，再交给 AI 一起修改。');return;}const prompt=type==='listening'?null:currentPrompt(type);text=`请帮我修改${prompt?'《'+prompt.title+'》这道'+TYPES[type]+'练习':'听力笔记'}。${prompt?'\n题目要求：'+prompt.prompt:''}\n请先读取这道练习已保存的完整草稿，再给出具体修改理由；只针对本题，不要改其他题目。如果内容太长而无法完整读取，先与我讨论分段处理。先讨论并展示方案，等我审核确认后再保存。`;}
     try{openAIConversation(ctx,{targetId:'english',text});}catch(error){toast(error.message);}
   }
 
