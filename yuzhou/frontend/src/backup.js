@@ -332,7 +332,7 @@ function workspace(value) {
       result.ui.lastCreatedColor=ui.lastCreatedColor;
     }
     if(ui.inboxView!==undefined){
-      if(!['cards','dream'].includes(ui.inboxView))fail('灵感显示方式');
+      if(!['cards','canvas','dream'].includes(ui.inboxView))fail('灵感显示方式');
       result.ui.inboxView=ui.inboxView;
     }
   }

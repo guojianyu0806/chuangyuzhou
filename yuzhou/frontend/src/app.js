@@ -11,6 +11,7 @@ import {mountTimetable} from './timetable.js';
 import {mountCalendar} from './calendar.js';
 import {mountCompetitions} from './competitions.js';
 import {mountDream} from './dream.js';
+import {mountInspirationWall} from './inspiration.js';
 import {assignRecordColor,isRecordColor} from './creation-colors.js';
 import {initializeSpaces,routeContent,undoRoute,openDestination} from './workspace-model.js';
 import {bootstrapCloud,mountModelSettings} from './cloud.js';
@@ -30,7 +31,7 @@ const dateLabel=value=>value?new Date(value+'T12:00:00').toLocaleDateString('zh-
 const key=mode=>cloudClient?cloudClient.key(mode):`czb-yuzhou-workspace-v1-${mode}`;
 // Keep the existing account/storage identity; retired example data stays untouched.
 const mode='personal';
-let route='home',subroute='',filter='all';
+let route='home',subroute='',filter='all',captureQuery='';
 let cleanupView=null;
 let sidebarResize=null;
 let lastStored=localStorage.getItem(key(mode));
@@ -310,7 +311,7 @@ function renderInbox(){
       onArchive:id=>{
         const capture=state.captures.find(c=>c.id===id);if(!capture)return;
         const previous=capture.archived;
-        try{capture.archived=true;save();render();toast('灵感已归档，可在卡片排列的「已归档」中恢复。');}
+        try{capture.archived=true;save();render();toast('灵感已归档，可在灵感墙的「已归档」中恢复。');}
         catch(error){capture.archived=previous;toast(error.message);}
       },
       onDownload:async id=>{
@@ -320,21 +321,29 @@ function renderInbox(){
     });
     return;
   }
+  if(state.ui.inboxView!=='canvas'){
+    cleanupView=mountInspirationWall(makeContext(),{filter,query:captureQuery,onQuery:value=>{captureQuery=value;}});
+    bindCaptureDrop();ctx.root.onclick=handleMain;return;
+  }
   const captures=state.captures.filter(c=>filter==='archived'?c.archived:!c.archived&&(filter==='all'||c.category===filter));
-  ctx.root.innerHTML=pageHead('灵感，先放在这里。','每条碎片都有一张卡。拖入文件，或记下刚刚的想法。',`<div class="row">${button('添加附件','capture-file','upload')}${button('随手记','add-capture','plus',true)}</div>`)+`<section class="interior-page capture-desktop"><div class="inbox-notice">${icon('sparkles',21)}<div><strong>先收集，再连接。</strong><span>接入大模型后，可自动提取重点、建议分类和待办。目前可以手动整理。</span></div><button class="text-btn" data-action="assistant">交给 AI ${icon('arrow-right',16)}</button></div><div class="toolbar interior-filter"><div class="tabs">${[['all','全部碎片'],['学习灵感','学习灵感'],['英语','英语'],['备忘','备忘'],['archived','已归档']].map(([f,l])=>`<button class="tab ${filter===f?'active':''}" data-action="filter" data-filter="${f}">${l}</button>`).join('')}</div><span class="muted small">${captures.length} 条记录</span></div><div data-capture-board></div></section>`;
+  ctx.root.innerHTML=pageHead('灵感，先放在这里。','每条碎片都有一张卡。拖入文件，或记下刚刚的想法。',`<div class="row">${button('添加附件','capture-file','upload')}${button('随手记','add-capture','plus',true)}</div>`)+`<section class="interior-page capture-desktop"><div class="inbox-notice">${icon('sparkles',21)}<div><strong>先收集，再连接。</strong><span>和 AI 讨论想法、分类和下一步，核对行动方案后再确认保存。</span></div><button class="text-btn" data-action="inspiration-ai">交给 AI ${icon('arrow-right',16)}</button></div><div class="toolbar interior-filter"><div class="tabs">${[['all','全部碎片'],['学习灵感','学习灵感'],['英语','英语'],['备忘','备忘'],['链接','链接'],['消息摘录','摘录'],['archived','已归档']].map(([f,l])=>`<button class="tab ${filter===f?'active':''}" data-action="filter" data-filter="${f}">${l}</button>`).join('')}</div><span class="muted small">${captures.length} 条记录</span></div><div data-capture-board></div></section>`;
   const palette={'备忘':'#FF9CCE','学习灵感':'#AE88FF','英语':'#D8F649','链接':'#9DC5FF','消息摘录':'#63E6DC'};
   const dreamButton=document.createElement('button');dreamButton.type='button';dreamButton.className='btn dream-entry';dreamButton.dataset.action='dream-mode';dreamButton.innerHTML=`${icon('cloud',18)}梦境模式`;
-  ctx.root.querySelector('.page-head .row')?.prepend(dreamButton);
+  const wallButton=document.createElement('button');wallButton.type='button';wallButton.className='btn';wallButton.dataset.action='inspiration-wall';wallButton.textContent='灵感墙';
+  ctx.root.querySelector('.page-head .row')?.prepend(wallButton,dreamButton);
   if(!dreamButton.isConnected)ctx.root.querySelector('.capture-desktop').prepend(dreamButton);
   state.boards||={};state.boards.inbox||={};
   cleanupView=mountCanvas({...makeContext(),root:ctx.root.querySelector('[data-capture-board]'),createSpace:()=>captureDialog(),editSpace:id=>captureDialog(id),enterCard:id=>captureDialog(id)}, {
     layout:state.boards.inbox,sourceItems:state.captures,items:state.captures.map(c=>({...c,title:c.text.slice(0,50)||c.fileName||'未命名碎片',subtitle:c.category,color:isRecordColor(c.color)?c.color:palette[c.category]||'#FFBC7C',icon:c.fileName?'file':c.category==='链接'?'link':'bolt'})),matches:c=>captures.some(x=>x.id===c.id),title:'灵感卡片',hideHeader:true,createLabel:false,cardLabel:c=>c.archived?'已归档':c.category,footLabel:c=>new Date(c.createdAt).toLocaleDateString('zh-CN',{month:'short',day:'numeric'}),enterLabel:'展开内容',canDrop:false,manageLabel:'编辑碎片',emptyHTML:empty('为下一次灵感，留一个位置。','写点什么，或拖入一份资料。',button('记下第一个想法','add-capture')),
     renderCard:(geometry,c)=>`<article class="capture-card capture-board-item"><button class="capture-card-copy" type="button" data-card-open data-action="edit-capture" data-id="${esc(c.id)}"><p>${esc(c.text)}</p></button>${c.fileName?`<button class="attachment" data-action="download-capture" data-id="${esc(c.id)}">${icon('file',17)}<span>${esc(c.fileName)}</span> ${icon('download',15)}</button>`:''}${c.tags?`<span class="capture-tag"># ${esc(c.tags)}</span>`:''}<footer><button class="text-btn" data-action="capture-task" data-id="${esc(c.id)}">转为待办</button><button class="icon-btn" data-action="archive-capture" data-id="${esc(c.id)}" aria-label="${c.archived?'恢复':'归档'}碎片">${icon(c.archived?'refresh':'archive',17)}</button></footer></article>`
   });
+  bindCaptureDrop();ctx.root.onclick=handleMain;
+}
+function bindCaptureDrop(){
   const view=makeContext();
   ctx.root.ondragover=e=>{if([...e.dataTransfer.types].includes('Files')){e.preventDefault();e.dataTransfer.dropEffect='copy';}};
   ctx.root.ondrop=async e=>{const files=Array.from(e.dataTransfer?.files||[]);if(!files.length)return;e.preventDefault();let count=0;for(const file of files){try{const blobId=await putFile(file);insertColoredRecord(view.state,view.state.captures,{id:uid(),text:file.name,category:'备忘',tags:'',archived:false,createdAt:new Date().toISOString(),blobId,fileName:file.name,fileType:file.type});count++;}catch(error){toast(error.message);break;}}if(count){view.refresh();toast(`已收下 ${count} 份附件。`);}};
-  ctx.root.onclick=handleMain;
+
 }
 
 function captureFile(){
@@ -344,6 +353,9 @@ async function handleMain(event){
   const b=event.target.closest('[data-action]');if(!b)return;const id=b.dataset.id;const action=b.dataset.action;
   if(action==='assistant')assistant();
   if(action==='dream-mode')setInboxView('dream');
+  if(action==='inspiration-wall')setInboxView('cards');
+  if(action==='inspiration-canvas')setInboxView('canvas');
+  if(action==='inspiration-ai'){try{openAIConversation(makeContext(),{targetId:'inbox',text:'请先查看我保存的灵感，和我讨论哪些想法可以归在一起、哪些值得继续展开，哪些适合变成待办。不要把猜测写成已有内容；先展示建议和行动方案，等我审核确认。'});}catch(error){toast(error.message);}}
   if(action==='add-task')taskDialog();
   if(action==='edit-task')taskDialog(id);
   if(action==='toggle-task'){const task=state.tasks.find(x=>x.id===id);task.done=!task.done;task.completedAt=task.done?new Date().toISOString():null;save();render();toast(task.done?'又完成一件事。':'已放回待办。');}
@@ -353,7 +365,7 @@ async function handleMain(event){
   if(action==='edit-capture')captureDialog(id);
   if(action==='capture-file')captureFile();
   if(action==='archive-capture'){const c=state.captures.find(x=>x.id===id);c.archived=!c.archived;save();render();toast(c.archived?'碎片已归档。':'碎片已恢复。',()=>{c.archived=!c.archived;save();render();});}
-  if(action==='capture-task'){const c=state.captures.find(x=>x.id===id);if(state.tasks.some(t=>t.captureId===id&&!t.archived)){toast('这条碎片已经有对应待办。');return;}insertColoredRecord(state,state.tasks,{id:uid(),title:c.text.slice(0,100),description:c.text,category:c.category==='英语'?'英语':'个人',date:'',priority:'normal',done:false,source:`收集箱 · ${c.category}`,captureId:id,createdAt:new Date().toISOString()});toast('已转为待办，日期留待你安排。');}
+  if(action==='capture-task'){const c=state.captures.find(x=>x.id===id);const linked=state.tasks.find(t=>t.captureId===id&&!t.archived);if(linked){taskDialog(linked.id);return;}insertColoredRecord(state,state.tasks,{id:uid(),title:c.text.slice(0,100),description:c.text,category:c.category==='英语'?'英语':'个人',date:'',priority:'normal',done:false,source:`收集箱 · ${c.category}`,captureId:id,createdAt:new Date().toISOString()});render();toast('已转为待办，日期留待你安排。');}
   if(action==='download-capture'){try{const c=state.captures.find(x=>x.id===id);const blob=await getFile(c.blobId);if(!blob)throw new Error('附件不在这个浏览器中，请重新添加。');download(blob,c.fileName);}catch(error){toast(error.message);}}
 }
 
@@ -590,7 +602,7 @@ function renderCloudSettings(){
 }
 if(cloudClient){
   cloudClient.subscribe(updateCloudShell);
-  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')&&!event.target.closest('[data-local-ai-draft]')&&!event.target.matches('[data-ledger-filter],[data-calendar-filter],[data-timetable-view],[data-dream-view],[data-fitness-date],[data-competition-filter]')){cloudDirtyFields.add(event.target);cloudEditing=true;cloudEditTick++;}});
+  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')&&!event.target.closest('[data-local-ai-draft]')&&!event.target.matches('[data-ledger-filter],[data-calendar-filter],[data-timetable-view],[data-dream-view],[data-inspiration-view],[data-fitness-date],[data-competition-filter]')){cloudDirtyFields.add(event.target);cloudEditing=true;cloudEditTick++;}});
   document.addEventListener('ai-request-added',event=>{
     const host=event.target;
     // A successful composer submission saves and clears only its own draft.

@@ -285,9 +285,9 @@ const profileAdapter=singleton({entity:'profileSettings',label:'个人资料',re
   capability:'仅update，id=profile-settings；data仅name(称呼),major(专业)。不能修改账号、登录、模型供应商或API密钥。',
   read:state=>({name:state.profile?.name??'同学',major:state.profile?.major??''}),write:(state,record)=>{state.profile={...state.profile,...record};},
 });
-const uiRules={sidebarPinned:bool,inboxView:v=>choice(v,['cards','dream'])};
+const uiRules={sidebarPinned:bool,inboxView:v=>choice(v,['cards','canvas','dream'])};
 const uiAdapter=singleton({entity:'uiSettings',label:'界面偏好',recordId:'ui-settings',rules:uiRules,validateRecord:value=>fields(value,uiRules,['sidebarPinned']),
-  capability:'仅update，id=ui-settings；data:sidebarPinned(true展开/false收起),inboxView=cards|dream。网格吸附请用canvasSettings的snap。',
+  capability:'仅update，id=ui-settings；data:sidebarPinned(true展开/false收起),inboxView=cards(灵感墙)|canvas(自由画布)|dream(梦境模式)。切换显示方式保留原灵感记录及画布布局。网格吸附请用canvasSettings的snap。',
   read:state=>({sidebarPinned:state.ui?.sidebarPinned??false,...(state.ui?.inboxView?{inboxView:state.ui.inboxView}:{})}),write:(state,record)=>{const ui={...state.ui};delete ui.inboxView;state.ui={...ui,...record};},
 });
 

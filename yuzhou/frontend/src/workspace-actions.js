@@ -129,7 +129,7 @@ function human(value,key,state,entity){
   if(key==='status'&&['watching','preparing','submitted','finished'].includes(value))return {watching:'关注中',preparing:'准备中',submitted:'已提交',finished:'已结束'}[value];
   if(key==='competitionId')return state?.competitions?.items?.find(item=>item.id===value)?.title||value;
   const practices={reading:'阅读',writing:'写作',listening:'听力',translation:'翻译',vocabulary:'词汇'};
-  const named={kind:{plan:'计划',mark:'标注',note:'注意事项'},type:{blank:'空白空间',course:'课程',affairs:'事务',project:'项目',fitness:'运动健身',...practices},focus:practices,source:{personal:'用户添加',builtin:'内置',manual:'手动提供',device:'设备读数'},status:{new:'未学习',learning:'学习中',review:'待复习',mastered:'已掌握'},layout:{free:'自由画布',auto:'自适应',two:'两列',three:'三列',stack:'堆叠'},presentation:{canvas:'自由画布',list:'自适应','grid-2':'两列','grid-3':'三列',stack:'堆叠'},inboxView:{cards:'卡片',dream:'梦境模式'}};
+  const named={kind:{plan:'计划',mark:'标注',note:'注意事项'},type:{blank:'空白空间',course:'课程',affairs:'事务',project:'项目',fitness:'运动健身',...practices},focus:practices,source:{personal:'用户添加',builtin:'内置',manual:'手动提供',device:'设备读数'},status:{new:'未学习',learning:'学习中',review:'待复习',mastered:'已掌握'},layout:{free:'自由画布',auto:'自适应',two:'两列',three:'三列',stack:'堆叠'},presentation:{canvas:'自由画布',list:'自适应','grid-2':'两列','grid-3':'三列',stack:'堆叠'},inboxView:{cards:'灵感墙',canvas:'自由画布',dream:'梦境模式'}};
   if(named[key]?.[value])return named[key][value];
   if(Array.isArray(value))return value.length?JSON.stringify(value):'空';
   return typeof value==='object'?JSON.stringify(value):String(value);

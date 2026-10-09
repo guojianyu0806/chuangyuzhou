@@ -1,0 +1,166 @@
+/* DEV-015 · A wall of unfinished thoughts, distinct from the structured boards. */
+.inspiration-wall {
+  --inspiration-ink: #37304b;
+  --inspiration-muted: #6d657b;
+  container-type: inline-size;
+  min-width: 0;
+  max-width: 1460px;
+  margin-inline: auto;
+  color: var(--inspiration-ink);
+}
+.inspiration-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 7px 3px 24px;
+}
+.inspiration-title { position: relative; min-width: 0; padding-left: 58px; }
+.inspiration-title small {
+  display: block;
+  margin-bottom: 5px;
+  color: #766286;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .16em;
+}
+.inspiration-title h1 {
+  margin: 0;
+  font-family: KaiTi, STKaiti, "Kaiti SC", serif;
+  font-size: clamp(30px, 3vw, 42px);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: .04em;
+}
+.inspiration-title p { margin: 9px 0 0; max-width: 580px; font-size: 12px; line-height: 1.8; color: var(--inspiration-muted); }
+.inspiration-burst { position: absolute; top: 18px; left: 0; width: 42px; height: 47px; color: #9980bc; transform: rotate(-11deg); pointer-events: none; }
+.inspiration-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 9px; flex-shrink: 0; }
+.inspiration-actions button { min-height: 42px; }
+.inspiration-tools { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding: 0 3px 18px; }
+.inspiration-search { display: flex; align-items: center; gap: 9px; min-width: 180px; max-width: 410px; flex: 1 1 230px; padding: 0 14px; color: #7a718a; background: #ffffffae; border: 1px solid #ded6ea; border-radius: 14px; }
+.inspiration-search > svg { width: 17px; height: 17px; flex: 0 0 auto; }
+.inspiration-search input { width: 100%; min-width: 0; height: 44px; margin: 0; padding: 0; font: inherit; font-size: 12px; color: var(--inspiration-ink); border: 0; outline: 0; background: none; box-shadow: none; }
+.inspiration-search input::placeholder { color: #7c7387; }
+.inspiration-search:focus-within { outline: 2px solid #8c71b3; outline-offset: 3px; }
+.inspiration-views { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; border-radius: 12px; background: #eae4f14d; padding: 4px; }
+.inspiration-views button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 7px 11px; border: 1px solid transparent; border-radius: 9px; font-size: 11px; color: #71637e; }
+.inspiration-views button svg { width: 15px; height: 15px; }
+.inspiration-views button.active, .inspiration-views button[aria-pressed="true"] { color: #473958; background: #fff; border-color: #ded1eb; box-shadow: 0 2px 5px #4632580a; }
+.inspiration-filters { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 2px 3px 15px; border-bottom: 1px solid #e3dcebbd; }
+.inspiration-filters button { display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px; min-height: 38px; border: 1px solid transparent; border-radius: 18px; font-size: 12px; color: #6d627a; background: none; }
+.inspiration-filters button.active, .inspiration-filters button[aria-pressed="true"], .inspiration-filters button[aria-selected="true"] { color: #49355d; border-color: #d4c5e4; background: #ece2f5; box-shadow: inset 0 1px 0 #ffffffbf; }
+.inspiration-filters button:hover { background: #eee7f5; }
+.inspiration-meta { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px 18px; padding: 18px 4px 7px; color: #776d82; font-size: 11px; line-height: 1.7; }
+.inspiration-meta strong { color: #514260; font-weight: 600; }
+.inspiration-scatter { columns: 1; column-gap: 29px; padding: 17px 9px 36px; }
+.inspiration-note {
+  --spark-tint: #c7b3f5;
+  --spark-edge: #b49ace;
+  --spark-turn: -.65deg;
+  --spark-delay: 0ms;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  min-width: 0;
+  margin: 5px 0 26px;
+  padding: 23px 22px 16px;
+  break-inside: avoid;
+  vertical-align: top;
+  border: 1px solid color-mix(in srgb, var(--spark-edge) 63%, white);
+  border-radius: 22px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--spark-tint) 46%, white), color-mix(in srgb, var(--spark-tint) 72%, white));
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--spark-edge) 47%, white), 0 8px 20px #40324c0b, inset 0 1px 0 #ffffffb3;
+  transform: rotate(var(--spark-turn));
+  transform-origin: 50% 70%;
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms ease;
+}
+.inspiration-scatter.is-arriving .inspiration-note {
+  animation: inspiration-arrive 380ms cubic-bezier(.16,.72,.24,1) backwards;
+  animation-delay: clamp(0ms, var(--spark-delay), 210ms);
+}
+.inspiration-note:nth-child(3n + 2) { margin-top: 15px; }
+.inspiration-note:nth-child(3n) { margin-top: 10px; }
+.inspiration-note[data-shape="paper"] { border-radius: 5px 17px 7px 8px; }
+.inspiration-note[data-shape="paper"]::before { content: ""; position: absolute; width: 48px; height: 14px; top: -7px; left: 25px; transform: rotate(-6deg); background: #ffffff93; border: 1px solid #ffffffd4; box-shadow: 0 1px 2px #71617c0a; pointer-events: none; }
+.inspiration-note[data-shape="bubble"] { border-radius: 30px 27px 32px 12px; }
+.inspiration-note[data-shape="bubble"]::after { content: ""; position: absolute; left: 30px; bottom: -8px; width: 15px; height: 15px; border-right: 1px solid color-mix(in srgb, var(--spark-edge) 63%, white); border-bottom: 1px solid color-mix(in srgb, var(--spark-edge) 63%, white); border-bottom-right-radius: 4px; transform: rotate(45deg); background: color-mix(in srgb, var(--spark-tint) 69%, white); pointer-events: none; }
+.inspiration-note[data-shape="soft"] { border-radius: 21px 12px 25px 17px; }
+.inspiration-note[data-shape="paper"][data-size="brief"]::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 17px; height: 17px; border-bottom-right-radius: 7px; background: linear-gradient(135deg, transparent 48%, color-mix(in srgb, var(--spark-edge) 50%, white) 51%, #fff 93%); pointer-events: none; }
+.inspiration-note[data-shape="soft"][data-size="brief"]::before { content: ""; position: absolute; top: 7px; right: 13px; width: 13px; height: 13px; transform: rotate(13deg); opacity: .65; background: linear-gradient(90deg, transparent 43%, var(--spark-edge) 43% 57%, transparent 57%), linear-gradient(transparent 43%, var(--spark-edge) 43% 57%, transparent 57%); pointer-events: none; }
+.inspiration-note-head { position: relative; display: flex; align-items: center; gap: 8px; min-height: 29px; margin-bottom: 14px; }
+.inspiration-category { display: inline-flex; align-items: center; gap: 5px; max-width: 60%; padding: 3px 8px; border: 1px solid #ffffffb0; border-radius: 7px; background: #ffffff70; color: #594765; font-size: 10px; overflow-wrap: anywhere; }
+.inspiration-category svg { width: 12px; height: 12px; flex-shrink: 0; }
+.inspiration-note-head time { margin-left: auto; color: #6c5b78; font-size: 10px; white-space: nowrap; }
+.inspiration-more { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 32px; min-width: 32px; height: 32px; border-radius: 9px; color: #655071; }
+.inspiration-more:hover { background: #ffffff83; }
+.inspiration-more svg { width: 16px; height: 16px; }
+.inspiration-note-symbol { display: block; width: 25px; height: 25px; margin: 0 0 9px; color: color-mix(in srgb, var(--spark-edge) 74%, #594265); pointer-events: none; }
+.inspiration-note-head .inspiration-note-symbol { width: 19px; height: 19px; margin: 0; flex: 0 0 auto; }
+.inspiration-note-open { display: block; width: 100%; min-width: 0; margin: 0; padding: 0; text-align: left; color: var(--inspiration-ink); font: inherit; border-radius: 5px; }
+.inspiration-note-open p { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; overflow: hidden; margin: 0; font-size: 18px; font-weight: 550; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+.inspiration-note[data-size="brief"] .inspiration-note-open p { font-family: KaiTi, STKaiti, "Kaiti SC", serif; font-size: clamp(25px, 2.2vw, 31px); font-weight: 600; line-height: 1.6; letter-spacing: .015em; }
+.inspiration-note[data-size="long"] .inspiration-note-open p { font-size: 15px; font-weight: 450; line-height: 1.9; }
+.inspiration-open-hint { display: block; margin-top: 12px; color: #71617b; font-family: inherit; font-size: 10px; font-weight: 400; line-height: 1.6; }
+.inspiration-attachment { margin-top: 14px; min-width: 0; }
+.inspiration-attachment button, button.inspiration-attachment { display: flex; align-items: center; gap: 7px; width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid #ffffffb3; border-radius: 9px; background: #ffffff6b; color: #574160; text-align: left; font-size: 11px; }
+.inspiration-attachment span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inspiration-attachment svg { width: 15px; height: 15px; flex: 0 0 auto; }
+.inspiration-attachment svg:last-child { margin-left: auto; }
+.inspiration-tags { display: flex; align-items: center; flex-wrap: wrap; gap: 5px 9px; margin-top: 14px; color: #715677; font-size: 10px; line-height: 1.7; overflow-wrap: anywhere; }
+.inspiration-tags > * { max-width: 100%; }
+.inspiration-note-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; margin-top: 17px; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--spark-edge) 25%, transparent); }
+.inspiration-note-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 36px; padding: 6px 8px; margin-inline: -4px; border-radius: 8px; color: #584263; font-size: 11px; }
+.inspiration-note-actions button svg { width: 14px; height: 14px; }
+.inspiration-note-actions button:hover { background: #ffffff80; }
+.inspiration-empty { margin: 20px 9px 36px; padding: 44px 20px; text-align: center; background: #ffffff70; border: 1px dashed #cdc0da; border-radius: 28px 19px 24px 14px; }
+.inspiration-empty > svg { width: 36px; height: 36px; color: #ac94c5; }
+.inspiration-empty h2 { margin: 16px 0 9px; font-family: KaiTi, STKaiti, "Kaiti SC", serif; font-size: 25px; }
+.inspiration-empty p { max-width: 430px; margin: 0 auto 18px; font-size: 12px; line-height: 1.9; color: var(--inspiration-muted); }
+.inspiration-wall button:focus-visible { outline: 2px solid #74528f; outline-offset: 4px; }
+.inspiration-note:focus-within { z-index: 1; transform: translateY(-3px) rotate(0); box-shadow: 0 3px 0 color-mix(in srgb, var(--spark-edge) 48%, white), 0 12px 26px #40324c16, inset 0 1px 0 #ffffffb3; }
+@media (hover: hover) {
+  .inspiration-note:hover { z-index: 1; transform: translateY(-3px) rotate(0); box-shadow: 0 3px 0 color-mix(in srgb, var(--spark-edge) 48%, white), 0 12px 26px #40324c16, inset 0 1px 0 #ffffffb3; }
+}
+@container (min-width: 620px) { .inspiration-scatter { columns: 2; } }
+@container (min-width: 900px) { .inspiration-scatter { columns: 3; column-gap: 28px; } }
+@container (max-width: 899px) {
+  .inspiration-intro { align-items: flex-start; flex-wrap: wrap; gap: 18px; padding-bottom: 20px; }
+  .inspiration-title { flex: 1 0 100%; }
+  .inspiration-actions { justify-content: flex-start; width: 100%; }
+}
+@container (max-width: 619px) {
+  .inspiration-note { margin-top: 5px; }
+  .inspiration-note:nth-child(3n + 2), .inspiration-note:nth-child(3n) { margin-top: 5px; }
+}
+@container (max-width: 430px) {
+  .inspiration-title { padding-left: 45px; }
+  .inspiration-title h1 { font-size: 32px; }
+  .inspiration-title p { font-size: 11px; }
+  .inspiration-burst { width: 33px; height: 39px; }
+  .inspiration-actions { gap: 7px; }
+  .inspiration-actions button { min-height: 44px; }
+  .inspiration-tools { gap: 10px; }
+  .inspiration-search { max-width: none; flex-basis: 100%; }
+  .inspiration-views { width: 100%; justify-content: flex-start; }
+  .inspiration-views button { flex: 1 1 auto; min-height: 40px; }
+  .inspiration-filters { gap: 3px; }
+  .inspiration-filters button { padding: 8px 10px; min-height: 42px; }
+  .inspiration-scatter { padding-inline: 7px; }
+  .inspiration-note { padding: 21px 18px 13px; transform: rotate(calc(var(--spark-turn) * .65)); }
+  .inspiration-note-head { gap: 5px; }
+  .inspiration-note-open p { font-size: 17px; }
+  .inspiration-note[data-size="brief"] .inspiration-note-open p { font-size: 27px; }
+  .inspiration-note-actions button { min-height: 44px; }
+  .inspiration-more { min-width: 36px; width: 36px; height: 36px; }
+}
+@supports not (container-type: inline-size) {
+  @media (min-width: 1000px) { .inspiration-scatter { columns: 2; } }
+  @media (min-width: 1280px) { .inspiration-scatter { columns: 3; column-gap: 28px; } }
+  @media (max-width: 1279px) { .inspiration-intro { flex-wrap: wrap; } .inspiration-title { flex: 1 0 100%; } .inspiration-actions { justify-content: flex-start; width: 100%; } }
+}
+@keyframes inspiration-arrive { from { opacity: 0; transform: translateY(12px) rotate(var(--spark-turn)); } to { opacity: 1; transform: translateY(0) rotate(var(--spark-turn)); } }
+@media (prefers-reduced-motion: reduce) {
+  .inspiration-note { transition: none; }
+  .inspiration-scatter.is-arriving .inspiration-note { animation: none; }
+  .inspiration-note:hover, .inspiration-note:focus-within { transform: rotate(var(--spark-turn)); }
+}
