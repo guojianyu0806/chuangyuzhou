@@ -5,7 +5,7 @@ import {seedEnglish,mountEnglish} from './english.js';
 import {validateBackup,mergeBackup} from './backup.js';
 import {mountCanvas,ensureCanvas} from './canvas.js';
 import {mountSpace,openSpaceDialog,saveSpaceFiles} from './spaces.js';
-import {mountAI,mountAIComposer} from './ai.js';
+import {mountAI,mountAIComposer,openAIConversation} from './ai.js';
 import {mountLedger} from './ledger.js';
 import {mountTimetable} from './timetable.js';
 import {mountCalendar} from './calendar.js';
@@ -14,6 +14,10 @@ import {mountDream} from './dream.js';
 import {assignRecordColor,isRecordColor} from './creation-colors.js';
 import {initializeSpaces,routeContent,undoRoute,openDestination} from './workspace-model.js';
 import {bootstrapCloud,mountModelSettings} from './cloud.js';
+import {WORKBENCH_MODULES,createWorkbench,getVisibleModules,getWorkbench,configureWorkbench} from './workbench-model.js';
+import {mountBuilder} from './builder.js';
+import {companionButton,openCompanion} from './companion.js';
+import {createSidebarNavigation} from './sidebar-navigation.js';
 
 const cloudClient=await bootstrapCloud();
 
@@ -27,10 +31,12 @@ if(!['demo','personal'].includes(mode))mode='demo';
 let route='home',subroute='',filter='all';
 let cleanupView=null;
 let lastStored=localStorage.getItem(key(mode));
-const nav=[['home','orbit','空间主页'],['ai','sparkles','AI 收件台'],['courses','book','课程空间'],['timetable','timetable','学期课表'],['competitions','flag','比赛'],['calendar','calendar','日历'],['english','graduation','六级计划'],['tasks','check-circle','备忘与待办'],['ledger','wallet','记账'],['inbox','inbox','收集箱'],['review','chart','生活回顾']];
+const nav=[['home','orbit','我的工作台'],['builder','layers','搭建台'],...WORKBENCH_MODULES.map(item=>[item.id,item.icon,item.title])];
+const visibleNavigation=()=>[...nav.slice(0,2),...getVisibleModules(state).map(item=>[item.id,item.icon,item.title])];
+const navigationLabel=id=>id==='home'?getWorkbench(state).title:visibleNavigation().find(item=>item[0]===id)?.[2]||nav.find(item=>item[0]===id)?.[2]||'偏好与连接';
 function seed(mode){
   const demo=mode==='demo';
-  return {schema:1,mode,profile:{name:'同学',major:'软件工程',provider:'deepseek'},courses:demo?seedCourses():[],english:seedEnglish(demo),tasks:demo?[
+  return {schema:1,mode,workbench:createWorkbench(demo?'full':'blank'),profile:{name:demo?'同学':'我',major:demo?'软件工程':'',provider:'deepseek'},courses:demo?seedCourses():[],english:seedEnglish(demo),tasks:demo?[
     {id:uid(),title:'复习栈与队列，补充一道应用题',date:today(),priority:'high',category:'课程',done:false,source:'示例 · 数据结构',createdAt:new Date().toISOString()},
     {id:uid(),title:'完成一篇六级阅读练习',date:today(),priority:'normal',category:'英语',done:false,source:'示例 · 六级计划',createdAt:new Date().toISOString()},
     {id:uid(),title:'整理软件工程小组讨论的思路',date:today(),priority:'normal',category:'个人',done:false,source:'示例 · 手动记录',createdAt:new Date().toISOString()},
@@ -69,7 +75,7 @@ function save(target=state){
   try{localStorage.setItem(key(targetMode),JSON.stringify(target));}catch(error){toast('本机保存失败，请立即导出数据备份。');throw error;}
   const stored=localStorage.getItem(key(targetMode));baselines.set(target,stored);
   if(cloudClient)cloudClient.enqueue(target);
-  if(target===state){lastStored=stored;updateShellCounts();renderSpaceLinks();if(route==='space'){const title=state.spaces.find(s=>s.id===subroute)?.title;if(title){document.title=`${title} · 宇宙 · 传智杯独立副本`;const label=document.querySelector('#current-page');if(label)label.textContent=title;}}}
+  if(target===state){lastStored=stored;updateModuleNavigation();updateShellCounts();renderSpaceLinks();if(route==='space'){const title=state.spaces.find(s=>s.id===subroute)?.title;if(title){document.title=`${title} · 宇宙 · 传智杯独立副本`;const label=document.querySelector('#current-page');if(label)label.textContent=title;}}}
 }
 const dialog=document.querySelector('#modal');
 function insertColoredRecord(target,list,entry){
@@ -108,7 +114,10 @@ const ctx={root:null,state,save,esc,icon,toast,modal,closeModal,go,uid,putFile,g
 function makeContext(){
   const viewState=state, viewRoot=ctx.root;
   const local={...ctx,state:viewState,root:viewRoot,save:()=>save(viewState),
-    refresh:()=>{if(state===viewState)render();}};
+    refresh:()=>{if(state===viewState){updateModuleNavigation();render();}}};
+  local.openBuilder=()=>go('builder');
+  local.askAssistant=prompt=>openAIConversation(local,{text:prompt,targetId:'workspace'});
+  local.showExample=()=>{if(mode!=='demo')switchWorkspace();else go('home');};
   local.createSpace=()=>openSpaceDialog(local);
   local.editSpace=id=>openSpaceDialog(local,viewState.spaces.find(s=>s.id===id));
   local.routeContent=payload=>routeContent(local,payload);
@@ -183,24 +192,39 @@ function shell(){
   <button class="rail-scrim" data-action="close-nav" aria-label="关闭导航" hidden></button>
   <aside class="sidebar ${state.ui.sidebarPinned?'rail-pinned':''}" aria-label="空间导航"><a href="#/home" class="brand" aria-label="宇宙空间主页"><img src="./icon.svg" alt="" width="39" height="39"><span>宇宙<small>传智杯独立副本</small></span></a>
   <button class="rail-pin" data-action="pin-nav" aria-label="${state.ui.sidebarPinned?'收起侧边栏':'展开侧边栏'}" aria-pressed="${!!state.ui.sidebarPinned}">${icon('pin',17)}<span>${state.ui.sidebarPinned?'收起侧边栏':'展开侧边栏'}</span></button>
-  <button class="workspace-switch" data-action="switch-workspace" aria-label="切换示例与个人空间"><span class="workspace-avatar">${mode==='demo'?'L':'我'}</span><span><strong>${mode==='demo'?'示例工作区':'我的工作台'}</strong><small>所有日常，都在这里</small></span>${icon('chevron-down',16)}</button>
-  <nav class="primary-nav" aria-label="主导航">${nav.map(([id,i,label])=>`<a href="#/${id}" data-nav="${id}" aria-label="${label}" title="${label}">${icon(i)}<span>${label}</span><b data-count="${id}"></b></a>`).join('')}</nav>
+  <button class="workspace-switch" data-action="switch-workspace" aria-label="切换示例与个人空间"><span class="workspace-avatar">${mode==='demo'?'例':'我'}</span><span><strong data-workbench-title>${mode==='demo'?'完整宇宙示例':esc(getWorkbench(state).title)}</strong><small>按你的方式搭建</small></span>${icon('chevron-down',16)}</button>
+  <nav class="primary-nav" aria-label="主导航"></nav>
   <div class="rail-spaces"><div class="rail-section-title"><span>我的工作区</span><button class="icon-btn" data-action="new-space" aria-label="新建工作区">${icon('plus',15)}</button></div><div id="rail-space-links"></div></div>
   <div class="sidebar-bottom"><button class="settings-link rail-update" data-action="check-update" aria-label="检查更新" title="检查更新">${icon('refresh')}<span>检查更新</span></button><button class="rail-new" data-action="new-space" aria-label="新建工作区">${icon('plus',20)}<span>新建工作区</span></button><a class="settings-link" href="#/settings" aria-label="偏好与连接" title="偏好与连接">${icon('settings')}<span>偏好与连接</span></a><button class="profile" data-go="settings" aria-label="个人设置"><span class="avatar">${esc(state.profile.name.slice(0,1))}</span><span><strong>${esc(state.profile.name)}</strong><small>你的私人工作台</small></span></button></div></aside>
   <div class="app-main"><header class="topbar"><div class="breadcrumb"><button class="mobile-menu icon-btn" data-action="toggle-nav" aria-label="展开导航">${icon('menu')}</button><a href="#/home" class="desktop-label">我的宇宙</a><span class="slash desktop-label">/</span><strong id="current-page">空间主页</strong></div><button class="search-trigger" data-action="search" aria-label="搜索所有空间">${icon('search',17)}<span>搜索所有空间…</span><kbd>Ctrl K</kbd></button><div class="topbar-actions"><button class="app-update-trigger" data-action="check-update" aria-label="检查界面更新" title="检查界面更新">${icon('refresh',16)}<span>更新</span></button><button class="sync-indicator" data-go="settings"><span class="status-dot"></span><span>本机已就绪</span></button><button class="icon-btn" data-action="notifications" aria-label="通知">${icon('bell')}</button><button class="avatar small-avatar" data-go="settings" aria-label="个人设置">${esc(state.profile.name.slice(0,1))}</button></div></header>
   <div class="mode-banner ${mode==='personal'?'personal-banner':''}">${icon(mode==='demo'?'layers':'shield',15)}<span>${mode==='demo'?'当前为示例工作区，内容用于体验界面。':'个人空间 · 数据保存在当前浏览器，云端连接后可跨设备同步。'}</span><button data-action="switch-workspace">${mode==='demo'?'进入我的工作台':'查看示例'} ${icon('arrow-right',14)}</button></div>
   <main id="main" tabindex="-1"></main><footer class="page-footer"><span>一点一滴，都是你的积累。</span><span>宇宙 · 传智杯独立副本 · 基于 v${VERSION}</span></footer></div>
-  <nav class="bottom-nav" aria-label="移动导航">${[['ai','sparkles','AI'],['english','graduation','六级'],['home','orbit','空间'],['tasks','check-circle','待办']].map(([id,i,label])=>`<a href="#/${id}" data-nav="${id}">${icon(i,21)}<span>${label}</span></a>`).join('')}<button data-action="toggle-nav">${icon('menu',21)}<span>更多</span></button></nav>
-  <button class="assistant-fab" data-action="assistant" aria-label="打开 AI 收件台">${icon('sparkles',22)}<span>交给 AI</span></button>`;
+  <nav class="bottom-nav" aria-label="移动导航">${[['home','orbit','工作台'],['builder','layers','搭建'],['ai','sparkles','AI伙伴']].map(([id,i,label])=>`<a href="#/${id}" data-nav="${id}">${icon(i,21)}<span>${label}</span></a>`).join('')}<button data-action="toggle-nav">${icon('menu',21)}<span>更多</span></button></nav>
+  ${companionButton()}`;
   ctx.root=document.querySelector('#main');
+  updateModuleNavigation();
   renderSpaceLinks();
   updateShellCounts();
   syncNavigationState();
   if(cloudClient)updateCloudShell();
 }
+function updateModuleNavigation(){
+  const holder=document.querySelector('.primary-nav');
+  const entries=visibleNavigation(),signature=JSON.stringify(entries);
+  if(holder&&holder.dataset.signature!==signature){
+    holder.innerHTML=entries.map(([id,i,label])=>`<a href="#/${id}" data-nav="${id}" aria-label="${esc(label)}" title="${esc(label)}">${icon(i)}<span>${esc(label)}</span><b data-count="${id}"></b></a>`).join('');
+    holder.dataset.signature=signature;
+  }
+  const title=document.querySelector('[data-workbench-title]');
+  if(title)title.textContent=mode==='demo'?'完整宇宙示例':getWorkbench(state).title;
+  document.querySelectorAll('[data-nav]').forEach(a=>{a.classList.toggle('active',a.dataset.nav===route);if(a.dataset.nav===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+}
 function renderSpaceLinks(){
   const holder=document.querySelector('#rail-space-links');if(!holder)return;
-  holder.innerHTML=state.spaces.filter(s=>!s.archived).map(s=>`<a href="#/space/${encodeURIComponent(s.id)}" title="${esc(s.title)}"><span class="rail-space-dot" style="--space-color:${/^#[\da-f]{6}$/i.test(s.color)?s.color:'#7950f2'}"></span><span>${esc(s.title)}</span></a>`).join('');
+  const spaces=state.spaces.filter(s=>!s.archived),signature=JSON.stringify(spaces.map(({id,title,color})=>({id,title,color})));
+  if(holder.dataset.signature===signature)return;
+  holder.innerHTML=spaces.map(s=>`<a href="#/space/${encodeURIComponent(s.id)}" title="${esc(s.title)}"><span class="rail-space-dot" style="--space-color:${/^#[\da-f]{6}$/i.test(s.color)?s.color:'#7950f2'}"></span><span>${esc(s.title)}</span></a>`).join('');
+  holder.dataset.signature=signature;
 }
 function updateShellCounts(){
   for(const [id,count] of [['inbox',state.captures.filter(x=>!x.archived).length],['tasks',state.tasks.filter(x=>!x.done&&!x.archived).length]]){
@@ -350,10 +374,10 @@ async function checkAppUpdate(){
   }finally{clearTimeout(timer);}
 }
 function renderSettings(){
-  ctx.root.innerHTML=pageHead('让这里，更像你。','设置个人偏好，查看模型与设备的连接状态。')+`<section class="app-version-card"><div><span>界面更新</span><strong>宇宙 · 传智杯独立副本</strong><p>基于宇宙 v${VERSION}；仅检查本比赛实例，已保存的资料会保留。</p></div><button class="btn" data-action="check-update">${icon('refresh',17)} 检查更新</button></section><div class="settings-layout"><div class="stack"><section class="panel"><div class="section-head"><h2>个人资料</h2><span class="badge">${mode==='demo'?'示例空间':'个人空间'}</span></div><form id="profile-form"><div class="form-grid"><label class="field">怎么称呼你<input name="name" required maxlength="20" value="${esc(state.profile.name)}"></label><label class="field">专业<input name="major" required maxlength="40" value="${esc(state.profile.major)}"></label></div><div class="form-end"><button class="btn primary" type="submit">保存资料</button></div></form></section><section class="panel"><div class="section-head"><h2>大模型连接</h2><span class="badge status-off">尚未接入</span></div><p class="muted">本副本需单独配置 AI 引擎与 API 密钥，不继承原工作台连接。课程整理、碎片分类与学习助手共用本比赛实例的模型。</p><label class="field">偏好的模型服务<select id="provider"><option value="deepseek" ${state.profile.provider==='deepseek'?'selected':''}>DeepSeek</option><option value="doubao" ${state.profile.provider==='doubao'?'selected':''}>豆包 · 火山方舟</option><option value="other" ${state.profile.provider==='other'?'selected':''}>其他兼容服务</option></select></label><div class="setting-info">${icon('shield',19)}<span>这里不收集 API 密钥。当前选择只保存服务偏好，未建立模型连接。</span></div><div class="integration-list"><div>${icon('book',20)}<span>课程资料整理</span><small>等待连接</small></div><div>${icon('inbox',20)}<span>碎片分类与待办提取</span><small>等待连接</small></div><div>${icon('graduation',20)}<span>英语批改与计划建议</span><small>等待连接</small></div></div></section><section class="panel"><div class="section-head"><h2>消息来源</h2><span class="badge status-off">未连接</span></div><div class="message-integrations"><div><span class="integration-letter cyan">微</span><div><strong>微信消息</strong><p>可先把要整理的文字粘贴到收集箱。</p></div></div><div><span class="integration-letter violet">QQ</span><div><strong>QQ 消息</strong><p>后续评估可用接入方式，限定读取与汇总。</p></div></div></div><button class="btn" data-action="paste-message">${icon('plus',17)} 添加消息摘录</button><p class="muted small">此界面不会自动读取聊天记录，也不具备发送消息或自动回复功能。</p></section></div><div class="stack"><section class="panel connection-panel"><span class="connection-symbol">${icon('cloud',36)}</span><h2>你的空间，等待云端就绪。</h2><p>现在的修改保存在当前浏览器。部署后，两台电脑、手机与平板可访问同一份内容。</p><div class="connection-status"><span class="status-dot"></span> 本机保存已启用</div><div class="connection-status muted">${icon('cloud-off',14)} 云端同步未连接</div><div class="device-list"><span>本机浏览器</span><span>独立比赛数据</span><span>远程同步待部署</span></div></section><section class="panel"><div class="section-head"><h2>数据与备份</h2>${icon('download',20)}</div><p class="muted">导出当前空间的笔记、待办、账目、学习记录和附件，用于本地备份。</p><button class="btn full" data-action="export">${icon('download',17)} 导出完整备份</button><button class="btn full" data-action="import">${icon('upload',17)} 导入备份</button><p class="small muted">导入只补充缺少的记录，不覆盖已有内容。清除浏览器数据会同时清除本地资料。</p></section></div></div>`;
+  ctx.root.innerHTML=pageHead('让这里，更像你。','设置个人偏好，查看模型与设备的连接状态。')+`<section class="app-version-card"><div><span>界面更新</span><strong>宇宙 · 传智杯独立副本</strong><p>基于宇宙 v${VERSION}；仅检查本比赛实例，已保存的资料会保留。</p></div><button class="btn" data-action="check-update">${icon('refresh',17)} 检查更新</button></section><div class="settings-layout"><div class="stack"><section class="panel"><div class="section-head"><h2>个人资料</h2><span class="badge">${mode==='demo'?'示例空间':'个人空间'}</span></div><form id="profile-form"><div class="form-grid"><label class="field">怎么称呼你<input name="name" required maxlength="20" value="${esc(state.profile.name)}"></label><label class="field">角色或关注领域（可选）<input name="major" maxlength="40" value="${esc(state.profile.major)}"></label></div><div class="form-end"><button class="btn primary" type="submit">保存资料</button></div></form></section><section class="panel"><div class="section-head"><h2>大模型连接</h2><span class="badge status-off">尚未接入</span></div><p class="muted">本副本需单独配置 AI 引擎与 API 密钥，不继承原工作台连接。课程整理、碎片分类与学习助手共用本比赛实例的模型。</p><label class="field">偏好的模型服务<select id="provider"><option value="deepseek" ${state.profile.provider==='deepseek'?'selected':''}>DeepSeek</option><option value="doubao" ${state.profile.provider==='doubao'?'selected':''}>豆包 · 火山方舟</option><option value="other" ${state.profile.provider==='other'?'selected':''}>其他兼容服务</option></select></label><div class="setting-info">${icon('shield',19)}<span>这里不收集 API 密钥。当前选择只保存服务偏好，未建立模型连接。</span></div><div class="integration-list"><div>${icon('book',20)}<span>课程资料整理</span><small>等待连接</small></div><div>${icon('inbox',20)}<span>碎片分类与待办提取</span><small>等待连接</small></div><div>${icon('graduation',20)}<span>英语批改与计划建议</span><small>等待连接</small></div></div></section><section class="panel"><div class="section-head"><h2>消息来源</h2><span class="badge status-off">未连接</span></div><div class="message-integrations"><div><span class="integration-letter cyan">微</span><div><strong>微信消息</strong><p>可先把要整理的文字粘贴到收集箱。</p></div></div><div><span class="integration-letter violet">QQ</span><div><strong>QQ 消息</strong><p>后续评估可用接入方式，限定读取与汇总。</p></div></div></div><button class="btn" data-action="paste-message">${icon('plus',17)} 添加消息摘录</button><p class="muted small">此界面不会自动读取聊天记录，也不具备发送消息或自动回复功能。</p></section></div><div class="stack"><section class="panel connection-panel"><span class="connection-symbol">${icon('cloud',36)}</span><h2>你的空间，等待云端就绪。</h2><p>现在的修改保存在当前浏览器。部署后，两台电脑、手机与平板可访问同一份内容。</p><div class="connection-status"><span class="status-dot"></span> 本机保存已启用</div><div class="connection-status muted">${icon('cloud-off',14)} 云端同步未连接</div><div class="device-list"><span>本机浏览器</span><span>独立比赛数据</span><span>远程同步待部署</span></div></section><section class="panel"><div class="section-head"><h2>数据与备份</h2>${icon('download',20)}</div><p class="muted">导出当前空间的笔记、待办、账目、学习记录和附件，用于本地备份。</p><button class="btn full" data-action="export">${icon('download',17)} 导出完整备份</button><button class="btn full" data-action="import">${icon('upload',17)} 导入备份</button><p class="small muted">导入只补充缺少的记录，不覆盖已有内容。清除浏览器数据会同时清除本地资料。</p></section></div></div>`;
   const recoveryKeys=cloudClient?[]:Object.keys(localStorage).filter(k=>k.startsWith(`czb-yuzhou-recovery-${mode}-`));
   if(recoveryKeys.length){const recoveryButton=document.createElement('button');recoveryButton.className='btn full';recoveryButton.textContent=`查看窗口冲突恢复副本（${recoveryKeys.length}）`;ctx.root.querySelector('[data-action=import]').after(recoveryButton);recoveryButton.onclick=()=>{modal({title:'窗口改动恢复副本',body:'<p class="muted">这些记录因另一窗口有新内容而未覆盖保存。可以导出后，通过导入功能补充到当前空间。</p><div id="recovery-list" class="stack" style="margin-top:20px"></div>'});const list=dialog.querySelector('#recovery-list');for(const key of recoveryKeys){try{const data=JSON.parse(localStorage.getItem(key));const b=document.createElement('button');b.className='btn';b.textContent=`导出 ${new Date(data.updatedAt).toLocaleString('zh-CN')} 的副本`;b.onclick=()=>exportBackup(data);list.append(b);}catch{}}};}
-  ctx.root.querySelector('#profile-form').onsubmit=e=>{e.preventDefault();const data=new FormData(e.target);const name=data.get('name').trim(),major=data.get('major').trim();if(!name||!major){toast('称呼和专业不能留空。');return;}state.profile.name=name;state.profile.major=major;save();shell();render();toast('个人资料已保存。');};
+  ctx.root.querySelector('#profile-form').onsubmit=e=>{e.preventDefault();const data=new FormData(e.target);const name=data.get('name').trim(),major=data.get('major').trim();if(!name){toast('请填写称呼。');return;}state.profile.name=name;state.profile.major=major;save();shell();render();toast('个人资料已保存。');};
   ctx.root.querySelector('#provider').onchange=e=>{state.profile.provider=e.target.value;save();toast('模型偏好已保存，等待服务端连接。');};
   if(cloudClient)renderCloudSettings();
   ctx.root.onclick=async e=>{const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action;if(a==='export')await exportBackup();if(a==='import')importBackup();if(a==='paste-message'){captureDialog();dialog.querySelector('[name=category]').value='消息摘录';}};
@@ -389,9 +413,9 @@ function searchDialog(){
   input.oninput=()=>{const q=input.value.trim().toLocaleLowerCase();const results=q?items.filter(x=>(x.title+' '+x.text+' '+x.desc).toLocaleLowerCase().includes(q)).slice(0,30):[];dialog.querySelector('#search-results').innerHTML=results.length?results.map((x,i)=>`<button class="search-result" data-result="${i}"><span class="search-result-icon">${icon(x.route==='courses'?'book':x.route==='tasks'?'check-circle':'inbox',19)}</span><span><strong>${esc(x.title)}</strong><small>${esc(x.desc)}</small></span>${icon('arrow-right',17)}</button>`).join(''):`<p class="search-hint">${q?'没有找到匹配内容，试试另一个关键词。':'输入关键词，找到散落在各处的积累。'}</p>`;dialog.querySelectorAll('[data-result]').forEach(b=>b.onclick=()=>{const x=results[+b.dataset.result];closeModal();if(x.taskId)taskDialog(x.taskId);else if(x.captureId)captureDialog(x.captureId);else go(x.route,x.id);});};
 }
 function closeAssistant(){document.querySelector('#ai-drawer').hidden=true;document.querySelector('#app').inert=false;}
-function assistant(){go('ai');}
+function assistant(){openCompanion(makeContext(),{pageLabel:route==='space'?state.spaces.find(s=>s.id===subroute)?.title||'自建空间':navigationLabel(route)});}
 function switchWorkspace(){mode=mode==='demo'?'personal':'demo';if(cloudClient)cloudClient.setMode(mode);else localStorage.setItem('czb-yuzhou-mode',mode);state=load(mode);lastStored=localStorage.getItem(key(mode));baselines.set(state,lastStored);ctx.state=state;filter='all';shell();go('home');render();toast(mode==='personal'?'这是你的独立空间，从第一条记录开始。':'已进入示例工作区。');}
-function moreMenu(){modal({title:'我的空间',body:`<div class="more-menu">${[...nav.slice(4),['settings','settings','偏好与连接']].map(([id,i,l])=>`<button data-go="${id}">${icon(i,23)}<span>${l}</span>${icon('chevron-right',18)}</button>`).join('')}</div>`});}
+function moreMenu(){modal({title:'我的空间',body:`<div class="more-menu">${[...visibleNavigation(),['settings','settings','偏好与连接']].map(([id,i,l])=>`<button data-go="${id}">${icon(i,23)}<span>${esc(l)}</span>${icon('chevron-right',18)}</button>`).join('')}</div>`});}
 function notifications(){modal({title:'通知与动态',body:`<div class="notification-item"><span class="summary-icon violet">${icon('sparkles',23)}</span><div><strong>欢迎来到宇宙</strong><p>${cloudClient?'个人空间已接入本比赛独立服务；当前仅供本机访问。':'完整界面已就绪，可以开始记录与整理。当前内容仅保存在本机；AI 需独立配置。'}</p><small>界面版本 ${VERSION}</small></div></div><div class="notification-item"><span class="summary-icon cyan">${icon('cloud',23)}</span><div><strong>${cloudClient?esc(cloudClient.label):'云端连接待完成'}</strong><p>${cloudClient?'在偏好与连接中管理 DeepSeek、查看同步状态与导出备份。':'服务器部署后，可启用跨设备同步、模型任务和版本更新通知。'}</p><button class="text-btn" data-go="settings">查看连接状态 ${icon('arrow-right',16)}</button></div></div>`});}
 function render(){
   if(!ctx.root)return;
@@ -400,12 +424,23 @@ function render(){
   route=nav.some(n=>n[0]===page)||['settings','space'].includes(page)?page:'home';
   try{subroute=id?decodeURIComponent(id):'';}catch{subroute='';}
   ctx.root.onclick=null;ctx.root.onchange=null;ctx.root.oninput=null;ctx.root.ondragover=null;ctx.root.ondragleave=null;ctx.root.ondrop=null;
-  const label=route==='space'?(state.spaces.find(s=>s.id===subroute)?.title||'工作区'):nav.find(n=>n[0]===route)?.[2]||'偏好与连接';
+  if(route==='home'&&!getWorkbench(state).onboardingComplete){route='builder';history.replaceState(null,'','#/builder');}
+  const label=route==='space'?(state.spaces.find(s=>s.id===subroute)?.title||'工作区'):navigationLabel(route);
   document.title=label+' · 宇宙 · 传智杯独立副本';document.querySelector('#current-page').textContent=label;
   document.body.classList.toggle('on-canvas',route==='home');document.body.classList.toggle('on-ai',route==='ai');
   document.querySelectorAll('[data-nav]').forEach(a=>{a.classList.toggle('active',a.dataset.nav===route);if(a.dataset.nav===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   ctx.state=state;const view=makeContext();ctx.save=view.save;
   renderSpaceLinks();
+  updateModuleNavigation();
+  const hiddenModule=WORKBENCH_MODULES.find(item=>item.id===route)&&!getVisibleModules(state).some(item=>item.id===route);
+  if(hiddenModule){
+    ctx.root.innerHTML=empty('这个模块已收起','已有资料完整保留。重新加入工作台后可继续使用。','<button class="btn primary" data-enable-hidden>重新加入工作台</button><button class="btn" data-go="builder">选择其他模块</button>');
+    ctx.root.querySelector('[data-enable-hidden]').onclick=()=>{
+      const previous=state.workbench;try{configureWorkbench(state,{moduleId:route,enabled:true});save();render();}catch(error){state.workbench=previous;toast(error.message);}
+    };
+    cloudEditing=false;cloudDirtyFields.clear();if(cloudClient)updateCloudShell();return;
+  }
+  if(route==='builder')cleanupView=mountBuilder(view);
   if(route==='home'){ensureCanvas(state);cleanupView=mountCanvas(view);}
   if(route==='ai')cleanupView=mountAI(view,state.spaces.some(s=>s.id===subroute)?`space:${subroute}`:subroute);
   if(route==='space')cleanupView=mountSpace(view,subroute);
@@ -428,17 +463,11 @@ function setSidebarExpanded(expanded){
   button?.setAttribute('aria-label',expanded?'收起侧边栏':'展开侧边栏');
   if(button)button.querySelector('span').textContent=expanded?'收起侧边栏':'展开侧边栏';
 }
-// Route immediately on the first click. Track destinations because custom
-// workspace links are re-rendered after navigation, before the second click.
-let lastSidebarClick={href:'',time:0};
-document.addEventListener('click',event=>{
-  const link=event.target.closest('.sidebar a[href^="#/"]');
-  if(!link||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey||matchMedia('(max-width:760px)').matches)return;
-  const href=link.getAttribute('href'),now=performance.now();
-  if(event.detail===2||(event.detail>0&&lastSidebarClick.href===href&&now-lastSidebarClick.time<500)){
-    setSidebarExpanded(!state.ui.sidebarPinned);lastSidebarClick={href:'',time:0};
-  }else lastSidebarClick={href,time:now};
-});
+document.addEventListener('click',createSidebarNavigation({
+  navigate:href=>{closeAssistant();setMobileNav(false);if(location.hash===href)render();else location.hash=href;},
+  togglePinned:()=>setSidebarExpanded(!state.ui.sidebarPinned),
+  isMobile:()=>matchMedia('(max-width:760px)').matches,
+}));
 function setMobileNav(open){
   const wasOpen=document.body.classList.contains('rail-open');
   document.body.classList.toggle('rail-open',open);document.querySelector('.rail-scrim').hidden=!open;

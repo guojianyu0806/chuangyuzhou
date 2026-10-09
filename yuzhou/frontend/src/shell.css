@@ -7,7 +7,8 @@
 .space-shell .brand>span{white-space:nowrap}.space-shell .brand small{font-size:8px;letter-spacing:1px}
 .space-shell .sidebar .brand>span,.space-shell .sidebar .workspace-switch>span:nth-child(2),.space-shell .sidebar .workspace-switch>svg,.space-shell .sidebar .primary-nav a>span,.space-shell .sidebar .primary-nav a>b,.space-shell .sidebar .rail-pin>span,.space-shell .sidebar .rail-section-title>span,.space-shell .sidebar .rail-section-title>button,.space-shell .sidebar #rail-space-links>a>span:last-child,.space-shell .sidebar .rail-new>span,.space-shell .sidebar .settings-link>span,.space-shell .sidebar .profile>span:last-child{opacity:0;transition:opacity .12s;pointer-events:none;white-space:nowrap}
 .space-shell .sidebar.rail-pinned :is(.brand>span,.workspace-switch>span:nth-child(2),.workspace-switch>svg,.primary-nav a>span,.primary-nav a>b,.rail-pin>span,.rail-section-title>span,.rail-section-title>button,#rail-space-links>a>span:last-child,.rail-new>span,.settings-link>span,.profile>span:last-child){opacity:1;pointer-events:auto}
-.space-shell .rail-pin{display:flex;align-items:center;gap:16px;height:29px;min-height:29px;margin-bottom:13px;padding:0 17px;color:#8e79ac;width:215px;font-size:11px}
+.space-shell .rail-pin{display:flex;align-items:center;gap:16px;height:29px;min-height:29px;margin-bottom:13px;padding:0 17px;color:#8e79ac;width:52px;font-size:11px;overflow:hidden}
+.space-shell .sidebar.rail-pinned .rail-pin{width:215px}
 .space-shell .rail-pin[aria-pressed=true]{color:#723cec}
 .space-shell .workspace-switch{width:224px;margin:0 0 20px;padding:6px;border:0;background:transparent;gap:12px}
 .space-shell .workspace-avatar{display:grid;width:38px;min-width:38px;height:38px;border:1px solid #aa83ff;background:#eee3ff;color:#743adb;font-size:15px;border-radius:12px;box-shadow:0 0 13px #b691ff32}
@@ -18,7 +19,8 @@
 .space-shell .primary-nav a>b{margin-left:auto}.space-shell .primary-nav a:hover{background:#f0eafd}
 .space-shell .rail-spaces{margin-top:22px;min-height:20px;overflow:auto;scrollbar-width:none}
 .space-shell .rail-section-title{height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 15px;width:224px;font-size:10px;letter-spacing:1px;color:#9890a7}.space-shell .rail-section-title .icon-btn{width:27px;min-width:27px;height:27px}
-.space-shell #rail-space-links>a{display:flex;align-items:center;gap:18px;min-height:37px;padding:0 20px;width:224px;font-size:12px;color:#6d637e}
+.space-shell #rail-space-links>a{display:flex;align-items:center;gap:18px;min-height:37px;padding:0 20px;width:52px;font-size:12px;color:#6d637e;overflow:hidden}
+.space-shell .sidebar.rail-pinned #rail-space-links>a{width:224px}
 .rail-space-dot{display:block;width:10px;height:10px;min-width:10px;border-radius:4px;background:var(--space-color);box-shadow:0 0 10px color-mix(in srgb,var(--space-color) 35%,transparent)}
 .space-shell .sidebar-bottom{padding-top:14px;gap:7px;margin-top:auto}
 .space-shell .rail-new{display:flex;align-items:center;gap:15px;padding:0 14px;min-height:40px;width:224px;color:#7841d9;font-size:12px}
@@ -53,6 +55,7 @@
 @media(max-height:820px) and (min-width:761px){.space-shell .sidebar{padding-top:16px}.space-shell .brand{margin-bottom:12px}.space-shell .rail-pin{margin-bottom:8px}.space-shell .workspace-switch{margin-bottom:10px}.space-shell .primary-nav{gap:2px}.space-shell .primary-nav a{height:42px;min-height:42px}.space-shell .rail-spaces{margin-top:10px}.space-shell .sidebar-bottom{padding-top:6px}}
 @media(max-width:1100px) and (min-width:761px){.space-shell .search-trigger{width:210px}.space-shell .topbar{gap:15px;padding:0 24px}.space-shell .sync-indicator{display:none}.space-shell .topbar .desktop-label{display:inline}.space-shell .search-trigger kbd{display:none}}
 @media(max-width:760px){
+ .space-shell #rail-space-links>a,.space-shell .sidebar.rail-pinned #rail-space-links>a{width:100%}
  .space-shell.rail-open{overflow:hidden}
  .space-shell .app-main{margin-left:0}.space-shell .sidebar,.space-shell .sidebar.rail-pinned{width:min(290px,85vw);transform:translateX(-105%);padding:20px 18px;transition:transform .25s ease;box-shadow:10px 0 50px #33145625}
  .space-shell.rail-open .sidebar{transform:translateX(0)}.space-shell .sidebar :is(.brand>span,.workspace-switch>span:nth-child(2),.workspace-switch>svg,.primary-nav a>span,.primary-nav a>b,.rail-pin>span,.rail-section-title>span,.rail-section-title>button,#rail-space-links>a>span:last-child,.rail-new>span,.settings-link>span,.profile>span:last-child){opacity:1;pointer-events:auto}
