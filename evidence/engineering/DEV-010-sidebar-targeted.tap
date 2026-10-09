@@ -1,0 +1,178 @@
+TAP version 13
+# Subtest: ordinary sidebar navigation commits the captured destination without depending on anchor default activation
+ok 1 - ordinary sidebar navigation commits the captured destination without depending on anchor default activation
+  ---
+  duration_ms: 1.6964
+  type: 'test'
+  ...
+# Subtest: double click still navigates before pin persistence can remove a recreated space link
+ok 2 - double click still navigates before pin persistence can remove a recreated space link
+  ---
+  duration_ms: 0.2346
+  type: 'test'
+  ...
+# Subtest: keyboard activation and mobile taps navigate without changing the sidebar pin preference
+ok 3 - keyboard activation and mobile taps navigate without changing the sidebar pin preference
+  ---
+  duration_ms: 0.2362
+  type: 'test'
+  ...
+# Subtest: modified clicks, downloads, new windows and already-handled events retain native navigation semantics
+ok 4 - modified clicks, downloads, new windows and already-handled events retain native navigation semantics
+  ---
+  duration_ms: 0.2653
+  type: 'test'
+  ...
+# Subtest: rapid clicks on different destinations do not toggle the pin
+ok 5 - rapid clicks on different destinations do not toggle the pin
+  ---
+  duration_ms: 0.9315
+  type: 'test'
+  ...
+# Subtest: stored widths fall back safely and the desktop maximum reserves 480 pixels for content
+ok 6 - stored widths fall back safely and the desktop maximum reserves 480 pixels for content
+  ---
+  duration_ms: 1.75
+  type: 'test'
+  ...
+# Subtest: resizing an expanded sidebar previews continuously and persists only the local width on release
+ok 7 - resizing an expanded sidebar previews continuously and persists only the local width on release
+  ---
+  duration_ms: 2.0442
+  type: 'test'
+  ...
+# Subtest: opening by drag reveals labels at 180 pixels but commits the expanded state only after release
+ok 8 - opening by drag reveals labels at 180 pixels but commits the expanded state only after release
+  ---
+  duration_ms: 0.9056
+  type: 'test'
+  ...
+# Subtest: dragging down to the 80-pixel boundary collapses while reopening retains the last custom width
+ok 9 - dragging down to the 80-pixel boundary collapses while reopening retains the last custom width
+  ---
+  duration_ms: 0.4254
+  type: 'test'
+  ...
+# Subtest: every intermediate width, including subpixel values, persists and restores without snapping on remount
+ok 10 - every intermediate width, including subpixel values, persists and restores without snapping on remount
+  ---
+  duration_ms: 2.5102
+  type: 'test'
+  ...
+# Subtest: a one-pixel drag can expand to 81 pixels and collapse can restore that narrow width
+ok 11 - a one-pixel drag can expand to 81 pixels and collapse can restore that narrow width
+  ---
+  duration_ms: 0.5129
+  type: 'test'
+  ...
+# Subtest: crossing the label threshold changes only label visibility and cancelling restores an exact fractional width
+ok 12 - crossing the label threshold changes only label visibility and cancelling restores an exact fractional width
+  ---
+  duration_ms: 0.3818
+  type: 'test'
+  ...
+# Subtest: a single quarter-pixel movement is committed exactly and restored by a new controller
+ok 13 - a single quarter-pixel movement is committed exactly and restored by a new controller
+  ---
+  duration_ms: 0.2685
+  type: 'test'
+  ...
+# Subtest: secondary pointers, non-left buttons and invalid pointer positions cannot replace or finish a drag
+ok 14 - secondary pointers, non-left buttons and invalid pointer positions cannot replace or finish a drag
+  ---
+  duration_ms: 0.2529
+  type: 'test'
+  ...
+# Subtest: pointer cancel, lost capture, window blur and Escape roll back previews without persisting
+ok 15 - pointer cancel, lost capture, window blur and Escape roll back previews without persisting
+  ---
+  duration_ms: 0.5007
+  type: 'test'
+  ...
+# Subtest: keyboard controls offer small and large steps, collapse, maximum and toggle without changing content
+ok 16 - keyboard controls offer small and large steps, collapse, maximum and toggle without changing content
+  ---
+  duration_ms: 0.4064
+  type: 'test'
+  ...
+# Subtest: mobile input does not resize; narrowing and widening the desktop retain the local preferred width
+ok 17 - mobile input does not resize; narrowing and widening the desktop retain the local preferred width
+  ---
+  duration_ms: 0.3886
+  type: 'test'
+  ...
+# Subtest: a local preference write failure preserves the usable in-session width and reports that it was not remembered
+ok 18 - a local preference write failure preserves the usable in-session width and reports that it was not remembered
+  ---
+  duration_ms: 0.339
+  type: 'test'
+  ...
+# Subtest: an expanded-state persistence failure rolls the appearance back and never saves the preview width
+ok 19 - an expanded-state persistence failure rolls the appearance back and never saves the preview width
+  ---
+  duration_ms: 0.3467
+  type: 'test'
+  ...
+# Subtest: an unreadable width preference falls back to default and double-click resets an active preview
+ok 20 - an unreadable width preference falls back to default and double-click resets an active preview
+  ---
+  duration_ms: 0.206
+  type: 'test'
+  ...
+# Subtest: a pointer that never moves does not persist, and destroy releases capture and all listeners
+ok 21 - a pointer that never moves does not persist, and destroy releases capture and all listeners
+  ---
+  duration_ms: 0.2285
+  type: 'test'
+  ...
+# Subtest: double-click reset eases through intermediate widths, rebounds gently and saves only the destination once
+ok 22 - double-click reset eases through intermediate widths, rebounds gently and saves only the destination once
+  ---
+  duration_ms: 0.3621
+  type: 'test'
+  ...
+# Subtest: animated expand and collapse survive ordinary render synchronization without saving frame values
+ok 23 - animated expand and collapse survive ordinary render synchronization without saving frame values
+  ---
+  duration_ms: 0.2182
+  type: 'test'
+  ...
+# Subtest: reversing an animated toggle begins at the current width and cancels the previous frame chain
+ok 24 - reversing an animated toggle begins at the current width and cancels the previous frame chain
+  ---
+  duration_ms: 0.2244
+  type: 'test'
+  ...
+# Subtest: dragging interrupts an animation at its displayed width and persists the exact dragged result on release
+ok 25 - dragging interrupts an animation at its displayed width and persists the exact dragged result on release
+  ---
+  duration_ms: 0.3316
+  type: 'test'
+  ...
+# Subtest: reduced-motion preference settles instantly and enabling it mid-animation cancels pending frames
+ok 26 - reduced-motion preference settles instantly and enabling it mid-animation cancels pending frames
+  ---
+  duration_ms: 0.4957
+  type: 'test'
+  ...
+# Subtest: resize, window blur and destruction settle animations and remove pending work without extra persistence
+ok 27 - resize, window blur and destruction settle animations and remove pending work without extra persistence
+  ---
+  duration_ms: 0.5592
+  type: 'test'
+  ...
+# Subtest: elastic widths stay within the live limits and never expose labels for a narrow destination
+ok 28 - elastic widths stay within the live limits and never expose labels for a narrow destination
+  ---
+  duration_ms: 2.0025
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 205.9492
