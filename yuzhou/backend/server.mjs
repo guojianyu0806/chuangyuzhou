@@ -7,6 +7,7 @@ import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { ApiError, createStore, digest, secretEqual, hashPassword, verifyPassword, validateCredentials, FILE_ID, MAX_FILE_BYTES, MAX_STATE_BYTES } from './store.mjs';
 import { isCliEntry } from './is-cli.mjs';
+import { DocumentExtractionError } from './extractor.mjs';
 import { prepareDataDirectory, assertRuntimePath, assertOrdinaryPath, FRONTEND_ROOT, COOKIE_NAME } from '../runtime.mjs';
 
 export const VERSION = '0.15.0';
@@ -52,6 +53,7 @@ export async function createWorkbenchServer(options = {}) {
   const store = createStore(dataDir, options.storeOptions);
   const modelService = options.modelService || (options.modelFactory ? await options.modelFactory({ dataDir: store.directory, store }) : null);
   const fileUploadCounts = new Map();
+  let activeExtractions = 0;
   function securityHeaders(res) {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -131,6 +133,9 @@ export async function createWorkbenchServer(options = {}) {
     if (path.includes('\\') || path.includes('\0') || path.split('/').some(part => part === '..' || part === '.')) throw new ApiError(400, 'invalid_path');
     const url = new URL(req.url || '/', 'http://localhost');
     if (path === '/api/health' && req.method === 'GET') { json(res, 200, { ok: true, mode: 'cloud', version: VERSION, edition: 'competition-copy' }); return; }
+    if (path === '/api/instance' && req.method === 'GET') {
+      json(res, 200, { application: 'czb-yuzhou', instanceId: digest(`${frontendDir}\n${dataDir}`), version: VERSION }); return;
+    }
     if (path === '/version.json') {
       if (!['GET', 'HEAD'].includes(req.method)) throw new ApiError(405, 'method_not_allowed');
       json(res, 200, { version: VERSION, mode: 'cloud', edition: 'competition-copy' }); return;
@@ -180,6 +185,22 @@ export async function createWorkbenchServer(options = {}) {
       if (path === '/api/workspace' && req.method === 'PUT') {
         const body = await readJson(req, MAX_STATE_BYTES + 1024);
         json(res, 200, store.saveWorkspace(body.baseRevision, body.state)); return;
+      }
+      const textMatch = path.match(/^\/api\/files\/([^/]+)\/text$/);
+      if (textMatch && req.method === 'GET') {
+        const id = textMatch[1];
+        if (!FILE_ID.test(id)) throw new ApiError(400, 'invalid_file_id');
+        const info = store.fileInfo(id);
+        if (!info) throw new ApiError(404, 'file_not_found');
+        if (!options.extractFile) throw new ApiError(503, 'EXTRACTOR_UNAVAILABLE', { message: '本机文件解析组件尚未配置，原文件仍可下载。' });
+        if (activeExtractions >= 2) throw new ApiError(429, 'extraction_busy', { message: '正在解析其他资料，请稍后重试。' });
+        activeExtractions++;
+        try { json(res, 200, await options.extractFile(store.filePath(id), info.name)); }
+        catch (error) {
+          if (error instanceof DocumentExtractionError) throw new ApiError(error.status, error.code, { message: error.message });
+          throw new ApiError(422, 'EXTRACTION_FAILED', { message: '文件解析失败，原文件仍保留。' });
+        } finally { activeExtractions--; }
+        return;
       }
       const fileMatch = path.match(/^\/api\/files\/([^/]+)$/);
       if (fileMatch && req.method === 'PUT') { await uploadFile(req, res, fileMatch[1], session); return; }

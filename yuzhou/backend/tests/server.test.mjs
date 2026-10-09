@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { createWorkbenchServer } from '../server.mjs';
 import { createStore } from '../store.mjs';
+import { createDocumentExtractor } from '../extractor.mjs';
 
 const setupToken = 'integration-test-setup-token';
 const releaseVersion = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version;
@@ -46,6 +47,49 @@ test('public health is minimal; private APIs require auth; setup cannot be claim
   assert.equal((await f.setup()).status, 409);
   assert.equal((await f.api('/api/workspace')).body.state, null);
   assert.equal((await f.api('/api/auth/session')).body.username, username);
+});
+
+test('document text requires login, reads the uploaded original and never invokes the model',async t=>{
+  let modelCalls=0;
+  const f=await fixture(t,{extractFile:createDocumentExtractor().extractFile,modelService:{handle:async()=>{modelCalls++;return false;}}});
+  const id=randomUUID();
+  assert.equal((await f.api(`/api/files/${id}/text`)).status,401);
+  await f.setup();
+  const source='DEV-003 合成课件\n项目截止日期待确认。';
+  assert.equal((await f.api(`/api/files/${id}`,{method:'PUT',body:source,jsonBody:false,headers:{'Content-Type':'text/plain','X-File-Name':encodeURIComponent('合成课件.txt')}})).status,201);
+  const result=await f.api(`/api/files/${id}/text`);
+  assert.equal(result.status,200);assert.equal(result.body.units[0].text,source);
+  assert.equal((await f.api(`/api/files/${id}`)).body,source);
+  assert.equal((await f.api('/api/workspace')).body.state,null);
+  assert.equal((await f.api(`/api/files/${randomUUID()}/text`)).status,404);
+  assert.equal(modelCalls,0);
+});
+
+test('document extraction errors retain originals and do not disclose internal exceptions',async t=>{
+  const f=await fixture(t,{extractFile:async()=>{throw Error('SECRET_FILE_LOCATION_AND_RAW_DIAGNOSTIC');}});await f.setup();
+  const id=randomUUID(),source='synthetic original';
+  await f.api(`/api/files/${id}`,{method:'PUT',body:source,jsonBody:false,headers:{'Content-Type':'text/plain','X-File-Name':'fixture.txt'}});
+  const result=await f.api(`/api/files/${id}/text`);
+  assert.equal(result.status,422);assert.equal(result.body.error,'EXTRACTION_FAILED');
+  assert.doesNotMatch(JSON.stringify(result.body),/SECRET_FILE_LOCATION/);
+  assert.equal((await f.api(`/api/files/${id}`)).body,source);
+});
+
+test('concurrent document extraction has a bounded worker count and recovers after completion',async t=>{
+  const releases=[];
+  const f=await fixture(t,{extractFile:()=>new Promise(done=>releases.push(done))});await f.setup();
+  const id=randomUUID();
+  await f.api(`/api/files/${id}`,{method:'PUT',body:'test',jsonBody:false,headers:{'Content-Type':'text/plain','X-File-Name':'fixture.txt'}});
+  const first=f.api(`/api/files/${id}/text`),second=f.api(`/api/files/${id}/text`);
+  for(let i=0;i<100&&releases.length<2;i++)await new Promise(done=>setTimeout(done,10));
+  assert.equal(releases.length,2);
+  try {assert.equal((await f.api(`/api/files/${id}/text`)).status,429);}
+  finally {for(const release of releases.splice(0))release({units:[{label:'全文',text:'test'}],warnings:[]});}
+  assert.equal((await first).status,200);assert.equal((await second).status,200);
+  const next=f.api(`/api/files/${id}/text`);
+  for(let i=0;i<100&&!releases.length;i++)await new Promise(done=>setTimeout(done,10));
+  assert.equal(releases.length,1);releases[0]({units:[{label:'全文',text:'test'}],warnings:[]});
+  assert.equal((await next).status,200);
 });
 
 test('old workspace clients cannot discard conversation history and malformed roles are rejected',async t=>{

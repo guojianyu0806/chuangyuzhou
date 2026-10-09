@@ -1,6 +1,8 @@
 import { resolveCompetitionOptions, prepareDataDirectory, loadOrCreateSetupCode, assertOrdinaryPath } from './runtime.mjs';
 import { createWorkbenchServer, VERSION } from './backend/server.mjs';
 import { createHermesService } from './backend/hermes.mjs';
+import { createDeepSeekRunner } from './backend/deepseek.mjs';
+import { createDocumentExtractor, loadExtractorConfig } from './backend/extractor.mjs';
 import { isCliEntry } from './backend/is-cli.mjs';
 
 export async function startCompetitionWorkbench(options = {}, env = process.env) {
@@ -8,10 +10,13 @@ export async function startCompetitionWorkbench(options = {}, env = process.env)
   const runtime = resolveCompetitionOptions(options, env);
   prepareDataDirectory(runtime.dataDir);
   const setupToken = loadOrCreateSetupCode(runtime.setupTokenFile);
+  const extractor = createDocumentExtractor(loadExtractorConfig());
   // Legacy engine paths and credentials are deliberately not forwarded.
   const app = await createWorkbenchServer({ ...runtime, secureCookie: false,
-    publicOrigin: `http://${runtime.host}:${runtime.port}`, setupToken,
-    modelFactory: ({ dataDir, store }) => createHermesService({ dataDir, store, env: {} }),
+    publicOrigin: `http://${runtime.host}:${runtime.port}`, setupToken, extractFile: extractor.extractFile,
+    modelFactory: ({ dataDir, store }) => createHermesService({ dataDir, store, env: {},
+      engine: 'deepseek-direct', runModel: createDeepSeekRunner(), extractFile: extractor.extractFile,
+      extractionCapabilities: () => extractor.capabilities }),
     onError: () => console.error('传智杯副本请求失败，请查看界面提示。'),
   });
   try {
