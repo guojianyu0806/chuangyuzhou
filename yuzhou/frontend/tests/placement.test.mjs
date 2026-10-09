@@ -80,3 +80,14 @@ test('keyboard placement guidance is attached to a focusable stage and status up
     assert.equal(button.name,'button');assert.ok(button.attributes['aria-label']);assert.ok(Object.hasOwn(button.attributes,'disabled'));
   }
 });
+
+test('the initial palette exposes draggable modules while scenes offer drag-to-create without a second click handler',()=>{
+  const elements=tags(placementHTML({workbench:createWorkbench('blank'),spaces:[]}));
+  const tab=elements.find(element=>element.attributes['data-palette-tab']==='builtin');
+  assert.equal(tab.attributes['aria-pressed'],'true');
+  const modules=elements.filter(element=>element.attributes['data-palette-group']==='builtin');
+  assert.equal(modules.length,10);assert.ok(modules.every(element=>element.attributes['data-place-source']&&!Object.hasOwn(element.attributes,'hidden')));
+  const scenes=elements.filter(element=>element.attributes['data-palette-group']==='scene');
+  assert.equal(scenes.length,14);assert.ok(scenes.every(element=>element.attributes['data-place-preset']&&Object.hasOwn(element.attributes,'hidden')));
+  assert.ok(scenes.every(element=>!Object.hasOwn(element.attributes,'data-wb-action')),'a drag release must not bubble into a second creation handler');
+});

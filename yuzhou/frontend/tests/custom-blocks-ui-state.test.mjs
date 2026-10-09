@@ -92,6 +92,53 @@ test('first saved custom block completes onboarding without replacing the chosen
   }
 });
 
+test('creating a dropped custom block commits its content and snapped location in one save without moving existing cards',()=>{
+  const {ctx,state}=fixture();state.workbench.title='保留的工作台';
+  const existingCard=state.canvas.cards.find(card=>card.id==='block:counter');Object.assign(existingCard,{x:-360,y:2840,w:512,h:330});
+  state.canvas.view={x:113,y:-217,zoom:.65};state.canvas.snap=false;
+  const oldCards=structuredClone(state.canvas.cards),oldView=structuredClone(state.canvas.view),oldWorkbench=structuredClone(state.workbench);
+  const snapshots=[];ctx.save=()=>snapshots.push(structuredClone(state));
+  const created=createCustomBlockOnWorkbench(ctx,{kind:'note',title:'拖入的会议记录',config:{text:'保留这次讨论的结论。'}},{placement:{x:763,y:-213}});
+  assert.equal(snapshots.length,1);
+  const saved=snapshots[0],record=saved.customBlocks.items.find(item=>item.id===created.id),position=saved.canvas.cards.find(item=>item.id===created.id);
+  assert.equal(record.config.text,'保留这次讨论的结论。');assert.deepEqual({x:position.x,y:position.y},{x:760,y:-200});
+  assert.equal(saved.canvas.cards.filter(item=>item.id===created.id).length,1);
+  assert.equal(visibleCanvasCards(saved).some(item=>item.id===created.id),true);
+  assert.deepEqual(saved.canvas.cards.filter(item=>item.id!==created.id),oldCards);assert.deepEqual(saved.canvas.view,oldView);assert.equal(saved.canvas.snap,false);
+  assert.equal(saved.workbench.title,oldWorkbench.title);assert.equal(saved.workbench.templateId,oldWorkbench.templateId);assert.deepEqual(saved.workbench.modules,oldWorkbench.modules);
+  assert.equal(saved.workbench.onboardingComplete,true);
+});
+
+test('an out-of-bounds drop rejects the newly created block and preserves the original workspace before any save',()=>{
+  for(const placement of [{x:100001,y:40},{x:40,y:-100001}]){
+    const {ctx,state}=fixture(),before=structuredClone(state),mountedCanvas=state.canvas;let saves=0;
+    ctx.save=()=>saves++;
+    assert.throws(()=>createCustomBlockOnWorkbench(ctx,{kind:'checklist',title:'不得残留的清单',config:{items:[]}},{placement}),/画布范围/);
+    assert.equal(saves,0);assert.deepEqual(state,before);assert.equal(state.canvas,mountedCanvas);
+    assert.deepEqual(getCustomBlocks(state).items.map(item=>item.id),['block:counter']);
+  }
+  const state={spaces:[],updatedAt:'before'},before=structuredClone(state);let saves=0;
+  assert.throws(()=>createCustomBlockOnWorkbench({state,ensureCustomBlockLayout:()=>ensureCanvas(state),save:()=>saves++},{kind:'note',title:'空工作台失败创建'},{placement:{x:0,y:100001}}),/画布范围/);
+  assert.equal(saves,0);assert.deepEqual(state,before,'failed first drop leaves no customBlocks, workbench or canvas domain');
+});
+
+test('quota failure after preparing a dropped block restores both domains and allows a clean retry at the chosen location',()=>{
+  const {ctx,state}=fixture(),before=structuredClone(state),mountedCanvas=state.canvas;let attempts=0,failedId;
+  ctx.save=()=>{
+    attempts++;const added=getCustomBlocks(state).items.find(item=>item.id!=='block:counter');failedId=added.id;
+    const position=state.canvas.cards.find(item=>item.id===added.id);assert.deepEqual({x:position.x,y:position.y},{x:1240,y:680});
+    state.updatedAt='failed-save';throw new DOMException('synthetic quota exhausted','QuotaExceededError');
+  };
+  const input={kind:'table',title:'拖入的记录表',config:{columns:[{id:'topic',label:'议题'}],rows:[{id:'one',cells:['讨论事项']}]}};
+  assert.throws(()=>createCustomBlockOnWorkbench(ctx,input,{placement:{x:1240,y:680}}),{name:'QuotaExceededError'});
+  assert.equal(attempts,1);assert.deepEqual(state,before);assert.equal(state.canvas,mountedCanvas);
+  assert.equal(state.customBlocks.items.some(item=>item.id===failedId),false);assert.equal(state.canvas.cards.some(item=>item.id===failedId),false);
+  ctx.save=()=>attempts++;
+  const saved=createCustomBlockOnWorkbench(ctx,input,{placement:{x:1240,y:680}});
+  assert.equal(attempts,2);assert.equal(state.customBlocks.items.length,2);assert.equal(state.canvas.cards.some(item=>item.id===failedId),false);
+  const position=state.canvas.cards.find(item=>item.id===saved.id);assert.deepEqual({x:position.x,y:position.y},{x:1240,y:680});
+});
+
 test('archived miniapp page can open its editor without absent run controls or runtime startup',t=>{
   const previous={window:globalThis.window,document:globalThis.document},events={},messages=[],dialogs=[];
   const kindInput={addEventListener(){}},form={querySelector:()=>kindInput,addEventListener(){}};

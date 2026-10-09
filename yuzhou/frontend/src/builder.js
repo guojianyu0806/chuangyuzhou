@@ -64,7 +64,14 @@ export function mountBuilder(ctx) {
   const {root,state,modal,toast}=ctx;
   let active=true,disposePlacement=null;
   const placementSession={};
-  const render=()=>{if(active){disposePlacement?.();root.innerHTML=builderHTML(state);const host=root.querySelector('[data-wb-placement-host]');if(host)disposePlacement=mountPlacement({...ctx,root:host,onPlacementSaved:render},placementSession);}};
+  const createPresetAt=(id,placement)=>ctx.openCustomBlockEditor?.(createPresetInput(id),placement?{placement,onCreated(record){
+    if(!active){ctx.refresh?.();return;}
+    placementSession.selectedId=record.id;placementSession.landingId=record.id;
+    placementSession.message=`「${record.title}」已放好，双击可以打开内容。`;render();
+    // The app closes the creation dialog after its submit callback returns.
+    setTimeout(()=>{if(active)[...root.querySelectorAll('[data-place-card]')].find(button=>button.dataset.placeCard===record.id)?.focus({preventScroll:true});},0);
+  }}:undefined);
+  const render=()=>{if(active){disposePlacement?.();root.innerHTML=builderHTML(state);const host=root.querySelector('[data-wb-placement-host]');if(host)disposePlacement=mountPlacement({...ctx,root:host,createPresetAt,onPlacementSaved:render},placementSession);}};
   function change(mutation,message,focus) {
     saveWorkbenchChange(ctx,mutation);
     toast(message);

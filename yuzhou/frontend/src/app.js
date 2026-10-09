@@ -118,7 +118,7 @@ function makeContext(){
     refresh:()=>{if(state===viewState){updateModuleNavigation();render();}}};
   local.isCurrent=()=>state===viewState;
   local.ensureCustomBlockLayout=()=>ensureCanvas(viewState);
-  local.openCustomBlockEditor=input=>customBlockEditor(local,input);
+  local.openCustomBlockEditor=(input,options)=>customBlockEditor(local,input,options);
   local.openBuilder=()=>go('builder');
   local.askAssistant=prompt=>openAIConversation(local,{text:prompt,targetId:'workspace'});
   local.createSpace=()=>openSpaceDialog(local);

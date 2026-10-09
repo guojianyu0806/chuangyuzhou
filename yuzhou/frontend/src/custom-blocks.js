@@ -2,6 +2,7 @@ import {getCustomBlocks,createCustomBlock,updateCustomBlock,validateBlockData} f
 import {escapeHTML as esc} from './services.js';
 import {mountMiniapp} from './miniapp-runtime.js';
 import {getWorkbench,configureWorkbench} from './workbench-model.js';
+import {placeBlock} from './placement-model.js';
 
 const TYPES={note:'文本便签',checklist:'检查清单',links:'常用链接',progress:'目标进度',countdown:'日期倒计时',table:'数据表格',miniapp:'交互小程序'};
 const clone=value=>structuredClone(value);
@@ -45,10 +46,11 @@ export function saveCustomBlockChange(ctx,mutation){
 }
 
 /** Creating a real block begins the workbench without changing its chosen template. */
-export function createCustomBlockOnWorkbench(ctx,input){
+export function createCustomBlockOnWorkbench(ctx,input,{placement}={}){
   return saveCustomBlockChange(ctx,state=>{
     const record=createCustomBlock(state,input);
     configureWorkbench(state,{title:getWorkbench(state).title});
+    if(placement)placeBlock(state,record.id,placement);
     return record;
   });
 }
@@ -102,7 +104,7 @@ function readConfig(form,kind,previous){
   return {code:value('cb-code')};
 }
 
-export function customBlockEditor(ctx,inputOrId={}){
+export function customBlockEditor(ctx,inputOrId={},options={}){
   const existing=typeof inputOrId==='string'?find(ctx.state,inputOrId):null;
   if(typeof inputOrId==='string'&&!existing){ctx.toast('这个方块已不存在，请刷新后重试。');return;}
   const initial=existing||inputOrId||{},configs=new Map();let kind=TYPES[initial.kind]?initial.kind:'note';
@@ -115,9 +117,10 @@ export function customBlockEditor(ctx,inputOrId={}){
     if(ctx.isCurrent?.()===false)throw new Error('工作区已切换，请在当前工作区重新编辑。');
     if(existing&&JSON.stringify(find(ctx.state,existing.id))!==initialVersion)throw new Error('方块已被其他操作更新，请关闭后重新编辑。');
     stopPreview();const config=readConfig(form,kind,configs.get(kind)),patch={title:form.querySelector('[name="cb-title"]').value.trim(),description:form.querySelector('[name="cb-description"]').value.trim(),color:form.querySelector('[name="cb-color"]').value,config,...(existing?{archived:!form.querySelector('[name="cb-visible"]').checked}:{})};
-    const record=existing?saveCustomBlockChange(ctx,state=>updateCustomBlock(state,existing.id,patch)):createCustomBlockOnWorkbench(ctx,{...patch,kind,data:clone(initial.data||{})});
-    ctx.toast(existing?'方块已更新，运行数据保留。':'方块已创建，可在搭建台摆放。');
-    if(existing)ctx.refresh?.();else ctx.go('block',record.id);
+    const record=existing?saveCustomBlockChange(ctx,state=>updateCustomBlock(state,existing.id,patch)):createCustomBlockOnWorkbench(ctx,{...patch,kind,data:clone(initial.data||{})},options);
+    ctx.toast(existing?'方块已更新，运行数据保留。':options.placement?'方块已创建并放到选定位置，双击可以打开。':'方块已创建，可在搭建台摆放。');
+    if(!existing&&options.placement&&options.onCreated)options.onCreated(record);
+    else if(existing||options.placement)ctx.refresh?.();else ctx.go('block',record.id);
   }});
   const dialog=document.querySelector('#modal'),form=dialog.querySelector('form');
   const kindInput=form.querySelector('[name="cb-kind"]');kindInput.value=kind;

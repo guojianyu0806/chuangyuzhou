@@ -4,6 +4,7 @@ import {mountPlacement,placementPoint} from '../src/placement.js';
 import {placementLayout} from '../src/placement-model.js';
 import {createWorkbench} from '../src/workbench-model.js';
 import {workspaceFingerprint} from '../../backend/workspace-queries.mjs';
+import {createCustomBlock} from '../src/custom-blocks-model.js';
 
 // Minimal event surface, like the builder tests: real handlers and models run without
 // a browser dependency. Browser evidence separately covers native pointer capture.
@@ -40,7 +41,7 @@ class Element {
     return event;
   }
 }
-function fixture(t){
+function fixture(t,{workspace}={}){
   const previous={document:globalThis.document,window:globalThis.window,ResizeObserver:globalThis.ResizeObserver};
   const browserWindow=new Element(),observers=[];
   globalThis.document={createElement:tag=>new Element(tag)};globalThis.window=browserWindow;
@@ -49,13 +50,15 @@ function fixture(t){
   ghost.hidden=true;stage.append(new Element('p','wb-stage-empty'));root.append(new Element('p','wb-placement-hint'));root.append(new Element('span','wb-placement-count'));
   const selection=root.append(new Element('span'));selection.dataset.placeSelection='';
   const actions={};for(const name of ['zoom-in','zoom-out','zoom-reset','fit','arrange','undo','left','right','up','down','cancel']){const button=root.append(new Element('button'));button.dataset.placeAction=name;actions[name]=button;}
-  const sources={};for(const id of ['tasks','calendar']){sources[id]=root.append(new Element('button'));sources[id].dataset.placeSource=id;}const source=sources.tasks;
-  const state={workbench:createWorkbench('blank'),spaces:[],tasks:[{id:'existing',title:'keep'}],updatedAt:'before'},session={},calls=[];
-  const cleanup=mountPlacement({root,state,toast:message=>calls.push(['toast',message]),save:()=>{calls.push('save');state.updatedAt='saved';}},session);
+  const sources={};for(const id of ['tasks','calendar']){sources[id]=root.append(new Element('button'));Object.assign(sources[id].dataset,{placeSource:id,paletteGroup:'builtin',paletteSearchText:id});}const source=sources.tasks;
+  const presets={};for(const id of ['quick-note','shopping']){presets[id]=root.append(new Element('button'));Object.assign(presets[id].dataset,{placePreset:id,paletteGroup:'scene',paletteSearchText:id});}
+  const tabs={};for(const name of ['builtin','scene','mine']){tabs[name]=root.append(new Element('button'));tabs[name].dataset.paletteTab=name;}
+  const state=workspace||{workbench:createWorkbench('blank'),spaces:[],tasks:[{id:'existing',title:'keep'}],updatedAt:'before'},session={},calls=[];
+  const cleanup=mountPlacement({root,state,toast:message=>calls.push(['toast',message]),save:()=>{calls.push('save');state.updatedAt='saved';},go:(...args)=>calls.push(['go',...args]),createPresetAt:(...args)=>calls.push(['create-preset',...args])},session);
   t.after(()=>{cleanup();for(const [name,value] of Object.entries(previous)){if(value===undefined)delete globalThis[name];else globalThis[name]=value;}});
   const click=(target,extra={})=>root.fire('click',{target,...extra});
   const pointer=(type,target,extra={})=>root.fire(type,{target,...extra});
-  return {root,stage,ghost,actions,source,sources,state,session,calls,cleanup,observers,browserWindow,click,pointer,saveCount:()=>calls.filter(call=>call==='save').length};
+  return {root,stage,ghost,actions,source,sources,presets,tabs,state,session,calls,cleanup,observers,browserWindow,click,pointer,saveCount:()=>calls.filter(call=>call==='save').length};
 }
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
 const worldAt=(view,point)=>({x:view.x+(point.x-view.left)/view.scale,y:view.y+(point.y-view.top)/view.scale});
@@ -150,4 +153,77 @@ test('unmount releases pointer capture and removes wheel, keyboard, resize and r
   f.stage.fire('wheel',{ctrlKey:true,deltaY:-200});f.click(f.actions['zoom-in']);f.pointer('pointermove',f.stage,{clientX:900});
   assert.equal(f.stage.hasPointerCapture(1),false);assert.deepEqual(f.session.viewport.view,view);assert.deepEqual(f.state,before);assert.equal(f.saveCount(),0);
   assert.ok([...f.root.listeners.values(),...f.stage.listeners.values(),...f.browserWindow.listeners.values()].every(set=>set.size===0));assert.ok(f.observers.every(observer=>observer.disconnected));
+});
+
+test('module palette is immediately draggable and a drop uses the current camera without accidentally opening the module',t=>{
+  const f=fixture(t),before=structuredClone(f.state);
+  assert.equal(f.source.hidden,false);assert.equal(f.presets['quick-note'].hidden,true);assert.equal(f.tabs.builtin.attributes['aria-pressed'],'true');
+  f.click(f.actions['zoom-reset']);f.stage.fire('wheel',{deltaX:45,deltaY:-25});
+  const rect=f.stage.getBoundingClientRect(),target={clientX:700,clientY:420};
+  const card=placementLayout(f.state).cards.find(item=>item.id==='tasks');
+  const expected=placementPoint(f.session.viewport.view,rect,target.clientX,target.clientY,{x:card.w/2,y:card.h/2});
+  f.pointer('pointerdown',f.source,{clientX:160,clientY:350});f.pointer('pointermove',f.source,target);
+  assert.equal(f.ghost.hidden,false);assert.deepEqual(f.state,before);assert.equal(f.saveCount(),0);
+  f.pointer('pointerup',f.source,target);const saved=f.state.canvas.cards.find(item=>item.id==='tasks');
+  assert.deepEqual({x:saved.x,y:saved.y},expected);assert.equal(f.saveCount(),1);
+  assert.equal(f.state.workbench.modules.find(item=>item.id==='tasks').enabled,true);
+  const placed=f.stage.querySelector('[data-place-card="tasks"]');assert.equal(placed.classList.contains('is-landing'),true);
+  f.click(placed,{detail:2});f.root.fire('dblclick',{target:placed});
+  assert.deepEqual(f.calls.filter(call=>Array.isArray(call)&&call[0]==='go'),[]);assert.equal(f.saveCount(),1);
+});
+
+test('scene click opens an editor once while dragging passes the chosen world position without creating or saving early',t=>{
+  const f=fixture(t),before=structuredClone(f.state),fingerprint=workspaceFingerprint(f.state),preset=f.presets['quick-note'];
+  f.click(f.tabs.scene);assert.equal(preset.hidden,false);assert.equal(f.source.hidden,true);
+  f.click(preset);assert.deepEqual(f.calls,[['create-preset','quick-note',undefined]]);
+  f.calls.length=0;f.click(f.actions['zoom-reset']);f.stage.fire('wheel',{deltaX:-60,deltaY:45});
+  const target={clientX:720,clientY:425},expected=placementPoint(f.session.viewport.view,f.stage.getBoundingClientRect(),target.clientX,target.clientY,{x:170,y:140});
+  f.pointer('pointerdown',preset,{clientX:160,clientY:350});f.pointer('pointermove',preset,target);
+  assert.equal(f.ghost.hidden,false);assert.equal(f.session.placingId,'preset:quick-note');assert.deepEqual(f.state,before);assert.equal(workspaceFingerprint(f.state),fingerprint);
+  assert.deepEqual(f.calls,[]);f.pointer('pointerup',preset,target);f.click(preset);
+  assert.deepEqual(f.calls,[['create-preset','quick-note',expected]]);assert.deepEqual(f.state,before);assert.equal(f.saveCount(),0);assert.equal(f.ghost.hidden,true);assert.equal(f.session.placingId,null);
+});
+
+test('aborted scene drags and trailing clicks cannot create blocks or leave a captured pointer',t=>{
+  const f=fixture(t),before=structuredClone(f.state),preset=f.presets.shopping;
+  for(const ending of ['outside','pointercancel','Escape','lostpointercapture']){
+    f.session.suppressClickUntil=0;f.session.suppressOpenUntil=0;
+    f.pointer('pointerdown',preset,{clientX:170,clientY:320});f.pointer('pointermove',preset,{clientX:700,clientY:425});
+    if(ending==='outside')f.pointer('pointerup',preset,{clientX:200,clientY:425});
+    else if(ending==='Escape')f.root.fire('keydown',{target:preset,key:'Escape'});
+    else f.pointer(ending,preset);
+    f.pointer('pointerup',preset,{clientX:700,clientY:425});f.click(preset);
+    assert.deepEqual(f.calls,[],ending);assert.deepEqual(f.state,before);assert.equal(f.ghost.hidden,true);assert.equal(preset.hasPointerCapture(1),false);
+  }
+});
+
+test('double-click opens the real module, block and space routes without editing workspace state',t=>{
+  const workspace={workbench:createWorkbench('blank'),spaces:[{id:'project-space',title:'关联项目',archived:false}],tasks:[],updatedAt:'before'};
+  const note=createCustomBlock(workspace,{kind:'note',title:'关联便签',config:{text:'keep'},data:{}},{id:'block:route-note'});
+  const f=fixture(t,{workspace}),before=structuredClone(workspace);
+  for(const [id,route] of [['ai',['ai']],['project-space',['space','project-space']],[note.id,['block',note.id]]]){
+    const card=f.stage.querySelector(`[data-place-card="${id}"]`);f.click(card);f.click(card,{detail:2});
+    assert.equal(f.root.fire('dblclick',{target:card}).prevented,true);assert.deepEqual(f.calls.at(-1),['go',...route]);
+  }
+  assert.deepEqual(workspace,before);assert.equal(f.saveCount(),0);
+  workspace.spaces[0].archived=true;const old=f.stage.querySelector('[data-place-card="project-space"]'),count=f.calls.length;
+  f.root.fire('dblclick',{target:old});assert.equal(f.calls.length,count,'a stale archived card must not navigate');
+});
+
+test('Enter opens a focused existing card but still places a pending block before any navigation',t=>{
+  const f=fixture(t),ai=f.stage.querySelector('[data-place-card="ai"]');
+  assert.equal(f.root.fire('keydown',{target:ai,key:'Enter'}).prevented,true);assert.deepEqual(f.calls,[['go','ai']]);
+  f.calls.length=0;f.click(f.source);const prior=structuredClone(f.state);
+  f.root.fire('dblclick',{target:ai});assert.deepEqual(f.calls,[]);assert.deepEqual(f.state,prior);
+  assert.equal(f.root.fire('keydown',{target:ai,key:'Enter'}).prevented,true);
+  assert.equal(f.saveCount(),1);assert.equal(f.state.workbench.modules.find(item=>item.id==='tasks').enabled,true);
+  assert.deepEqual(f.calls.filter(call=>Array.isArray(call)&&call[0]==='go'),[]);
+});
+
+test('panning over a card cannot open it through a trailing double-click and modifier clicks retain their meaning',t=>{
+  const f=fixture(t),card=f.stage.querySelector('[data-place-card="ai"]'),before=structuredClone(f.state);
+  for(const modifier of ['ctrlKey','metaKey','altKey'])f.root.fire('dblclick',{target:card,[modifier]:true});
+  f.pointer('pointerdown',card,{button:1});f.pointer('pointermove',card,{clientX:690,clientY:440});f.pointer('pointerup',card,{button:1,clientX:690,clientY:440});
+  f.root.fire('dblclick',{target:card});assert.deepEqual(f.calls,[]);assert.deepEqual(f.state,before);assert.equal(f.saveCount(),0);
+  f.session.suppressOpenUntil=0;f.root.fire('dblclick',{target:card});assert.deepEqual(f.calls,[['go','ai']]);
 });
