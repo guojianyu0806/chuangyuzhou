@@ -10,6 +10,7 @@ import {validateCompetitions, mergeCompetitions} from './competitions-model.js';
 import {validateWorkbench} from './workbench-model.js';
 import {validateCustomBlocks,mergeCustomBlocks} from './custom-blocks-model.js';
 import {isRecordColor, assignRecordColor} from './creation-colors.js';
+import {validateEnglishPracticeState} from './english-practice-model.js';
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
 const DRAFT_TYPES = ['writing', 'translation', 'listening'];
 const PRACTICE_TYPES = ['reading', 'writing', 'translation', 'listening', 'vocabulary'];
@@ -235,13 +236,15 @@ function session(value) {
   }, ['createdAt'], ['example','archived']);
 }
 function mistake(value) {
-  return optionalFields(value, {
+  const result = optionalFields(value, {
     id: identifier(value.id, '错题编号'), questionId: identifier(value.questionId, '题目编号'),
     question: text(value.question, '题目正文', '', true), selected: text(value.selected, '所选答案'),
     correct: text(value.correct, '正确答案'), explanation: text(value.explanation, '题目解析'),
     source: text(value.source, '题目来源'), date: text(value.date, '错题日期'),
     reviewed: boolean(value.reviewed, '错题回顾状态'),
   }, [], ['example','archived']);
+  if (value.readingId !== undefined) result.readingId = identifier(value.readingId, '阅读篇目编号');
+  return result;
 }
 function readingResult(value) {
   object(value, '阅读成绩');
@@ -249,7 +252,9 @@ function readingResult(value) {
   return { correct: integer(value.correct, '阅读答对题数', 0, total), total, date: text(value.date, '阅读练习日期') };
 }
 function attempt(value) {
-  return optionalFields(value, { id: identifier(value.id, '练习记录编号'), ...readingResult(value) }, [], ['example']);
+  const result = optionalFields(value, { id: identifier(value.id, '练习记录编号'), ...readingResult(value) }, ['source'], ['example']);
+  if (value.readingId !== undefined) result.readingId = identifier(value.readingId, '阅读篇目编号');
+  return result;
 }
 function audio(value) {
   if (value === null || value === undefined) return null;
@@ -262,16 +267,18 @@ function audio(value) {
   return result;
 }
 function english(value) {
-  object(value, '六级数据');
-  const plan = value.plan === undefined ? {} : object(value.plan, '六级计划');
+  object(value, '英语数据');
+  const plan = value.plan === undefined ? {} : object(value.plan, '英语计划');
   const numberOrEmpty = (input, label, max) => input === undefined || input === '' ? '' : integer(input, label, 0, max);
+  const target = plan.target === undefined || plan.target === '' ? '' : finite(plan.target, '目标分数', 0, 9999);
+  if (target !== '' && !Number.isInteger(target * 2)) fail('目标分数');
   const drafts = value.drafts === undefined ? {} : object(value.drafts, '英语草稿');
   const times = value.draftUpdatedAt === undefined ? {} : object(value.draftUpdatedAt, '草稿时间');
   const answers = value.readingAnswers === undefined ? {} : object(value.readingAnswers, '阅读答案');
   const normalizedAnswers = {};
   for (const [key, answer] of Object.entries(answers)) normalizedAnswers[identifier(key, '阅读题目编号')] = integer(answer, '阅读选项', 0, 3);
   return {
-    plan: { examDate: text(plan.examDate, '考试日期'), target: numberOrEmpty(plan.target, '目标分数', 710),
+    plan: { examDate: text(plan.examDate, '考试日期'), target,
       dailyMinutes: numberOrEmpty(plan.dailyMinutes, '每日时长', 720), focus: choice(plan.focus, [...PRACTICE_TYPES, ''], '优先练习', '') },
     words: records(value.words, word, '词汇', true), sessions: records(value.sessions, session, '学习记录', true),
     mistakes: records(value.mistakes, mistake, '错题', true), attempts: records(value.attempts, attempt, '练习历史', true),
@@ -279,6 +286,7 @@ function english(value) {
     draftUpdatedAt: Object.fromEntries(DRAFT_TYPES.filter(key => times[key] !== undefined).map(key => [key, text(times[key], '草稿时间')])),
     audio: audio(value.audio), readingAnswers: normalizedAnswers,
     readingResult: value.readingResult == null ? null : readingResult(value.readingResult),
+    ...validateEnglishPracticeState(value),
   };
 }
 function workspace(value) {
@@ -519,8 +527,38 @@ export function mergeBackup(current, incoming) {
   }
   if (!en.audio && imported.audio) { en.audio = structuredClone(imported.audio); count++; }
   if (!en.readingResult && imported.readingResult) { en.readingResult = structuredClone(imported.readingResult); count++; }
-  if (!en.readingAnswers || Object.keys(en.readingAnswers).length === 0) {
-    if (Object.keys(imported.readingAnswers).length) { en.readingAnswers = structuredClone(imported.readingAnswers); count++; }
+  function preservePracticeText(key,content,date,label) {
+    if (state.captures.some(item => item.source === label && item.importedDraftKey === key && item.text === content)) return;
+    let suffix = 1;
+    while (state.captures.some(item => item.id === `imported-practice-${suffix}`)) suffix++;
+    state.captures.push({id:`imported-practice-${suffix}`,text:content,category:'英语',color:assignRecordColor(state),tags:`${label} · ${key}`,source:label,importedDraftKey:key,example:source.mode === 'demo',archived:false,createdAt:date || source.updatedAt || ''});
+    count++;
+  }
+  en.readingAnswers ||= {};
+  for (const [questionId,answer] of Object.entries(imported.readingAnswers)) {
+    if (!Object.hasOwn(en.readingAnswers,questionId)) { en.readingAnswers[questionId] = answer; count++; }
+    else if (en.readingAnswers[questionId] !== answer) preservePracticeText(questionId,`题目：${questionId}\n备份中选择：${'ABCD'[answer]}`,source.updatedAt,'导入的阅读答案');
+  }
+  if (imported.readingResults !== undefined) {
+    en.readingResults ||= {};
+    for (const [readingId,score] of Object.entries(imported.readingResults)) {
+      if (!Object.hasOwn(en.readingResults,readingId)) { en.readingResults[readingId] = structuredClone(score); count++; }
+      else if (JSON.stringify(en.readingResults[readingId]) !== JSON.stringify(score)
+          && !en.attempts.some(item => item.readingId === readingId && item.correct === score.correct && item.total === score.total && item.date === score.date)) {
+        let suffix = 1;while (en.attempts.some(item => item.id === `imported-reading-result-${suffix}`)) suffix++;
+        en.attempts.push({id:`imported-reading-result-${suffix}`,readingId,source:'导入的分篇阅读成绩',...structuredClone(score)});count++;
+      }
+    }
+  }
+  if (imported.draftExercises !== undefined) {
+    en.draftExercises ||= {};
+    for (const [type,drafts] of Object.entries(imported.draftExercises)) {
+      en.draftExercises[type] ||= {};
+      for (const [promptId,draft] of Object.entries(drafts)) {
+        if (!Object.hasOwn(en.draftExercises[type],promptId)) { en.draftExercises[type][promptId] = structuredClone(draft); count++; }
+        else if (en.draftExercises[type][promptId].text !== draft.text && draft.text.trim()) preservePracticeText(`${type}:${promptId}`,draft.text,draft.updatedAt,'导入的分题英语草稿');
+      }
+    }
   }
   return { state, count };
 }

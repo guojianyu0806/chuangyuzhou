@@ -11,6 +11,7 @@ import { validateFitness } from '../frontend/src/fitness-model.js';
 import { validateCompetitions } from '../frontend/src/competitions-model.js';
 import { validateWorkbench } from '../frontend/src/workbench-model.js';
 import { validateCustomBlocks } from '../frontend/src/custom-blocks-model.js';
+import { validateEnglishPracticeState } from '../frontend/src/english-practice-model.js';
 import { prepareDataDirectory, assertRuntimePath } from '../runtime.mjs';
 
 const scrypt = promisify(scryptCallback);
@@ -101,6 +102,8 @@ export function validateWorkspace(state) {
     if (state.aiDraft.files !== undefined) recordList(state.aiDraft.files, ['id', 'blobId', 'name']);
   }
   for (const key of ['words', 'sessions', 'mistakes', 'attempts']) if (state.english[key] !== undefined) recordList(state.english[key]);
+  try { validateEnglishPracticeState(state.english); }
+  catch { throw new ApiError(400, 'invalid_english_practice'); }
   if (state.calendar !== undefined) {
     try { validateCalendar(state.calendar); }
     catch { throw new ApiError(400, 'invalid_calendar'); }

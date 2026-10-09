@@ -27,7 +27,7 @@ export function initializeSpaces(state) {
 export function spaceLabel(state, targetId) {
   if (targetId.startsWith('space:')) return state.spaces.find(s=>s.id===targetId.slice(6))?.title || '工作区';
   if (targetId.startsWith('course:')) return state.courses.find(c=>c.id===targetId.slice(7))?.title || '课程';
-  return {english:'六级资料',inbox:'收集箱',tasks:'备忘与待办'}[targetId] || '工作区';
+  return {english:'英语资料',inbox:'收集箱',tasks:'备忘与待办'}[targetId] || '工作区';
 }
 
 export function openDestination(ctx, targetId) {
@@ -69,7 +69,7 @@ export async function routeContent(ctx, {text='',files=[],targetId,requestId}) {
     if(!['english','inbox','tasks'].includes(targetId))throw new Error('无法识别目标空间。');
     let firstCapture;
     const addCapture=(content,file)=>{
-      const item={id:uid(),text:content,category:targetId==='english'?'英语':'备忘',tags:targetId==='english'?'六级资料':'AI 收件台',archived:false,createdAt:now,sourceRequestId,...(file?{blobId:file.blobId,fileName:file.name,fileType:file.type}:{})};
+      const item={id:uid(),text:content,category:targetId==='english'?'英语':'备忘',tags:targetId==='english'?'英语资料':'AI 收件台',archived:false,createdAt:now,sourceRequestId,...(file?{blobId:file.blobId,fileName:file.name,fileType:file.type}:{})};
       insert(state.captures,record('captures','inbox',item));firstCapture ||= item.id;
     };
     if(text.trim())addCapture(text.trim());

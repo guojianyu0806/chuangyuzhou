@@ -13,7 +13,7 @@ test('projection is read-only, tolerates old states, and never creates calendar 
   for(const state of [undefined,null,{}, {tasks:null,spaces:{},courses:'invalid',aiRequests:[],competitions:{items:null,milestones:{}},english:{plan:null}}])assert.deepEqual(projectCalendarLinks(state),[]);
   const state=freeze({tasks:[task('one')],english:{plan:{examDate:'2026-12-12'}},competitions:{items:[competition('contest')],milestones:[milestone('deadline')],tasks:[preparation('prepare')]}});
   const before=JSON.stringify(state),projected=projectCalendarLinks(state);assert.equal(projected.length,4);assert.equal(JSON.stringify(state),before);assert.equal(Object.hasOwn(state,'calendar'),false);
-  projected[0].title='只修改返回值';assert.equal(JSON.stringify(state),before);assert.deepEqual(CALENDAR_LINK_SOURCES,{tasks:'待办',competitions:'比赛',english:'六级'});
+  projected[0].title='只修改返回值';assert.equal(JSON.stringify(state),before);assert.deepEqual(CALENDAR_LINK_SOURCES,{tasks:'待办',competitions:'比赛',english:'英语'});
   assert.ok(projected.every(item=>item.readOnly&&item.archived===false));
 });
 
@@ -43,7 +43,7 @@ test('competition dates remain exact, point deadlines keep Beijing time, and fin
   assert.equal(rows.find(row=>row.sourceId==='all-day').allDay,true);assert.equal(rows.find(row=>row.sourceId==='task-done').kind,'plan');assert.equal(rows.find(row=>row.sourceId==='task-done').notes,'要做的事情');
 });
 
-test('the explicitly configured CET-6 exam date projects its actual plan identity without inventing completion or exam times',()=>{
+test('the optionally configured English exam date projects its actual plan identity without inventing completion or exam times',()=>{
   const state={english:{plan:{examDate:'2026-12-12',target:550,dailyMinutes:30}}};const [row]=projectCalendarLinks(state);
   assert.equal(row.id,'linked:englishExam:english-plan');assert.equal(row.entity,'englishPlan');assert.equal(row.sourceType,'englishExam');assert.equal(row.sourceId,'english-plan');assert.equal(row.containerId,'');assert.equal(row.route,'english');assert.equal(row.subroute,'');assert.equal(row.allDay,true);assert.equal(row.done,false);assert.equal(row.startDate,'2026-12-12');assert.equal(row.startTime,'');
   const actual=listWorkspaceRecords(state).find(item=>item.entity===row.entity&&item.id===row.sourceId);assert.ok(actual);assert.equal(actual.containerId,row.containerId);

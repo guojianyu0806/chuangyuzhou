@@ -1,4 +1,4 @@
-import {WORKBENCH_MODULES,createWorkbench,validateWorkbench,configureWorkbench} from './workbench-model.js';
+import {WORKBENCH_MODULES,createWorkbench,validateWorkbench,configureWorkbench,normalizeWorkbenchModuleTitle} from './workbench-model.js';
 
 const fail=message=>{throw new Error(message);};
 const plain=value=>value&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
@@ -21,7 +21,7 @@ function normalize(data,operation,rules){
 }
 function moduleRecord(value){
   shape(value,['id','title','enabled','position','configuration']);
-  const record={id:moduleId(value.id),title:moduleTitle(value.title),enabled:enabled(value.enabled),position:position(value.position),configuration:validateWorkbench(value.configuration)};
+  const record={id:moduleId(value.id),title:normalizeWorkbenchModuleTitle(value.id,value.title),enabled:enabled(value.enabled),position:position(value.position),configuration:validateWorkbench(value.configuration)};
   const target=record.configuration.modules[record.position];
   if(target.id!==record.id||target.title!==record.title||target.enabled!==record.enabled)fail('板块配置快照与显示字段不一致。');
   return record;

@@ -86,7 +86,7 @@ export function applyOrganizedContent(state, requestId, input, {uid = () => cryp
   for (const note of proposal.notes) {
     if (note.sourceIds.some(id => !sourceNames.has(id))) throw new Error('AI 引用了一份不存在的原文件，结果已保留供检查。');
   }
-  const title = container?.title || {english: '六级资料', inbox: '收集箱', tasks: '备忘与待办'}[target];
+  const title = container?.title || {english: '英语资料', inbox: '收集箱', tasks: '备忘与待办'}[target];
   const receipt = {destinationId: target, destinationLabel: title, createdAt: now, engine: 'hermes', items: []};
   const pending = [];
   const add = (collection, containerId, item) => {
@@ -99,11 +99,11 @@ export function applyOrganizedContent(state, requestId, input, {uid = () => cryp
     const sources = [...new Set(note.sourceIds.map(id => sourceNames.get(id)))];
     const source = `Hermes · DeepSeek 整理${sources.length ? ' · ' + sources.join('、') : ' · 原文见 AI 收件记录'}`;
     if (container) add('notes', target, {id:uid(), title:note.title, content:note.content, source, sourceRequestId:requestId, updatedAt:now, example:false, revisions:[]});
-    else add('captures', 'inbox', {id:uid(), text:`${note.title}\n\n${note.content}`, category:target==='english'?'英语':'备忘', tags:target==='english'?'六级资料':'AI 整理', source, sourceRequestId:requestId, archived:false, createdAt:now});
+    else add('captures', 'inbox', {id:uid(), text:`${note.title}\n\n${note.content}`, category:target==='english'?'英语':'备忘', tags:target==='english'?'英语资料':'AI 整理', source, sourceRequestId:requestId, archived:false, createdAt:now});
   }
   for (const file of files) {
     if (container) add('files', target, {...file, id:uid(), sourceRequestId:requestId, createdAt:now});
-    else add('captures', 'inbox', {id:uid(), text:file.name, blobId:file.blobId, fileName:file.name, fileType:file.type, category:target==='english'?'英语':'备忘', tags:target==='english'?'六级资料':'AI 原文件', sourceRequestId:requestId, archived:false, createdAt:now});
+    else add('captures', 'inbox', {id:uid(), text:file.name, blobId:file.blobId, fileName:file.name, fileType:file.type, category:target==='english'?'英语':'备忘', tags:target==='english'?'英语资料':'AI 原文件', sourceRequestId:requestId, archived:false, createdAt:now});
   }
   for (const task of proposal.tasks) add('tasks', 'tasks', {id:uid(), title:task.title, description:task.description, date:task.date, priority:task.priority,
     category:isCourse?'课程':target==='english'?'英语':isSpace?container.title:'个人', done:false, archived:false,
@@ -139,7 +139,7 @@ export function previewOrganizedContent(state,requestId,input){
       return {ledger:true,type:record.type==='expense'?'新增支出':'新增收入',title:record.category,destination:`记账 · ${project?.title||'日常零钱'}`,content:record.note,date:record.date,priority:'',fileName:'',amountCents:record.amountCents,category:record.category,includeInTotal:!project||project.includeInTotal!==false};
     }
     const container=item.containerId.startsWith('space:')?state.spaces?.find(s=>s.id===item.containerId.slice(6)):item.containerId.startsWith('course:')?state.courses?.find(c=>c.id===item.containerId.slice(7)):null;
-    const destination=container?.title||(item.collection==='tasks'?'备忘与待办':record.category==='英语'?'收集箱 · 六级资料':'收集箱');
+    const destination=container?.title||(item.collection==='tasks'?'备忘与待办':record.category==='英语'?'收集箱 · 英语资料':'收集箱');
     return {type:item.collection==='files'||record.blobId?'保存原文件':item.collection==='tasks'?'新增待办':item.collection==='notes'?'新增笔记':'新增整理记录',title:item.title,destination,content:record.content||record.text||record.description||'',date:record.date||'',priority:item.collection==='tasks'?(record.priority==='high'?'重要':'普通'):'',fileName:record.name||record.fileName||''};
   });
 }

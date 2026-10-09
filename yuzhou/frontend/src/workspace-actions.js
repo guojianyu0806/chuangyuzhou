@@ -141,7 +141,7 @@ function destinationLabel(state,containerId,entity){
   if(containerId?.startsWith('course:'))return state.courses?.find(row=>row.id===containerId.slice(7))?.title||'课程';
   if(containerId?.startsWith('ledger:'))return state.ledger?.projects?.find(row=>row.id===containerId.slice(7))?.title||'项目账本';
   if(containerId==='ledger')return '日常零钱';
-  return {space:'空间主页',course:'课程空间',task:'待办',capture:'灵感／收集箱',ledgerProject:'记账项目',calendarEvent:'日历',timetableTerm:'学期课表',timetableEntry:'学期课表'}[entity]||(entity.startsWith('english')?'六级学习':'工作台');
+  return {space:'空间主页',course:'课程空间',task:'待办',capture:'灵感／收集箱',ledgerProject:'记账项目',calendarEvent:'日历',timetableTerm:'学期课表',timetableEntry:'学期课表'}[entity]||(entity.startsWith('english')?'英语学习':'工作台');
 }
 function fields(before,after,entity,state){
   const labels={...FIELD_LABEL,...(['space','course'].includes(entity)?{notes:'笔记'}:{}),...(entity==='profileSettings'?{name:'称呼'}:{}),...Object.fromEntries(Object.entries(ADAPTERS[entity].fields||{}).filter(([key,label])=>key!==label))};

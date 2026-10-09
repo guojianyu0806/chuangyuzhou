@@ -23,7 +23,7 @@ function destinations(state) {
     ...(state.courses || []).filter(s => !s.archived).map(s => ({ id: `course:${s.id}`, title: s.title, group: '课程空间' })),
     { id: 'ledger', title: '记账 · 日常零钱', matchTitle: '日常零钱', group: '记账项目' },
     ...(state.ledger?.projects || []).filter(p => !p.archived).map(p => ({ id: `ledger:${p.id}`, title: `记账 · ${p.title}`, matchTitle: p.title, group: '记账项目' })),
-    { id: 'english', title: '六级空间', group: '常用空间' },
+    { id: 'english', title: '英语空间', group: '常用空间' },
     { id: 'calendar', title: '日历安排', group: '常用空间' },
     { id: 'timetable', title: '学期课表', group: '常用空间' },
     { id: 'inbox', title: '收集箱', group: '常用空间' },

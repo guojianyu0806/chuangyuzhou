@@ -3,6 +3,7 @@
 import {validateCalendar} from './calendar-model.js';
 import {validateTimetable} from './timetable-model.js';
 import {isValidDate} from './ledger-model.js';
+import {WRITING_PROMPTS,TRANSLATION_PROMPTS} from './english-content.js';
 
 const fail = message => { throw new Error(message); };
 const clone = value => structuredClone(value);
@@ -190,8 +191,13 @@ function englishOf(state) {
     plan:{examDate:'',target:'',dailyMinutes:'',focus:'reading',...source.plan},
     drafts:{writing:'',translation:'',listening:'',...source.drafts},draftUpdatedAt:{...source.draftUpdatedAt}};
 }
-const planRules={examDate:v=>v===''?'':day(v),target:v=>v===''?'':integer(v,1,710),dailyMinutes:v=>v===''?'':integer(v,1,720),focus:v=>choice(v,['',...PRACTICES])};
-const planRecord=value=>recordFields(value,{...planRules,target:v=>v===''?'':integer(v,0,710),dailyMinutes:v=>v===''?'':integer(v,0,720)});
+const targetScore=(value,min=.5)=>{
+  const result=number(value,min,9999);
+  if(!Number.isInteger(result*2))fail('目标分数请按 0.5 分为单位填写。');
+  return result;
+};
+const planRules={examDate:v=>v===''?'':day(v),target:v=>v===''?'':targetScore(v),dailyMinutes:v=>v===''?'':integer(v,1,720),focus:v=>choice(v,['',...PRACTICES])};
+const planRecord=value=>recordFields(value,{...planRules,target:v=>v===''?'':targetScore(v,0),dailyMinutes:v=>v===''?'':integer(v,0,720)});
 const wordRules={word:v=>text(v,80,true),meaning:v=>text(v,200,true),phonetic:v=>text(v,200),example:v=>text(v,500),translation:v=>text(v,500),status:v=>choice(v,['new','review','mastered']),evidence:evidenceRule};
 function wordRecord(value) {
   return fields(value,{id,...Object.fromEntries(Object.entries(wordRules).filter(([key])=>key!=='evidence')),source:v=>choice(v,['builtin','personal']),updatedAt:stamp,archived:bool},['id','word','meaning','phonetic','example','translation','status','source']);
@@ -235,8 +241,8 @@ function singleton({entity,label,recordId,rules,validateRecord,read,write,capabi
     undo(state,item,ctx){if(item.id!==recordId||!equal(read(state),item.after))return false;write(state,validateRecord(item.before),ctx);return true;},
   };
 }
-const planAdapter=singleton({entity:'englishPlan',label:'六级学习计划',recordId:'english-plan',rules:planRules,validateRecord:planRecord,
-  capability:'仅update，id=english-plan；data可含examDate(YYYY-MM-DD或空),target(1–710或空),dailyMinutes(1–720或空),focus=reading|listening|writing|translation|vocabulary|空。用户未确定日期/时长须追问或保持空，不能猜官方考试日。',
+const planAdapter=singleton({entity:'englishPlan',label:'英语学习计划',recordId:'english-plan',rules:planRules,validateRecord:planRecord,
+  capability:'仅update，id=english-plan；data可含examDate(YYYY-MM-DD或空),target(可选自定目标分数，0.5–9999且以0.5为步进，或空),dailyMinutes(1–720或空),focus=reading|listening|writing|translation|vocabulary|空。分数不绑定任何官方考试标准，不自动换算旧分数。用户未确定日期/时长须追问或保持空，不能猜官方考试日。',
   read:state=>englishOf(state).plan,write:(state,record)=>{state.english={...englishOf(state),plan:record};},
 });
 const termSettingsAdapter=singleton({entity:'timetableSettings',label:'当前学期',recordId:'timetable-settings',rules:{activeTermId:v=>v===''?'':id(v)},validateRecord:value=>recordFields(value,{activeTermId:v=>v===''?'':id(v)}),
@@ -245,11 +251,34 @@ const termSettingsAdapter=singleton({entity:'timetableSettings',label:'当前学
   write:(state,record)=>{state.timetable=validateTimetable({...timetableOf(state),activeTermId:record.activeTermId});},
 });
 const draftRecord=value=>fields(value,{content:v=>text(v,100000),updatedAt:v=>v===''?'':stamp(v)},['content','updatedAt']);
-const draftAdapter={label:'英语草稿',operations:['update'],capability:'仅update，id=writing|translation|listening；data:{content:草稿正文}。保存写作/翻译/听力笔记，不生成成绩或已完成学习记录。',fields:{content:'草稿正文'},
-  normalizeData:(data,operation)=>actionData(data,operation,{content:v=>text(v,100000)},[],['update']),validateRecord:draftRecord,
-  list:state=>DRAFTS.map(draftId=>({id:draftId,containerId:'',title:{writing:'写作草稿',translation:'翻译草稿',listening:'听力笔记'}[draftId],record:{content:englishOf(state).drafts[draftId]||'',updatedAt:englishOf(state).draftUpdatedAt[draftId]||''}})),
-  apply(state,action,ctx){choice(action.id,DRAFTS);if(action.containerId)fail('英语草稿位置无效。');const data=this.normalizeData(action.data||{},action.operation),before=this.list(state).find(item=>item.id===action.id).record,after={content:data.content,updatedAt:now(ctx)};const en=englishOf(state);state.english={...en,drafts:{...en.drafts,[action.id]:after.content},draftUpdatedAt:{...en.draftUpdatedAt,[action.id]:after.updatedAt}};return snapshot('englishDraft',action,action.id,'',before,after);},
-  undo(state,item){const row=this.list(state).find(row=>row.id===item.id);if(!row||!equal(row.record,item.after))return false;const before=draftRecord(item.before),en=englishOf(state),times={...en.draftUpdatedAt};if(before.updatedAt)times[item.id]=before.updatedAt;else delete times[item.id];state.english={...en,drafts:{...en.drafts,[item.id]:before.content},draftUpdatedAt:times};return true;},
+const draftPrompts={writing:WRITING_PROMPTS,translation:TRANSLATION_PROMPTS};
+const draftTargets=[...DRAFTS.map(type=>({id:type,type,legacy:true,title:type==='listening'?'听力笔记':`${type==='writing'?'写作':'翻译'} · ${draftPrompts[type].find(prompt=>prompt.legacy)?.title||'原有草稿'}`})),
+  ...Object.entries(draftPrompts).flatMap(([type,prompts])=>prompts.filter(prompt=>!prompt.legacy).map(prompt=>({id:`${type}:${prompt.id}`,type,promptId:prompt.id,legacy:false,title:`${type==='writing'?'写作':'翻译'} · ${prompt.title}`})))];
+const draftTarget=draftId=>{const target=draftTargets.find(target=>target.id===draftId);if(!target)fail('请选择已知题目的英语草稿编号。');return target;};
+function readDraftRecord(state,target){
+  const en=englishOf(state);
+  if(target.legacy)return {content:en.drafts[target.type]||'',updatedAt:en.draftUpdatedAt[target.type]||''};
+  const record=en.draftExercises?.[target.type]?.[target.promptId];
+  return {content:record?.text||'',updatedAt:record?.updatedAt||''};
+}
+function writeDraftRecord(state,target,record){
+  const en=englishOf(state);
+  if(target.legacy){
+    const times={...en.draftUpdatedAt};if(record.updatedAt)times[target.type]=record.updatedAt;else delete times[target.type];
+    state.english={...en,drafts:{...en.drafts,[target.type]:record.content},draftUpdatedAt:times};return;
+  }
+  const exercises={...en.draftExercises},group={...exercises[target.type]};
+  if(record.content||record.updatedAt)group[target.promptId]={text:record.content,updatedAt:record.updatedAt};
+  else delete group[target.promptId];
+  if(Object.keys(group).length)exercises[target.type]=group;else delete exercises[target.type];
+  state.english={...en};
+  if(Object.keys(exercises).length)state.english.draftExercises=exercises;else delete state.english.draftExercises;
+}
+const draftAdapter={label:'英语草稿',operations:['update'],capability:'仅update；data:{content:草稿完整正文}。先查询englishDraft获取题目和真实id：writing/translation是各自原有首题，listening是听力笔记；其它已知题使用writing:题目id或translation:题目id，必须与用户当前所选题一致。每题独立保存，不能把其它题稿写入首题或编造题号，不生成成绩或已完成学习记录。',fields:{content:'草稿正文'},
+  normalizeData:(data,operation)=>actionData(data,operation,{content:v=>text(v,100000)},['content'],['update']),validateRecord:draftRecord,
+  list:state=>draftTargets.map(target=>({id:target.id,containerId:'',title:target.title,record:readDraftRecord(state,target)})),
+  apply(state,action,ctx){const target=draftTarget(action.id);if(action.containerId)fail('英语草稿位置无效。');const data=this.normalizeData(action.data||{},action.operation),before=readDraftRecord(state,target),after={content:data.content,updatedAt:now(ctx)};writeDraftRecord(state,target,after);return snapshot('englishDraft',action,action.id,'',before,after);},
+  undo(state,item){const row=this.list(state).find(row=>row.id===item.id);if(!row||!equal(row.record,item.after))return false;writeDraftRecord(state,draftTarget(item.id),draftRecord(item.before));return true;},
 };
 const profileRules={name:v=>text(v,100,true),major:v=>text(v,200)};
 const profileAdapter=singleton({entity:'profileSettings',label:'个人资料',recordId:'profile-settings',rules:profileRules,validateRecord:value=>recordFields(value,profileRules),

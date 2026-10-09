@@ -93,7 +93,21 @@ test('English plan accepts unset user choices and does not alter practice accomp
   assert.deepEqual(state.english.plan,{examDate:'',target:550,dailyMinutes:30,focus:'listening'});
   assert.equal(state.english.sessions.length,0);assert.equal(state.english.attempts.length,0);
   assert.equal(undo(state,change),true);
-  for(const data of [{examDate:'2026-02-30'},{dailyMinutes:0},{target:711},{focus:'score'}])assert.throws(()=>apply(fixture(),action('englishPlan','update',data,{id:'english-plan'})));
+  for(const data of [{examDate:'2026-02-30'},{dailyMinutes:0},{target:10000},{target:0},{target:7.25},{target:Infinity},{focus:'score'}])assert.throws(()=>apply(fixture(),action('englishPlan','update',data,{id:'english-plan'})));
+});
+
+test('English target scores allow optional half-point goals without converting legacy scores or accomplishments',()=>{
+  const state=fixture();state.english.plan.target=550;
+  const originalPractice=structuredClone({sessions:state.english.sessions,attempts:state.english.attempts});
+  for(const target of [7.5,711,9999,'']){
+    const change=apply(state,action('englishPlan','update',{target},{id:'english-plan'}));
+    assert.equal(state.english.plan.target,target);assert.equal(undo(state,change),true);
+    assert.equal(state.english.plan.target,550);
+  }
+  state.english.plan.target=0;
+  const change=apply(state,action('englishPlan','update',{dailyMinutes:15},{id:'english-plan'}));
+  assert.equal(state.english.plan.target,0);assert.equal(undo(state,change),true);assert.equal(state.english.plan.target,0);
+  assert.deepEqual({sessions:state.english.sessions,attempts:state.english.attempts},originalPractice);
 });
 
 test('English words are personal and new, reject duplicates, and mastery needs actual user evidence',()=>{

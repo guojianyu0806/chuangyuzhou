@@ -1,29 +1,16 @@
 import {openAIConversation} from './ai.js';
+import {VOCABULARY,READINGS,WRITING_PROMPTS,TRANSLATION_PROMPTS} from './english-content.js';
+import {getReadingResult,getExerciseDraft,saveReadingAnswer,submitReadingPractice,resetReadingPractice,saveExerciseDraft,saveEnglishPractice} from './english-practice-model.js';
 const TYPES = { vocabulary: '词汇', reading: '阅读', listening: '听力', writing: '写作', translation: '翻译' };
-const VOCABULARY = [
-  ['perspective', '/pəˈspektɪv/', 'n. 观点；视角', 'A different perspective can lead to a better solution.', '换一个视角，可能就会找到更好的解决办法。'],
-  ['sustainable', '/səˈsteɪnəbl/', 'adj. 可持续的', 'Small, consistent habits make learning sustainable.', '小而持续的习惯，让学习能够长久进行。'],
-  ['allocate', '/ˈæləkeɪt/', 'v. 分配；拨出', 'We need to allocate enough time for testing.', '我们需要为测试留出足够的时间。'],
-  ['substantial', '/səbˈstænʃl/', 'adj. 大量的；重要的', 'The new approach led to a substantial improvement.', '新的方法带来了显著的改善。'],
-  ['retain', '/rɪˈteɪn/', 'v. 保留；记住', 'Explaining an idea helps us retain it.', '解释一个概念，有助于我们记住它。'],
-  ['evaluate', '/ɪˈvæljueɪt/', 'v. 评价；评估', 'Evaluate the evidence before reaching a conclusion.', '得出结论前，先评估证据。']
-];
-const READING = {
-  title: 'A quieter kind of progress',
-  subtitle: '学习方法 · 原创短文 · 3 道理解题',
-  paragraphs: [
-    'When a university library introduced a quiet study hour, its aim was simple: give students a place to work without notifications or conversations. Participation was voluntary, and phones were kept in bags rather than collected at the door. The library wanted students to choose attention, not feel that it had been imposed on them.',
-    'After a month, the organisers asked participants about their experience. Many said they had completed fewer tasks than they had expected. Yet they understood difficult material more clearly and could explain it in their own words. One engineering student realised that repeatedly checking messages had made a short programming problem stretch across an entire afternoon.',
-    'The findings did not prove that silence improves everyone’s performance. Students had chosen to attend, and the survey relied on their own reports. Some preferred background music, while others worked better with a partner. What the project offered was an opportunity to notice a habit and test a different one.',
-    'The library therefore kept the quiet hour but added other options, including a discussion room and a short reflection sheet. Students could record what they tried and what helped. Progress, the organisers argued, should be measured not only by the number of tasks completed, but also by the quality of understanding gained.'
-  ],
-  questions: [
-    { id: 'r1', text: 'Why did the library allow students to keep their phones?', options: ['To help them answer the survey.', 'To encourage a voluntary choice to focus.', 'To let them discuss difficult questions.', 'To monitor how often they checked messages.'], answer: 1, explanation: '第一段最后一句说明，活动希望学生主动选择专注，而不是感到被强制要求。' },
-    { id: 'r2', text: 'What limitation of the findings does the passage mention?', options: ['The study room was too small.', 'Only engineering students participated.', 'The results were based on self-reports from volunteers.', 'No participant finished a programming task.'], answer: 2, explanation: '第三段指出，参与者自行选择参加，且调查依赖他们自己的反馈，因此不能据此推断对所有人都有效。' },
-    { id: 'r3', text: 'Which statement best expresses the main idea?', options: ['Understanding is an important part of learning progress.', 'Students should complete as many tasks as possible.', 'Quiet environments work equally well for everyone.', 'Libraries should remove phones from study rooms.'], answer: 0, explanation: '最后一段强调，进步既包括任务数量，也包括理解的质量；全文围绕尝试适合自己的学习方式展开。' }
-  ]
-};
-
+export function missingBuiltinWords(en){
+  const ids=new Set((en.words||[]).map(word=>word.id)),words=new Set((en.words||[]).map(word=>String(word.word).toLowerCase()));
+  return VOCABULARY.map((v,index)=>({id:`builtin-word-${index}`,word:v[0],phonetic:v[1],meaning:v[2],example:v[3],translation:v[4],source:'builtin',status:'new'})).filter(word=>!ids.has(word.id)&&!words.has(word.word.toLowerCase()));
+}
+export function addBuiltinWords(ctx){
+  const additions=missingBuiltinWords(ctx.state.english);if(!additions.length)return 0;
+  if((ctx.state.english.words||[]).length+additions.length>100000)throw new Error('词汇数量已达上限，请先整理再添加。');
+  saveEnglishPractice(ctx,en=>{en.words=[...(en.words||[]),...additions];});return additions.length;
+}
 function localDate(date = new Date()) {
   const d = new Date(date);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -54,6 +41,11 @@ export function mountEnglish(ctx, initialSection = '') {
   en.sessions ||= []; en.words ||= []; en.mistakes ||= []; en.attempts ||= []; en.readingAnswers ||= {};
   let section = ['vocabulary','materials','mistakes','records'].includes(initialSection) ? initialSection : 'practice';
   let exercise = ['reading', 'writing', 'listening', 'translation'].includes(initialSection) ? initialSection : 'reading';
+  const selections={reading:READINGS[0].id,writing:WRITING_PROMPTS[0].id,translation:TRANSLATION_PROMPTS[0].id};
+  const levels={reading:'all',writing:'all',translation:'all'};
+  const catalog=type=>type==='reading'?READINGS:type==='writing'?WRITING_PROMPTS:TRANSLATION_PROMPTS;
+  const currentPrompt=type=>catalog(type).find(item=>item.id===selections[type])||catalog(type)[0];
+  const draftFor=type=>type==='listening'?{text:en.drafts.listening||'',updatedAt:en.draftUpdatedAt.listening||''}:getExerciseDraft(en,type,currentPrompt(type));
   let flipped = false, wordIndex = 0, wordFilter = 'all';
   let audioUrl = '', audioLoading = false, alive = true;
   const e = (value) => esc(String(value ?? ''));
@@ -68,8 +60,8 @@ export function mountEnglish(ctx, initialSection = '') {
   const minutesOn = date => visibleSessions().filter(s => s.date === date).reduce((n, s) => n + Number(s.minutes || 0), 0);
   const completedWords = () => en.words.filter(w => !w.archived&&w.status === 'mastered').length;
   function openCoach(type){
-    let text='请结合我的六级学习目标、词汇和学习记录，先和我讨论需要调整什么，再列出学习计划或词汇卡片的行动方案。';
-    if(type){const draft=en.drafts[type]||'';if(!draft.trim()){toast('先写下一些内容，再交给 AI 一起修改。');return;}text=`请检查下面的${TYPES[type]||'英语'}草稿，给出具体修改理由。先和我讨论，若需要改动已保存内容，列出行动方案供我审核。\n\n${draft}`;}
+    let text='请结合我的英语学习目标、词汇和学习记录，先和我讨论需要调整什么，再列出学习计划或词汇卡片的行动方案。';
+    if(type){const draft=draftFor(type).text;if(!draft.trim()){toast('先写下一些内容，再交给 AI 一起修改。');return;}const prompt=type==='listening'?null:currentPrompt(type),draftId=prompt&&!prompt.legacy?`${type}:${prompt.id}`:type;text=`请检查这份${TYPES[type]||'英语'}草稿，给出具体修改理由。${prompt?`题目：${prompt.title}\n要求：${prompt.prompt}\n`:''}仅针对 englishDraft 编号 ${draftId} 提议修改；不能改其他题目的草稿。先讨论并展示方案，等我审核确认再保存。\n当前草稿：\n${draft}`;}
     try{openAIConversation(ctx,{targetId:'english',text});}catch(error){toast(error.message);}
   }
 
@@ -81,13 +73,13 @@ export function mountEnglish(ctx, initialSection = '') {
     const dailyPercent = target ? Math.min(100, Math.round(dayMinutes / target * 100)) : 0;
     const daysLeft = en.plan.examDate ? Math.ceil((new Date(`${en.plan.examDate}T00:00:00`) - new Date(`${today()}T00:00:00`)) / 86400000) : null;
     root.innerHTML = `<div class="english-page english-card-workspace" data-section="${section}">
-      <header class="page-head"><div><div class="eyebrow">A LITTLE EVERY DAY</div><h1>六级计划 <span class="english-title-dot"></span></h1><p class="muted">让每一次小练习，都留下一点进步。</p></div><div class="english-head-actions"><button class="btn soft" data-en="coach">${i('sparkles',17)} AI 教练</button><button class="btn soft" data-en="plan">${i('sliders')} 设置学习计划</button></div></header>
+      <header class="page-head"><div><div class="eyebrow">A LITTLE EVERY DAY</div><h1>英语学习 <span class="english-title-dot"></span></h1><p class="muted">从日常沟通到项目表达，选择适合自己的练习。</p></div><div class="english-head-actions"><button class="btn soft" data-en="coach">${i('sparkles',17)} AI 教练</button><button class="btn soft" data-en="plan">${i('sliders')} 设置学习计划</button></div></header>
       <section class="english-hero">
-        <div class="english-hero-copy"><span class="english-kicker">YOUR NEXT CHAPTER · CET-6</span><h2>慢慢积累，<br>也在稳稳向前<span>。</span></h2><p>${target ? `每天留出 ${e(target)} 分钟，从一项小练习开始。` : '不用急着填满计划。先从一次感兴趣的练习开始。'}</p><div class="english-goals"><span>目标分数 <b>${en.plan.target ? e(en.plan.target) : '待设置'}</b></span><span>考试日期 <b>${en.plan.examDate ? e(dateLabel(en.plan.examDate)) : '待设置'}</b></span>${daysLeft !== null ? `<span><b>${daysLeft >= 0 ? `还有 ${daysLeft} 天` : '日期已过'}</b></span>` : ''}</div><button class="btn primary" data-en="start">开始今日练习 ${i('arrow-right', 17)}</button></div>
-        <div class="english-hero-art" aria-hidden="true"><span class="english-orbit orbit-one"></span><span class="english-orbit orbit-two"></span><span class="english-spark spark-one">✦</span><span class="english-spark spark-two">+</span><div class="english-book"><span class="english-book-line"></span><small>A LITTLE<br>EVERY DAY</small><strong>CET<span>6</span></strong><span class="english-book-footer">ONE STEP CLOSER ↗</span></div><span class="english-note">Make it a habit.</span></div>
+        <div class="english-hero-copy"><span class="english-kicker">YOUR NEXT CHAPTER · ENGLISH</span><h2>慢慢积累，<br>也在稳稳向前<span>。</span></h2><p>${target ? `每天留出 ${e(target)} 分钟，从一项小练习开始。` : '不用急着填满计划。先从一次感兴趣的练习开始。'}</p><div class="english-goals"><span>目标分数 <b>${en.plan.target ? e(en.plan.target) : '待设置'}</b></span><span>考试日期 <b>${en.plan.examDate ? e(dateLabel(en.plan.examDate)) : '待设置'}</b></span>${daysLeft !== null ? `<span><b>${daysLeft >= 0 ? `还有 ${daysLeft} 天` : '日期已过'}</b></span>` : ''}</div><button class="btn primary" data-en="start">开始今日练习 ${i('arrow-right', 17)}</button></div>
+        <div class="english-hero-art" aria-hidden="true"><span class="english-orbit orbit-one"></span><span class="english-orbit orbit-two"></span><span class="english-spark spark-one">✦</span><span class="english-spark spark-two">+</span><div class="english-book"><span class="english-book-line"></span><small>A LITTLE<br>EVERY DAY</small><strong>EN<span>↗</span></strong><span class="english-book-footer">ONE STEP CLOSER ↗</span></div><span class="english-note">Make it a habit.</span></div>
       </section>
       <div class="english-stat-row"><div class="english-stat"><span class="english-stat-icon lilac">${i('clock')}</span><div><small>近 7 天投入</small><strong>${weekMinutes}<em> 分钟</em></strong></div></div><div class="english-stat"><span class="english-stat-icon mint">${i('check')}</span><div><small>已标记掌握</small><strong>${completedWords()}<em> 个单词</em></strong></div></div><div class="english-stat"><span class="english-stat-icon pink">${i('book-open')}</span><div><small>待回顾错题</small><strong>${visibleMistakes().filter(m => !m.reviewed).length}<em> 道</em></strong></div></div></div>
-      <div class="english-layout"><div class="english-main"><div class="english-main-tabs" role="tablist" aria-label="六级学习内容">${[['practice', '练习空间'], ['vocabulary', '词汇卡片'], ['mistakes', '错题本'], ['records', '学习记录'], ['materials', '我的资料']].map(([key, label]) => `<button role="tab" aria-selected="${section === key}" class="english-main-tab ${section === key ? 'active' : ''}" data-en="section" data-key="${key}">${label}${key === 'mistakes' && visibleMistakes().length ? `<span>${visibleMistakes().length}</span>` : ''}</button>`).join('')}</div>
+      <div class="english-layout"><div class="english-main"><div class="english-main-tabs" role="tablist" aria-label="英语学习内容">${[['practice', '练习空间'], ['vocabulary', '词汇卡片'], ['mistakes', '错题本'], ['records', '学习记录'], ['materials', '我的资料']].map(([key, label]) => `<button role="tab" aria-selected="${section === key}" class="english-main-tab ${section === key ? 'active' : ''}" data-en="section" data-key="${key}">${label}${key === 'mistakes' && visibleMistakes().length ? `<span>${visibleMistakes().length}</span>` : ''}</button>`).join('')}</div>
       ${section === 'practice' ? renderPractice() : section === 'vocabulary' ? renderVocabulary() : section === 'mistakes' ? renderMistakes() : section === 'materials' ? renderMaterials() : renderRecords()}</div>
       <aside class="english-side"><section class="panel english-today"><span class="english-card-label">TODAY / 今日目标</span><div class="section-head"><h3>今天的小目标</h3><span class="badge">${dateLabel(today())}</span></div><div class="english-progress-row"><div class="english-progress-ring" style="--progress:${dailyPercent * 3.6}deg"><div><strong>${dayMinutes}</strong><span>已记录 / 分钟</span></div></div><div class="english-progress-copy"><strong>${target ? `${target} 分钟` : '按自己的节奏'}</strong><p>${target ? (dayMinutes >= target ? '今天的时长目标已完成' : `距离时长目标还有 ${Math.max(0, target - dayMinutes)} 分钟`) : '每日时长还未设置，可以先练起来。'}</p></div></div><button class="btn soft english-full" data-en="record">${i('plus', 17)} 记录一次学习</button><p class="english-footnote">时长由你手动记录，不会自动累计。</p></section>
       <section class="panel english-week"><span class="english-card-label">PROGRESS / 每周足迹</span><div class="section-head"><h3>近 7 天</h3><span class="muted">分钟</span></div><div class="english-chart" aria-label="近七天学习分钟数">${renderChart()}</div><p class="english-footnote">${weekMinutes ? '每一段投入，都有迹可循。' : '还没有学习记录。你的第一小步会出现在这里。'}</p></section>
@@ -98,7 +90,7 @@ export function mountEnglish(ctx, initialSection = '') {
 
   function renderMaterials(){
     const materials=(state.captures||[]).filter(c=>c.category==='英语'&&!c.archived);
-    return `<section class="panel english-materials"><div class="section-head"><div><span class="english-card-label">LIBRARY / 资料卡片</span><h3>我的六级资料</h3><p class="muted">从收件台归入这里的原文与文件。</p></div><button class="btn" data-go="ai" data-sub="english">添加资料</button></div>${materials.length?`<div class="english-material-grid">${materials.map((c,index)=>`<article class="material-card" data-kind="${c.blobId?'file':'note'}"><header><span class="english-material-icon">${i(c.blobId?'file':'edit',21)}</span><span class="english-card-label">${c.blobId?'FILE / 原始文件':'NOTE / 原文笔记'}</span><small>${String(index+1).padStart(2,'0')}</small></header><p>${e(c.text||c.fileName||'资料')}</p><footer><small>${e(c.tags||'六级资料')}</small>${c.blobId?`<button class="btn" data-en="material-download" data-id="${e(c.id)}">${i('download',16)}下载原文件</button>`:''}</footer></article>`).join('')}</div>`:'<div class="empty-state"><h3>为你的六级资料留一个位置</h3><p>把文章、学习笔记或文件交给收件台，选择六级资料即可保存到这里。</p></div>'}</section>`;
+    return `<section class="panel english-materials"><div class="section-head"><div><span class="english-card-label">LIBRARY / 资料卡片</span><h3>我的英语资料</h3><p class="muted">从收件台归入这里的原文与文件。</p></div><button class="btn" data-go="ai" data-sub="english">添加资料</button></div>${materials.length?`<div class="english-material-grid">${materials.map((c,index)=>`<article class="material-card" data-kind="${c.blobId?'file':'note'}"><header><span class="english-material-icon">${i(c.blobId?'file':'edit',21)}</span><span class="english-card-label">${c.blobId?'FILE / 原始文件':'NOTE / 原文笔记'}</span><small>${String(index+1).padStart(2,'0')}</small></header><p>${e(c.text||c.fileName||'资料')}</p><footer><small>${e(c.tags||'英语资料')}</small>${c.blobId?`<button class="btn" data-en="material-download" data-id="${e(c.id)}">${i('download',16)}下载原文件</button>`:''}</footer></article>`).join('')}</div>`:'<div class="empty-state"><h3>为你的英语资料留一个位置</h3><p>把文章、学习笔记或文件交给收件台，选择英语资料即可保存到这里。</p></div>'}</section>`;
   }
 
   function renderChart() {
@@ -110,15 +102,19 @@ export function mountEnglish(ctx, initialSection = '') {
     return `<div class="english-practice-types" role="tablist" aria-label="练习类型">${[['reading', 'book-open', '阅读'], ['listening', 'headphones', '听力'], ['writing', 'pen-line', '写作'], ['translation', 'languages', '翻译']].map(([key, name, title]) => `<button class="english-practice-type ${exercise === key ? 'active' : ''}" data-en="exercise" data-key="${key}" role="tab" aria-selected="${exercise === key}">${i(name, 21)}<span>${title}</span></button>`).join('')}</div><section class="panel english-exercise" id="english-exercise" data-exercise="${exercise}">${exercise === 'reading' ? renderReading() : exercise === 'listening' ? renderListening() : renderDraft(exercise)}</section>`;
   }
 
+  function promptPicker(type){
+    const items=catalog(type).filter(item=>levels[type]==='all'||item.level===levels[type]);
+    return `<div class="english-library-picker"><div><strong>原创题库</strong><small>${type==='reading'?READINGS.length+' 篇 · '+READINGS.reduce((n,item)=>n+item.questions.length,0)+' 道选择题':catalog(type).length+' 道表达练习'} · 各题进度独立保存</small></div><div class="english-library-selects"><label>难度<select data-en-level="${type}" aria-label="${TYPES[type]}难度"><option value="all">全部难度</option>${['基础','进阶','挑战'].map(level=>`<option value="${level}" ${levels[type]===level?'selected':''}>${level}</option>`).join('')}</select></label><label>选择题目<select data-en-prompt="${type}" aria-label="选择${TYPES[type]}题目">${items.map(item=>`<option value="${e(item.id)}" ${item.id===selections[type]?'selected':''}>${e(item.level)} · ${e(item.title)}</option>`).join('')}</select></label></div></div>`;
+  }
   function renderReading() {
-    const result = en.readingResult;
-    return `<div class="english-exercise-head"><div><span class="english-source">内置练习 · 原创，非历年真题</span><h2>${READING.title}</h2><p class="muted">${READING.subtitle}</p></div><span class="english-round-icon">${i('book-open', 25)}</span></div><div class="english-reading-text" lang="en" data-card-label="READ / 阅读材料">${READING.paragraphs.map((text, n) => `<p><span>${String(n + 1).padStart(2, '0')}</span>${text}</p>`).join('')}</div><div class="english-questions">${READING.questions.map((q, n) => `<fieldset class="english-question" data-question="${n + 1}"><legend><span>${n + 1}</span>${q.text}</legend>${q.options.map((text, idx) => `<label class="english-answer ${result && idx === q.answer ? 'is-correct' : result && en.readingAnswers[q.id] === idx ? 'is-wrong' : ''}"><input type="radio" name="${q.id}" value="${idx}" data-en-answer="${q.id}" ${en.readingAnswers[q.id] === idx ? 'checked' : ''} ${result ? 'disabled' : ''}><span class="english-answer-letter">${'ABCD'[idx]}</span><span>${text}</span></label>`).join('')}${result ? `<p class="english-explanation"><strong>答案 ${'ABCD'[q.answer]}</strong> ${q.explanation}</p>` : ''}</fieldset>`).join('')}</div>${result ? `<div class="english-reading-result"><div><strong>答对 ${result.correct} / ${READING.questions.length} 题</strong><p>本地判分 · 仅代表本次内置练习结果</p></div><button class="btn soft" data-en="reading-reset">再练一次</button></div>` : `<div class="english-exercise-footer"><span class="muted">答错的题目会自动加入错题本</span><button class="btn primary" data-en="reading-submit">提交并查看解析 ${i('arrow-right', 16)}</button></div>`}`;
+    const reading=currentPrompt('reading'),result=getReadingResult(en,reading);
+    return `${promptPicker('reading')}<div class="english-exercise-head"><div><span class="english-source">原创练习 · ${e(reading.level)} · ${e(reading.topic)} · 非历年真题</span><h2>${e(reading.title)}</h2><p class="muted">${e(reading.subtitle)}</p></div><span class="english-round-icon">${i('book-open',25)}</span></div><div class="english-reading-text" lang="en" data-card-label="READ / 阅读材料">${reading.paragraphs.map((text,n)=>`<p><span>${String(n+1).padStart(2,'0')}</span>${e(text)}</p>`).join('')}</div><div class="english-questions">${reading.questions.map((q,n)=>`<fieldset class="english-question" data-question="${n+1}"><legend><span>${n+1}</span>${e(q.text)}</legend>${q.options.map((text,idx)=>`<label class="english-answer ${result&&idx===q.answer?'is-correct':result&&en.readingAnswers[q.id]===idx?'is-wrong':''}"><input type="radio" name="${e(q.id)}" value="${idx}" data-en-answer="${e(q.id)}" ${en.readingAnswers[q.id]===idx?'checked':''} ${result?'disabled':''}><span class="english-answer-letter">${'ABCD'[idx]}</span><span>${e(text)}</span></label>`).join('')}${result?`<p class="english-explanation"><strong>答案 ${'ABCD'[q.answer]}</strong> ${e(q.explanation)}</p>`:''}</fieldset>`).join('')}</div>${result?`<div class="english-reading-result"><div><strong>答对 ${result.correct} / ${reading.questions.length} 题</strong><p>本地判分 · 仅代表本篇练习结果</p></div><div class="row"><button class="btn soft" data-en="reading-reset">重做本篇</button><button class="btn primary" data-en="reading-next">下一篇</button></div></div>`:`<div class="english-exercise-footer"><span class="muted">答错的题目会自动加入错题本</span><button class="btn primary" data-en="reading-submit">提交并查看解析 ${i('arrow-right',16)}</button></div>`}`;
   }
 
   function renderDraft(type) {
-    const writing = type === 'writing', text = en.drafts[type] || '';
-    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-    return `<div class="english-exercise-head"><div><span class="english-source">内置练习 · 原创题目</span><h2>${writing ? 'Does technology make learning easier?' : '把熟悉的日常，写成英语'}</h2><p class="muted">${writing ? '表达观点，也练习组织思路。' : '先完整表达，再打磨句子。'}</p></div><span class="english-round-icon">${i(writing ? 'pen-line' : 'languages', 25)}</span></div><div class="english-prompt" data-card-label="${writing ? 'WRITE / 写作任务' : 'TRANSLATE / 翻译任务'}">${writing ? '<strong>写作任务</strong><p>Write an essay discussing how technology can support independent learning. Give examples and explain one possible limitation. Suggested length: 150–200 words.</p>' : '<strong>翻译任务</strong><p>近年来，越来越多的大学生开始使用数字工具管理学习资料。他们把课堂笔记、阅读材料和个人想法保存在同一个地方，以便随时查找。然而，收集资料只是第一步。只有定期回顾并尝试用自己的语言解释所学内容，知识才能真正成为自己的。</p>'}</div><section class="english-draft-card"><span class="english-card-label">YOUR DRAFT / 表达练习</span><label class="english-draft-label" for="english-${type}">你的${writing ? '文章' : '译文'}</label><textarea id="english-${type}" class="english-draft" data-en-draft="${type}" placeholder="${writing ? 'Start with your main idea…' : 'In recent years…'}" spellcheck="true" lang="en">${e(text)}</textarea><div class="english-draft-meta"><span id="english-word-count">${words} 个英文词</span><span id="english-save-status">${en.draftUpdatedAt[type] ? '草稿已保存在本机' : '输入后自动保存到本机'}</span></div></section><div class="english-feedback-placeholder">${i('sparkles', 18)}<span>把草稿交给 AI 讨论修改；改动保存前会先让你审核。</span><button class="btn compact" data-en="draft-review" data-key="${type}">一起修改</button></div><div class="english-exercise-footer"><button class="btn soft" data-en="draft-export" data-key="${type}">${i('download', 16)} 导出草稿</button><button class="btn primary" data-en="draft-save" data-key="${type}">${i('check', 16)} 保存草稿</button></div>`;
+    const writing=type==='writing',prompt=currentPrompt(type),draft=draftFor(type),text=draft.text;
+    const words=text.trim()?text.trim().split(/\s+/).length:0;
+    return `${promptPicker(type)}<div class="english-exercise-head"><div><span class="english-source">原创练习 · ${e(prompt.level)} · ${e(prompt.topic)}</span><h2>${e(prompt.title)}</h2><p class="muted">${writing?'表达观点，也练习组织思路。':'先完整表达，再对照参考译文。'}</p></div><span class="english-round-icon">${i(writing?'pen-line':'languages',25)}</span></div><div class="english-prompt" data-card-label="${writing?'WRITE / 写作任务':'TRANSLATE / 翻译任务'}"><strong>${writing?'写作任务':'翻译任务'}</strong><p>${e(prompt.prompt)}</p></div><section class="english-draft-card"><span class="english-card-label">YOUR DRAFT / 本题草稿</span><label class="english-draft-label" for="english-${type}">你的${writing?'文章':'译文'}</label><textarea id="english-${type}" class="english-draft" data-en-draft="${type}" maxlength="100000" placeholder="${writing?'Start with your main idea…':'Write your translation here…'}" spellcheck="true" lang="en">${e(text)}</textarea><div class="english-draft-meta"><span id="english-word-count">${words} 个英文词</span><span id="english-save-status">${draft.updatedAt?'本题草稿已保存':'输入后自动保存本题草稿'}</span></div></section><details class="english-reference"><summary>${writing?'查看写作提示':'查看参考译文与表达提示'}</summary>${writing?'':`<p lang="en">${e(prompt.reference)}</p><small>参考译文并非唯一答案；此处不自动评分。</small>`}<ul>${(writing?prompt.guide:prompt.notes).map(note=>`<li>${e(note)}</li>`).join('')}</ul></details><div class="english-feedback-placeholder">${i('sparkles',18)}<span>把本题草稿交给 AI 讨论修改；保存前先审核。</span><button class="btn compact" data-en="draft-review" data-key="${type}">一起修改</button></div><div class="english-exercise-footer"><button class="btn soft" data-en="draft-export" data-key="${type}">${i('download',16)} 导出草稿</button><button class="btn primary" data-en="draft-save" data-key="${type}">${i('check',16)} 保存草稿</button></div>`;
   }
 
   function renderListening() {
@@ -129,7 +125,7 @@ export function mountEnglish(ctx, initialSection = '') {
     const words = wordList();
     wordIndex = Math.min(wordIndex, Math.max(0, words.length - 1));
     const word = words[wordIndex];
-    return `<section class="panel english-vocabulary"><div class="section-head"><div><span class="english-card-label">WORDS / 我的词汇</span><h3>把单词，放进语境</h3><p class="muted">先回忆，再翻面。按真实掌握情况标记。</p></div><button class="btn soft" data-en="word-add">${i('plus', 16)} 添加</button></div><div class="english-word-filters">${[['all', '全部'], ['new', '未学习'], ['review', '待复习'], ['mastered', '已掌握']].map(([key, label]) => `<button data-en="word-filter" data-key="${key}" class="chip ${wordFilter === key ? 'is-active' : ''}">${label}</button>`).join('')}</div>${word ? `<button class="english-word-card ${flipped ? 'is-flipped' : ''}" data-en="word-flip" aria-label="${flipped ? '查看单词正面' : '翻面查看释义'}"><span class="english-word-source">${word.source === 'builtin' ? '内置练习' : '我的词汇'} · ${wordIndex + 1} / ${words.length}</span><strong lang="en">${e(word.word)}</strong>${flipped ? `<span class="english-word-meaning">${e(word.meaning)}</span>${word.example ? `<span class="english-word-example" lang="en">${e(word.example)}</span>` : ''}${word.translation ? `<span class="english-word-translation">${e(word.translation)}</span>` : ''}` : `<span class="english-phonetic">${e(word.phonetic || '试着回忆它的意思')}</span><span class="english-word-invite">${i('rotate-cw', 17)} 点击卡片，查看释义</span>`}</button><div class="english-word-actions"><button class="btn soft" data-en="word-mark" data-status="review" data-id="${e(word.id)}">${i('rotate-cw', 17)} 再复习</button><button class="btn primary" data-en="word-mark" data-status="mastered" data-id="${e(word.id)}">${i('check', 17)} 已掌握</button><button class="icon-btn" data-en="word-next" aria-label="下一张词汇卡片">${i('arrow-right', 20)}</button></div><p class="english-footnote">内置词汇是练习示例，不是完整六级词库。掌握状态由你自己标记。</p>` : '<div class="empty-state"><h3>这里暂时没有单词</h3><p>切换分类，或添加一个你想记住的词。</p></div>'}</section>`;
+    return `<section class="panel english-vocabulary"><div class="section-head"><div><span class="english-card-label">WORDS / 我的词汇</span><h3>把单词，放进语境</h3><p class="muted">先回忆，再翻面。按真实掌握情况标记。</p></div>${missingBuiltinWords(en).length?`<button class="btn soft" data-en="words-builtin">补充内置词汇（${missingBuiltinWords(en).length}）</button>`:''}<button class="btn soft" data-en="word-add">${i('plus', 16)} 添加</button></div><div class="english-word-filters">${[['all', '全部'], ['new', '未学习'], ['review', '待复习'], ['mastered', '已掌握']].map(([key, label]) => `<button data-en="word-filter" data-key="${key}" class="chip ${wordFilter === key ? 'is-active' : ''}">${label}</button>`).join('')}</div>${word ? `<button class="english-word-card ${flipped ? 'is-flipped' : ''}" data-en="word-flip" aria-label="${flipped ? '查看单词正面' : '翻面查看释义'}"><span class="english-word-source">${word.source === 'builtin' ? '内置练习' : '我的词汇'} · ${wordIndex + 1} / ${words.length}</span><strong lang="en">${e(word.word)}</strong>${flipped ? `<span class="english-word-meaning">${e(word.meaning)}</span>${word.example ? `<span class="english-word-example" lang="en">${e(word.example)}</span>` : ''}${word.translation ? `<span class="english-word-translation">${e(word.translation)}</span>` : ''}` : `<span class="english-phonetic">${e(word.phonetic || '试着回忆它的意思')}</span><span class="english-word-invite">${i('rotate-cw', 17)} 点击卡片，查看释义</span>`}</button><div class="english-word-actions"><button class="btn soft" data-en="word-mark" data-status="review" data-id="${e(word.id)}">${i('rotate-cw', 17)} 再复习</button><button class="btn primary" data-en="word-mark" data-status="mastered" data-id="${e(word.id)}">${i('check', 17)} 已掌握</button><button class="icon-btn" data-en="word-next" aria-label="下一张词汇卡片">${i('arrow-right', 20)}</button></div><p class="english-footnote">内置24张通用词汇卡，可继续添加自己的词汇。掌握状态由你自己标记。</p>` : '<div class="empty-state"><h3>这里暂时没有单词</h3><p>切换分类，或添加一个你想记住的词。</p></div>'}</section>`;
   }
 
   function renderMistakes() {
@@ -137,11 +133,11 @@ export function mountEnglish(ctx, initialSection = '') {
   }
 
   function renderRecords() {
-    return `<section class="panel english-records english-records-board"><div class="section-head"><div><span class="english-card-label">HISTORY / 学习记录</span><h3>那些认真投入的时刻</h3><p class="muted">手动记录学习时长，积累可回看的足迹。</p></div><button class="btn soft" data-en="record">${i('plus', 16)} 记一笔</button></div>${visibleSessions().length ? `<div class="english-session-list">${visibleSessions().slice().sort((a, b) => b.date.localeCompare(a.date)).map(s => `<article class="english-session" data-type="${e(s.type)}"><span class="english-session-dot ${e(s.type)}">${i(s.type === 'listening' ? 'headphones' : s.type === 'vocabulary' ? 'languages' : 'book-open', 20)}</span><div><strong>${e(TYPES[s.type] || s.type)}练习</strong><span>${e(dateLabel(s.date))}${s.note ? ` · ${e(s.note)}` : ''}</span></div><b>${Number(s.minutes)} <small>分钟</small></b><button class="icon-btn" data-en="record-edit" data-id="${e(s.id)}" aria-label="编辑这条学习记录">${i('pencil', 16)}</button></article>`).join('')}</div>` : '<div class="empty-state english-gentle-empty"><h3>从第一条记录开始</h3><p>花了多少时间、练了什么，都由你自己记录。</p><button class="btn soft" data-en="record">记录一次学习</button></div>'}${en.attempts.length ? `<div class="english-attempt-summary"><span class="english-card-label">RESULTS / 阅读记录</span><strong>阅读练习历史</strong>${en.attempts.slice(-5).reverse().map(a => `<p>${e(dateLabel(a.date))}<span>答对 ${a.correct} / ${a.total} 题</span></p>`).join('')}<small>内置原创题本地判分，不换算为六级成绩。</small></div>` : ''}</section>`;
+    return `<section class="panel english-records english-records-board"><div class="section-head"><div><span class="english-card-label">HISTORY / 学习记录</span><h3>那些认真投入的时刻</h3><p class="muted">手动记录学习时长，积累可回看的足迹。</p></div><button class="btn soft" data-en="record">${i('plus', 16)} 记一笔</button></div>${visibleSessions().length ? `<div class="english-session-list">${visibleSessions().slice().sort((a, b) => b.date.localeCompare(a.date)).map(s => `<article class="english-session" data-type="${e(s.type)}"><span class="english-session-dot ${e(s.type)}">${i(s.type === 'listening' ? 'headphones' : s.type === 'vocabulary' ? 'languages' : 'book-open', 20)}</span><div><strong>${e(TYPES[s.type] || s.type)}练习</strong><span>${e(dateLabel(s.date))}${s.note ? ` · ${e(s.note)}` : ''}</span></div><b>${Number(s.minutes)} <small>分钟</small></b><button class="icon-btn" data-en="record-edit" data-id="${e(s.id)}" aria-label="编辑这条学习记录">${i('pencil', 16)}</button></article>`).join('')}</div>` : '<div class="empty-state english-gentle-empty"><h3>从第一条记录开始</h3><p>花了多少时间、练了什么，都由你自己记录。</p><button class="btn soft" data-en="record">记录一次学习</button></div>'}${en.attempts.length ? `<div class="english-attempt-summary"><span class="english-card-label">RESULTS / 阅读记录</span><strong>阅读练习历史</strong>${en.attempts.slice(-5).reverse().map(a => `<p>${e(a.source||'原有阅读练习')} · ${e(dateLabel(a.date))}<span>答对 ${a.correct} / ${a.total} 题</span></p>`).join('')}<small>内置原创题本地判分，不换算为考试成绩。</small></div>` : ''}</section>`;
   }
 
   function showPlan() {
-    modal({ title: '设置六级学习计划', submitLabel: '保存计划', body: `<p class="muted">按你现在的节奏填写；每一项都可以暂时留空。</p><div class="form-grid"><label class="field">考试日期<input type="date" name="examDate" value="${e(en.plan.examDate)}"></label><label class="field">目标分数<input type="number" min="1" max="710" step="1" name="target" placeholder="例如 550，也可留空" value="${e(en.plan.target)}"></label><label class="field">每日可用时间 / 分钟<input type="number" min="1" max="720" step="1" name="dailyMinutes" placeholder="之后再定也没关系" value="${e(en.plan.dailyMinutes)}"></label><label class="field">优先练习<select name="focus">${Object.entries(TYPES).map(([key, name]) => `<option value="${key}" ${en.plan.focus === key ? 'selected' : ''}>${name}</option>`).join('')}</select></label></div><p class="english-footnote">考试日期由你填写；这里不会自动假定官方考试时间。</p>`, onSubmit(data) {
+    modal({ title: '设置英语学习计划', submitLabel: '保存计划', body: `<p class="muted">按你现在的节奏填写；每一项都可以暂时留空。</p><div class="form-grid"><label class="field">考试日期（选填）<input type="date" name="examDate" value="${e(en.plan.examDate)}"></label><label class="field">目标分数（选填）<input type="number" min="0.5" max="9999" step="0.5" name="target" placeholder="自定目标，也可留空" value="${e(en.plan.target)}"></label><label class="field">每日可用时间 / 分钟<input type="number" min="1" max="720" step="1" name="dailyMinutes" placeholder="之后再定也没关系" value="${e(en.plan.dailyMinutes)}"></label><label class="field">优先练习<select name="focus">${Object.entries(TYPES).map(([key, name]) => `<option value="${key}" ${en.plan.focus === key ? 'selected' : ''}>${name}</option>`).join('')}</select></label></div><p class="english-footnote">日期和分数都可留空，用于有考试目标时自行安排；不自动查询考试时间或换算成绩。</p>`, onSubmit(data) {
       en.plan = { examDate: data.get('examDate') || '', target: data.get('target') ? Number(data.get('target')) : '', dailyMinutes: data.get('dailyMinutes') ? Number(data.get('dailyMinutes')) : '', focus: data.get('focus') || 'reading' };
       persist(); render(); toast('学习计划已保存');
     } });
@@ -169,32 +165,16 @@ export function mountEnglish(ctx, initialSection = '') {
   }
 
   function submitReading() {
-    if (en.readingResult) return;
-    if (READING.questions.some(q => !Number.isInteger(en.readingAnswers[q.id]))) { toast('先完成全部 3 道题，再查看解析'); return; }
-    let correct = 0;
-    for (const q of READING.questions) {
-      const selected = en.readingAnswers[q.id];
-      if (selected === q.answer) correct++;
-      else {
-        const existing = en.mistakes.find(m => m.questionId === q.id);
-        const value = { questionId: q.id, question: q.text, selected: `${'ABCD'[selected]}. ${q.options[selected]}`, correct: `${'ABCD'[q.answer]}. ${q.options[q.answer]}`, explanation: q.explanation, source: '内置原创阅读', date: today(), reviewed: false };
-        if (existing) Object.assign(existing, value); else en.mistakes.push({ id: uid(), ...value });
-      }
-    }
-    en.readingResult = { correct, total: READING.questions.length, date: today() };
-    en.attempts.push({ id: uid(), ...en.readingResult });
-    persist(); render(); toast(`本次答对 ${correct} / 3 题，解析已展开`);
+    try{const reading=currentPrompt('reading'),result=submitReadingPractice(ctx,reading,{date:today(),uid});render();toast(`本次答对 ${result.correct} / ${reading.questions.length} 题，解析已展开`);}catch(error){toast(error.message);}
   }
 
   function updateDraft(target) {
-    const type = target.dataset.enDraft;
-    if (!type) return;
-    en.drafts[type] = target.value;
-    en.draftUpdatedAt[type] = new Date().toISOString();
-    persist();
-    const count = root.querySelector('#english-word-count'), status = root.querySelector('#english-save-status');
-    if (count) count.textContent = `${target.value.trim() ? target.value.trim().split(/\s+/).length : 0} 个英文词`;
-    if (status) status.textContent = '已保存在本机';
+    const type=target.dataset.enDraft;if(!type)return false;
+    try{saveExerciseDraft(ctx,type,type==='listening'?{id:'listening',legacy:true}:currentPrompt(type),target.value,{now:new Date().toISOString()});}
+    catch(error){const status=root.querySelector('#english-save-status');if(status)status.textContent='尚未保存，请保留文本并重试';toast(error.message);return false;}
+    const count=root.querySelector('#english-word-count'),status=root.querySelector('#english-save-status');
+    if(count)count.textContent=`${target.value.trim()?target.value.trim().split(/\s+/).length:0} 个英文词`;
+    if(status)status.textContent='本题草稿已保存';return true;
   }
 
   async function restoreAudio() {
@@ -228,7 +208,7 @@ export function mountEnglish(ctx, initialSection = '') {
     const button = event.target.closest('[data-en]');
     if (!button || !root.contains(button)) return;
     const action = button.dataset.en, key = button.dataset.key;
-    if (action === 'material-download') { const file=state.captures.find(c=>c.id===button.dataset.id);try{const blob=await ctx.getFile(file?.blobId);if(!blob)throw new Error('原件已不在当前浏览器，请重新添加。');ctx.download(blob,file.fileName||'六级资料');}catch(error){toast(error.message);}return; }
+    if (action === 'material-download') { const file=state.captures.find(c=>c.id===button.dataset.id);try{const blob=await ctx.getFile(file?.blobId);if(!blob)throw new Error('原件已不在当前浏览器，请重新添加。');ctx.download(blob,file.fileName||'英语资料');}catch(error){toast(error.message);}return; }
     if (action === 'plan') return showPlan();
     if (action === 'coach') return openCoach();
     if (action === 'draft-review') return openCoach(key);
@@ -239,25 +219,29 @@ export function mountEnglish(ctx, initialSection = '') {
     else if (action === 'exercise') { section = 'practice'; exercise = key; render(); }
     else if (action === 'start') { section = en.plan.focus === 'vocabulary' ? 'vocabulary' : 'practice'; exercise = en.plan.focus === 'vocabulary' ? 'reading' : en.plan.focus || 'reading'; render(); root.querySelector('.english-main')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); }
     else if (action === 'reading-submit') submitReading();
-    else if (action === 'reading-reset') { en.readingResult = null; en.readingAnswers = {}; persist(); render(); }
+    else if (action === 'reading-reset') { try{resetReadingPractice(ctx,currentPrompt('reading'));render();}catch(error){toast(error.message);} }
+    else if(action==='reading-next'){const items=READINGS.filter(item=>levels.reading==='all'||item.level===levels.reading);selections.reading=items[(items.findIndex(item=>item.id===selections.reading)+1)%items.length].id;render();}
     else if (action === 'word-add') showAddWord();
+    else if(action==='words-builtin'){try{const count=addBuiltinWords(ctx);render();toast(`已补充 ${count} 张内置词汇卡，原有掌握状态保持不变。`);}catch(error){toast(error.message);}}
     else if (action === 'word-flip') { flipped = !flipped; render(); }
     else if (action === 'word-filter') { wordFilter = key; wordIndex = 0; flipped = false; render(); }
     else if (action === 'word-next') { wordIndex = (wordIndex + 1) % Math.max(1, wordList().length); flipped = false; render(); }
     else if (action === 'word-mark') { const word = en.words.find(w => w.id === button.dataset.id); if (word) { word.status = button.dataset.status; word.updatedAt = new Date().toISOString(); if (wordFilter === 'all') wordIndex = (wordIndex + 1) % Math.max(1, wordList().length); flipped = false; persist(); render(); toast(word.status === 'mastered' ? '已标记掌握，继续下一个' : '已加入待复习'); } }
     else if (action === 'mistake-review') { const mistake = en.mistakes.find(m => m.id === button.dataset.id); if (mistake) { mistake.reviewed = !mistake.reviewed; persist(); render(); } }
-    else if (action === 'draft-save') { const input = root.querySelector(`[data-en-draft="${key}"]`); if (input) updateDraft(input); toast('草稿已保存在本机'); }
+    else if (action === 'draft-save') { const input = root.querySelector(`[data-en-draft="${key}"]`); if (input&&updateDraft(input)) toast('本题草稿已保存'); }
     else if (action === 'draft-export') {
-      const text = en.drafts[key] || '';
+      const text = draftFor(key).text;
       if (!text.trim()) return toast('先写下一些内容，再导出草稿');
-      const blob = new Blob([`${TYPES[key]}练习草稿\n${today()}\n来源：内置原创练习，未进行 AI 批改\n\n${text}`], { type: 'text/plain;charset=utf-8' });
+      const blob = new Blob([`${TYPES[key]}练习草稿\n题目：${key==='listening'?'听力笔记':currentPrompt(key).title}\n${today()}\n来源：内置原创练习，未进行 AI 批改\n\n${text}`], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob), a = document.createElement('a');
-      a.href = url; a.download = `六级-${TYPES[key]}草稿-${today()}.txt`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      a.href = url; a.download = `英语-${TYPES[key]}草稿-${today()}.txt`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
   };
   root.onchange = (event) => {
     const target = event.target;
-    if (target.dataset.enAnswer && !en.readingResult) { en.readingAnswers[target.dataset.enAnswer] = Number(target.value); persist(); }
+    if(target.dataset.enLevel){const type=target.dataset.enLevel;levels[type]=target.value;const items=catalog(type).filter(item=>levels[type]==='all'||item.level===levels[type]);if(!items.some(item=>item.id===selections[type]))selections[type]=items[0].id;render();return;}
+    if(target.dataset.enPrompt){const type=target.dataset.enPrompt;if(catalog(type).some(item=>item.id===target.value))selections[type]=target.value;render();return;}
+    if(target.dataset.enAnswer){try{saveReadingAnswer(ctx,currentPrompt('reading'),target.dataset.enAnswer,Number(target.value));}catch(error){toast(error.message);render();}}
     if (target.dataset.enDraft) updateDraft(target);
     if (target.dataset.enFile === 'audio') uploadAudio(target.files?.[0]);
   };

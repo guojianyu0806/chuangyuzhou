@@ -4,7 +4,7 @@ const freezeRows = rows => Object.freeze(rows.map(row => Object.freeze(row)));
 export const WORKBENCH_MODULES = freezeRows([
   {id:'ai',title:'AI伙伴',description:'通过对话搭建、整理和操作工作台，重要修改先审核再执行。',icon:'sparkles',color:'#B3A0FF',category:'核心'},
   {id:'courses',title:'课程空间',description:'按课程或研究主题保存资料与笔记。',icon:'book',color:'#AE88FF',category:'学习'},
-  {id:'english',title:'六级随身练',description:'词汇、阅读、听力和学习记录。',icon:'graduation',color:'#D8F649',category:'学习'},
+  {id:'english',title:'英语',description:'词汇、阅读、听力和学习记录。',icon:'graduation',color:'#D8F649',category:'学习'},
   {id:'inbox',title:'灵感收集箱',description:'随手保存文字、链接和附件，稍后整理。',icon:'inbox',color:'#FF9CCE',category:'通用'},
   {id:'tasks',title:'备忘与待办',description:'记录要做的事，安排日期与优先级。',icon:'check-circle',color:'#63E6DC',category:'通用'},
   {id:'review',title:'生活回顾',description:'查看完成记录与学习活动。',icon:'chart',color:'#9DC5FF',category:'生活'},
@@ -34,6 +34,11 @@ function name(value,label,limit) {
   if(typeof value!=='string'||!value.trim()||value.length>limit||/[\u0000-\u001f\u007f]/.test(value))fail(label);
   return value.trim();
 }
+/** Retire only the former default label; preserve user-defined names and input. */
+export function normalizeWorkbenchModuleTitle(id,value) {
+  const title=name(value,'模块名称',60);
+  return id==='english'&&title==='六级随身练'?'英语':title;
+}
 function templateFor(id) {
   const template=templateById.get(id);
   if(!template)fail('工作台模板');
@@ -54,7 +59,7 @@ export function validateWorkbench(value) {
     if(!moduleById.has(module.id)||seen.has(module.id))fail('工作台模块编号');
     seen.add(module.id);
     if(typeof module.enabled!=='boolean'||(module.id==='ai'&&!module.enabled))fail('模块显示状态');
-    return {id:module.id,enabled:module.enabled,title:name(module.title,'模块名称',60)};
+    return {id:module.id,enabled:module.enabled,title:normalizeWorkbenchModuleTitle(module.id,module.title)};
   });
   return {version:1,title,templateId:value.templateId,onboardingComplete:value.onboardingComplete,modules};
 }

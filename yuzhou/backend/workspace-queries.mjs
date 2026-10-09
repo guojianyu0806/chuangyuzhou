@@ -12,9 +12,9 @@ export const WORKSPACE_QUERY_CAPABILITIES=[
  {kind:'search',label:'搜索工作台',description:'entity可省略；text关键词；可筛containerId、archived(false默认/true/all)、done；offset默认0，limit默认20最多50；返回真实编号和分页总数。'},
  {kind:'get',label:'读取记录详情',description:'必须entity、id；note/file/timetableEntry用containerId区分；返回完整内容（超长会注明截断）。customBlock仅返回所选方块，miniapp代码完整提供或以truncated拒绝；data敏感字段会标redacted，遇到截断/脱敏不可替换代码或data。'},
  {kind:'ledger.summary',label:'计算收支',description:'scope:total默认(遵守项目总账设置)/daily/projects/all；projectId指定已有项目；start/end为YYYY-MM-DD；groupBy:category/project/date；程序计算精确到分，默认不含归档账目。'},
- {kind:'calendar.range',label:'查询日历与关联事项',description:'start和end为YYYY-MM-DD；默认汇总日历原安排、带日期的备忘待办、比赛节点与任务、六级考试日期。可source:all/calendar/tasks/competitions/english、kindFilter:plan/mark/note（筛全部来源：待办/比赛任务/六级为plan，比赛节点为mark）、done、archived(false默认/true/all)。归档只查询日历原安排，关联来源只显示未归档父子；不含学期课表、账单或运动学习日志。返回真实entity/id/containerId用于修改源记录；containerId为空时在后续查询/行动里省略该字段。display为只读日期展示，不可拿display.id当行动编号。'},
+ {kind:'calendar.range',label:'查询日历与关联事项',description:'start和end为YYYY-MM-DD；默认汇总日历原安排、带日期的备忘待办、比赛节点与任务、英语考试日期。可source:all/calendar/tasks/competitions/english、kindFilter:plan/mark/note（筛全部来源：待办/比赛任务/英语为plan，比赛节点为mark）、done、archived(false默认/true/all)。归档只查询日历原安排，关联来源只显示未归档父子；不含学期课表、账单或运动学习日志。返回真实entity/id/containerId用于修改源记录；containerId为空时在后续查询/行动里省略该字段。display为只读日期展示，不可拿display.id当行动编号。'},
  {kind:'timetable.week',label:'查询一周课表',description:'termId可省略使用当前学期；week为整数或date为YYYY-MM-DD；返回当周课程、实际日期、作息时间。'},
- {kind:'english.status',label:'查询六级学习情况',description:'start/end可选，返回计划、词汇掌握统计、错题数和程序计算的学习时长，不编造学习记录。'},
+ {kind:'english.status',label:'查询英语学习情况',description:'start/end可选，返回计划、词汇掌握统计、错题数和程序计算的学习时长，不编造学习记录。'},
  {kind:'fitness.summary',label:'计算运动统计',description:'spaceId必填真实空间id，只计算该空间；start/end可选YYYY-MM-DD，或用date与period=day|week|month选择完整日/周/月（不能与start/end混用）；archived=false默认/true/all。程序汇总全部匹配记录的次数、分钟、已知公里/千卡及缺失计数，不估算热量，不把null当零，不把计划记作实际运动。'},
  {kind:'competitions.summary',label:'查询比赛进度与截止',description:'competitionId可选真实比赛id，否则统计所有进行中的比赛（排除归档/已结束比赛、归档子项）；程序依据查询时真实北京时间计算今天及未来7天临期、逾期节点和任务完成数。无具体时刻节点在北京时间次日零点才逾期。不可传today/date/asOf伪造当前时间。汇总覆盖所有符合条件的记录；明细过多时截断并注明。仅依据已保存信息，不保证官方安排最新。'},
  {kind:'file.read',label:'读取已有资料文字',description:'blobId必须来自已保存或本次对话附件；提取已上传资料文字，不能读取服务器路径或任意网址。'}

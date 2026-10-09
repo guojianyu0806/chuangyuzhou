@@ -3,7 +3,7 @@
 import {isValidDate} from './ledger-model.js';
 import {COMPETITION_STATUSES} from './competitions-model.js';
 
-export const CALENDAR_LINK_SOURCES=Object.freeze({tasks:'待办',competitions:'比赛',english:'六级'});
+export const CALENDAR_LINK_SOURCES=Object.freeze({tasks:'待办',competitions:'比赛',english:'英语'});
 const rows=value=>Array.isArray(value)?value.filter(row=>row&&typeof row==='object'&&!Array.isArray(row)):[];
 const text=value=>typeof value==='string'?value:'';
 const validId=value=>typeof value==='string'&&!!value.trim()&&value.length<=240&&!['__proto__','prototype','constructor'].includes(value)&&!/[\u0000-\u001f\u007f]/.test(value);
@@ -73,8 +73,8 @@ export function projectCalendarLinks(state={}){
   }
   const plan=state?.english?.plan;
   if(plan&&typeof plan==='object'&&!Array.isArray(plan)&&plan.archived!==true&&isValidDate(plan.examDate)){
-    append({id:'linked:englishExam:english-plan',source:'english',sourceLabel:'六级考试',sourceType:'englishExam',entity:'englishPlan',sourceId:'english-plan',containerId:'',title:'六级考试',startDate:plan.examDate,endDate:plan.examDate,
-      color:'#AE88FF',important:true,notes:'日期来自六级学习计划中填写的考试日期；未提供具体考试时刻。',route:'english',subroute:'',sourceHint:'这是六级计划中已填写的考试日期；请到六级计划修改，不代表自动核验的官方通知。'});
+    append({id:'linked:englishExam:english-plan',source:'english',sourceLabel:'英语考试',sourceType:'englishExam',entity:'englishPlan',sourceId:'english-plan',containerId:'',title:'英语考试',startDate:plan.examDate,endDate:plan.examDate,
+      color:'#AE88FF',important:true,notes:'日期来自英语学习计划中填写的考试日期；未提供具体考试时刻。',route:'english',subroute:'',sourceHint:'这是英语计划中已填写的考试日期；请到英语计划修改，不代表自动核验的官方通知。'});
   }
   return output.sort((a,b)=>a.startDate.localeCompare(b.startDate)||Number(b.important)-Number(a.important)||Number(b.allDay)-Number(a.allDay)||a.startTime.localeCompare(b.startTime)||a.title.localeCompare(b.title,'zh-CN')||a.id.localeCompare(b.id));
 }
