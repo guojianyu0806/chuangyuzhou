@@ -1,0 +1,46 @@
+✔ stored widths fall back safely and the desktop maximum reserves 480 pixels for content (2.7527ms)
+✔ resizing an expanded sidebar previews continuously and persists only the local width on release (1.9472ms)
+✔ opening by drag reveals labels at 180 pixels but commits the expanded state only after release (0.6059ms)
+✔ dragging down to the 80-pixel boundary collapses while reopening retains the last custom width (0.5067ms)
+✔ every intermediate width, including subpixel values, persists and restores without snapping on remount (2.957ms)
+✔ a drag can finish at 81 pixels after crossing the gesture threshold and collapse can restore that narrow width (0.4379ms)
+✖ crossing the label threshold changes only label visibility and cancelling restores an exact fractional width (1.1074ms)
+✔ secondary pointers, non-left buttons and invalid pointer positions cannot replace or finish a drag (0.2716ms)
+✔ pointer cancel, lost capture, window blur and Escape roll back previews without persisting (0.6579ms)
+✔ keyboard controls offer small and large steps, collapse, maximum and toggle without changing content (0.5296ms)
+✔ mobile input does not resize; narrowing and widening the desktop retain the local preferred width (0.3986ms)
+✔ a local preference write failure preserves the usable in-session width and reports that it was not remembered (0.3899ms)
+✔ an expanded-state persistence failure rolls the appearance back and never saves the preview width (0.4788ms)
+✔ an unreadable width preference falls back to default and double-click resets an active preview (0.2515ms)
+✔ a click or tiny pointer jitter does not persist, and destroy releases capture and all listeners (0.2658ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 14
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 232.9464
+
+✖ failing tests:
+
+test at yuzhou\frontend\tests\sidebar-resize.test.mjs:94:1
+✖ crossing the label threshold changes only label visibility and cancelling restores an exact fractional width (1.1074ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  179 !== 180
+  
+      at TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/tests/sidebar-resize.test.mjs:97:41)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1120:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:789:18)
+      at Test.postRun (node:internal/test_runner/test:1249:19)
+      at Test.run (node:internal/test_runner/test:1177:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 179,
+    expected: 180,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
