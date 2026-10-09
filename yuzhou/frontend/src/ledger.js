@@ -63,7 +63,7 @@ export function mountLedger(ctx, destination='') {
         <label class="field">分类<input name="category" list="ledger-category-options" maxlength="80" value="${esc(entry?.category || categories[type][0])}" required placeholder="选择或输入分类"><datalist id="ledger-category-options">${categories[type].map(c => `<option value="${c}"></option>`).join('')}</datalist></label></div>
         <label class="field">所属账本<select name="projectId">${projectOptions(entry?.projectId ?? defaultProject)}</select><small>日常开销选「日常零钱」；旅行、活动费用选对应项目。</small></label>
         <label class="field">备注<textarea name="note" maxlength="2000" rows="3" placeholder="记下用途、活动名称或其他细节">${esc(entry?.note || '')}</textarea></label>
-        ${entry?.example ? '<p class="ledger-form-note">这是一条示例账目，保存在示例工作区。</p>' : ''}
+        ${entry?.example ? '<p class="ledger-form-note">这是一条用于演示的模拟账目，保存在当前工作台。</p>' : ''}
       </div>`, onSubmit(data) {
       const values = { type: String(data.get('type')), amountCents: parseAmount(String(data.get('amount')).trim()), date: String(data.get('date')), category: String(data.get('category')).trim(), projectId: String(data.get('projectId')), note: String(data.get('note')).trim() };
       if (!['income', 'expense'].includes(values.type)) throw new Error('请选择收入或支出。');

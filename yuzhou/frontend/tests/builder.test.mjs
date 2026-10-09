@@ -22,6 +22,16 @@ test('blank builder keeps AI available, offers optional modules and a clear cust
   assert.match(html,/已有资料仍然保留/);
 });
 
+test('builder stays in the current workbench even when a legacy example callback is supplied',()=>{
+  const f=fixture('full'),before=structuredClone(f.state);
+  f.ctx.showExample=()=>assert.fail('the retired example workspace must not be opened');
+  const cleanup=mountBuilder(f.ctx);
+  assert.doesNotMatch(f.root.innerHTML,/data-wb-action="example"|查看宇宙完整示例/);
+  f.click('example');
+  assert.deepEqual(f.state,before);assert.deepEqual(f.calls,[]);
+  cleanup();
+});
+
 test('custom workbench, module and space names are escaped in text and attributes',()=>{
   const {state}=fixture();
   configureWorkbench(state,{title:'<img src=x onerror=alert(1)>'});

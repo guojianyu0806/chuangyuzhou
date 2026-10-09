@@ -1,6 +1,6 @@
 import {icon} from './icons.js';
 import {escapeHTML as esc,putFile,getFile,download,VERSION} from './services.js';
-import {seedCourses,mountCourses} from './courses.js';
+import {mountCourses} from './courses.js';
 import {seedEnglish,mountEnglish} from './english.js';
 import {validateBackup,mergeBackup} from './backup.js';
 import {mountCanvas,ensureCanvas} from './canvas.js';
@@ -26,11 +26,10 @@ const cloudClient=await bootstrapCloud();
 
 const uid=()=>crypto.randomUUID();
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
-const dayOffset=(days)=>{const d=new Date();d.setDate(d.getDate()+days);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 const dateLabel=value=>value?new Date(value+'T12:00:00').toLocaleDateString('zh-CN',{month:'short',day:'numeric'}):'未设日期';
 const key=mode=>cloudClient?cloudClient.key(mode):`czb-yuzhou-workspace-v1-${mode}`;
-let mode=cloudClient?'personal':localStorage.getItem('czb-yuzhou-mode')||'demo';
-if(!['demo','personal'].includes(mode))mode='demo';
+// Keep the existing account/storage identity; retired example data stays untouched.
+const mode='personal';
 let route='home',subroute='',filter='all';
 let cleanupView=null;
 let sidebarResize=null;
@@ -38,26 +37,16 @@ let lastStored=localStorage.getItem(key(mode));
 const nav=[['home','orbit','我的工作台'],['builder','layers','搭建台'],...WORKBENCH_MODULES.map(item=>[item.id,item.icon,item.title])];
 const visibleNavigation=()=>[...nav.slice(0,2),...getVisibleModules(state).map(item=>[item.id,item.icon,item.title])];
 const navigationLabel=id=>id==='home'?getWorkbench(state).title:visibleNavigation().find(item=>item[0]===id)?.[2]||nav.find(item=>item[0]===id)?.[2]||'偏好与连接';
-function seed(mode){
-  const demo=mode==='demo';
-  return {schema:1,mode,workbench:createWorkbench(demo?'full':'blank'),profile:{name:demo?'同学':'我',major:demo?'软件工程':'',provider:'deepseek'},courses:demo?seedCourses():[],english:seedEnglish(demo),tasks:demo?[
-    {id:uid(),title:'复习栈与队列，补充一道应用题',date:today(),priority:'high',category:'课程',done:false,source:'示例 · 数据结构',createdAt:new Date().toISOString()},
-    {id:uid(),title:'完成一篇六级阅读练习',date:today(),priority:'normal',category:'英语',done:false,source:'示例 · 六级计划',createdAt:new Date().toISOString()},
-    {id:uid(),title:'整理软件工程小组讨论的思路',date:today(),priority:'normal',category:'个人',done:false,source:'示例 · 手动记录',createdAt:new Date().toISOString()},
-    {id:uid(),title:'把操作系统课件放进课程空间',date:today(),priority:'normal',category:'课程',done:true,completedAt:new Date().toISOString(),source:'示例 · 手动记录',createdAt:new Date().toISOString()}
-  ]:[],captures:demo?[
-    {id:uid(),text:'栈和递归的关系：函数调用时，局部变量和返回地址是怎么被保存的？下次复习补一个调用栈的例子。',category:'学习灵感',tags:'数据结构',archived:false,createdAt:new Date().toISOString()},
-    {id:uid(),text:'六级写作可以积累表达因果、转折的句子，按使用场景整理，比单独背词更容易用起来。',category:'英语',tags:'写作',archived:false,createdAt:new Date().toISOString()},
-    {id:uid(),text:'小组项目待讨论：先明确用户故事，再画核心页面流程。',category:'备忘',tags:'软件工程',archived:false,createdAt:new Date().toISOString()}
-  ]:[],updatedAt:new Date().toISOString()};
+function seed(){
+  return {schema:1,mode,workbench:createWorkbench('blank'),profile:{name:'我',major:'',provider:'deepseek'},courses:[],english:seedEnglish(false),tasks:[],captures:[],updatedAt:new Date().toISOString()};
 }
-function load(mode){
+function load(){
   const raw=localStorage.getItem(key(mode));
   let data;
   if(raw){try{const parsed=JSON.parse(raw);if(parsed.schema===1&&Array.isArray(parsed.courses)&&Array.isArray(parsed.tasks)&&Array.isArray(parsed.captures)&&parsed.english&&parsed.profile)data={...parsed,mode};}catch{}}
-  data=initializeSpaces(data||seed(mode));ensureCanvas(data);return data;
+  data=initializeSpaces(data||seed());ensureCanvas(data);return data;
 }
-let state=cloudClient?initializeSpaces(await cloudClient.initialize(seed('personal'))):load(mode);
+let state=cloudClient?initializeSpaces(await cloudClient.initialize(seed())):load();
 if(cloudClient){state.mode='personal';ensureCanvas(state);localStorage.setItem(key(mode),JSON.stringify(state));lastStored=localStorage.getItem(key(mode));}
 const baselines=new WeakMap([[state,lastStored]]);
 function toast(message,action){
@@ -76,9 +65,15 @@ function save(target=state){
     dialog.querySelector('#export-conflict').onclick=()=>exportBackup(target);
     const error=new Error('检测到另一窗口的更新，请先加载最新内容。');error.name='StorageConflictError';throw error;
   }
-  try{localStorage.setItem(key(targetMode),JSON.stringify(target));}catch(error){toast('本机保存失败，请立即导出数据备份。');throw error;}
+  const previous=localStorage.getItem(key(targetMode));
+  try{
+    localStorage.setItem(key(targetMode),JSON.stringify(target));
+    if(cloudClient)cloudClient.enqueue(target);
+  }catch(error){
+    if(previous===null)localStorage.removeItem(key(targetMode));else localStorage.setItem(key(targetMode),previous);
+    toast('本机保存失败，本次未覆盖原记录。请导出备份后检查存储空间。');throw error;
+  }
   const stored=localStorage.getItem(key(targetMode));baselines.set(target,stored);
-  if(cloudClient)cloudClient.enqueue(target);
   if(target===state){lastStored=stored;updateModuleNavigation();updateShellCounts();renderSpaceLinks();if(route==='space'){const title=state.spaces.find(s=>s.id===subroute)?.title;if(title){document.title=`${title} · 宇宙 · 传智杯独立副本`;const label=document.querySelector('#current-page');if(label)label.textContent=title;}}}
 }
 const dialog=document.querySelector('#modal');
@@ -95,7 +90,7 @@ function modal({title,body,submitLabel='保存',onSubmit,onClose}){
   if(dialog.open)dialog.close();
   modalCleanup=onClose;
   modalReturnFocus=document.activeElement;
-  dialog.innerHTML=`<form class="modal-form"><header class="modal-head"><h2 id="modal-title">${esc(title)}</h2><button type="button" class="icon-btn" data-close aria-label="关闭">${icon('close')}</button></header><div class="modal-body">${body}</div>${onSubmit?`<footer class="modal-foot"><span class="muted small">${cloudClient&&mode==='personal'?'保存到本比赛实例':'修改保存在本机'}</span><button type="button" class="btn" data-close>取消</button><button type="submit" class="btn primary">${esc(submitLabel)}</button></footer>`:''}</form>`;
+  dialog.innerHTML=`<form class="modal-form"><header class="modal-head"><h2 id="modal-title">${esc(title)}</h2><button type="button" class="icon-btn" data-close aria-label="关闭">${icon('close')}</button></header><div class="modal-body">${body}</div>${onSubmit?`<footer class="modal-foot"><span class="muted small">${cloudClient?'保存到本比赛实例':'修改保存在本机'}</span><button type="button" class="btn" data-close>取消</button><button type="submit" class="btn primary">${esc(submitLabel)}</button></footer>`:''}</form>`;
   dialog.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModal);
   const form=dialog.querySelector('form');
   const draftSuffix=`${mode}-${title}-${Array.from(form.elements).filter(x=>x.type!=='password').map(x=>x.value).join('|').slice(0,200)}`;
@@ -126,7 +121,6 @@ function makeContext(){
   local.openCustomBlockEditor=input=>customBlockEditor(local,input);
   local.openBuilder=()=>go('builder');
   local.askAssistant=prompt=>openAIConversation(local,{text:prompt,targetId:'workspace'});
-  local.showExample=()=>{if(mode!=='demo')switchWorkspace();else go('home');};
   local.createSpace=()=>openSpaceDialog(local);
   local.editSpace=id=>openSpaceDialog(local,viewState.spaces.find(s=>s.id===id));
   local.routeContent=payload=>routeContent(local,payload);
@@ -135,7 +129,7 @@ function makeContext(){
     const editTick=cloudEditTick;
     return cloudClient.runWorkspaceMutation(
       ()=>cloudClient.request(`/api/ai/jobs/${encodeURIComponent(jobId)}/confirm`,{method:'POST',body:{}}),
-      {canApply:()=>mode==='personal'&&state===viewState&&cloudEditTick===editTick&&!dialog.open&&!hasUnsavedCloudFields(),apply:adoptCloudState}
+      {canApply:()=>state===viewState&&cloudEditTick===editTick&&!dialog.open&&!hasUnsavedCloudFields(),apply:adoptCloudState}
     );
   };
   local.openDestination=id=>openDestination(local,id);
@@ -204,12 +198,12 @@ function shell(){
   <button class="rail-scrim" data-action="close-nav" aria-label="关闭导航" hidden></button>
   <aside class="sidebar ${state.ui.sidebarPinned?'rail-pinned':''}" aria-label="空间导航"><a href="#/home" class="brand" aria-label="宇宙空间主页"><img src="./icon.svg" alt="" width="39" height="39"><span>宇宙<small>传智杯独立副本</small></span></a>
   <button class="rail-pin" data-action="pin-nav" aria-label="${state.ui.sidebarPinned?'收起侧边栏':'展开侧边栏'}" aria-pressed="${!!state.ui.sidebarPinned}">${icon('pin',17)}<span>${state.ui.sidebarPinned?'收起侧边栏':'展开侧边栏'}</span></button>
-  <button class="workspace-switch" data-action="switch-workspace" aria-label="切换示例与个人空间"><span class="workspace-avatar">${mode==='demo'?'例':'我'}</span><span><strong data-workbench-title>${mode==='demo'?'完整宇宙示例':esc(getWorkbench(state).title)}</strong><small>按你的方式搭建</small></span>${icon('chevron-down',16)}</button>
+  <div class="workspace-switch"><span class="workspace-avatar">我</span><span><strong data-workbench-title>${esc(getWorkbench(state).title)}</strong><small>按你的方式搭建</small></span></div>
   <div class="rail-scroll"><nav class="primary-nav" aria-label="主导航"></nav>
-  <div class="rail-spaces"><div class="rail-section-title"><span>我的工作区</span><button class="icon-btn" data-action="new-space" aria-label="新建工作区">${icon('plus',15)}</button></div><div id="rail-space-links"></div></div></div>
-  <div class="sidebar-bottom"><button class="settings-link rail-update" data-action="check-update" aria-label="检查更新" title="检查更新">${icon('refresh')}<span>检查更新</span></button><button class="rail-new" data-action="new-space" aria-label="新建工作区">${icon('plus',20)}<span>新建工作区</span></button><a class="settings-link" href="#/settings" aria-label="偏好与连接" title="偏好与连接">${icon('settings')}<span>偏好与连接</span></a><button class="profile" data-go="settings" aria-label="个人设置"><span class="avatar">${esc(state.profile.name.slice(0,1))}</span><span><strong>${esc(state.profile.name)}</strong><small>你的私人工作台</small></span></button></div></aside>
-  <div class="app-main"><header class="topbar"><div class="breadcrumb"><button class="mobile-menu icon-btn" data-action="toggle-nav" aria-label="展开导航">${icon('menu')}</button><a href="#/home" class="desktop-label">我的宇宙</a><span class="slash desktop-label">/</span><strong id="current-page">空间主页</strong></div><button class="search-trigger" data-action="search" aria-label="搜索所有空间">${icon('search',17)}<span>搜索所有空间…</span><kbd>Ctrl K</kbd></button><div class="topbar-actions"><button class="app-update-trigger" data-action="check-update" aria-label="检查界面更新" title="检查界面更新">${icon('refresh',16)}<span>更新</span></button><button class="sync-indicator" data-go="settings"><span class="status-dot"></span><span>本机已就绪</span></button><button class="icon-btn" data-action="notifications" aria-label="通知">${icon('bell')}</button><button class="avatar small-avatar" data-go="settings" aria-label="个人设置">${esc(state.profile.name.slice(0,1))}</button></div></header>
-  <div class="mode-banner ${mode==='personal'?'personal-banner':''}">${icon(mode==='demo'?'layers':'shield',15)}<span>${mode==='demo'?'当前为示例工作区，内容用于体验界面。':'个人空间 · 数据保存在当前浏览器，云端连接后可跨设备同步。'}</span><button data-action="switch-workspace">${mode==='demo'?'进入我的工作台':'查看示例'} ${icon('arrow-right',14)}</button></div>
+  <div class="rail-spaces"><div class="rail-section-title"><span>项目空间</span><button class="icon-btn" data-action="new-space" aria-label="新建工作区">${icon('plus',15)}</button></div><div id="rail-space-links"></div></div></div>
+  <div class="sidebar-bottom"><button class="settings-link rail-update" data-action="check-update" aria-label="检查更新" title="检查更新">${icon('refresh')}<span>检查更新</span></button><button class="rail-new" data-action="new-space" aria-label="新建工作区">${icon('plus',20)}<span>新建工作区</span></button><a class="settings-link" href="#/settings" aria-label="偏好与连接" title="偏好与连接">${icon('settings')}<span>偏好与连接</span></a><button class="profile" data-go="settings" aria-label="个人设置"><span class="avatar">${esc(state.profile.name.slice(0,1))}</span><span><strong>${esc(state.profile.name)}</strong><small>项目工作台</small></span></button></div></aside>
+  <div class="app-main"><header class="topbar"><div class="breadcrumb"><button class="mobile-menu icon-btn" data-action="toggle-nav" aria-label="展开导航">${icon('menu')}</button><a href="#/home" class="desktop-label">工作台</a><span class="slash desktop-label">/</span><strong id="current-page">空间主页</strong></div><button class="search-trigger" data-action="search" aria-label="搜索所有空间">${icon('search',17)}<span>搜索所有空间…</span><kbd>Ctrl K</kbd></button><div class="topbar-actions"><button class="app-update-trigger" data-action="check-update" aria-label="检查界面更新" title="检查界面更新">${icon('refresh',16)}<span>更新</span></button><button class="sync-indicator" data-go="settings"><span class="status-dot"></span><span>本机已就绪</span></button><button class="icon-btn" data-action="notifications" aria-label="通知">${icon('bell')}</button><button class="avatar small-avatar" data-go="settings" aria-label="个人设置">${esc(state.profile.name.slice(0,1))}</button></div></header>
+  <div class="mode-banner personal-banner">${icon('shield',15)}<span>${cloudClient?'工作台数据保存在本比赛实例。':'工作台数据保存在当前浏览器。'}</span></div>
   <main id="main" tabindex="-1"></main><footer class="page-footer"><span>一点一滴，都是你的积累。</span><span>宇宙 · 传智杯独立副本 · 基于 v${VERSION}</span></footer></div>
   <nav class="bottom-nav" aria-label="移动导航">${[['home','orbit','工作台'],['builder','layers','搭建'],['ai','sparkles','AI伙伴']].map(([id,i,label])=>`<a href="#/${id}" data-nav="${id}">${icon(i,21)}<span>${label}</span></a>`).join('')}<button data-action="toggle-nav">${icon('menu',21)}<span>更多</span></button></nav>
   ${companionButton()}`;
@@ -233,7 +227,7 @@ function updateModuleNavigation(){
     holder.dataset.signature=signature;
   }
   const title=document.querySelector('[data-workbench-title]');
-  if(title)title.textContent=mode==='demo'?'完整宇宙示例':getWorkbench(state).title;
+  if(title)title.textContent=getWorkbench(state).title;
   document.querySelectorAll('[data-nav]').forEach(a=>{a.classList.toggle('active',a.dataset.nav===route);if(a.dataset.nav===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
 }
 function renderSpaceLinks(){
@@ -252,7 +246,8 @@ function go(page,id=''){const hash=`#/${page}${id?'/'+encodeURIComponent(id):''}
 function pageHead(title,description,action=''){return `<div class="page-head"><div><h1>${title}</h1><p>${description}</p></div>${action}</div>`;}
 function empty(title,description,action=''){return `<div class="empty-state"><span class="empty-symbol">${icon('layers',30)}</span><h3>${title}</h3><p>${description}</p>${action}</div>`;}
 const button=(label,action,i='plus',primary=false)=>`<button class="btn ${primary?'primary':''}" data-action="${action}">${icon(i,17)}${label}</button>`;
-function taskRow(t){return `<div class="task-row ${t.done?'is-done':''}"><button class="task-check" data-action="toggle-task" data-id="${esc(t.id)}" aria-label="${t.done?'取消完成':'完成'}：${esc(t.title)}" aria-pressed="${t.done}">${t.done?icon('check',15):''}</button><button class="task-text" data-action="edit-task" data-id="${esc(t.id)}"><strong>${esc(t.title)}</strong><span>${esc(t.source||'手动记录')}${t.date?`<i>·</i>${dateLabel(t.date)}`:''}</span></button><span class="task-category ${t.category==='英语'?'pink':t.category==='课程'?'violet':'cyan'}">${esc(t.category||'个人')}</span>${t.priority==='high'?'<span class="priority-dot" title="优先处理"></span>':''}<button class="icon-btn row-edit" data-action="edit-task" data-id="${esc(t.id)}" aria-label="编辑待办">${icon('more',18)}</button></div>`;}
+const taskSource=t=>(state.spaces||[]).find(space=>space.id===t.spaceId)?.title||t.source||'手动记录';
+function taskRow(t){return `<div class="task-row ${t.done?'is-done':''}"><button class="task-check" data-action="toggle-task" data-id="${esc(t.id)}" aria-label="${t.done?'取消完成':'完成'}：${esc(t.title)}" aria-pressed="${t.done}">${t.done?icon('check',15):''}</button><button class="task-text" data-action="edit-task" data-id="${esc(t.id)}"><strong>${esc(t.title)}</strong><span>${esc(taskSource(t))}${t.date?`<i>·</i>${dateLabel(t.date)}`:''}</span></button><span class="task-category ${t.category==='英语'?'pink':t.category==='课程'?'violet':'cyan'}">${esc(t.category||'个人')}</span>${t.priority==='high'?'<span class="priority-dot" title="优先处理"></span>':''}<button class="icon-btn row-edit" data-action="edit-task" data-id="${esc(t.id)}" aria-label="编辑待办">${icon('more',18)}</button></div>`;}
 function renderHome(){
   const pending=state.tasks.filter(x=>!x.done&&!x.archived);
   const todays=state.tasks.filter(x=>!x.archived&&x.date===today());
@@ -261,7 +256,7 @@ function renderHome(){
   const weekdays=['日','一','二','三','四','五','六'];
   ctx.root.innerHTML=`
   ${pageHead(`准备好，拾起今天的灵感。<span class="greeting-spark">✳</span>`,`把学习与生活放在一起，一件一件，慢慢做好。`,`<button class="btn primary" data-action="add-task">${icon('plus',18)} 新建待办</button>`)}
-  <div class="home-meta"><span>${new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'})}</span><span class="divider-dot"></span><span>${esc(state.profile.major)}</span><span class="pill subtle">${mode==='demo'?'示例内容':'个人空间'}</span></div>
+  <div class="home-meta"><span>${new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'})}</span><span class="divider-dot"></span><span>${esc(state.profile.major)}</span><span class="pill subtle">${esc(getWorkbench(state).title)}</span></div>
   <div class="dashboard-grid"><div class="dashboard-left">
     <section class="continue-card"><div class="continue-copy"><span class="eyebrow">${icon('book',15)} ${current?'继续探索你的课程':'属于你的学习空间'}</span><h2>${current?esc(current.title):'让知识，<br>在这里连接。'}</h2><p>${current?'从一个概念出发，把知识点串成自己的理解。':'放进第一份课件，为每门课留一个专属位置。'}</p><button class="btn ink" data-go="courses" ${current?`data-sub="${esc(current.id)}"`:''}>${current?'进入课程空间':'创建第一门课程'} ${icon('arrow-right',17)}</button></div><div class="knowledge-art" aria-hidden="true"><span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><div class="art-note back-note"><i></i><i></i><i></i></div><div class="art-note front-note"><span>${icon('code',25)}</span><b>ideas<br>into knowledge.</b><i></i><i></i></div><span class="art-plus">+</span><span class="art-dot"></span></div><div class="continue-footer"><span>${visibleCourses.length} 门课程</span><span>${totalNotes} 篇笔记</span><span>保持好奇，持续生长 ${icon('arrow-right',14)}</span></div></section>
     <section class="panel today-panel"><div class="section-head"><div><h2>今天，专注这几件事 <span class="count">${todays.length}</span></h2><p>${todays.length?`已完成 ${completed} / ${todays.length} 件，按自己的节奏来。`:'从一件小事开始，也很好。'}</p></div><button class="text-btn" data-go="tasks">全部待办 ${icon('arrow-right',16)}</button></div><div class="week-strip">${Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7)+i);const selected=d.toDateString()===new Date().toDateString();return `<div class="week-day ${selected?'current':''}"><span>周${weekdays[d.getDay()]}</span><b>${d.getDate()}</b><i></i></div>`;}).join('')}</div><div class="task-list">${todays.length?todays.slice(0,4).map(taskRow).join(''):empty('今天还没有安排','留一点空间给新的想法，也可以先记下待办。',button('记一件事','add-task'))}</div><button class="add-line" data-action="add-task">${icon('plus',17)} 添加一个小目标</button></section>
@@ -278,7 +273,9 @@ function renderHome(){
 
 function taskDialog(id){
   const task=state.tasks.find(x=>x.id===id);
-  modal({title:task?'编辑待办':'记下一件事',body:`<label class="field">要做什么<input name="title" required maxlength="160" placeholder="例如：复习二叉树的遍历" value="${esc(task?.title||'')}"></label><div class="form-grid"><label class="field">安排日期<input name="date" type="date" value="${esc(task?.date??today())}"></label><label class="field">分类<select name="category">${['个人','课程','英语'].map(c=>`<option ${task?.category===c?'selected':''}>${c}</option>`).join('')}</select></label></div><label class="field">优先级<select name="priority"><option value="normal">按计划进行</option><option value="high" ${task?.priority==='high'?'selected':''}>优先处理</option></select></label><label class="field">补充说明<textarea name="description" rows="3" maxlength="5000" placeholder="保留一点上下文…">${esc(task?.description||'')}</textarea></label>${task?`<p class="muted small">来源：${esc(task.source||'手动记录')}</p><button class="btn danger" type="button" data-archive-task="${esc(task.id)}">${icon('archive',16)} 归档此项</button>`:''}`,onSubmit:data=>{const values={title:data.get('title').trim(),date:data.get('date'),category:data.get('category'),priority:data.get('priority'),description:data.get('description').trim()};if(!values.title){toast('请填写待办内容。');return false;}if(task){Object.assign(task,values);save();}else insertColoredRecord(state,state.tasks,{id:uid(),...values,done:false,source:'手动记录',createdAt:new Date().toISOString()});render();toast(task?'待办已更新':'已经记下，按自己的节奏来。');}});
+  const parent=(state.spaces||[]).find(space=>space.id===task?.spaceId&&!space.archived);
+  modal({title:task?'编辑待办':'记下一件事',body:`<label class="field">要做什么<input name="title" required maxlength="160" placeholder="例如：复习二叉树的遍历" value="${esc(task?.title||'')}"></label><div class="form-grid"><label class="field">安排日期<input name="date" type="date" value="${esc(task?.date??today())}"></label><label class="field">分类<select name="category">${['个人','课程','英语'].map(c=>`<option ${task?.category===c?'selected':''}>${c}</option>`).join('')}</select></label></div><label class="field">优先级<select name="priority"><option value="normal">按计划进行</option><option value="high" ${task?.priority==='high'?'selected':''}>优先处理</option></select></label><label class="field">补充说明<textarea name="description" rows="3" maxlength="5000" placeholder="保留一点上下文…">${esc(task?.description||'')}</textarea></label>${task?`<p class="muted small">来源：${esc(taskSource(task))}</p>${parent?'<button class="btn" type="button" data-task-space>打开所属空间</button>':''}<button class="btn danger" type="button" data-archive-task="${esc(task.id)}">${icon('archive',16)} 归档此项</button>`:''}`,onSubmit:data=>{const values={title:data.get('title').trim(),date:data.get('date'),category:data.get('category'),priority:data.get('priority'),description:data.get('description').trim()};if(!values.title){toast('请填写待办内容。');return false;}if(task){Object.assign(task,values);save();}else insertColoredRecord(state,state.tasks,{id:uid(),...values,done:false,source:'手动记录',createdAt:new Date().toISOString()});render();toast(task?'待办已更新':'已经记下，按自己的节奏来。');}});
+  const source=dialog.querySelector('[data-task-space]');if(source)source.onclick=()=>{closeModal();go('space',parent.id);};
   const archive=dialog.querySelector('[data-archive-task]');if(archive)archive.onclick=()=>{task.archived=true;save();closeModal();render();toast('待办已归档',()=>{task.archived=false;save();render();});};
 }
 function renderTasks(){
@@ -289,8 +286,8 @@ function renderTasks(){
   const palette={个人:'#63E6DC',课程:'#AE88FF',英语:'#D8F649'};
   state.boards||={};state.boards.tasks||={};
   cleanupView=mountCanvas({...makeContext(),root:ctx.root.querySelector('[data-task-board]'),createSpace:()=>taskDialog(),editSpace:id=>taskDialog(id),enterCard:id=>taskDialog(id)}, {
-    layout:state.boards.tasks,sourceItems:state.tasks,items:state.tasks.map(t=>({...t,subtitle:t.source,color:isRecordColor(t.color)?t.color:palette[t.category]||'#FFBC7C',icon:t.done?'check-circle':'list'})),matches:t=>tasks.some(x=>x.id===t.id),title:'待办卡片',hideHeader:true,createLabel:false,cardLabel:t=>t.archived?'已归档':t.done?'已经完成':t.priority==='high'?'优先处理':'待办事项',footLabel:t=>t.date?dateLabel(t.date):'还没有安排日期',enterLabel:'查看事项',canDrop:false,manageLabel:'编辑待办',emptyHTML:empty('这里暂时没有事项','记下一件事，就能从容地开始。',button('添加待办','add-task')),
-    renderCard:(geometry,t)=>`<div class="task-row task-board-item ${t.done?'is-done':''}"><div class="task-card-status">${t.archived?`<button class="btn compact" data-action="restore-task" data-id="${esc(t.id)}">恢复事项</button>`:`<button class="task-check" data-action="toggle-task" data-id="${esc(t.id)}" aria-label="${t.done?'取消完成':'完成'}：${esc(t.title)}" aria-pressed="${t.done}">${t.done?icon('check',17):''}</button><span>${t.done?'已完成':'待完成'}</span>`}<span class="task-category">${esc(t.category||'个人')}</span></div><button type="button" data-card-open class="task-text" data-action="edit-task" data-id="${esc(t.id)}"><strong>${esc(t.title)}</strong></button><p class="interior-card-excerpt">${esc(t.description||'点击补充这件事的细节与安排。')}</p><small class="interior-card-source">${esc(t.source||'手动记录')}</small></div>`
+    layout:state.boards.tasks,sourceItems:state.tasks,items:state.tasks.map(t=>({...t,subtitle:taskSource(t),color:isRecordColor(t.color)?t.color:palette[t.category]||'#FFBC7C',icon:t.done?'check-circle':'list'})),matches:t=>tasks.some(x=>x.id===t.id),title:'待办卡片',hideHeader:true,createLabel:false,cardLabel:t=>t.archived?'已归档':t.done?'已经完成':t.priority==='high'?'优先处理':'待办事项',footLabel:t=>t.date?dateLabel(t.date):'还没有安排日期',enterLabel:'查看事项',canDrop:false,manageLabel:'编辑待办',emptyHTML:empty('这里暂时没有事项','记下一件事，就能从容地开始。',button('添加待办','add-task')),
+    renderCard:(geometry,t)=>`<div class="task-row task-board-item ${t.done?'is-done':''}"><div class="task-card-status">${t.archived?`<button class="btn compact" data-action="restore-task" data-id="${esc(t.id)}">恢复事项</button>`:`<button class="task-check" data-action="toggle-task" data-id="${esc(t.id)}" aria-label="${t.done?'取消完成':'完成'}：${esc(t.title)}" aria-pressed="${t.done}">${t.done?icon('check',17):''}</button><span>${t.done?'已完成':'待完成'}</span>`}<span class="task-category">${esc(t.category||'个人')}</span></div><button type="button" data-card-open class="task-text" data-action="edit-task" data-id="${esc(t.id)}"><strong>${esc(t.title)}</strong></button><p class="interior-card-excerpt">${esc(t.description||'点击补充这件事的细节与安排。')}</p><small class="interior-card-source">${esc(taskSource(t))}</small></div>`
   });
   ctx.root.onclick=handleMain;
 }
@@ -298,7 +295,7 @@ function renderTasks(){
 function addCapture(text,extra={}){insertColoredRecord(state,state.captures,{id:uid(),text,category:'备忘',tags:'',archived:false,createdAt:new Date().toISOString(),...extra});toast('已经放进收集箱。');}
 function captureDialog(id){
   const c=state.captures.find(x=>x.id===id);
-  modal({title:c?'编辑碎片':'收集一个想法',body:`<label class="field">内容<textarea name="text" rows="6" required maxlength="12000" placeholder="文字、链接，或一段聊天里需要记住的事…">${esc(c?.text||'')}</textarea></label><div class="form-grid"><label class="field">分类<select name="category">${['备忘','学习灵感','英语','链接','消息摘录'].map(k=>`<option ${c?.category===k?'selected':''}>${k}</option>`).join('')}</select></label><label class="field">标签<input name="tags" maxlength="60" placeholder="例如：数据结构" value="${esc(c?.tags||'')}"></label></div>${c?.fileName?`<p class="muted">附件：${esc(c.fileName)}（${cloudClient&&mode==='personal'?'随工作区同步':'仅本机保存'}）</p>`:''}`,onSubmit:data=>{const values={text:data.get('text').trim(),category:data.get('category'),tags:data.get('tags').trim()};if(!values.text){toast('请先填写内容。');return false;}if(c){Object.assign(c,values);save();toast('内容已更新。');}else addCapture(values.text,values);render();}});
+  modal({title:c?'编辑碎片':'收集一个想法',body:`<label class="field">内容<textarea name="text" rows="6" required maxlength="12000" placeholder="文字、链接，或一段聊天里需要记住的事…">${esc(c?.text||'')}</textarea></label><div class="form-grid"><label class="field">分类<select name="category">${['备忘','学习灵感','英语','链接','消息摘录'].map(k=>`<option ${c?.category===k?'selected':''}>${k}</option>`).join('')}</select></label><label class="field">标签<input name="tags" maxlength="60" placeholder="例如：数据结构" value="${esc(c?.tags||'')}"></label></div>${c?.fileName?`<p class="muted">附件：${esc(c.fileName)}（${cloudClient?'随工作区同步':'仅本机保存'}）</p>`:''}`,onSubmit:data=>{const values={text:data.get('text').trim(),category:data.get('category'),tags:data.get('tags').trim()};if(!values.text){toast('请先填写内容。');return false;}if(c){Object.assign(c,values);save();toast('内容已更新。');}else addCapture(values.text,values);render();}});
 }
 function setInboxView(value){
   const previous=state.ui.inboxView;
@@ -341,7 +338,7 @@ function renderInbox(){
 }
 
 function captureFile(){
-  modal({title:'收集一份附件',body:`<label class="field">选择文件<input name="file" type="file" required></label><p class="muted small">${cloudClient&&mode==='personal'?'原件会保存到本比赛独立服务，当前仅供本机访问。':'原件存入当前浏览器，文件内容不会上传。'}单文件最大 40 MB。</p><label class="field">补充说明<textarea name="text" rows="3" maxlength="12000" placeholder="这份资料值得记住的地方…"></textarea></label>`,submitLabel:'放入收集箱',onSubmit:async data=>{const file=data.get('file');if(!file?.size){toast('请选择非空文件。');return false;}const blobId=await putFile(file);addCapture(data.get('text').trim()||file.name,{blobId,fileName:file.name,fileType:file.type,category:'备忘'});render();}});
+  modal({title:'收集一份附件',body:`<label class="field">选择文件<input name="file" type="file" required></label><p class="muted small">${cloudClient?'原件会保存到本比赛独立服务，当前仅供本机访问。':'原件存入当前浏览器，文件内容不会上传。'}单文件最大 40 MB。</p><label class="field">补充说明<textarea name="text" rows="3" maxlength="12000" placeholder="这份资料值得记住的地方…"></textarea></label>`,submitLabel:'放入收集箱',onSubmit:async data=>{const file=data.get('file');if(!file?.size){toast('请选择非空文件。');return false;}const blobId=await putFile(file);addCapture(data.get('text').trim()||file.name,{blobId,fileName:file.name,fileType:file.type,category:'备忘'});render();}});
 }
 async function handleMain(event){
   const b=event.target.closest('[data-action]');if(!b)return;const id=b.dataset.id;const action=b.dataset.action;
@@ -364,7 +361,7 @@ function renderReview(){
   const done=state.tasks.filter(t=>t.done&&!t.archived),sessions=(state.english.sessions||[]).filter(session=>!session.archived),notes=[...state.courses,...state.spaces].filter(container=>!container.archived).reduce((n,c)=>n+(c.notes||[]).filter(note=>!note.archived).length,0);
   const minutes=sessions.reduce((n,s)=>n+Number(s.minutes||0),0);
   const events=[...done.map(t=>({date:t.completedAt||t.createdAt,title:t.title,type:'完成待办',icon:'check-circle'})),...sessions.map(s=>({date:s.date||s.createdAt,title:`${s.type||'英语练习'} · ${s.minutes||0} 分钟`,type:'学习记录',icon:'graduation'}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
-  ctx.root.innerHTML=pageHead('你走过的路，都算数。','回头看看，那些小小的积累正在连成线。',`<span class="badge">${mode==='demo'?'示例空间统计':cloudClient?'根据工作台记录统计':'根据本机记录统计'}</span>`)+`<div class="review-hero"><div><span class="eyebrow">YOUR EVERYDAY JOURNEY</span><h2>把注意力放在成长上。</h2><p>这里记录你真正完成的事。<br>不必填满每一天，每一步都有意义。</p><button class="btn ink" data-go="tasks">看看接下来的安排 ${icon('arrow-right',17)}</button></div><div class="review-mark" aria-hidden="true">${icon('sun',104)}<span>little by little.</span></div></div><div class="review-stats">${[[done.length,'件待办已完成','check-circle','violet'],[minutes,'分钟英语学习','clock','cyan'],[notes,'篇空间笔记','book','pink'],[state.captures.filter(capture=>!capture.archived).length,'条灵感被记下','bolt','lime']].map(([n,l,i,c])=>`<div class="review-stat"><span class="summary-icon ${c}">${icon(i,22)}</span><strong>${n}</strong><span>${l}</span></div>`).join('')}</div><section class="panel"><div class="section-head"><div><h2>积累的足迹</h2><p>来自你完成的待办与英语学习记录。</p></div></div>${events.length?`<div class="activity-list">${events.slice(0,30).map(e=>`<div class="activity-row"><span class="activity-icon">${icon(e.icon,18)}</span><div><strong>${esc(e.title)}</strong><small>${esc(e.type)}</small></div><time>${new Date(e.date).toLocaleDateString('zh-CN',{month:'short',day:'numeric'})}</time></div>`).join('')}</div>`:empty('成长记录，从下一步开始','完成一个待办，或在六级空间记录一次学习。',`<button class="btn" data-go="english">开始学习 ${icon('arrow-right',17)}</button>`)}</section>`;
+  ctx.root.innerHTML=pageHead('你走过的路，都算数。','回头看看，那些小小的积累正在连成线。',`<span class="badge">${cloudClient?'根据工作台记录统计':'根据本机记录统计'}</span>`)+`<div class="review-hero"><div><span class="eyebrow">YOUR EVERYDAY JOURNEY</span><h2>把注意力放在成长上。</h2><p>这里记录你真正完成的事。<br>不必填满每一天，每一步都有意义。</p><button class="btn ink" data-go="tasks">看看接下来的安排 ${icon('arrow-right',17)}</button></div><div class="review-mark" aria-hidden="true">${icon('sun',104)}<span>little by little.</span></div></div><div class="review-stats">${[[done.length,'件待办已完成','check-circle','violet'],[minutes,'分钟英语学习','clock','cyan'],[notes,'篇空间笔记','book','pink'],[state.captures.filter(capture=>!capture.archived).length,'条灵感被记下','bolt','lime']].map(([n,l,i,c])=>`<div class="review-stat"><span class="summary-icon ${c}">${icon(i,22)}</span><strong>${n}</strong><span>${l}</span></div>`).join('')}</div><section class="panel"><div class="section-head"><div><h2>积累的足迹</h2><p>来自你完成的待办与英语学习记录。</p></div></div>${events.length?`<div class="activity-list">${events.slice(0,30).map(e=>`<div class="activity-row"><span class="activity-icon">${icon(e.icon,18)}</span><div><strong>${esc(e.title)}</strong><small>${esc(e.type)}</small></div><time>${new Date(e.date).toLocaleDateString('zh-CN',{month:'short',day:'numeric'})}</time></div>`).join('')}</div>`:empty('成长记录，从下一步开始','完成一个待办，或在六级空间记录一次学习。',`<button class="btn" data-go="english">开始学习 ${icon('arrow-right',17)}</button>`)}</section>`;
 }
 
 async function checkAppUpdate(){
@@ -382,7 +379,7 @@ async function checkAppUpdate(){
       modal({title:'界面更新',body:`<div class="update-state" role="status"><span class="update-mark">${icon('check-circle',27)}</span><h3>已经是最新界面</h3><p>当前版本 v${VERSION}</p><p class="muted small">电脑、手机和平板共用服务器上的界面。无需重新安装 App。</p></div>`});
     }else{
       modal({title:'发现新版本',body:`<div class="update-state"><span class="update-mark">${icon('sparkles',27)}</span><h3>v${esc(info.version)} 已准备好</h3><p>当前界面 v${VERSION}</p><p>更新前会保存并同步当前资料，然后重新打开当前页面。</p></div>`,submitLabel:'保存并更新',onSubmit:async()=>{
-        save();if(cloudClient&&mode==='personal')await cloudClient.flush();
+        save();if(cloudClient)await cloudClient.flush();
         const next=new URL(location.href);next.searchParams.set('v',info.version);location.replace(next.href);
       }});
     }
@@ -391,7 +388,7 @@ async function checkAppUpdate(){
   }finally{clearTimeout(timer);}
 }
 function renderSettings(){
-  ctx.root.innerHTML=pageHead('让这里，更像你。','设置个人偏好，查看模型与设备的连接状态。')+`<section class="app-version-card"><div><span>界面更新</span><strong>宇宙 · 传智杯独立副本</strong><p>基于宇宙 v${VERSION}；仅检查本比赛实例，已保存的资料会保留。</p></div><button class="btn" data-action="check-update">${icon('refresh',17)} 检查更新</button></section><div class="settings-layout"><div class="stack"><section class="panel"><div class="section-head"><h2>个人资料</h2><span class="badge">${mode==='demo'?'示例空间':'个人空间'}</span></div><form id="profile-form"><div class="form-grid"><label class="field">怎么称呼你<input name="name" required maxlength="20" value="${esc(state.profile.name)}"></label><label class="field">角色或关注领域（可选）<input name="major" maxlength="40" value="${esc(state.profile.major)}"></label></div><div class="form-end"><button class="btn primary" type="submit">保存资料</button></div></form></section><section class="panel"><div class="section-head"><h2>大模型连接</h2><span class="badge status-off">尚未接入</span></div><p class="muted">本副本需单独配置 AI 引擎与 API 密钥，不继承原工作台连接。课程整理、碎片分类与学习助手共用本比赛实例的模型。</p><label class="field">偏好的模型服务<select id="provider"><option value="deepseek" ${state.profile.provider==='deepseek'?'selected':''}>DeepSeek</option><option value="doubao" ${state.profile.provider==='doubao'?'selected':''}>豆包 · 火山方舟</option><option value="other" ${state.profile.provider==='other'?'selected':''}>其他兼容服务</option></select></label><div class="setting-info">${icon('shield',19)}<span>这里不收集 API 密钥。当前选择只保存服务偏好，未建立模型连接。</span></div><div class="integration-list"><div>${icon('book',20)}<span>课程资料整理</span><small>等待连接</small></div><div>${icon('inbox',20)}<span>碎片分类与待办提取</span><small>等待连接</small></div><div>${icon('graduation',20)}<span>英语批改与计划建议</span><small>等待连接</small></div></div></section><section class="panel"><div class="section-head"><h2>消息来源</h2><span class="badge status-off">未连接</span></div><div class="message-integrations"><div><span class="integration-letter cyan">微</span><div><strong>微信消息</strong><p>可先把要整理的文字粘贴到收集箱。</p></div></div><div><span class="integration-letter violet">QQ</span><div><strong>QQ 消息</strong><p>后续评估可用接入方式，限定读取与汇总。</p></div></div></div><button class="btn" data-action="paste-message">${icon('plus',17)} 添加消息摘录</button><p class="muted small">此界面不会自动读取聊天记录，也不具备发送消息或自动回复功能。</p></section></div><div class="stack"><section class="panel connection-panel"><span class="connection-symbol">${icon('cloud',36)}</span><h2>你的空间，等待云端就绪。</h2><p>现在的修改保存在当前浏览器。部署后，两台电脑、手机与平板可访问同一份内容。</p><div class="connection-status"><span class="status-dot"></span> 本机保存已启用</div><div class="connection-status muted">${icon('cloud-off',14)} 云端同步未连接</div><div class="device-list"><span>本机浏览器</span><span>独立比赛数据</span><span>远程同步待部署</span></div></section><section class="panel"><div class="section-head"><h2>数据与备份</h2>${icon('download',20)}</div><p class="muted">导出当前空间的笔记、待办、账目、学习记录和附件，用于本地备份。</p><button class="btn full" data-action="export">${icon('download',17)} 导出完整备份</button><button class="btn full" data-action="import">${icon('upload',17)} 导入备份</button><p class="small muted">导入只补充缺少的记录，不覆盖已有内容。清除浏览器数据会同时清除本地资料。</p></section></div></div>`;
+  ctx.root.innerHTML=pageHead('让这里，更像你。','设置个人偏好，查看模型与设备的连接状态。')+`<section class="app-version-card"><div><span>界面更新</span><strong>宇宙 · 传智杯独立副本</strong><p>基于宇宙 v${VERSION}；仅检查本比赛实例，已保存的资料会保留。</p></div><button class="btn" data-action="check-update">${icon('refresh',17)} 检查更新</button></section><div class="settings-layout"><div class="stack"><section class="panel"><div class="section-head"><h2>个人资料</h2><span class="badge">当前工作台</span></div><form id="profile-form"><div class="form-grid"><label class="field">怎么称呼你<input name="name" required maxlength="20" value="${esc(state.profile.name)}"></label><label class="field">角色或关注领域（可选）<input name="major" maxlength="40" value="${esc(state.profile.major)}"></label></div><div class="form-end"><button class="btn primary" type="submit">保存资料</button></div></form></section><section class="panel"><div class="section-head"><h2>大模型连接</h2><span class="badge status-off">尚未接入</span></div><p class="muted">本副本需单独配置 AI 引擎与 API 密钥，不继承原工作台连接。课程整理、碎片分类与学习助手共用本比赛实例的模型。</p><label class="field">偏好的模型服务<select id="provider"><option value="deepseek" ${state.profile.provider==='deepseek'?'selected':''}>DeepSeek</option><option value="doubao" ${state.profile.provider==='doubao'?'selected':''}>豆包 · 火山方舟</option><option value="other" ${state.profile.provider==='other'?'selected':''}>其他兼容服务</option></select></label><div class="setting-info">${icon('shield',19)}<span>这里不收集 API 密钥。当前选择只保存服务偏好，未建立模型连接。</span></div><div class="integration-list"><div>${icon('book',20)}<span>课程资料整理</span><small>等待连接</small></div><div>${icon('inbox',20)}<span>碎片分类与待办提取</span><small>等待连接</small></div><div>${icon('graduation',20)}<span>英语批改与计划建议</span><small>等待连接</small></div></div></section><section class="panel"><div class="section-head"><h2>消息来源</h2><span class="badge status-off">未连接</span></div><div class="message-integrations"><div><span class="integration-letter cyan">微</span><div><strong>微信消息</strong><p>可先把要整理的文字粘贴到收集箱。</p></div></div><div><span class="integration-letter violet">QQ</span><div><strong>QQ 消息</strong><p>后续评估可用接入方式，限定读取与汇总。</p></div></div></div><button class="btn" data-action="paste-message">${icon('plus',17)} 添加消息摘录</button><p class="muted small">此界面不会自动读取聊天记录，也不具备发送消息或自动回复功能。</p></section></div><div class="stack"><section class="panel connection-panel"><span class="connection-symbol">${icon('cloud',36)}</span><h2>你的空间，等待云端就绪。</h2><p>现在的修改保存在当前浏览器。部署后，两台电脑、手机与平板可访问同一份内容。</p><div class="connection-status"><span class="status-dot"></span> 本机保存已启用</div><div class="connection-status muted">${icon('cloud-off',14)} 云端同步未连接</div><div class="device-list"><span>本机浏览器</span><span>独立比赛数据</span><span>远程同步待部署</span></div></section><section class="panel"><div class="section-head"><h2>数据与备份</h2>${icon('download',20)}</div><p class="muted">导出当前空间的笔记、待办、账目、学习记录和附件，用于本地备份。</p><button class="btn full" data-action="export">${icon('download',17)} 导出完整备份</button><button class="btn full" data-action="import">${icon('upload',17)} 导入备份</button><p class="small muted">导入只补充缺少的记录，不覆盖已有内容。清除浏览器数据会同时清除本地资料。</p></section></div></div>`;
   const recoveryKeys=cloudClient?[]:Object.keys(localStorage).filter(k=>k.startsWith(`czb-yuzhou-recovery-${mode}-`));
   if(recoveryKeys.length){const recoveryButton=document.createElement('button');recoveryButton.className='btn full';recoveryButton.textContent=`查看窗口冲突恢复副本（${recoveryKeys.length}）`;ctx.root.querySelector('[data-action=import]').after(recoveryButton);recoveryButton.onclick=()=>{modal({title:'窗口改动恢复副本',body:'<p class="muted">这些记录因另一窗口有新内容而未覆盖保存。可以导出后，通过导入功能补充到当前空间。</p><div id="recovery-list" class="stack" style="margin-top:20px"></div>'});const list=dialog.querySelector('#recovery-list');for(const key of recoveryKeys){try{const data=JSON.parse(localStorage.getItem(key));const b=document.createElement('button');b.className='btn';b.textContent=`导出 ${new Date(data.updatedAt).toLocaleString('zh-CN')} 的副本`;b.onclick=()=>exportBackup(data);list.append(b);}catch{}}};}
   ctx.root.querySelector('#profile-form').onsubmit=e=>{e.preventDefault();const data=new FormData(e.target);const name=data.get('name').trim(),major=data.get('major').trim();if(!name){toast('请填写称呼。');return;}state.profile.name=name;state.profile.major=major;save();shell();render();toast('个人资料已保存。');};
@@ -406,7 +403,7 @@ async function exportBackup(dataState=state){
     const files=[];for(const id of fileIds){const blob=await getFile(id);if(!blob)throw new Error('有附件在本机存储中缺失，请重新添加原件后再导出完整备份。');const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob);});files.push({id,type:blob.type,data});}
     const backupBlob=new Blob([JSON.stringify({format:'lumi-backup',version:1,exportedAt:new Date().toISOString(),state:dataState,files},null,2)],{type:'application/json'});
     if(backupBlob.size>512*1024*1024)throw new Error('完整备份超过本地界面版 512 MB 上限，请先逐份下载附件，并在服务器接入后使用云端备份。');
-    download(backupBlob,`传智杯宇宙-${dataState.mode==='demo'?'示例':'个人'}-备份-${today()}.json`);toast('备份已导出，附件已一并打包。');
+    download(backupBlob,`传智杯宇宙-工作台-备份-${today()}.json`);toast('备份已导出，附件已一并打包。');
   }catch(error){toast(`导出失败：${error.message}`);}
 }
 function importBackup(){
@@ -431,7 +428,6 @@ function searchDialog(){
 }
 function closeAssistant(){document.querySelector('#ai-drawer').hidden=true;document.querySelector('#app').inert=false;}
 function assistant(){openCompanion(makeContext(),{pageLabel:route==='space'?state.spaces.find(s=>s.id===subroute)?.title||'自建空间':navigationLabel(route)});}
-function switchWorkspace(){mode=mode==='demo'?'personal':'demo';if(cloudClient)cloudClient.setMode(mode);else localStorage.setItem('czb-yuzhou-mode',mode);state=load(mode);lastStored=localStorage.getItem(key(mode));baselines.set(state,lastStored);ctx.state=state;filter='all';shell();go('home');render();toast(mode==='personal'?'这是你的独立空间，从第一条记录开始。':'已进入示例工作区。');}
 function moreMenu(){modal({title:'我的空间',body:`<div class="more-menu">${[...visibleNavigation(),['settings','settings','偏好与连接']].map(([id,i,l])=>`<button data-go="${id}">${icon(i,23)}<span>${esc(l)}</span>${icon('chevron-right',18)}</button>`).join('')}</div>`});}
 function notifications(){modal({title:'通知与动态',body:`<div class="notification-item"><span class="summary-icon violet">${icon('sparkles',23)}</span><div><strong>欢迎来到宇宙</strong><p>${cloudClient?'个人空间已接入本比赛独立服务；当前仅供本机访问。':'完整界面已就绪，可以开始记录与整理。当前内容仅保存在本机；AI 需独立配置。'}</p><small>界面版本 ${VERSION}</small></div></div><div class="notification-item"><span class="summary-icon cyan">${icon('cloud',23)}</span><div><strong>${cloudClient?esc(cloudClient.label):'云端连接待完成'}</strong><p>${cloudClient?'在偏好与连接中管理 DeepSeek、查看同步状态与导出备份。':'服务器部署后，可启用跨设备同步、模型任务和版本更新通知。'}</p><button class="text-btn" data-go="settings">查看连接状态 ${icon('arrow-right',16)}</button></div></div>`});}
 function render(){
@@ -512,12 +508,11 @@ document.addEventListener('click',e=>{
   const button=e.target.closest('[data-action]');if(!button)return;
   const action=button.dataset.action;
   if(action==='check-update')checkAppUpdate();
-  if(action==='switch-workspace')switchWorkspace();
   if(action==='new-space')openSpaceDialog(makeContext());
   if(action==='pin-nav')setSidebarExpanded(!state.ui.sidebarPinned);
   if(action==='toggle-nav')setMobileNav(!document.body.classList.contains('rail-open'));
   if(action==='close-nav')setMobileNav(false);
-  if(action==='reload-latest'){closeModal();state=load(mode);lastStored=localStorage.getItem(key(mode));baselines.set(state,lastStored);ctx.state=state;shell();render();toast('已加载最新记录，未提交的表单草稿仍然保留。');}
+  if(action==='reload-latest'){closeModal();state=load();lastStored=localStorage.getItem(key(mode));baselines.set(state,lastStored);ctx.state=state;shell();render();toast('已加载最新记录，未提交的表单草稿仍然保留。');}
   if(action==='search')searchDialog();
   if(action==='notifications')notifications();
   if(action==='more')moreMenu();
@@ -535,14 +530,14 @@ const cloudDirtyFields=new Set();
 function updateCloudShell(){
   if(!cloudClient)return;
   const indicator=document.querySelector('.sync-indicator');
-  if(indicator){indicator.dataset.status=cloudClient.status;indicator.innerHTML=`<span class="status-dot"></span><span>${mode==='demo'?'示例 · 仅本机':esc(cloudClient.label)}</span>`;indicator.title=cloudClient.error||cloudClient.label;}
+  if(indicator){indicator.dataset.status=cloudClient.status;indicator.innerHTML=`<span class="status-dot"></span><span>${esc(cloudClient.label)}</span>`;indicator.title=cloudClient.error||cloudClient.label;}
   const modeText=document.querySelector('.mode-banner>span');
-  if(modeText&&mode==='personal')modeText.textContent='传智杯独立空间 · 数据仅保存到本比赛实例，未连接原工作台。';
+  if(modeText)modeText.textContent='传智杯工作台 · 数据保存在本比赛实例。';
   const footer=document.querySelector('.page-footer>span:last-child');if(footer)footer.textContent=`宇宙 · 传智杯独立副本 · 基于 v${VERSION}`;
   let banner=document.querySelector('.cloud-sync-banner');
   if(!banner){banner=document.createElement('div');banner.className='cloud-sync-banner';banner.setAttribute('role','status');document.querySelector('#main')?.before(banner);}
   const status=cloudClient.status;banner.dataset.status=status;
-  banner.hidden=mode==='demo'||!['remote','conflict','result','offline','auth'].includes(status);
+  banner.hidden=!['remote','conflict','result','offline','auth'].includes(status);
   const message=status==='remote'?'其他设备有新内容，当前输入会保留，准备好后可以加载。':cloudClient.error||'连接暂时中断，改动将留在此设备，连接恢复后继续同步。';
   banner.innerHTML=`<p>${esc(message)}</p>${['conflict','result'].includes(status)?'<button type="button" data-cloud-export>导出本设备改动</button>':''}${['remote','conflict','result'].includes(status)?`<button type="button" data-cloud-load>${status==='result'?'加载本次操作结果':'加载云端内容'}</button>`:''}${status==='auth'?'<button type="button" data-cloud-login>重新登录</button>':''}${status==='offline'?'<button type="button" data-cloud-retry>重试连接</button>':''}`;
   banner.querySelector('[data-cloud-export]')?.addEventListener('click',()=>exportBackup(cloudClient.pending?.state||state));
@@ -558,7 +553,7 @@ function hasUnsavedCloudFields(){
   return cloudEditing;
 }
 async function loadCloudUpdate(explicit=false){
-  if(mode!=='personal'||!cloudClient)return;
+  if(!cloudClient)return;
   if(!explicit&&immersiveBusy())return;
   if(explicit&&(hasUnsavedCloudFields()||dialog.open||['conflict','result'].includes(cloudClient.status))){
     modal({title:'加载云端最新内容',body:'<p>云端内容将替换当前显示。本设备已保存的改动会保留为恢复副本；未提交的表单请先保存，或关闭此弹窗后继续编辑。</p>',submitLabel:'保留副本并加载',onSubmit:()=>applyCloudUpdate(true)});return;
@@ -568,7 +563,7 @@ async function loadCloudUpdate(explicit=false){
 async function applyCloudUpdate(allowImmersive=false){
   const source=state,editTick=cloudEditTick,modalForm=dialog.open?dialog.querySelector('form'):null;
   const remote=await cloudClient.acceptRemote(()=>{
-    if(mode!=='personal'||state!==source||cloudEditTick!==editTick)return false;
+    if(state!==source||cloudEditTick!==editTick)return false;
     // The request may finish after an editor opens. Keep its captured record
     // attached to the current state until the user has finished with it.
     if(allowImmersive)return !dialog.open||dialog.querySelector('form')===modalForm;
@@ -578,14 +573,13 @@ async function applyCloudUpdate(allowImmersive=false){
   adoptCloudState(remote);
 }
 function adoptCloudState(remote){
-  state=initializeSpaces(remote||seed('personal'));state.mode='personal';ensureCanvas(state);
+  state=initializeSpaces(remote||seed());state.mode='personal';ensureCanvas(state);
   localStorage.setItem(key(mode),JSON.stringify(state));lastStored=localStorage.getItem(key(mode));baselines.set(state,lastStored);ctx.state=state;
   shell();render();
 }
 function renderCloudSettings(){
   const modelPanel=ctx.root.querySelector('#provider').closest('.panel');
-  if(mode==='personal')mountModelSettings(modelPanel,cloudClient,toast);
-  else modelPanel.innerHTML='<h2>示例模式</h2><p class="muted">模型连接设置在个人空间中管理。示例资料不会上传到云端。</p>';
+  mountModelSettings(modelPanel,cloudClient,toast);
   const panel=ctx.root.querySelector('.connection-panel');panel.classList.add('cloud-account-panel');
   panel.innerHTML=`<span class="connection-symbol">${icon('cloud',36)}</span><h2>传智杯独立账号与数据空间。</h2><p class="cloud-account-user">账号：${esc(cloudClient.session.username)}</p><div class="connection-status"><span class="status-dot"></span><span data-cloud-status>${esc(cloudClient.label)}</span></div><p class="small muted">修改先保存在此设备，再保存到本比赛实例。当前仅监听本机；未发布跨设备服务。发生冲突时，会保留本设备副本供你导出。</p><div class="device-list"><span>本机浏览器</span><span>独立比赛数据</span><span>远程同步待部署</span></div><div class="cloud-account-actions"><button class="btn" type="button" data-cloud-sync>立即同步</button><button class="btn" type="button" data-cloud-logout>退出登录</button></div><div class="cloud-recovery-list"></div>`;
   panel.querySelector('[data-cloud-sync]').onclick=()=>cloudClient.flush().then(()=>toast('当前改动已同步。')).catch(error=>toast(error.message));
@@ -601,7 +595,7 @@ if(cloudClient){
     const host=event.target;
     // A successful composer submission saves and clears only its own draft.
     // Other open editors, and anything typed after this event, remain protected.
-    if(mode!=='personal'||!host.matches?.('.ai-composer-host')||!ctx.root.contains(host)||!state.aiRequests.some(request=>request.id===event.detail?.id))return;
+    if(!host.matches?.('.ai-composer-host')||!ctx.root.contains(host)||!state.aiRequests.some(request=>request.id===event.detail?.id))return;
     if(host.querySelector('[name=instruction]')?.value)return;
     for(const field of cloudDirtyFields)if(!field.isConnected||host.contains(field))cloudDirtyFields.delete(field);
     cloudEditing=cloudDirtyFields.size>0;
@@ -611,7 +605,7 @@ if(cloudClient){
   document.addEventListener('pointercancel',()=>{cloudPointer=false;cloudActivity=Date.now();});
   cloudClient.start(()=>{
     const focused=document.activeElement?.matches('input,textarea,select,[contenteditable]');
-    if(mode==='personal'&&!dialog.open&&!cloudEditing&&!cloudPointer&&!focused&&!immersiveBusy()&&Date.now()-cloudActivity>1500)loadCloudUpdate();
+    if(!dialog.open&&!cloudEditing&&!cloudPointer&&!focused&&!immersiveBusy()&&Date.now()-cloudActivity>1500)loadCloudUpdate();
   });
 }
 shell();render();

@@ -107,9 +107,24 @@ export class CloudClient {
   }
   enqueue(state) {
     if(state.mode!=='personal')return;
+    const previousPending=this.pending;
     this.pending={state:clone(state),id:crypto.randomUUID(),createdAt:stamp()};
-    this.persist();
-    if(['conflict','result'].includes(this.status)||!this.authenticated){if(['conflict','result'].includes(this.status))this.preserve();return;}
+    let persisted=false;
+    try{
+      this.persist();persisted=true;
+      if(['conflict','result'].includes(this.status))this.preserve();
+    }catch(error){
+      // A failed setItem is atomic: retain the previous in-memory outbox and
+      // leave its existing timer/status alone, so rejected edits cannot upload.
+      this.pending=previousPending;
+      if(persisted){
+        try{this.persist();}catch(rollbackError){
+          throw new AggregateError([error,rollbackError],'同步缓存写入失败，恢复原待同步缓存也失败；请保留并导出本机内容。');
+        }
+      }
+      throw error;
+    }
+    if(['conflict','result'].includes(this.status)||!this.authenticated)return;
     if(this.mutation)return;
     this.setStatus(navigator.onLine?'pending':'offline');
     clearTimeout(this.timer);this.timer=setTimeout(()=>this.flush().catch(()=>{}),700);
