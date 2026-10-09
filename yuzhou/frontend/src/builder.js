@@ -1,6 +1,7 @@
 import {WORKBENCH_MODULES,WORKBENCH_TEMPLATES,getWorkbench,getVisibleModules,configureWorkbench,applyWorkbenchTemplate} from './workbench-model.js';
 import {escapeHTML as esc} from './services.js';
 import {icon} from './icons.js';
+import {placementHTML,mountPlacement} from './placement.js';
 
 const byId=id=>WORKBENCH_MODULES.find(module=>module.id===id);
 const moduleTitle=(config,id)=>config.modules.find(module=>module.id===id)?.title||byId(id)?.title||id;
@@ -36,7 +37,8 @@ export function builderHTML(state,{showExample=false}={}) {
   return `<section class="wb-builder" aria-labelledby="wb-heading">
     <header class="wb-heading"><div><p class="wb-kicker">搭建台</p><div class="wb-title-row"><h1 id="wb-heading">${esc(config.title)}</h1><button type="button" class="wb-icon-button" data-wb-action="rename-workbench" aria-label="修改工作台名称" title="修改工作台名称">${icon('edit',18)}</button></div><p class="wb-intro">选择需要的模块，把这里搭成适合自己的样子。</p></div><button class="btn primary" type="button" data-wb-action="home">进入我的画布 ${icon('arrow-right',17)}</button></header>
     <div class="wb-assistant-invite"><span class="wb-assistant-mark" aria-hidden="true">${icon('sparkles',26)}</span><div><strong>也可以和 AI 一起搭建</strong><p>告诉它你的场景，先看方案，再决定如何调整。</p></div><button type="button" class="btn" data-wb-action="ask-ai">${icon('message',17)} 让 AI 帮我搭建</button></div>
-    <div class="wb-columns"><div class="wb-materials">
+    <div data-wb-placement-host>${placementHTML(state)}</div>
+    <details class="wb-advanced"><summary>模板与更多设置 <span>更换组合、修改名称、管理模块和空间</span></summary><div class="wb-columns"><div class="wb-materials">
       <section class="wb-library" aria-labelledby="wb-library-heading"><div class="wb-section-head"><div><h2 id="wb-library-heading">模块库</h2><p>按需加入；收起后，已有资料仍然保留。</p></div><span class="wb-section-caption">${catalog.length} 种可选模块</span></div>
         <div class="wb-library-list">${catalog.map(module=>{
           const selected=config.modules.find(item=>item.id===module.id),enabled=!!selected?.enabled;
@@ -49,14 +51,15 @@ export function builderHTML(state,{showExample=false}={}) {
       ${optionalCount===0?'<div class="wb-blank-hint"><strong>从空白开始，也很好。</strong><p>AI 已在这里。加入一个模块，或者为正在做的事新建空间。</p></div>':''}
       <ol class="wb-slot-list">${visible.map((module,index)=>`<li class="wb-slot" data-wb-module="${esc(module.id)}"><span class="wb-slot-index" aria-hidden="true">${String(index+1).padStart(2,'0')}</span><div class="wb-slot-body"><div class="wb-slot-top"><span class="wb-module-glyph" style="--wb-module-color:${module.color}">${icon(module.icon,18)}</span><div class="wb-slot-name"><strong>${esc(module.title)}</strong><small>${module.id==='ai'?'常驻智能助手':esc(byId(module.id).title)}</small></div><button type="button" class="wb-icon-button" data-wb-action="rename-module" data-id="${esc(module.id)}" aria-label="重命名${esc(module.title)}" title="重命名模块">${icon('edit',16)}</button></div><div class="wb-slot-controls"><button type="button" class="wb-order-button" data-wb-action="up" data-id="${esc(module.id)}" ${index===0?'disabled':''} aria-label="上移${esc(module.title)}">${icon('arrow-left',15)}<span>上移</span></button><button type="button" class="wb-order-button" data-wb-action="down" data-id="${esc(module.id)}" ${index===visible.length-1?'disabled':''} aria-label="下移${esc(module.title)}">${icon('arrow-right',15)}<span>下移</span></button>${module.id==='ai'?'<span class="wb-always">始终可用</span>':`<button type="button" class="wb-hide-button" data-wb-action="hide" data-id="${esc(module.id)}" aria-label="收起${esc(module.title)}">${icon('archive',15)} 收起</button>`}</div></div></li>`).join('')}</ol>
       <section class="wb-personal-spaces" aria-labelledby="wb-spaces-heading"><div class="wb-section-head"><div><h3 id="wb-spaces-heading">自定义空间</h3><p>围绕一个项目、目标或生活主题，收好笔记、文件和待办。</p></div></div>${spaces.length?`<ul class="wb-space-links">${spaces.map(space=>`<li><button type="button" data-wb-action="open-space" data-id="${esc(space.id)}">${icon('folder',16)}<span>${esc(space.title)}</span>${icon('arrow-right',16)}</button></li>`).join('')}</ul>`:''}<button type="button" class="wb-new-space" data-wb-action="new-space">${icon('plus',19)} 新建自定义空间</button></section>
-    </aside></div>
+    </aside></div></details>
   </section>`;
 }
 
 export function mountBuilder(ctx) {
   const {root,state,modal,toast}=ctx;
-  let active=true;
-  const render=()=>{if(active)root.innerHTML=builderHTML(state,{showExample:typeof ctx.showExample==='function'});};
+  let active=true,disposePlacement=null;
+  const placementSession={};
+  const render=()=>{if(active){disposePlacement?.();root.innerHTML=builderHTML(state,{showExample:typeof ctx.showExample==='function'});const host=root.querySelector('[data-wb-placement-host]');if(host)disposePlacement=mountPlacement({...ctx,root:host,onPlacementSaved:render},placementSession);}};
   function change(mutation,message,focus) {
     saveWorkbenchChange(ctx,mutation);
     toast(message);
@@ -96,7 +99,7 @@ export function mountBuilder(ctx) {
       if(action==='home'){
         const config=getWorkbench(state);
         if(!config.onboardingComplete)saveWorkbenchChange(ctx,workspace=>configureWorkbench(workspace,{title:config.title}));
-        ctx.go('home');
+        ctx.go('home','layout');
       }
       if(action==='ask-ai'){
         if(ctx.askAssistant)ctx.askAssistant('我想搭建适合自己的工作台，请先了解我的使用场景和目标，再给出模块组合与安排建议。');
@@ -116,5 +119,5 @@ export function mountBuilder(ctx) {
   }
   root.addEventListener('click',onClick);
   render();
-  return ()=>{active=false;root.removeEventListener('click',onClick);};
+  return ()=>{active=false;disposePlacement?.();root.removeEventListener('click',onClick);};
 }

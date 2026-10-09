@@ -441,7 +441,7 @@ function render(){
     cloudEditing=false;cloudDirtyFields.clear();if(cloudClient)updateCloudShell();return;
   }
   if(route==='builder')cleanupView=mountBuilder(view);
-  if(route==='home'){ensureCanvas(state);cleanupView=mountCanvas(view);}
+  if(route==='home'){ensureCanvas(state);cleanupView=mountCanvas({...view,fitOnMount:subroute==='layout'});if(subroute==='layout')history.replaceState(null,'','#/home');}
   if(route==='ai')cleanupView=mountAI(view,state.spaces.some(s=>s.id===subroute)?`space:${subroute}`:subroute);
   if(route==='space')cleanupView=mountSpace(view,subroute);
   if(route==='courses')cleanupView=mountCourses(view,subroute);
@@ -451,7 +451,7 @@ function render(){
   if(route==='timetable')cleanupView=mountTimetable(view);
   if(route==='competitions')cleanupView=mountCompetitions(view,subroute);
   if(route==='tasks')renderTasks();if(route==='inbox')renderInbox();if(route==='review')renderReview();if(route==='settings')renderSettings();
-  if(route!=='home'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)ctx.root.animate([{opacity:0,transform:'translateY(15px) scale(.985)'},{opacity:1,transform:'none'}],{duration:350,easing:'cubic-bezier(.22,1,.36,1)'});
+  if(!['home','builder'].includes(route)&&!matchMedia('(prefers-reduced-motion: reduce)').matches)ctx.root.animate([{opacity:0,transform:'translateY(15px) scale(.985)'},{opacity:1,transform:'none'}],{duration:350,easing:'cubic-bezier(.22,1,.36,1)'});
   cloudEditing=false;cloudDirtyFields.clear();
   if(cloudClient)updateCloudShell();
 }

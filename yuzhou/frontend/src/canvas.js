@@ -536,7 +536,8 @@ export function mountCanvas(ctx, collection) {
   }
 
   drawCards();
-  if(!canvas.initialized){homeView(true);canvas.initialized=true;persist();}
+  if(ctx.fitOnMount&&presentation==='canvas'){fitAll();canvas.initialized=true;persist();}
+  else if(!canvas.initialized){homeView(true);canvas.initialized=true;persist();}
   else if(addedCard&&presentation==='canvas'&&visibleCards().some(card=>card.id===addedCard.id)){
     const card=canvas.cards.find(card=>card.id===addedCard.id),bounds=viewport.getBoundingClientRect();
     canvas.view.x=(bounds.width-card.w*canvas.view.zoom)/2-card.x*canvas.view.zoom;

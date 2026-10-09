@@ -119,5 +119,5 @@ test('choosing the blank canvas completes onboarding without enabling optional m
   const f=fixture();mountBuilder(f.ctx);f.click('home');
   assert.equal(f.state.workbench.onboardingComplete,true);
   assert.deepEqual(getVisibleModules(f.state).map(module=>module.id),['ai']);
-  assert.deepEqual(f.calls,['save',['go','home']]);
+  assert.deepEqual(f.calls,['save',['go','home','layout']]);
 });
