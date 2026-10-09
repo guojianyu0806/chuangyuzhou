@@ -1,4 +1,4 @@
 @echo off
 cd /d "%~dp0yuzhou"
-node start.mjs
+node launch.mjs
 pause
