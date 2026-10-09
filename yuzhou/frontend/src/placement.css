@@ -110,11 +110,16 @@
   background-size: 20px 20px;
   user-select: none;
   -webkit-user-select: none;
-  touch-action: pan-y;
+  touch-action: none;
+  cursor: grab;
 }
 .wb-placement-stage:focus-visible { outline: 3px solid #a78ad8; outline-offset: -3px; }
 .wb-placement-stage.is-placing { cursor: crosshair; background-color: #f2f8f7; background-image: radial-gradient(circle, #b1d7d1 1px, transparent 1px); }
 .wb-placement-stage.is-dragging, .wb-placement-stage.is-dragging .wb-placed-block { cursor: grabbing; }
+.wb-placement-stage.can-pan,.wb-placement-stage.can-pan .wb-placed-block{cursor:grab}
+.wb-placement-stage.is-panning,.wb-placement-stage.is-panning .wb-placed-block{cursor:grabbing}
+.wb-placement-navigation,.wb-placement-layout-actions{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.wb-placement-navigation [data-place-action="zoom-reset"]{min-width:60px;font-variant-numeric:tabular-nums}
 .wb-placed-block {
   position: absolute;
   display: flex;

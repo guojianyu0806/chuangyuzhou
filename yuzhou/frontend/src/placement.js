@@ -3,6 +3,7 @@ import {canvasBounds,canvasCardFill} from './canvas.js';
 import {placementCards,placementLayout,placeBlock,arrangeBlocks,savePlacement,undoPlacement} from './placement-model.js';
 import {escapeHTML as esc} from './services.js';
 import {icon} from './icons.js';
+import {zoomPlacementView,panPlacementView,PLACEMENT_MIN_SCALE,PLACEMENT_MAX_SCALE} from './placement-camera.js';
 
 const mini='<span class="wb-block-mini" aria-hidden="true"><i></i><i></i><i></i></span>';
 const glyph=(item)=>`<span class="wb-block-icon" style="--block-color:${canvasCardFill(item.color)}">${icon(item.icon||'folder',20)}</span>`;
@@ -14,11 +15,11 @@ export function placementHTML(state){
       const module=config.modules.find(row=>row.id===item.id);
       return `<button type="button" class="wb-palette-item ${module.enabled?'is-placed':''}" data-place-source="${esc(item.id)}" aria-label="选择${esc(module.title)}方块" aria-pressed="false" title="${esc(item.description)}">${glyph(item)}<span class="wb-palette-copy"><strong>${esc(module.title)}</strong><small>${module.enabled?'已放置 · 可以挪动':'选择位置后放入'}</small></span>${mini}</button>`;
     }).join('')}</div></aside>
-    <section class="wb-placement-board" aria-label="摆放工作台方块"><div class="wb-placement-toolbar"><strong>你的工作台</strong><div><button type="button" class="btn" data-place-action="fit">看全画布</button><button type="button" class="btn" data-place-action="arrange">整齐排列</button><button type="button" class="btn" data-place-action="undo" disabled>撤销上次摆放</button></div></div>
+    <section class="wb-placement-board" aria-label="摆放工作台方块"><div class="wb-placement-toolbar"><strong>你的工作台</strong><div class="wb-placement-navigation" role="group" aria-label="搭建画布视野"><button type="button" data-place-action="zoom-out" aria-label="缩小搭建画布">−</button><button type="button" data-place-action="zoom-reset" aria-label="恢复搭建画布为100%" title="恢复100%大小">100%</button><button type="button" data-place-action="zoom-in" aria-label="放大搭建画布">+</button><button type="button" class="btn" data-place-action="fit">看全画布</button></div><div class="wb-placement-layout-actions"><button type="button" class="btn" data-place-action="arrange">整齐排列</button><button type="button" class="btn" data-place-action="undo" disabled>撤销上次摆放</button></div></div>
     <p class="wb-placement-hint" role="status" aria-live="polite">先在左边选一个方块，再点击画布放下。</p>
     <div class="wb-placement-stage" tabindex="0" aria-label="方块摆放画布；选择方块后点击位置，方向键微调，回车放下，Escape取消" aria-describedby="wb-placement-help"><div class="wb-placement-ghost" hidden aria-hidden="true"></div><p class="wb-stage-empty" hidden>从左边拿一个方块，放在这里。</p></div>
     <div class="wb-placement-inspector"><span data-place-selection>直接拖动画布里的方块，就能移动它。</span><div><button type="button" data-place-action="left" aria-label="所选方块向左移动" disabled>←</button><button type="button" data-place-action="up" aria-label="所选方块向上移动" disabled>↑</button><button type="button" data-place-action="down" aria-label="所选方块向下移动" disabled>↓</button><button type="button" data-place-action="right" aria-label="所选方块向右移动" disabled>→</button><button type="button" data-place-action="cancel" disabled>取消选择</button></div></div>
-    <footer class="wb-placement-footer" id="wb-placement-help"><span>放下即保存 · 方块会对齐网格</span><span>手机也可点选后放置；键盘用方向键和回车。</span></footer></section></div></section>`;
+    <footer class="wb-placement-footer" id="wb-placement-help"><span>拖动空白处平移 · Ctrl / ⌘ + 滚轮缩放 · 空格拖动或中键也可平移</span><span>放下即保存；点选后可用方向键和回车放置，Esc取消。</span></footer></section></div></section>`;
 }
 
 /** Screen-only transform: opening or resizing the builder does not edit state. */
@@ -36,7 +37,7 @@ export function placementPoint(view,rect,clientX,clientY,offset={x:0,y:0}){
 export function mountPlacement(ctx,session={}){
   const {root,state,toast}=ctx,stage=root.querySelector('.wb-placement-stage');
   if(!stage)return ()=>{};
-  let active=true,gesture=null,view=null,point=null,lastSize='';
+  let active=true,gesture=null,view=null,point=null,lastSize='',spaceHeld=false;
   session.placingId=null;
   const ghost=stage.querySelector('.wb-placement-ghost'),hint=root.querySelector('.wb-placement-hint');
   const selected=()=>placementLayout(state).cards.find(card=>card.id===(session.placingId||session.selectedId));
@@ -47,6 +48,25 @@ export function mountPlacement(ctx,session={}){
     element.classList.toggle('is-compact',card.h*view.scale<160);
   }
   function status(message){hint.textContent=message;}
+  // Camera navigation stays outside saved workspace state and AI context.
+  function paintCamera(next=view){
+    view=next;session.viewport={size:lastSize,view};
+    const cards=new Map(placementCards(state).map(card=>[card.id,card]));
+    stage.querySelectorAll('[data-place-card]').forEach(element=>{const card=cards.get(element.dataset.placeCard);if(card)geometry(element,card);});
+    stage.style.backgroundSize=`${40*view.scale}px ${40*view.scale}px`;
+    stage.style.backgroundPosition=`${view.left-view.x*view.scale}px ${view.top-view.y*view.scale}px`;
+    const percent=(view.scale*100).toFixed(view.scale<.01?1:0);
+    root.querySelector('[data-place-action="zoom-reset"]').textContent=`${percent}%`;
+    root.querySelector('[data-place-action="zoom-out"]').disabled=view.scale<=PLACEMENT_MIN_SCALE;
+    root.querySelector('[data-place-action="zoom-in"]').disabled=view.scale>=PLACEMENT_MAX_SCALE;
+    if(session.placingId&&point)showGhost(point);
+  }
+  function zoom(scale,anchor){
+    if(gesture)return;
+    const rect=stage.getBoundingClientRect();
+    paintCamera(zoomPlacementView(view,scale,anchor||{x:rect.width/2,y:rect.height/2}));
+    status(session.placingId?`视野已缩放；「${titleFor(session.placingId)}」仍待放下。`:`画布缩放至${(view.scale*100).toFixed(view.scale<.01?1:0)}%，拖动空白处查看其他位置。`);
+  }
   function refreshSelection(){
     const id=session.placingId||session.selectedId;
     root.querySelectorAll('[data-place-source],[data-place-card]').forEach(button=>button.setAttribute('aria-pressed',String((button.dataset.placeSource||button.dataset.placeCard)===id)));
@@ -68,7 +88,7 @@ export function mountPlacement(ctx,session={}){
       button.innerHTML=`${glyph(card)}<strong>${esc(card.title)}</strong><small>${esc(card.description||'文件、笔记和待办')}</small>${mini}<span class="wb-block-badge">拖动摆放</span>`;
       geometry(button,card);stage.insertBefore(button,ghost);
     });
-    stage.style.backgroundSize=`${40*view.scale}px ${40*view.scale}px`;
+    paintCamera();
     stage.querySelector('.wb-stage-empty').hidden=cards.length>0;
     root.querySelector('.wb-placement-count').textContent=`${cards.length} 块已放置`;
     refreshSelection();
@@ -92,12 +112,18 @@ export function mountPlacement(ctx,session={}){
   }
   function cancel(message='已取消，没有改变位置。'){
     const current=gesture;gesture=null;if(current?.element.hasPointerCapture?.(current.pointerId))current.element.releasePointerCapture(current.pointerId);
-    session.placingId=null;session.selectedId=null;point=null;ghost.hidden=true;stage.classList.remove('is-dragging');refreshSelection();status(message);
+    if(current?.kind==='pan')paintCamera(current.view);
+    spaceHeld=false;session.placingId=null;session.selectedId=null;point=null;ghost.hidden=true;stage.classList.remove('is-dragging','is-panning','can-pan');refreshSelection();status(message);
   }
   function inside(event){const rect=stage.getBoundingClientRect();return event.clientX>=rect.left&&event.clientX<=rect.right&&event.clientY>=rect.top&&event.clientY<=rect.bottom;}
   function begin(event){
+    if(!active)return;
     if(gesture&&gesture.pointerId!==event.pointerId)return;
     const button=event.target.closest('[data-place-source],[data-place-card]');
+    if(stage.contains(event.target)&&(event.button===1||(event.button===0&&(spaceHeld||!button)))){
+      gesture={kind:'pan',pointerId:event.pointerId,element:stage,startX:event.clientX,startY:event.clientY,moved:false,view,forced:spaceHeld||event.button===1};
+      stage.setPointerCapture?.(event.pointerId);stage.focus({preventScroll:true});event.preventDefault();return;
+    }
     if(!active||!button||event.button!==0||!root.contains(button))return;
     const source=!!button.dataset.placeSource,id=button.dataset.placeSource||button.dataset.placeCard;
     const card=placementLayout(state).cards.find(item=>item.id===id);if(!card)return;
@@ -107,8 +133,14 @@ export function mountPlacement(ctx,session={}){
   }
   function move(event){
     if(!active)return;
+    if(gesture&&gesture.pointerId!==event.pointerId)return;
     if(gesture&&gesture.pointerId===event.pointerId){
       if(!gesture.moved&&Math.hypot(event.clientX-gesture.startX,event.clientY-gesture.startY)<6)return;
+      if(gesture.kind==='pan'){
+        gesture.moved=true;stage.classList.add('is-panning');
+        paintCamera(panPlacementView(gesture.view,event.clientX-gesture.startX,event.clientY-gesture.startY));
+        event.preventDefault();return;
+      }
       gesture.moved=true;session.selectedId=gesture.id;session.placingId=gesture.id;stage.classList.add('is-dragging');refreshSelection();
       if(inside(event)){showGhost(placementPoint(view,stage.getBoundingClientRect(),event.clientX,event.clientY,gesture.offset));status(`松开放下「${titleFor(gesture.id)}」。`);}else{ghost.hidden=true;status('拖到右边画布内，再松开放下。');}
       event.preventDefault();
@@ -120,20 +152,32 @@ export function mountPlacement(ctx,session={}){
     if(!gesture||gesture.pointerId!==event.pointerId)return;
     const current=gesture;gesture=null;
     if(current.element.hasPointerCapture?.(event.pointerId))current.element.releasePointerCapture(event.pointerId);
-    stage.classList.remove('is-dragging');
-    if(event.type==='pointercancel'){cancel();session.suppressClickUntil=Date.now()+250;return;}
+    stage.classList.remove('is-dragging','is-panning');
+    if(current.kind==='pan'){
+      if(event.type==='pointercancel')paintCamera(current.view);
+      if(current.moved||current.forced||event.type==='pointercancel'){session.suppressClickUntil=Date.now()+350;session.suppressPanClick=true;}
+      if(current.moved)status(session.placingId?`画布已移动；「${titleFor(session.placingId)}」仍待放下。`:'画布视野已移动，方块位置没有改变。');
+      return;
+    }
+    if(event.type==='pointercancel'){cancel();session.suppressClickUntil=Date.now()+250;session.suppressPanClick=false;return;}
     if(!current.moved)return;
-    session.suppressClickUntil=Date.now()+350;
+    session.suppressClickUntil=Date.now()+350;session.suppressPanClick=false;
     if(inside(event))commit(current.id,placementPoint(view,stage.getBoundingClientRect(),event.clientX,event.clientY,current.offset));else cancel('未放入画布，原来的位置保持不变。');
   }
   function click(event){
-    if(Date.now()<(session.suppressClickUntil||0)&&!event.target.closest('[data-place-action]'))return;
+    if(Date.now()<(session.suppressClickUntil||0)&&!event.target.closest('[data-place-action]')){
+      if(!session.suppressPanClick||stage.contains(event.target))return;
+      session.suppressClickUntil=0;
+    }
     const source=event.target.closest('[data-place-source]');if(source){pick(source.dataset.placeSource);return;}
     const action=event.target.closest('[data-place-action]')?.dataset.placeAction;
     if(action){
       try{
         if(action==='cancel')cancel();
-        if(action==='fit'){draw({fit:true});ghost.hidden=true;status('已显示全部方块。');}
+        if(action==='fit'){draw({fit:true});status('已显示全部方块。');}
+        if(action==='zoom-in')zoom(view.scale*1.2);
+        if(action==='zoom-out')zoom(view.scale/1.2);
+        if(action==='zoom-reset')zoom(1);
         if(action==='arrange'){session.undo=savePlacement(ctx,arrangeBlocks);session.undoViewport=session.viewport;session.placingId=null;session.viewport=null;session.message='方块已整齐排列，可撤销。';redraw();toast(session.message);}
         if(action==='undo'){if(!undoPlacement(ctx,session.undo)){status('布局已有其他修改，未覆盖这些改动。');toast('布局已有其他修改，不能撤销这一步。');session.undo=null;refreshSelection();return;}session.undo=null;session.viewport=session.undoViewport||null;session.undoViewport=null;session.placingId=null;session.selectedId=null;session.message='已撤销上次摆放。';redraw();toast(session.message);}
         if(['left','right','up','down'].includes(action)){const card=selected();if(!card)return;const next={...(session.placingId?point:card)};next.x+=(action==='left'?-40:action==='right'?40:0);next.y+=(action==='up'?-40:action==='down'?40:0);if(session.placingId)showGhost(next);else commit(card.id,next);}
@@ -146,7 +190,16 @@ export function mountPlacement(ctx,session={}){
     const card=event.target.closest('[data-place-card]');if(card){session.selectedId=card.dataset.placeCard;refreshSelection();status(`已选择「${titleFor(session.selectedId)}」：拖动或用方向键移动。`);}
   }
   function keydown(event){
+    if(event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
     if(event.key==='Escape'){cancel();event.preventDefault();return;}
+    if(stage.contains(event.target)){
+      if(event.code==='Space'||event.key===' '){spaceHeld=true;stage.classList.add('can-pan');event.preventDefault();return;}
+      if(!event.ctrlKey&&!event.metaKey&&['+','=','-','0'].includes(event.key)){zoom(event.key==='0'?1:view.scale*(event.key==='-'?1/1.2:1.2));event.preventDefault();return;}
+      if(!session.placingId&&event.target===stage){
+        const delta={ArrowLeft:[60,0],ArrowRight:[-60,0],ArrowUp:[0,60],ArrowDown:[0,-60]}[event.key];
+        if(delta&&!gesture){paintCamera(panPlacementView(view,...delta));status('画布视野已移动，方块位置没有改变。');event.preventDefault();return;}
+      }
+    }
     if(!session.placingId&&!stage.contains(event.target))return;
     const focusedCard=event.target.closest('[data-place-card]');if(!session.placingId&&focusedCard){session.selectedId=focusedCard.dataset.placeCard;refreshSelection();}
     const card=selected();if(!card)return;
@@ -154,10 +207,18 @@ export function mountPlacement(ctx,session={}){
     if(direction){event.preventDefault();const base=session.placingId?point:card,next={x:base.x+direction[0],y:base.y+direction[1]};if(session.placingId)showGhost(next);else commit(card.id,next);}
     if(event.key==='Enter'&&session.placingId){event.preventDefault();commit(card.id,point);}
   }
-  const resize=new ResizeObserver(()=>{const rect=stage.getBoundingClientRect();if(!gesture&&`${rect.width},${rect.height}`!==lastSize){draw();if(session.placingId&&point)showGhost(point);}});resize.observe(stage);
+  function wheel(event){
+    event.preventDefault();if(gesture)return;
+    const rect=stage.getBoundingClientRect(),unit=event.deltaMode===1?16:event.deltaMode===2?rect.height:1;
+    if(event.ctrlKey||event.metaKey)zoom(view.scale*Math.exp(Math.max(-8,Math.min(8,-event.deltaY*unit*.002))),{x:event.clientX-rect.left,y:event.clientY-rect.top});
+    else{paintCamera(panPlacementView(view,-(event.shiftKey?event.deltaY:event.deltaX)*unit,-(event.shiftKey?event.deltaX:event.deltaY)*unit));status(session.placingId?`画布已移动；「${titleFor(session.placingId)}」仍待放下。`:'画布视野已移动，方块位置没有改变。');}
+  }
+  const resize=new ResizeObserver(()=>{const rect=stage.getBoundingClientRect();if(!gesture&&`${rect.width},${rect.height}`!==lastSize)draw();});resize.observe(stage);
   root.addEventListener('click',click);root.addEventListener('pointerdown',begin);root.addEventListener('pointermove',move);root.addEventListener('pointerup',finish);root.addEventListener('pointercancel',finish);root.addEventListener('keydown',keydown);
-  const blur=()=>{if(gesture)cancel();};window.addEventListener('blur',blur);
+  stage.addEventListener('wheel',wheel,{passive:false});
+  const keyup=event=>{if(event.code==='Space'||event.key===' '){if(spaceHeld&&stage.contains(event.target))event.preventDefault();spaceHeld=false;stage.classList.remove('can-pan');}};window.addEventListener('keyup',keyup);
+  const blur=()=>{spaceHeld=false;stage.classList.remove('can-pan');if(gesture)cancel();};window.addEventListener('blur',blur);
   const lost=event=>{if(gesture?.pointerId===event.pointerId)cancel();};root.addEventListener('lostpointercapture',lost);
   draw();if(session.message)status(session.message);
-  return ()=>{active=false;const current=gesture;gesture=null;if(current?.element.hasPointerCapture?.(current.pointerId))current.element.releasePointerCapture(current.pointerId);resize.disconnect();window.removeEventListener('blur',blur);for(const [name,listener] of [['click',click],['pointerdown',begin],['pointermove',move],['pointerup',finish],['pointercancel',finish],['lostpointercapture',lost],['keydown',keydown]])root.removeEventListener(name,listener);};
+  return ()=>{active=false;const current=gesture;gesture=null;if(current?.element.hasPointerCapture?.(current.pointerId))current.element.releasePointerCapture(current.pointerId);resize.disconnect();window.removeEventListener('blur',blur);window.removeEventListener('keyup',keyup);stage.removeEventListener('wheel',wheel);for(const [name,listener] of [['click',click],['pointerdown',begin],['pointermove',move],['pointerup',finish],['pointercancel',finish],['lostpointercapture',lost],['keydown',keydown]])root.removeEventListener(name,listener);};
 }
