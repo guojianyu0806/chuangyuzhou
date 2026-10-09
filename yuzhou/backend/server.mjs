@@ -213,11 +213,17 @@ export async function createWorkbenchServer(options = {}) {
     }
     if (!['GET', 'HEAD'].includes(req.method)) throw new ApiError(405, 'method_not_allowed');
     const asset = path === '/' ? '/index.html' : path;
-    const permitted = ['/index.html', '/icon.svg', '/manifest.webmanifest'].includes(asset) || /^\/src\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]+\.(?:js|css|svg|png|jpg|woff2)$/.test(asset);
+    const permitted = ['/index.html', '/miniapp-runtime.html', '/icon.svg', '/manifest.webmanifest'].includes(asset) || /^\/src\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]+\.(?:js|css|svg|png|jpg|woff2)$/.test(asset);
     if (!permitted) throw new ApiError(404, 'not_found');
     const candidate = join(frontendDir, asset.slice(1));
     let real;
     try { assertOrdinaryPath(candidate, FRONTEND_ROOT); real = realpathSync(candidate); if (!real.startsWith(frontendDir + sep) || !statSync(real).isFile()) throw new Error(); } catch { throw new ApiError(404, 'not_found'); }
+    if(asset==='/miniapp-runtime.html'){
+      // Only the fixed renderer can be framed. Generated code is never a main-page script.
+      res.setHeader('X-Frame-Options','SAMEORIGIN');
+      res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=(), payment=(), usb=()');
+      res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self' blob:; style-src 'self'; worker-src blob:; connect-src 'none'; img-src 'none'; media-src 'none'; font-src 'none'; object-src 'none'; frame-src 'none'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'; sandbox allow-scripts");
+    }
     res.setHeader('Content-Type', mime[extname(real)] || 'application/octet-stream');
     res.setHeader('Content-Length', statSync(real).size);
     res.writeHead(200);

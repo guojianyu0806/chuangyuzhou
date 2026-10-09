@@ -15,6 +15,15 @@ const username = 'workbench';
 const password = 'a-long-test-password-2026';
 const state = () => ({ schema: 1, mode: 'personal', profile: { name: '同学' }, courses: [], tasks: [], captures: [], english: {}, spaces: [], aiRequests: [], aiDraft: { text: '', files: [], targetId: 'auto' } });
 
+test('only the fixed miniapp renderer receives the isolated iframe and worker policy',async t=>{
+  const f=await fixture(t),main=await f.api('/'),runtime=await f.api('/miniapp-runtime.html');
+  assert.equal(runtime.status,200);assert.equal(runtime.headers.get('x-frame-options'),'SAMEORIGIN');
+  const policy=runtime.headers.get('content-security-policy');
+  for(const directive of ["default-src 'none'","worker-src blob:","connect-src 'none'","frame-src 'none'","frame-ancestors 'self'","sandbox allow-scripts"])assert.ok(policy.includes(directive));
+  assert.equal(main.headers.get('x-frame-options'),'DENY');assert.ok(main.headers.get('content-security-policy').includes("script-src 'self';"));assert.equal(main.headers.get('content-security-policy').includes('worker-src blob:'),false);
+  assert.equal((await f.api('/other-runtime.html')).status,404);assert.equal((await f.api('/miniapp-runtime.html',{method:'POST',body:{}})).status,405);
+});
+
 async function fixture(t, options = {}) {
   const directory = await mkdtemp(join(tmpdir(), 'shiguang-server-test-'));
   let app = await createWorkbenchServer({ dataDir: directory, secureCookie: false, setupToken, ...options });
