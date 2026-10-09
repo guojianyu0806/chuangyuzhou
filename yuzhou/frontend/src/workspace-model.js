@@ -2,9 +2,11 @@ import {initializeCalendar} from './calendar-model.js';
 import {initializeLedger} from './ledger-model.js';
 import {initializeTimetable} from './timetable-model.js';
 import {assignRecordColor} from './creation-colors.js';
+import {initializeWorkbench} from './workbench-model.js';
 export const SPACE_COLORS = ['#7950f2','#00b8b0','#ec4899','#b2cf18','#f58b35','#4088f4'];
 
 export function initializeSpaces(state) {
+  initializeWorkbench(state);
   initializeCalendar(state);
   initializeLedger(state);
   initializeTimetable(state);

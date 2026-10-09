@@ -6,18 +6,20 @@ import {formatMoney,localDate,selectEntries,summarizeEntries} from './ledger-mod
 import {CARD_PRESENTATIONS,normalizePresentation,normalizeStackPointer,stackMetrics,stackLayout} from './card-layouts.js';
 import {weekForDate,entriesForWeek} from './timetable-model.js';
 import {mountSurfaceFullscreen} from './fullscreen.js';
-const PRESETS = {
-  ai:      { x:36, y:40, w:540, h:380, color:'#B3A0FF', title:'AI 收件台', icon:'sparkles', label:'把零散，变有序。' },
-  courses: { x:612, y:40, w:310, h:272, color:'#AE88FF', title:'课程空间', icon:'book', label:'让知识，连成线。' },
-  english: { x:958, y:76, w:320, h:344, color:'#D8F649', title:'六级随身练', icon:'graduation', label:'碎片时间，也能向前。' },
-  inbox:   { x:36, y:456, w:268, h:238, color:'#FF9CCE', title:'灵感收集箱', icon:'inbox', label:'先接住每一个想法。' },
-  tasks:   { x:612, y:348, w:310, h:272, color:'#63E6DC', title:'备忘与待办', icon:'check-circle', label:'把事情，一件件做好。' },
-  review:  { x:958, y:456, w:320, h:238, color:'#9DC5FF', title:'生活回顾', icon:'chart', label:'看见日常中的每一步。' },
-  ledger:  { x:958, y:730, w:320, h:272, color:'#FFBC7C', title:'记账', icon:'wallet', label:'每一笔，都有去处。' },
-  calendar: { x:382, y:1014, w:320, h:272, color:'#FF9CCE', title:'日历', icon:'calendar', label:'计划、标注和注意事项。' },
-  timetable: { x:36, y:1014, w:320, h:272, color:'#8EDBE8', title:'学期课表', icon:'timetable', label:'按教学周，安排上课的每一天。' },
-  competitions: { x:728, y:1040, w:320, h:272, color:'#D8F649', title:'比赛', icon:'flag', label:'截止节点、准备事项与参赛进度。' }
+import {WORKBENCH_MODULES,getWorkbench} from './workbench-model.js';
+const POSITIONS = {
+  ai:      { x:36, y:40, w:540, h:380, label:'把零散，变有序。' },
+  courses: { x:612, y:40, w:310, h:272, label:'让知识，连成线。' },
+  english: { x:958, y:76, w:320, h:344, label:'碎片时间，也能向前。' },
+  inbox:   { x:36, y:456, w:268, h:238, label:'先接住每一个想法。' },
+  tasks:   { x:612, y:348, w:310, h:272, label:'把事情，一件件做好。' },
+  review:  { x:958, y:456, w:320, h:238, label:'看见日常中的每一步。' },
+  ledger:  { x:958, y:730, w:320, h:272, label:'每一笔，都有去处。' },
+  calendar: { x:382, y:1014, w:320, h:272, label:'计划、标注和注意事项。' },
+  timetable: { x:36, y:1014, w:320, h:272, label:'按教学周，安排上课的每一天。' },
+  competitions: { x:728, y:1040, w:320, h:272, label:'截止节点、准备事项与参赛进度。' }
 };
+const PRESETS=Object.fromEntries(WORKBENCH_MODULES.map(module=>[module.id,{...module,...POSITIONS[module.id]}]));
 const COLORS=['#AE88FF','#63E6DC','#D8F649','#FF9CCE','#9DC5FF','#FFBC7C','#B3A0FF','#B4E6B9'];
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 const finite=(n,fallback)=>Number.isFinite(Number(n))?Number(n):fallback;
@@ -71,6 +73,14 @@ export function zoomAt(view,zoom,point) {
   return {zoom:next,x:point.x-(point.x-view.x)*ratio,y:point.y-(point.y-view.y)*ratio};
 }
 
+/** A presentation-only selection; hidden card coordinates and records stay in state. */
+export function visibleCanvasCards(state,canvas=state.canvas) {
+  const modules=getWorkbench(state).modules,byId=new Map(modules.map((module,index)=>[module.id,{...module,index}]));
+  const spaces=new Map((state.spaces||[]).map(space=>[space.id,space]));
+  return (canvas?.cards||[]).filter(card=>byId.has(card.id)?byId.get(card.id).enabled:spaces.has(card.id)&&!spaces.get(card.id).archived)
+    .sort((a,b)=>(byId.get(a.id)?.index??modules.length)-(byId.get(b.id)?.index??modules.length));
+}
+
 export function mountCanvas(ctx, collection) {
   const {root,state,save,icon,esc,toast,modal,go}=ctx;
   const itemById=new Map((collection?.items||state.spaces||[]).map(item=>[item.id,item]));
@@ -92,11 +102,11 @@ export function mountCanvas(ctx, collection) {
   let presentation=normalizePresentation(canvas.presentation,matchMedia('(max-width:680px)').matches?'list':'canvas');
   let stackRaf=0,stackReady=false,stackFocus=0,stackDrag=null,lastStackPointer=0;
   const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)');
-  const visibleCards=()=>canvas.cards.filter(c=>collection?itemById.has(c.id)&&(!collection.matches||collection.matches(itemById.get(c.id))):(presets[c.id]||itemById.has(c.id)&&!itemById.get(c.id).archived));
+  const visibleCards=()=>collection?canvas.cards.filter(c=>itemById.has(c.id)&&(!collection.matches||collection.matches(itemById.get(c.id)))):visibleCanvasCards(state,canvas);
   const dataFor=card=>{
     if(collection){const item=itemById.get(card.id);return {...item,color:color(card.color||item?.color),label:item?.subtitle||''};}
     const preset=presets[card.id];
-    if(preset)return {...preset,color:color(card.color||preset.color),id:card.id};
+    if(preset)return {...preset,title:getWorkbench(state).modules.find(module=>module.id===card.id)?.title||preset.title,color:color(card.color||preset.color),id:card.id};
     const space=itemById.get(card.id);
     return {...space,color:color(space?.color||card.color),icon:space?.icon||'folder',label:space?.description||'文件、笔记和事务，都有自己的位置。'};
   };
@@ -110,7 +120,7 @@ export function mountCanvas(ctx, collection) {
   const gridIcon='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>';
 
   root.innerHTML=`<section class="space-desktop ${collection?.hideHeader?'cv-nested':''}" aria-labelledby="canvas-title">
-    <header class="cv-pagehead cv-compact-header"><div class="cv-heading"><h1 id="canvas-title">${esc(collection?.title||'我的空间')}<span class="cv-title-dot">.</span></h1></div><div class="cv-head-actions"><button class="cv-button cv-arrange-toggle" type="button" data-cv="arrange" aria-label="选择卡片排列方式" aria-haspopup="dialog">${gridIcon}<span>排列</span>${icon('chevron-down',13)}</button><button class="cv-button cv-create" type="button" data-cv="create" ${collection?.createLabel===false?'hidden':''}>${icon('plus',19)}<span>${esc(collection?.createLabel||'新建空间')}</span></button></div></header>
+    <header class="cv-pagehead cv-compact-header"><div class="cv-heading"><h1 id="canvas-title">${esc(collection?.title||getWorkbench(state).title)}<span class="cv-title-dot">.</span></h1></div><div class="cv-head-actions"><button class="cv-button cv-arrange-toggle" type="button" data-cv="arrange" aria-label="选择卡片排列方式" aria-haspopup="dialog">${gridIcon}<span>排列</span>${icon('chevron-down',13)}</button><button class="cv-button cv-create" type="button" data-cv="create" ${collection?.createLabel===false?'hidden':''}>${icon('plus',19)}<span>${esc(collection?.createLabel||(!collection&&ctx.openBuilder?'搭建工作台':'新建空间'))}</span></button></div></header>
     ${collection?.toolbar||''}
 
     <div class="cv-viewport" tabindex="0" aria-label="工作区卡片"><div class="cv-stack-scroll"><div class="cv-world"></div></div><div class="cv-stack-focusline" aria-hidden="true" hidden></div><aside class="cv-stack-rail" aria-label="堆叠展开位置" hidden><button class="cv-stack-pointer" type="button" role="slider" aria-label="上下拖动，调节卡片展开位置" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">${icon('chevron-right',22)}</button><span class="cv-stack-readout" aria-hidden="true"></span></aside><div class="cv-stack-controls" hidden><span>滑动卡片 · 拖动左侧指针展开</span><button type="button" data-cv="stack-prev" aria-label="上一张卡片">${icon('arrow-left',17)}</button><button type="button" data-cv="stack-next" aria-label="下一张卡片">${icon('arrow-right',17)}</button></div><div class="cv-edit-message" hidden>${dragIcon}<span>拖动卡片排位置 · 拖右下角改大小 · 点菜单换颜色</span></div></div>
@@ -164,29 +174,29 @@ export function mountCanvas(ctx, collection) {
   function cardContent(card) {
     if(collection?.renderCard)return collection.renderCard(card,dataFor(card));
     const d=dataFor(card),courseCount=(state.courses||[]).filter(course=>!course.archived).length,taskCount=(state.tasks||[]).filter(t=>!t.done&&!t.archived).length,captureCount=(state.captures||[]).filter(c=>!c.archived).length;
-    if(card.id==='ai')return `<div class="cv-ai-title"><span class="cv-ai-orbit" aria-hidden="true">${icon('sparkles',29)}</span><div><h2>有什么事，交给我。</h2><p>先聊清楚，再归入你的空间。</p></div></div><div class="cv-ai-host" data-ai-host></div>`;
+    if(card.id==='ai')return `<div class="cv-ai-title"><span class="cv-ai-orbit" aria-hidden="true">${icon('sparkles',29)}</span><div><h2>${esc(d.title)}</h2><p>先聊清楚，再归入你的空间。</p></div></div><div class="cv-ai-host" data-ai-host></div>`;
     if(card.id==='competitions'){
       const summary=summarizeCompetitions(state.competitions);
-      return `<div class="cv-card-copy"><span class="cv-card-kicker">COMPETITIONS</span><h2>比赛</h2><p>${esc(d.label)}</p></div><div class="cv-space-counts"><span>${summary.active} 项进行中</span><span>${summary.upcoming} 个近期截止</span></div><p class="cv-small">${summary.overdue?`${summary.overdue} 个节点已逾期 · `:''}${summary.unfinishedTasks} 项准备事项待完成</p>`;
+      return `<div class="cv-card-copy"><span class="cv-card-kicker">COMPETITIONS</span><h2>${esc(d.title)}</h2><p>${esc(d.label)}</p></div><div class="cv-space-counts"><span>${summary.active} 项进行中</span><span>${summary.upcoming} 个近期截止</span></div><p class="cv-small">${summary.overdue?`${summary.overdue} 个节点已逾期 · `:''}${summary.unfinishedTasks} 项准备事项待完成</p>`;
     }
     if(card.id==='ledger'){
       const month=localDate().slice(0,7),last=localDate(new Date(Number(month.slice(0,4)),Number(month.slice(5)),0)),totals=summarizeEntries(selectEntries(state.ledger||{entries:[],projects:[]},{start:month+'-01',end:last,scope:'total'}));
-      return `<div class="cv-card-copy"><span class="cv-card-kicker">YOUR DAILY LEDGER</span><h2>记账</h2><p>${esc(d.label)}</p></div><div class="cv-ledger-total"><span>本月总账支出${state.mode==='demo'?' · 示例':''}</span><strong>¥${formatMoney(totals.expenseCents)}</strong></div><div class="cv-space-counts"><span>${totals.count} 笔收支</span><span>日期 · 项目</span></div>`;
+      return `<div class="cv-card-copy"><span class="cv-card-kicker">YOUR DAILY LEDGER</span><h2>${esc(d.title)}</h2><p>${esc(d.label)}</p></div><div class="cv-ledger-total"><span>本月总账支出${state.mode==='demo'?' · 示例':''}</span><strong>¥${formatMoney(totals.expenseCents)}</strong></div><div class="cv-space-counts"><span>${totals.count} 笔收支</span><span>日期 · 项目</span></div>`;
     }
     if(card.id==='calendar'){
       const day=localDate(),events=[...eventsOnDate(state.calendar||{events:[]},day),...projectCalendarLinks(state).filter(event=>event.startDate<=day&&event.endDate>=day)];
-      return `<div class="cv-card-copy"><span class="cv-card-kicker">MAKE ROOM FOR WHAT MATTERS</span><h2>日历</h2><p>${esc(d.label)}</p></div><div class="cv-space-counts"><span>今天 ${events.length} 条安排</span></div><p>${esc(events[0]?.title||'点击日期，安排你的下一件事。')}</p>`;
+      return `<div class="cv-card-copy"><span class="cv-card-kicker">MAKE ROOM FOR WHAT MATTERS</span><h2>${esc(d.title)}</h2><p>${esc(d.label)}</p></div><div class="cv-space-counts"><span>今天 ${events.length} 条安排</span></div><p>${esc(events[0]?.title||'点击日期，安排你的下一件事。')}</p>`;
     }
     if(card.id==='timetable'){
       const table=state.timetable,term=table?.terms.find(t=>t.id===table.activeTermId)||table?.terms[0],week=term?weekForDate(term,localDate()):0,inTerm=term&&week>0&&week<=term.totalWeeks;
       const count=term?(inTerm?entriesForWeek(term,week):term.entries.filter(e=>!e.archived)).length:0;
-      return `<div class="cv-card-copy"><span class="cv-card-kicker">MY SEMESTER</span><h2>学期课表</h2><p>${esc(term?.title||d.label)}</p></div><div class="cv-card-detail"><strong>${term?(inTerm?week:'—'):'+'}</strong><span>${inTerm?'教学周':'独立课程安排'}</span></div><div class="cv-space-counts"><span>${count} ${inTerm?'次课 · 本周':'条上课安排'}</span><span>${esc(term?.campus||'设置学期与作息')}</span></div>`;
+      return `<div class="cv-card-copy"><span class="cv-card-kicker">MY SEMESTER</span><h2>${esc(d.title)}</h2><p>${esc(term?.title||d.label)}</p></div><div class="cv-card-detail"><strong>${term?(inTerm?week:'—'):'+'}</strong><span>${inTerm?'教学周':'独立课程安排'}</span></div><div class="cv-space-counts"><span>${count} ${inTerm?'次课 · 本周':'条上课安排'}</span><span>${esc(term?.campus||'设置学期与作息')}</span></div>`;
     }
-    if(card.id==='courses')return `<div class="cv-card-copy"><span class="cv-card-kicker">LEARNING SPACE</span><h2>课程空间</h2><p>${esc(d.label)}</p></div><div class="cv-course-art" aria-hidden="true"><span>${icon('code',26)}</span><span>${icon('file',25)}</span><span>${icon('book',29)}</span></div><div class="cv-card-detail"><strong>${courseCount}</strong><span>门课程，持续积累</span></div>`;
-    if(card.id==='english')return `<div class="cv-card-copy"><span class="cv-card-kicker">CET–6 / EVERY LITTLE STEP</span><h2>每天一点，<br>离六级更近。</h2></div><div class="cv-english-word" aria-hidden="true">KEEP<br><span>GOING</span><b>↗</b></div><div class="cv-english-actions"><button type="button" data-cv="vocabulary">${icon('book',16)}背单词</button><button type="button" data-cv="reading">${icon('play',15)}随时刷题</button></div>`;
-    if(card.id==='tasks')return `<div class="cv-card-copy"><span class="cv-card-kicker">ONE THING AT A TIME</span><h2>备忘与待办</h2><p>${esc(d.label)}</p></div><div class="cv-task-lines">${(state.tasks||[]).filter(t=>!t.done&&!t.archived).slice(0,2).map(t=>`<div><span></span><span>${esc(t.title)}</span></div>`).join('')||'<div><span></span><span>想到的事情，随手记在这里</span></div>'}</div><div class="cv-card-detail"><strong>${taskCount}</strong><span>件待办</span></div>`;
-    if(card.id==='inbox')return `<div class="cv-card-copy"><span class="cv-card-kicker">CATCH YOUR IDEAS</span><h2>灵感收集箱</h2><p>不用整理，先记下来。</p></div><span class="cv-sticker-art" aria-hidden="true">${icon('bolt',54)}</span><div class="cv-card-detail"><strong>${captureCount}</strong><span>条待整理内容</span></div>`;
-    if(card.id==='review')return `<div class="cv-card-copy"><span class="cv-card-kicker">YOUR LITTLE WINS</span><h2>生活回顾</h2><p>${esc(d.label)}</p></div><div class="cv-review-art" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span>${icon('arrow-right',25)}</div><div class="cv-card-detail"><strong>${(state.tasks||[]).filter(t=>t.done&&!t.archived).length}</strong><span>件已完成的事</span></div>`;
+    if(card.id==='courses')return `<div class="cv-card-copy"><span class="cv-card-kicker">LEARNING SPACE</span><h2>${esc(d.title)}</h2><p>${esc(d.label)}</p></div><div class="cv-course-art" aria-hidden="true"><span>${icon('code',26)}</span><span>${icon('file',25)}</span><span>${icon('book',29)}</span></div><div class="cv-card-detail"><strong>${courseCount}</strong><span>门课程，持续积累</span></div>`;
+    if(card.id==='english')return `<div class="cv-card-copy"><span class="cv-card-kicker">CET–6 / EVERY LITTLE STEP</span><h2>${esc(d.title)}</h2></div><div class="cv-english-word" aria-hidden="true">KEEP<br><span>GOING</span><b>↗</b></div><div class="cv-english-actions"><button type="button" data-cv="vocabulary">${icon('book',16)}背单词</button><button type="button" data-cv="reading">${icon('play',15)}随时刷题</button></div>`;
+    if(card.id==='tasks')return `<div class="cv-card-copy"><span class="cv-card-kicker">ONE THING AT A TIME</span><h2>${esc(d.title)}</h2><p>${esc(d.label)}</p></div><div class="cv-task-lines">${(state.tasks||[]).filter(t=>!t.done&&!t.archived).slice(0,2).map(t=>`<div><span></span><span>${esc(t.title)}</span></div>`).join('')||'<div><span></span><span>想到的事情，随手记在这里</span></div>'}</div><div class="cv-card-detail"><strong>${taskCount}</strong><span>件待办</span></div>`;
+    if(card.id==='inbox')return `<div class="cv-card-copy"><span class="cv-card-kicker">CATCH YOUR IDEAS</span><h2>${esc(d.title)}</h2><p>不用整理，先记下来。</p></div><span class="cv-sticker-art" aria-hidden="true">${icon('bolt',54)}</span><div class="cv-card-detail"><strong>${captureCount}</strong><span>条待整理内容</span></div>`;
+    if(card.id==='review')return `<div class="cv-card-copy"><span class="cv-card-kicker">YOUR LITTLE WINS</span><h2>${esc(d.title)}</h2><p>${esc(d.label)}</p></div><div class="cv-review-art" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span>${icon('arrow-right',25)}</div><div class="cv-card-detail"><strong>${(state.tasks||[]).filter(t=>t.done&&!t.archived).length}</strong><span>件已完成的事</span></div>`;
     const files=(d.files||[]).filter(file=>!file.archived).length,notes=(d.notes||[]).filter(note=>!note.archived).length,tasks=(state.tasks||[]).filter(t=>t.spaceId===card.id&&!t.done&&!t.archived).length;
     return `<div class="cv-card-copy"><span class="cv-card-kicker">${d.type==='course'?'MY CLASSROOM':d.type==='project'?'MY PROJECT':'MY OWN SPACE'}</span><h2>${esc(d.title||'未命名空间')}</h2><p>${esc(d.description||'收藏资料、记录想法，安排属于你的事。')}</p></div><div class="cv-custom-art" aria-hidden="true">${safeIcon(d.icon,72)}</div><div class="cv-space-counts"><span>${files} 份文件</span><span>${notes} 篇笔记</span>${tasks?`<span>${tasks} 件待办</span>`:''}</div>`;
   }
@@ -198,8 +208,8 @@ export function mountCanvas(ctx, collection) {
     world.innerHTML=visibleCards().map((card,index)=>{
       const d=dataFor(card);
       return `<article class="cv-card cv-card-${collection?'collection':presets[card.id]?card.id:'custom'} ${card.h<260?'cv-compact':''} ${card.h<330?'cv-short':''}" data-card="${esc(card.id)}" style="--card-color:${color(d.color)};--card-fill:${canvasCardFill(d.color)};--card-order:${index};width:${card.w}px;height:${card.h}px;transform:translate(${card.x}px,${card.y}px)" tabindex="0" aria-label="${esc(d.title)}，按Enter打开">
-      <header class="cv-card-head"><span class="cv-space-symbol">${safeIcon(d.icon,20)}</span><span class="cv-stack-title">${esc(d.title)}</span><span class="cv-card-top-label">${collection?esc(collectionText('cardLabel',d,'内容卡片')):card.id==='ai'?'AI 收件台':presets[card.id]?'预置空间':'自建空间'}</span><button type="button" class="cv-drag" data-cv="drag" title="拖动卡片；方向键移动" aria-label="拖动${esc(d.title)}卡片，或使用方向键调整位置">${dragIcon}</button><button type="button" class="cv-card-menu" data-cv="card-menu" title="卡片设置" aria-label="设置${esc(d.title)}卡片">${icon('more',19)}</button></header>
-      <div class="cv-card-body">${cardContent(card)}</div><footer class="cv-card-foot"><span>${esc(collectionText('footLabel',d,card.id==='ai'?'对话 → 确认 → 归档':card.id==='competitions'?'截止 · 清单 · 参赛档案':card.id==='calendar'?'计划 · 标注 · 注意事项':card.id==='ledger'?'按日期记录 · 按项目汇总':card.id==='timetable'?'教学周 · 单双周 · 上课地点':'拖入文件，直接收进这里'))}</span><button type="button" data-cv="enter" aria-label="进入${esc(d.title)}">${esc(collectionText('enterLabel',d,card.id==='ai'?'打开收件台':'进入空间'))}${icon('arrow-right',17)}</button></footer>
+      <header class="cv-card-head"><span class="cv-space-symbol">${safeIcon(d.icon,20)}</span><span class="cv-stack-title">${esc(d.title)}</span><span class="cv-card-top-label">${collection?esc(collectionText('cardLabel',d,'内容卡片')):card.id==='ai'?'智能伙伴':presets[card.id]?'工作台模块':'自建空间'}</span><button type="button" class="cv-drag" data-cv="drag" title="拖动卡片；方向键移动" aria-label="拖动${esc(d.title)}卡片，或使用方向键调整位置">${dragIcon}</button><button type="button" class="cv-card-menu" data-cv="card-menu" title="卡片设置" aria-label="设置${esc(d.title)}卡片">${icon('more',19)}</button></header>
+      <div class="cv-card-body">${cardContent(card)}</div><footer class="cv-card-foot"><span>${esc(collectionText('footLabel',d,card.id==='ai'?'对话 → 确认 → 归档':card.id==='competitions'?'截止 · 清单 · 参赛档案':card.id==='calendar'?'计划 · 标注 · 注意事项':card.id==='ledger'?'按日期记录 · 按项目汇总':card.id==='timetable'?'教学周 · 单双周 · 上课地点':'拖入文件，直接收进这里'))}</span><button type="button" data-cv="enter" aria-label="进入${esc(d.title)}">${esc(collectionText('enterLabel',d,card.id==='ai'?'打开伙伴':'进入空间'))}${icon('arrow-right',17)}</button></footer>
       <button class="cv-resize" type="button" data-cv="resize" title="拖动调整大小；方向键微调" aria-label="调整${esc(d.title)}卡片大小">${resizeIcon}</button><div class="cv-drop-overlay">${icon('upload',34)}<strong>松手，放入${esc(d.title)}</strong><span>文件保存在本机</span></div></article>`;
     }).join('');
     cardElements.clear();for(const element of world.querySelectorAll('[data-card]'))cardElements.set(element.dataset.card,element);
@@ -343,7 +353,7 @@ export function mountCanvas(ctx, collection) {
     if(presentation==='stack'&&stackCard&&!stackCard.classList.contains('is-stack-focused')){selectStack(visibleCards().findIndex(c=>c.id===stackCard.dataset.card));return;}
     if(button){
       const action=button.dataset.cv,el=button.closest('[data-card]'),card=canvas.cards.find(c=>c.id===el?.dataset.card);
-      if(action==='create')return ctx.createSpace?.();
+      if(action==='create')return !collection&&ctx.openBuilder?ctx.openBuilder():ctx.createSpace?.();
       if(action==='fullscreen')return fullscreen.toggle();
       if(action==='arrange')return arrangeDialog();
       if(CARD_PRESENTATIONS.includes(action))return selectPresentation(action);
