@@ -1,0 +1,1996 @@
+TAP version 13
+# Subtest: online backup keeps live service data, originals and private config intact and never overwrites older backup
+not ok 1 - online backup keeps live service data, originals and private config intact and never overwrites older backup
+  ---
+  duration_ms: 301.2944
+  type: 'test'
+  location: 'E:\\传智杯\\传智杯AI创新应用挑战赛\\yuzhou\\backend\\tests\\backup.test.mjs:11:1'
+  failureType: 'testCodeFailure'
+  error: "EPERM: operation not permitted, rename 'E:\\传智杯\\传智杯AI创新应用挑战赛\\yuzhou\\.cu-runtime\\tests-temp\\shiguang-backup-test-rFGQ16\\backups\\yuzhou-2026-10-09T02-36-48-761Z-aeaea292.partial' -> 'E:\\传智杯\\传智杯AI创新应用挑战赛\\yuzhou\\.cu-runtime\\tests-temp\\shiguang-backup-test-rFGQ16\\backups\\yuzhou-2026-10-09T02-36-48-761Z-aeaea292'"
+  code: 'EPERM'
+  stack: |-
+    async rename (node:internal/fs/promises:781:10)
+    async backupWorkbench (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/backend/backup.mjs:89:5)
+    async TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/backend/tests/backup.test.mjs:21:17)
+    async Test.run (node:internal/test_runner/test:1127:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: corrupt original aborts backup without leaving a completed snapshot; nesting is rejected
+ok 2 - corrupt original aborts backup without leaving a completed snapshot; nesting is rejected
+  ---
+  duration_ms: 484.4119
+  type: 'test'
+  ...
+# Subtest: calendar query combines explicit source dates and returns real editable identities without writes
+ok 3 - calendar query combines explicit source dates and returns real editable identities without writes
+  ---
+  duration_ms: 36.3808
+  type: 'test'
+  ...
+# Subtest: source/kind/done filters and pagination count all matching dated records
+ok 4 - source/kind/done filters and pagination count all matching dated records
+  ---
+  duration_ms: 7.5267
+  type: 'test'
+  ...
+# Subtest: editing a returned source date moves its projection without creating or changing calendar events
+ok 5 - editing a returned source date moves its projection without creating or changing calendar events
+  ---
+  duration_ms: 8.1464
+  type: 'test'
+  ...
+# Subtest: archived linked parents are omitted while native archived events remain independently queryable
+ok 6 - archived linked parents are omitted while native archived events remain independently queryable
+  ---
+  duration_ms: 3.7203
+  type: 'test'
+  ...
+# Subtest: independent copied competition event and live source remain separately identified after edits
+ok 7 - independent copied competition event and live source remain separately identified after edits
+  ---
+  duration_ms: 5.2328
+  type: 'test'
+  ...
+# Subtest: layout choices and pointer heights persist across devices and server restarts without moving free-canvas cards
+ok 8 - layout choices and pointer heights persist across devices and server restarts without moving free-canvas cards
+  ---
+  duration_ms: 157.7809
+  type: 'test'
+  ...
+# Subtest: CLI entry identity resolves release symlinks while imported modules remain inert
+ok 9 - CLI entry identity resolves release symlinks while imported modules remain inert
+  ---
+  duration_ms: 24.2572
+  type: 'test'
+  ...
+# Subtest: competition server refuses deployment symlinks before creating runtime files
+ok 10 - competition server refuses deployment symlinks before creating runtime files
+  ---
+  duration_ms: 570.7652
+  type: 'test'
+  ...
+# Subtest: competition backup CLI refuses a deployment symlink
+ok 11 - competition backup CLI refuses a deployment symlink
+  ---
+  duration_ms: 774.349
+  type: 'test'
+  ...
+# Subtest: competition startup uses its own localhost origin, data directory and frontend
+ok 12 - competition startup uses its own localhost origin, data directory and frontend
+  ---
+  duration_ms: 101.6338
+  type: 'test'
+  ...
+# Subtest: store, server, Hermes and backup reject out-of-copy directories before reading or writing
+ok 13 - store, server, Hermes and backup reject out-of-copy directories before reading or writing
+  ---
+  duration_ms: 4.5143
+  type: 'test'
+  ...
+# Subtest: linked runtime directory and hard-linked credentials are rejected without changing originals
+ok 14 - linked runtime directory and hard-linked credentials are rejected without changing originals
+  ---
+  duration_ms: 49.8128
+  type: 'test'
+  ...
+# Subtest: setup code stays stable in this copy and a linked token is never overwritten
+ok 15 - setup code stays stable in this copy and a linked token is never overwritten
+  ---
+  duration_ms: 56.4952
+  type: 'test'
+  ...
+# Subtest: actual listening remains loopback and only the new cookie authenticates
+ok 16 - actual listening remains loopback and only the new cookie authenticates
+  ---
+  duration_ms: 583.3583
+  type: 'test'
+  ...
+# Subtest: Hermes starts unconfigured without reading old engine paths or model keys
+ok 17 - Hermes starts unconfigured without reading old engine paths or model keys
+  ---
+  duration_ms: 456.1419
+  type: 'test'
+  ...
+# Subtest: competition summary uses actual Beijing time, exact deadlines and one parent scope
+ok 18 - competition summary uses actual Beijing time, exact deadlines and one parent scope
+  ---
+  duration_ms: 12.3575
+  type: 'test'
+  ...
+# Subtest: competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+ok 19 - competition summary rejects fake dates and IDs, and calculates all records before truncating detail
+  ---
+  duration_ms: 15.3945
+  type: 'test'
+  ...
+# Subtest: generic search/get reads real competition children and all competition changes invalidate review
+ok 20 - generic search/get reads real competition children and all competition changes invalidate review
+  ---
+  duration_ms: 8.6578
+  type: 'test'
+  ...
+# Subtest: AI competition conversation queries then reviews without writes until an idempotent confirm button request
+ok 21 - AI competition conversation queries then reviews without writes until an idempotent confirm button request
+  ---
+  duration_ms: 275.0249
+  type: 'test'
+  ...
+# Subtest: a competition change after review makes confirmation stale without overwriting it
+ok 22 - a competition change after review makes confirmation stale without overwriting it
+  ---
+  duration_ms: 405.9427
+  type: 'test'
+  ...
+# Subtest: server supports legacy workspaces, explicit empty competitions and children of archived competitions
+ok 23 - server supports legacy workspaces, explicit empty competitions and children of archived competitions
+  ---
+  duration_ms: 10.0689
+  type: 'test'
+  ...
+# Subtest: server enforces competition references, global IDs, valid fields and safe URLs
+ok 24 - server enforces competition references, global IDs, valid fields and safe URLs
+  ---
+  duration_ms: 9.2236
+  type: 'test'
+  ...
+# Subtest: SQLite competition edits, archived child records and imported backups survive restart without touching ordinary tasks/calendar
+ok 25 - SQLite competition edits, archived child records and imported backups survive restart without touching ordinary tasks/calendar
+  ---
+  duration_ms: 263.1338
+  type: 'test'
+  ...
+# Subtest: outdated clients cannot omit populated competitions; rejected writes are atomic
+ok 26 - outdated clients cannot omit populated competitions; rejected writes are atomic
+  ---
+  duration_ms: 166.977
+  type: 'test'
+  ...
+# Subtest: old-client safeguard covers any populated collection, including partial historical storage
+ok 27 - old-client safeguard covers any populated collection, including partial historical storage
+  ---
+  duration_ms: 189.3104
+  type: 'test'
+  ...
+# Subtest: omitting genuinely empty competitions remains compatible with old clients
+ok 28 - omitting genuinely empty competitions remains compatible with old clients
+  ---
+  duration_ms: 173.3812
+  type: 'test'
+  ...
+# Subtest: runner construction is offline and each supported model uses the fixed official request contract
+ok 29 - runner construction is offline and each supported model uses the fixed official request contract
+  ---
+  duration_ms: 76.9254
+  type: 'test'
+  ...
+# Subtest: missing or unapproved model configuration and pre-cancelled work never reach the network
+ok 30 - missing or unapproved model configuration and pre-cancelled work never reach the network
+  ---
+  duration_ms: 0.8534
+  type: 'test'
+  ...
+# Subtest: HTTP errors return fixed classifications without retaining provider diagnostics
+ok 31 - HTTP errors return fixed classifications without retaining provider diagnostics
+  ---
+  duration_ms: 2.7075
+  type: 'test'
+  ...
+# Subtest: redirected responses are refused even if a transport returns one
+ok 32 - redirected responses are refused even if a transport returns one
+  ---
+  duration_ms: 0.8908
+  type: 'test'
+  ...
+# Subtest: truncated, unfinished and unsolicited tool responses never become a proposal
+ok 33 - truncated, unfinished and unsolicited tool responses never become a proposal
+  ---
+  duration_ms: 6.86
+  type: 'test'
+  ...
+# Subtest: response limit covers both declared length and unannounced streamed bytes
+ok 34 - response limit covers both declared length and unannounced streamed bytes
+  ---
+  duration_ms: 3.5926
+  type: 'test'
+  ...
+# Subtest: timeout interrupts transport and returns a safe retryable result
+ok 35 - timeout interrupts transport and returns a safe retryable result
+  ---
+  duration_ms: 10.0139
+  type: 'test'
+  ...
+# Subtest: caller cancellation aborts an in-flight request without exposing its reason
+ok 36 - caller cancellation aborts an in-flight request without exposing its reason
+  ---
+  duration_ms: 0.97
+  type: 'test'
+  ...
+# Subtest: cancellation while reading a response body cannot return partial model content
+ok 37 - cancellation while reading a response body cannot return partial model content
+  ---
+  duration_ms: 1.3581
+  type: 'test'
+  ...
+# Subtest: native text works without Python and does not claim unavailable Office/PDF/OCR
+ok 38 - native text works without Python and does not claim unavailable Office/PDF/OCR
+  ---
+  duration_ms: 119.4819
+  type: 'test'
+  ...
+# Subtest: native decoder handles UTF-16 BOM in either order and GB18030
+ok 39 - native decoder handles UTF-16 BOM in either order and GB18030
+  ---
+  duration_ms: 67.9646
+  type: 'test'
+  ...
+# Subtest: native extractor limits Unicode characters without splitting surrogate pairs
+ok 40 - native extractor limits Unicode characters without splitting surrogate pairs
+  ---
+  duration_ms: 62.2847
+  type: 'test'
+  ...
+# Subtest: empty, binary, unsupported and scanned inputs fail truthfully with unchanged originals
+ok 41 - empty, binary, unsupported and scanned inputs fail truthfully with unchanged originals
+  ---
+  duration_ms: 119.0537
+  type: 'test'
+  ...
+# Subtest: outside paths, hard links, directory links and oversized inputs are rejected
+ok 42 - outside paths, hard links, directory links and oversized inputs are rejected
+  ---
+  duration_ms: 107.9084
+  type: 'test'
+  ...
+# Subtest: Python path must be an explicit ordinary installed interpreter
+ok 43 - Python path must be an explicit ordinary installed interpreter
+  ---
+  duration_ms: 48.4475
+  type: 'test'
+  ...
+# Subtest: configuration is confined, schema checked and only replaced explicitly
+ok 44 - configuration is confined, schema checked and only replaced explicitly
+  ---
+  duration_ms: 332.922
+  type: 'test'
+  ...
+# Subtest: installed Python extracts synthetic DOCX/PPTX and available PDF without model dependencies
+ok 45 - installed Python extracts synthetic DOCX/PPTX and available PDF without model dependencies
+  ---
+  duration_ms: 3144.1195
+  type: 'test'
+  ...
+# Subtest: server accepts optional fitness, archived target spaces and both activation flag values
+ok 46 - server accepts optional fitness, archived target spaces and both activation flag values
+  ---
+  duration_ms: 9.4739
+  type: 'test'
+  ...
+# Subtest: server rejects malformed fitness, unknown space links and nonboolean activation fields
+ok 47 - server rejects malformed fitness, unknown space links and nonboolean activation fields
+  ---
+  duration_ms: 8.2365
+  type: 'test'
+  ...
+# Subtest: SQLite fitness survives client edits and restart while original notes, file bytes, tasks and ledger remain intact
+ok 48 - SQLite fitness survives client edits and restart while original notes, file bytes, tasks and ledger remain intact
+  ---
+  duration_ms: 359.5389
+  type: 'test'
+  ...
+# Subtest: old clients cannot drop populated fitness or an existing same-space activation flag
+ok 49 - old clients cannot drop populated fitness or an existing same-space activation flag
+  ---
+  duration_ms: 300.7479
+  type: 'test'
+  ...
+# Subtest: empty feature data may be omitted and removing a different space does not trigger same-ID field protection
+ok 50 - empty feature data may be omitted and removing a different space does not trigger same-ID field protection
+  ---
+  duration_ms: 146.8947
+  type: 'test'
+  ...
+# Subtest: fitness summaries calculate all matching records in one space and disclose missing measurements
+ok 51 - fitness summaries calculate all matching records in one space and disclose missing measurements
+  ---
+  duration_ms: 11.2725
+  type: 'test'
+  ...
+# Subtest: empty calorie/distance stays null and recorded zero remains a known measurement
+ok 52 - empty calorie/distance stays null and recorded zero remains a known measurement
+  ---
+  duration_ms: 1.153
+  type: 'test'
+  ...
+# Subtest: fitness query requires explicit scope and supports exact week/month boundaries
+ok 53 - fitness query requires explicit scope and supports exact week/month boundaries
+  ---
+  duration_ms: 5.0322
+  type: 'test'
+  ...
+# Subtest: fitness mutations invalidate reviewed workspace fingerprint and prompt describes real-data limits
+ok 54 - fitness mutations invalidate reviewed workspace fingerprint and prompt describes real-data limits
+  ---
+  duration_ms: 3.0008
+  type: 'test'
+  ...
+# Subtest: ledger directory exposes project names and total-account setting without being crowded out by courses
+ok 55 - ledger directory exposes project names and total-account setting without being crowded out by courses
+  ---
+  duration_ms: 23.3935
+  type: 'test'
+  ...
+# Subtest: ledger proposals validate precise money, real dates, source provenance and one selected destination
+ok 56 - ledger proposals validate precise money, real dates, source provenance and one selected destination
+  ---
+  duration_ms: 19.6552
+  type: 'test'
+  ...
+# Subtest: named project is supplied to the model, reviewed, then written once only after confirmation
+ok 57 - named project is supplied to the model, reviewed, then written once only after confirmation
+  ---
+  duration_ms: 449.3606
+  type: 'test'
+  ...
+# Subtest: daily ledger is a distinct confirmed destination and chat confirmation alone writes nothing
+ok 58 - daily ledger is a distinct confirmed destination and chat confirmation alone writes nothing
+  ---
+  duration_ms: 264.7506
+  type: 'test'
+  ...
+# Subtest: project archived or removed after review cannot receive ledger records
+ok 59 - project archived or removed after review cannot receive ledger records
+  ---
+  duration_ms: 494.266
+  type: 'test'
+  ...
+# Subtest: later corrections invalidate a ledger review before any write
+ok 60 - later corrections invalidate a ledger review before any write
+  ---
+  duration_ms: 198.9913
+  type: 'test'
+  ...
+# Subtest: legacy organizer cannot auto-file ledger output even when the model selects it automatically
+ok 61 - legacy organizer cannot auto-file ledger output even when the model selects it automatically
+  ---
+  duration_ms: 70.2632
+  type: 'test'
+  ...
+# Subtest: continuing a completed ledger conversation sends actual receipts and only reviews newly added expenses
+ok 62 - continuing a completed ledger conversation sends actual receipts and only reviews newly added expenses
+  ---
+  duration_ms: 243.6693
+  type: 'test'
+  ...
+# Subtest: continued receipt context respects edited, removed and undone ledger records
+ok 63 - continued receipt context respects edited, removed and undone ledger records
+  ---
+  duration_ms: 435.314
+  type: 'test'
+  ...
+# Subtest: edited ledger rows retained by undo remain visible in this request and its follow-up context
+ok 64 - edited ledger rows retained by undo remain visible in this request and its follow-up context
+  ---
+  duration_ms: 345.7709
+  type: 'test'
+  ...
+# Subtest: attachment-first conversation can cite later user text even when the attachment has no readable text
+ok 65 - attachment-first conversation can cite later user text even when the attachment has no readable text
+  ---
+  duration_ms: 83.2908
+  type: 'test'
+  ...
+# Subtest: conversation asks, remembers corrections, and only explicit confirmation files once
+ok 66 - conversation asks, remembers corrections, and only explicit confirmation files once
+  ---
+  duration_ms: 122.0841
+  type: 'test'
+  ...
+# Subtest: saying confirm in chat still only produces a review and performs no workspace actions
+ok 67 - saying confirm in chat still only produces a review and performs no workspace actions
+  ---
+  duration_ms: 76.5762
+  type: 'test'
+  ...
+# Subtest: conversation rejects outdated proposals and preserves later user messages
+ok 68 - conversation rejects outdated proposals and preserves later user messages
+  ---
+  duration_ms: 82.682
+  type: 'test'
+  ...
+# Subtest: late conversation response cannot replace an edited or cancelled conversation
+ok 69 - late conversation response cannot replace an edited or cancelled conversation
+  ---
+  duration_ms: 74.525
+  type: 'test'
+  ...
+# Subtest: model parser accepts a whole JSON fence without guessing missing or ambiguous content
+ok 70 - model parser accepts a whole JSON fence without guessing missing or ambiguous content
+  ---
+  duration_ms: 1.524
+  type: 'test'
+  ...
+# Subtest: format repair stays in the same job, displays progress, and still requires explicit ledger confirmation
+ok 71 - format repair stays in the same job, displays progress, and still requires explicit ledger confirmation
+  ---
+  duration_ms: 73.7152
+  type: 'test'
+  ...
+# Subtest: whole fenced conversation response works without another provider request
+ok 72 - whole fenced conversation response works without another provider request
+  ---
+  duration_ms: 92.9006
+  type: 'test'
+  ...
+# Subtest: exhausted format repair is bounded, preserves the original request, and never exposes raw failed output
+ok 73 - exhausted format repair is bounded, preserves the original request, and never exposes raw failed output
+  ---
+  duration_ms: 91.5956
+  type: 'test'
+  ...
+# Subtest: authentication, quota and service failures do not consume automatic format attempts
+ok 74 - authentication, quota and service failures do not consume automatic format attempts
+  ---
+  duration_ms: 321.8071
+  type: 'test'
+  ...
+# Subtest: truncated output can retry as clarification without silently saving a partial bill
+ok 75 - truncated output can retry as clarification without silently saving a partial bill
+  ---
+  duration_ms: 80.7306
+  type: 'test'
+  ...
+# Subtest: conversation changes during a failed attempt stop correction of the old input
+ok 76 - conversation changes during a failed attempt stop correction of the old input
+  ---
+  duration_ms: 61.8662
+  type: 'test'
+  ...
+# Subtest: unconfigured status is truthful; secret config never returns or changes endpoint
+ok 77 - unconfigured status is truthful; secret config never returns or changes endpoint
+  ---
+  duration_ms: 58.3191
+  type: 'test'
+  ...
+# Subtest: direct engine and per-format extraction status work independently of Hermes and never call the model on configure
+ok 78 - direct engine and per-format extraction status work independently of Hermes and never call the model on configure
+  ---
+  duration_ms: 85.2516
+  type: 'test'
+  ...
+# Subtest: explicitly unavailable engine stops before any model request
+ok 79 - explicitly unavailable engine stops before any model request
+  ---
+  duration_ms: 29.4485
+  type: 'test'
+  ...
+# Subtest: closing the service aborts the active injected runner and preserves business records
+ok 80 - closing the service aborts the active injected runner and preserves business records
+  ---
+  duration_ms: 60.0962
+  type: 'test'
+  ...
+# Subtest: model proposal validates target, real calendar dates and source provenance
+ok 81 - model proposal validates target, real calendar dates and source provenance
+  ---
+  duration_ms: 0.4681
+  type: 'test'
+  ...
+# Subtest: the prompt includes untrusted content as data and directory is bounded
+ok 82 - the prompt includes untrusted content as data and directory is bounded
+  ---
+  duration_ms: 0.4479
+  type: 'test'
+  ...
+# Subtest: jobs are idempotent while running and completed; listing omits original text and secrets
+ok 83 - jobs are idempotent while running and completed; listing omits original text and secrets
+  ---
+  duration_ms: 62.8984
+  type: 'test'
+  ...
+# Subtest: failed output preserves original input; the same input may retry
+ok 84 - failed output preserves original input; the same input may retry
+  ---
+  duration_ms: 100.9772
+  type: 'test'
+  ...
+# Subtest: only one job calls the model at a time
+ok 85 - only one job calls the model at a time
+  ---
+  duration_ms: 146.4674
+  type: 'test'
+  ...
+# Subtest: legacy auto-file is rejected before any model call or workspace write
+ok 86 - legacy auto-file is rejected before any model call or workspace write
+  ---
+  duration_ms: 22.0487
+  type: 'test'
+  ...
+# Subtest: editing or cancelling input during inference retains proposal without filing
+ok 87 - editing or cancelling input during inference retains proposal without filing
+  ---
+  duration_ms: 102.2661
+  type: 'test'
+  ...
+# Subtest: cached legacy output cannot be reapplied by enabling auto-file
+ok 88 - cached legacy output cannot be reapplied by enabling auto-file
+  ---
+  duration_ms: 55.8414
+  type: 'test'
+  ...
+# Subtest: unsynced auto-file input and missing files are rejected before calling model
+ok 89 - unsynced auto-file input and missing files are rejected before calling model
+  ---
+  duration_ms: 26.9164
+  type: 'test'
+  ...
+# Subtest: restarted unfinished jobs become explicit failed attempts
+ok 90 - restarted unfinished jobs become explicit failed attempts
+  ---
+  duration_ms: 35.4742
+  type: 'test'
+  ...
+# 本比赛完整副本已运行：http://127.0.0.1:4397
+# 完整宇宙：http://127.0.0.1:4397
+# Subtest: launcher only recognizes this application and this physical copy
+ok 91 - launcher only recognizes this application and this physical copy
+  ---
+  duration_ms: 64.7943
+  type: 'test'
+  ...
+# Subtest: repeat launch reuses verified instance without a second server or data initialization
+ok 92 - repeat launch reuses verified instance without a second server or data initialization
+  ---
+  duration_ms: 74.6837
+  type: 'test'
+  ...
+# Subtest: occupied port belonging to another service is neither opened nor stopped
+ok 93 - occupied port belonging to another service is neither opened nor stopped
+  ---
+  duration_ms: 43.8776
+  type: 'test'
+  ...
+# Subtest: new instance is verified before opening and failed verification closes only the new instance
+ok 94 - new instance is verified before opening and failed verification closes only the new instance
+  ---
+  duration_ms: 70.2424
+  type: 'test'
+  ...
+# Subtest: workspace accepts old schemas and rejects malformed money/calendar/project references
+ok 95 - workspace accepts old schemas and rejects malformed money/calendar/project references
+  ---
+  duration_ms: 14.6163
+  type: 'test'
+  ...
+# Subtest: ledger persists across clients, revision conflicts and old-client field loss are rejected atomically
+ok 96 - ledger persists across clients, revision conflicts and old-client field loss are rejected atomically
+  ---
+  duration_ms: 213.4198
+  type: 'test'
+  ...
+# Subtest: workspace validation preserves explicit project total settings and rejects non-booleans
+ok 97 - workspace validation preserves explicit project total settings and rejects non-booleans
+  ---
+  duration_ms: 6.5026
+  type: 'test'
+  ...
+# Subtest: an old client cannot erase an explicit total setting while editing another field
+ok 98 - an old client cannot erase an explicit total setting while editing another field
+  ---
+  duration_ms: 271.1623
+  type: 'test'
+  ...
+# Subtest: public health is minimal; private APIs require auth; setup cannot be claimed without token
+ok 99 - public health is minimal; private APIs require auth; setup cannot be claimed without token
+  ---
+  duration_ms: 605.1762
+  type: 'test'
+  ...
+# Subtest: document text requires login, reads the uploaded original and never invokes the model
+ok 100 - document text requires login, reads the uploaded original and never invokes the model
+  ---
+  duration_ms: 422.6792
+  type: 'test'
+  ...
+# Subtest: document extraction errors retain originals and do not disclose internal exceptions
+ok 101 - document extraction errors retain originals and do not disclose internal exceptions
+  ---
+  duration_ms: 3308.7132
+  type: 'test'
+  ...
+# Subtest: concurrent document extraction has a bounded worker count and recovers after completion
+ok 102 - concurrent document extraction has a bounded worker count and recovers after completion
+  ---
+  duration_ms: 140.9412
+  type: 'test'
+  ...
+# Subtest: old workspace clients cannot discard conversation history and malformed roles are rejected
+ok 103 - old workspace clients cannot discard conversation history and malformed roles are rejected
+  ---
+  duration_ms: 91.8652
+  type: 'test'
+  ...
+# Subtest: calendar persists independently and rejects malformed or stripping clients
+ok 104 - calendar persists independently and rejects malformed or stripping clients
+  ---
+  duration_ms: 95.6181
+  type: 'test'
+  ...
+# Subtest: setup creation is atomic under concurrent requests
+ok 105 - setup creation is atomic under concurrent requests
+  ---
+  duration_ms: 83.085
+  type: 'test'
+  ...
+# Subtest: public version metadata supports the frontend update check and rejects writes
+ok 106 - public version metadata supports the frontend update check and rejects writes
+  ---
+  duration_ms: 52.076
+  type: 'test'
+  ...
+# Subtest: CSRF token and exact Origin protect writes including logout
+ok 107 - CSRF token and exact Origin protect writes including logout
+  ---
+  duration_ms: 99.1677
+  type: 'test'
+  ...
+# Subtest: credentials are verified and brute force is throttled
+ok 108 - credentials are verified and brute force is throttled
+  ---
+  duration_ms: 426.9993
+  type: 'test'
+  ...
+# Subtest: authentication persists across restart and login rotates sessions
+ok 109 - authentication persists across restart and login rotates sessions
+  ---
+  duration_ms: 161.8615
+  type: 'test'
+  ...
+# Subtest: optimistic revision conflict never overwrites newer data and state persists
+ok 110 - optimistic revision conflict never overwrites newer data and state persists
+  ---
+  duration_ms: 132.0547
+  type: 'test'
+  ...
+# Subtest: revision polling omits unchanged state and returns full data only when changed
+ok 111 - revision polling omits unchanged state and returns full data only when changed
+  ---
+  duration_ms: 94.5537
+  type: 'test'
+  ...
+# Subtest: workspace rejects demo, malformed shape, prototype keys, complexity and missing file refs
+ok 112 - workspace rejects demo, malformed shape, prototype keys, complexity and missing file refs
+  ---
+  duration_ms: 93.2134
+  type: 'test'
+  ...
+# Subtest: file uploads are private, immutable, idempotent and safely downloadable on another session
+ok 113 - file uploads are private, immutable, idempotent and safely downloadable on another session
+  ---
+  duration_ms: 3201.3509
+  type: 'test'
+  ...
+# Subtest: static allowlist and file IDs block traversal, private files and source test exposure
+ok 114 - static allowlist and file IDs block traversal, private files and source test exposure
+  ---
+  duration_ms: 147.9491
+  type: 'test'
+  ...
+# Subtest: model adapter sees authenticated writes only and can use shared contract helpers
+ok 115 - model adapter sees authenticated writes only and can use shared contract helpers
+  ---
+  duration_ms: 117.9329
+  type: 'test'
+  ...
+# Subtest: insecure public-origin configuration fails closed
+ok 116 - insecure public-origin configuration fails closed
+  ---
+  duration_ms: 26.8959
+  type: 'test'
+  ...
+# Subtest: public HTTPS uses Secure host-only cookies and rejects mismatched Origin
+ok 117 - public HTTPS uses Secure host-only cookies and rejects mismatched Origin
+  ---
+  duration_ms: 97.2965
+  type: 'test'
+  ...
+# Subtest: storage quotas are enforced atomically and partial uploads are cleaned
+ok 118 - storage quotas are enforced atomically and partial uploads are cleaned
+  ---
+  duration_ms: 117.5159
+  type: 'test'
+  ...
+# Subtest: history is bounded and persisted workspace is transactional with missing file refs
+ok 119 - history is bounded and persisted workspace is transactional with missing file refs
+  ---
+  duration_ms: 56.0819
+  type: 'test'
+  ...
+# Subtest: competition copy rejects historical private import CLI and preserves workspace for either mode
+ok 120 - competition copy rejects historical private import CLI and preserves workspace for either mode
+  ---
+  duration_ms: 1222.7301
+  type: 'test'
+  ...
+# Subtest: private timetable import is idempotent and preserves all non-timetable records
+ok 121 - private timetable import is idempotent and preserves all non-timetable records
+  ---
+  duration_ms: 105.6801
+  type: 'test'
+  ...
+# Subtest: server validates timetable lesson dates, periods, weeks and semester references
+ok 122 - server validates timetable lesson dates, periods, weeks and semester references
+  ---
+  duration_ms: 20.1177
+  type: 'test'
+  ...
+# Subtest: SQLite sync survives restarts, prevents stale writes and old-client timetable loss without touching events
+ok 123 - SQLite sync survives restarts, prevents stale writes and old-client timetable loss without touching events
+  ---
+  duration_ms: 258.0133
+  type: 'test'
+  ...
+# Subtest: authenticated AI searches and computes, reviews linked project/entry, then confirms exactly once in SQLite
+ok 124 - authenticated AI searches and computes, reviews linked project/entry, then confirms exactly once in SQLite
+  ---
+  duration_ms: 1047.8452
+  type: 'test'
+  ...
+# Subtest: existing task update and a calendar event stay a single reviewed transaction
+ok 125 - existing task update and a calendar event stay a single reviewed transaction
+  ---
+  duration_ms: 482.7145
+  type: 'test'
+  ...
+# Subtest: course preferences and actual existing record IDs reach the model before reviewed prompt/note changes
+ok 126 - course preferences and actual existing record IDs reach the model before reviewed prompt/note changes
+  ---
+  duration_ms: 368.8162
+  type: 'test'
+  ...
+# Subtest: three query rounds are bounded and the fourth request becomes a no-write clarification
+ok 127 - three query rounds are bounded and the fourth request becomes a no-write clarification
+  ---
+  duration_ms: 312.3143
+  type: 'test'
+  ...
+# Subtest: arbitrary query paths and mixed query/action output fail after one bounded format correction
+ok 128 - arbitrary query paths and mixed query/action output fail after one bounded format correction
+  ---
+  duration_ms: 429.9148
+  type: 'test'
+  ...
+# Subtest: domain changes after review make confirmation stale without overwriting another device
+ok 129 - domain changes after review make confirmation stale without overwriting another device
+  ---
+  duration_ms: 236.1021
+  type: 'test'
+  ...
+# Subtest: domain changes during inference prevent an outdated action plan from becoming confirmable
+ok 130 - domain changes during inference prevent an outdated action plan from becoming confirmable
+  ---
+  duration_ms: 218.8146
+  type: 'test'
+  ...
+# Subtest: unsent composer draft changes alone do not invalidate an already reviewed action
+ok 131 - unsent composer draft changes alone do not invalidate an already reviewed action
+  ---
+  duration_ms: 209.7181
+  type: 'test'
+  ...
+# Subtest: capabilities, queries and confirmation remain behind server authentication and CSRF
+ok 132 - capabilities, queries and confirmation remain behind server authentication and CSRF
+  ---
+  duration_ms: 157.0241
+  type: 'test'
+  ...
+# Subtest: ledger query calculates all exact fen records and honors independent project accounting
+ok 133 - ledger query calculates all exact fen records and honors independent project accounting
+  ---
+  duration_ms: 34.3129
+  type: 'test'
+  ...
+# Subtest: search/get give actual IDs, pagination, archive filters and no guessed records
+ok 134 - search/get give actual IDs, pagination, archive filters and no guessed records
+  ---
+  duration_ms: 15.2487
+  type: 'test'
+  ...
+# Subtest: calendar overlaps are independent from timetable and English counts only actual unarchived records
+ok 135 - calendar overlaps are independent from timetable and English counts only actual unarchived records
+  ---
+  duration_ms: 3.5255
+  type: 'test'
+  ...
+# Subtest: file read is workspace allowlisted and responses carry truncation instead of claiming full content
+ok 136 - file read is workspace allowlisted and responses carry truncation instead of claiming full content
+  ---
+  duration_ms: 29.4881
+  type: 'test'
+  ...
+# Subtest: query schema rejects arbitrary code/paths, malformed filters; fingerprint excludes conversations only
+ok 137 - query schema rejects arbitrary code/paths, malformed filters; fingerprint excludes conversations only
+  ---
+  duration_ms: 3.3828
+  type: 'test'
+  ...
+# Subtest: ledger proposals validate exact yuan amounts, real dates, source evidence and separate action types
+ok 138 - ledger proposals validate exact yuan amounts, real dates, source evidence and separate action types
+  ---
+  duration_ms: 15.7825
+  type: 'test'
+  ...
+# Subtest: ledger preview matches committed fen and preserves independent project accounting and attachments
+ok 139 - ledger preview matches committed fen and preserves independent project accounting and attachments
+  ---
+  duration_ms: 9.0897
+  type: 'test'
+  ...
+# Subtest: daily ledger keeps project records separate; invalid or archived destinations and sources write nothing
+ok 140 - daily ledger keeps project records separate; invalid or archived destinations and sources write nothing
+  ---
+  duration_ms: 4.9975
+  type: 'test'
+  ...
+# Subtest: backup round-trip preserves ledger proposals and exact undo receipts; edited rows are retained
+ok 141 - backup round-trip preserves ledger proposals and exact undo receipts; edited rows are retained
+  ---
+  duration_ms: 23.7237
+  type: 'test'
+  ...
+# Subtest: AI notes, original files and tasks receive distinct consecutive colors before receipt snapshots
+ok 142 - AI notes, original files and tasks receive distinct consecutive colors before receipt snapshots
+  ---
+  duration_ms: 11.9874
+  type: 'test'
+  ...
+# Subtest: AI captures and tasks use the same cursor across destinations
+ok 143 - AI captures and tasks use the same cursor across destinations
+  ---
+  duration_ms: 1.4885
+  type: 'test'
+  ...
+# Subtest: invalid AI output, missing destination, and failed preparation leave colors and content untouched
+ok 144 - invalid AI output, missing destination, and failed preparation leave colors and content untouched
+  ---
+  duration_ms: 2.3754
+  type: 'test'
+  ...
+# Subtest: review lists fallback summary, original attachment and task with actual destinations without mutations
+ok 145 - review lists fallback summary, original attachment and task with actual destinations without mutations
+  ---
+  duration_ms: 9.5179
+  type: 'test'
+  ...
+# Subtest: workspace review includes full note content and keeps tasks in task module
+ok 146 - workspace review includes full note content and keeps tasks in task module
+  ---
+  duration_ms: 2.3563
+  type: 'test'
+  ...
+# Subtest: ledger backups retain separate accounting choices without changing legacy defaults
+ok 147 - ledger backups retain separate accounting choices without changing legacy defaults
+  ---
+  duration_ms: 13.2909
+  type: 'test'
+  ...
+# Subtest: ledger merge fills absent accounting choices but keeps explicit current choices and is idempotent
+ok 148 - ledger merge fills absent accounting choices but keeps explicit current choices and is idempotent
+  ---
+  duration_ms: 22.6625
+  type: 'test'
+  ...
+# Subtest: conversation history survives backups and additive imports without dropping newer messages
+ok 149 - conversation history survives backups and additive imports without dropping newer messages
+  ---
+  duration_ms: 9.6935
+  type: 'test'
+  ...
+# Subtest: optional record colors and creation cursor survive backup and merge without coloring legacy data
+ok 150 - optional record colors and creation cursor survive backup and merge without coloring legacy data
+  ---
+  duration_ms: 5.2358
+  type: 'test'
+  ...
+# Subtest: dream preference roundtrips and restores only when the current choice is absent
+ok 151 - dream preference roundtrips and restores only when the current choice is absent
+  ---
+  duration_ms: 1.1946
+  type: 'test'
+  ...
+# Subtest: real example seed passes validation and unsafe course colors are normalized
+ok 152 - real example seed passes validation and unsafe course colors are normalized
+  ---
+  duration_ms: 2.2262
+  type: 'test'
+  ...
+# Subtest: nested import adds missing notes, files, revisions while preserving current title/content
+ok 153 - nested import adds missing notes, files, revisions while preserving current title/content
+  ---
+  duration_ms: 22.055
+  type: 'test'
+  ...
+# Subtest: new records merge by ID without overwriting existing tasks or captures
+ok 154 - new records merge by ID without overwriting existing tasks or captures
+  ---
+  duration_ms: 1.0977
+  type: 'test'
+  ...
+# Subtest: English drafts restore into empty fields and conflicts become labelled captures only once
+ok 155 - English drafts restore into empty fields and conflicts become labelled captures only once
+  ---
+  duration_ms: 1.7138
+  type: 'test'
+  ...
+# Subtest: English plan restores missing/zero values without overwriting filled values
+ok 156 - English plan restores missing/zero values without overwriting filled values
+  ---
+  duration_ms: 1.6792
+  type: 'test'
+  ...
+# Subtest: builtin vocabulary status restores new cards but respects current studied status
+ok 157 - builtin vocabulary status restores new cards but respects current studied status
+  ---
+  duration_ms: 7.986
+  type: 'test'
+  ...
+# Subtest: English records, attempts, audio, reading answers and results survive restore
+ok 158 - English records, attempts, audio, reading answers and results survive restore
+  ---
+  duration_ms: 8.5355
+  type: 'test'
+  ...
+# Subtest: invalid root, nested record types, dangerous IDs, duplicate IDs and numeric fields reject
+ok 159 - invalid root, nested record types, dangerous IDs, duplicate IDs and numeric fields reject
+  ---
+  duration_ms: 6.1817
+  type: 'test'
+  ...
+# Subtest: only base64 data URL attachments under the size limit are accepted
+ok 160 - only base64 data URL attachments under the size limit are accepted
+  ---
+  duration_ms: 143.2421
+  type: 'test'
+  ...
+# Subtest: prototype-shaped unknown properties never reach normalized records
+ok 161 - prototype-shaped unknown properties never reach normalized records
+  ---
+  duration_ms: 1.1443
+  type: 'test'
+  ...
+# Subtest: all card presentations and normalized pointer positions survive backup export and import
+ok 162 - all card presentations and normalized pointer positions survive backup export and import
+  ---
+  duration_ms: 19.6606
+  type: 'test'
+  ...
+# Subtest: restoring a backup preserves current custom layouts and pointer heights while adding missing cards
+ok 163 - restoring a backup preserves current custom layouts and pointer heights while adding missing cards
+  ---
+  duration_ms: 1.251
+  type: 'test'
+  ...
+# Subtest: backup validation rejects unsupported layouts and unsafe pointer positions on every board type
+ok 164 - backup validation rejects unsupported layouts and unsafe pointer positions on every board type
+  ---
+  duration_ms: 13.46
+  type: 'test'
+  ...
+# Subtest: new spaces, archived notes, task relations, AI drafts and layout survive backup validation
+ok 165 - new spaces, archived notes, task relations, AI drafts and layout survive backup validation
+  ---
+  duration_ms: 1.8014
+  type: 'test'
+  ...
+# Subtest: merging existing spaces preserves current settings and only adds missing notes/files/history
+ok 166 - merging existing spaces preserves current settings and only adds missing notes/files/history
+  ---
+  duration_ms: 1.1525
+  type: 'test'
+  ...
+# Subtest: AI draft conflicts become recoverable waiting requests including attachments only once
+ok 167 - AI draft conflicts become recoverable waiting requests including attachments only once
+  ---
+  duration_ms: 4.0313
+  type: 'test'
+  ...
+# Subtest: existing AI requests preserve current instructions and keep conflicting incoming text in history
+ok 168 - existing AI requests preserve current instructions and keep conflicting incoming text in history
+  ---
+  duration_ms: 1.3304
+  type: 'test'
+  ...
+# Subtest: canvas import uses saved layout until customized, then only fills missing cards
+ok 169 - canvas import uses saved layout until customized, then only fills missing cards
+  ---
+  duration_ms: 1.4363
+  type: 'test'
+  ...
+# Subtest: course canvas restores from backups independently of the home canvas and remains optional
+ok 170 - course canvas restores from backups independently of the home canvas and remains optional
+  ---
+  duration_ms: 1.5555
+  type: 'test'
+  ...
+# Subtest: customized course canvas preserves current geometry and view, adding only missing courses
+ok 171 - customized course canvas preserves current geometry and view, adding only missing courses
+  ---
+  duration_ms: 0.8264
+  type: 'test'
+  ...
+# Subtest: inner boards restore independently and retain customized geometry on repeated import
+ok 172 - inner boards restore independently and retain customized geometry on repeated import
+  ---
+  duration_ms: 0.9595
+  type: 'test'
+  ...
+# Subtest: inner boards reject unsafe names and invalid card geometry
+ok 173 - inner boards reject unsafe names and invalid card geometry
+  ---
+  duration_ms: 0.6778
+  type: 'test'
+  ...
+# Subtest: validated receipts still undo imported unchanged content while preserving edited records and original files
+ok 174 - validated receipts still undo imported unchanged content while preserving edited records and original files
+  ---
+  duration_ms: 3.2492
+  type: 'test'
+  ...
+# Subtest: task and capture receipt snapshots survive normalization and remain reversible
+ok 175 - task and capture receipt snapshots survive normalization and remain reversible
+  ---
+  duration_ms: 1.0621
+  type: 'test'
+  ...
+# Subtest: unsafe new field types, invalid geometry, invalid states and receipt containers reject
+ok 176 - unsafe new field types, invalid geometry, invalid states and receipt containers reject
+  ---
+  duration_ms: 2.1379
+  type: 'test'
+  ...
+# Subtest: projection is read-only, tolerates old states, and never creates calendar or source data
+ok 177 - projection is read-only, tolerates old states, and never creates calendar or source data
+  ---
+  duration_ms: 7.4812
+  type: 'test'
+  ...
+# Subtest: dated global and space tasks retain local date, done state, notes, importance and real edit addresses
+ok 178 - dated global and space tasks retain local date, done state, notes, importance and real edit addresses
+  ---
+  duration_ms: 1.167
+  type: 'test'
+  ...
+# Subtest: only structured parent links affect archival visibility; no guessing from source text
+ok 179 - only structured parent links affect archival visibility; no guessing from source text
+  ---
+  duration_ms: 2.6479
+  type: 'test'
+  ...
+# Subtest: competition dates remain exact, point deadlines keep Beijing time, and finished/done history stays visible
+ok 180 - competition dates remain exact, point deadlines keep Beijing time, and finished/done history stays visible
+  ---
+  duration_ms: 1.3116
+  type: 'test'
+  ...
+# Subtest: the explicitly configured CET-6 exam date projects its actual plan identity without inventing completion or exam times
+ok 181 - the explicitly configured CET-6 exam date projects its actual plan identity without inventing completion or exam times
+  ---
+  duration_ms: 4.3286
+  type: 'test'
+  ...
+# Subtest: independent competition calendar copies are always preserved and explicitly identified, even after edits or date changes
+ok 182 - independent competition calendar copies are always preserved and explicitly identified, even after edits or date changes
+  ---
+  duration_ms: 0.8448
+  type: 'test'
+  ...
+# Subtest: ledger activity, fitness logs, English session dates, free text and the timetable do not become calendar plans
+ok 183 - ledger activity, fitness logs, English session dates, free text and the timetable do not become calendar plans
+  ---
+  duration_ms: 0.8832
+  type: 'test'
+  ...
+# Subtest: projection identifiers distinguish domains and refresh from source changes without leaving stale events behind
+ok 184 - projection identifiers distinguish domains and refresh from source changes without leaving stale events behind
+  ---
+  duration_ms: 1.425
+  type: 'test'
+  ...
+# Subtest: calendar validates leap days, times, spans and unsafe input
+ok 185 - calendar validates leap days, times, spans and unsafe input
+  ---
+  duration_ms: 7.3469
+  type: 'test'
+  ...
+# Subtest: Monday-first month and inclusive spanning events keep civil dates
+ok 186 - Monday-first month and inclusive spanning events keep civil dates
+  ---
+  duration_ms: 2.6507
+  type: 'test'
+  ...
+# Subtest: calendar backup adds missing events, preserves edits, and stays separate from timetable
+ok 187 - calendar backup adds missing events, preserves edits, and stays separate from timetable
+  ---
+  duration_ms: 4.7491
+  type: 'test'
+  ...
+# Subtest: only known presentations survive; invalid persisted preferences have useful fallbacks
+ok 188 - only known presentations survive; invalid persisted preferences have useful fallbacks
+  ---
+  duration_ms: 3.5262
+  type: 'test'
+  ...
+# Subtest: the first and last card can meet every pointer position without overscrolling
+ok 189 - the first and last card can meet every pointer position without overscrolling
+  ---
+  duration_ms: 16.0876
+  type: 'test'
+  ...
+# Subtest: scrolling moves focus by anchor distance; moving the pointer selects the card passing it
+ok 190 - scrolling moves focus by anchor distance; moving the pointer selects the card passing it
+  ---
+  duration_ms: 1.3588
+  type: 'test'
+  ...
+# Subtest: the selected card forms a partial fan with overlap and preserves ordered card centers
+ok 191 - the selected card forms a partial fan with overlap and preserves ordered card centers
+  ---
+  duration_ms: 0.7248
+  type: 'test'
+  ...
+# Subtest: a 433px phone viewport shows overlapping neighbors above and below the active card
+ok 192 - a 433px phone viewport shows overlapping neighbors above and below the active card
+  ---
+  duration_ms: 0.4591
+  type: 'test'
+  ...
+# Subtest: all geometry stays continuous when active card selection crosses its midpoint
+ok 193 - all geometry stays continuous when active card selection crosses its midpoint
+  ---
+  duration_ms: 0.5373
+  type: 'test'
+  ...
+# Subtest: empty data, invalid dimensions and elastic scroll boundaries return finite safe geometry
+ok 194 - empty data, invalid dimensions and elastic scroll boundaries return finite safe geometry
+  ---
+  duration_ms: 17.7782
+  type: 'test'
+  ...
+# Subtest: layout calculations never write presentation positions into caller data
+ok 195 - layout calculations never write presentation positions into caller data
+  ---
+  duration_ms: 0.626
+  type: 'test'
+  ...
+# Subtest: competition tab recovery ignores original workbench caches and preserves them unchanged
+ok 196 - competition tab recovery ignores original workbench caches and preserves them unchanged
+  ---
+  duration_ms: 17.9677
+  type: 'test'
+  ...
+# Subtest: attachment lookup opens only the competition IndexedDB and does not fall back to personal files
+ok 197 - attachment lookup opens only the competition IndexedDB and does not fall back to personal files
+  ---
+  duration_ms: 2.7892
+  type: 'test'
+  ...
+# Subtest: competition timetable preference does not migrate or overwrite original device preference
+ok 198 - competition timetable preference does not migrate or overwrite original device preference
+  ---
+  duration_ms: 0.771
+  type: 'test'
+  ...
+# Subtest: competition backup roundtrip preserves every collection, archived records, dates and AI origin
+ok 199 - competition backup roundtrip preserves every collection, archived records, dates and AI origin
+  ---
+  duration_ms: 14.8367
+  type: 'test'
+  ...
+# Subtest: legacy backups omit competitions without initialization, and explicit empty feature data roundtrips
+ok 200 - legacy backups omit competitions without initialization, and explicit empty feature data roundtrips
+  ---
+  duration_ms: 3.1325
+  type: 'test'
+  ...
+# Subtest: competition backup rejects orphan links, global duplicate IDs, invalid enums, dates, times and unsafe URLs
+ok 201 - competition backup rejects orphan links, global duplicate IDs, invalid enums, dates, times and unsafe URLs
+  ---
+  duration_ms: 6.8145
+  type: 'test'
+  ...
+# Subtest: competition imports are additive per ID, keep current edits and archived status, and remain idempotent
+ok 202 - competition imports are additive per ID, keep current edits and archived status, and remain idempotent
+  ---
+  duration_ms: 10.9795
+  type: 'test'
+  ...
+# Subtest: cross-collection ID conflicts between valid backups reject atomically without changing current records
+ok 203 - cross-collection ID conflicts between valid backups reject atomically without changing current records
+  ---
+  duration_ms: 1.5517
+  type: 'test'
+  ...
+# Subtest: competition validation preserves independent child records and safe official URLs
+ok 204 - competition validation preserves independent child records and safe official URLs
+  ---
+  duration_ms: 17.7725
+  type: 'test'
+  ...
+# Subtest: real dates, clock limits, duplicate IDs and orphan children are rejected
+ok 205 - real dates, clock limits, duplicate IDs and orphan children are rejected
+  ---
+  duration_ms: 2.3062
+  type: 'test'
+  ...
+# Subtest: deadline status uses Beijing time and does not invent a missing clock
+ok 206 - deadline status uses Beijing time and does not invent a missing clock
+  ---
+  duration_ms: 1.4602
+  type: 'test'
+  ...
+# Subtest: all unfinished milestones contribute to summary and finished/archived contests are excluded
+ok 207 - all unfinished milestones contribute to summary and finished/archived contests are excluded
+  ---
+  duration_ms: 2.8246
+  type: 'test'
+  ...
+# Subtest: calendar copy is explicit, stable, detached and preserves exact time in an all-day mark
+ok 208 - calendar copy is explicit, stable, detached and preserves exact time in an all-day mark
+  ---
+  duration_ms: 1.566
+  type: 'test'
+  ...
+# Subtest: initialization is empty and additive merge is idempotent with current edits winning
+ok 209 - initialization is empty and additive merge is idempotent with current edits winning
+  ---
+  duration_ms: 1.6193
+  type: 'test'
+  ...
+# Subtest: automatic creations use safe bright colors and never repeat the previous creation
+ok 210 - automatic creations use safe bright colors and never repeat the previous creation
+  ---
+  duration_ms: 7.4993
+  type: 'test'
+  ...
+# Subtest: manual colors are preserved even when repeated and the next automatic choice excludes them
+ok 211 - manual colors are preserved even when repeated and the next automatic choice excludes them
+  ---
+  duration_ms: 1.3439
+  type: 'test'
+  ...
+# Subtest: opening, previewing, and cancelling a draft never advances the shared cursor
+ok 212 - opening, previewing, and cancelling a draft never advances the shared cursor
+  ---
+  duration_ms: 2.9473
+  type: 'test'
+  ...
+# Subtest: draft keeps its visible preview unless another creation has used that exact color
+ok 213 - draft keeps its visible preview unless another creation has used that exact color
+  ---
+  duration_ms: 0.7254
+  type: 'test'
+  ...
+# Subtest: a deliberate input/change choice wins over random preview and can match the last color
+ok 214 - a deliberate input/change choice wins over random preview and can match the last color
+  ---
+  duration_ms: 3.3007
+  type: 'test'
+  ...
+# Subtest: unrelated input changes do not turn the automatic preview into a manual color
+ok 215 - unrelated input changes do not turn the automatic preview into a manual color
+  ---
+  duration_ms: 0.526
+  type: 'test'
+  ...
+# Subtest: restored manual form colors remain deliberate choices without input/change events
+ok 216 - restored manual form colors remain deliberate choices without input/change events
+  ---
+  duration_ms: 0.6299
+  type: 'test'
+  ...
+# Subtest: browser-normalized lowercase preview does not become a manual choice when binding
+ok 217 - browser-normalized lowercase preview does not become a manual choice when binding
+  ---
+  duration_ms: 0.7977
+  type: 'test'
+  ...
+# Subtest: supported formats are independent from preview support and model configuration
+ok 218 - supported formats are independent from preview support and model configuration
+  ---
+  duration_ms: 10.2565
+  type: 'test'
+  ...
+# Subtest: extraction waits for existing attachment sync and uses the encoded blob ID without model requests
+ok 219 - extraction waits for existing attachment sync and uses the encoded blob ID without model requests
+  ---
+  duration_ms: 2.3101
+  type: 'test'
+  ...
+# Subtest: example mode and unsupported files are rejected without uploading or calling APIs
+ok 220 - example mode and unsupported files are rejected without uploading or calling APIs
+  ---
+  duration_ms: 3.7931
+  type: 'test'
+  ...
+# Subtest: a failed sync prevents extraction and keeps the original file metadata unchanged
+ok 221 - a failed sync prevents extraction and keeps the original file metadata unchanged
+  ---
+  duration_ms: 1.912
+  type: 'test'
+  ...
+# Subtest: untrusted extracted labels, text and warnings are rendered as text, including empty scan feedback
+ok 222 - untrusted extracted labels, text and warnings are rendered as text, including empty scan feedback
+  ---
+  duration_ms: 2.0611
+  type: 'test'
+  ...
+# Subtest: malformed extraction output fails clearly instead of rendering an invalid response
+ok 223 - malformed extraction output fails clearly instead of rendering an invalid response
+  ---
+  duration_ms: 3.306
+  type: 'test'
+  ...
+# Subtest: leaving the preview during extraction does not update the detached result
+ok 224 - leaving the preview during extraction does not update the detached result
+  ---
+  duration_ms: 7.2122
+  type: 'test'
+  ...
+# Subtest: fitness backup roundtrip retains space settings, reference IDs, metric nulls and device origin
+ok 225 - fitness backup roundtrip retains space settings, reference IDs, metric nulls and device origin
+  ---
+  duration_ms: 10.3699
+  type: 'test'
+  ...
+# Subtest: legacy/partial states remain valid, omitted fitness is not initialized and empty fitness is retained
+ok 226 - legacy/partial states remain valid, omitted fitness is not initialized and empty fitness is retained
+  ---
+  duration_ms: 3.1868
+  type: 'test'
+  ...
+# Subtest: fitness backup accepts archived spaces but rejects missing references and invalid feature flags
+ok 227 - fitness backup accepts archived spaces but rejects missing references and invalid feature flags
+  ---
+  duration_ms: 3.9789
+  type: 'test'
+  ...
+# Subtest: fitness import merges by ID, keeps current edits and is idempotent without touching notes/files/ledger
+ok 228 - fitness import merges by ID, keeps current edits and is idempotent without touching notes/files/ledger
+  ---
+  duration_ms: 4.4468
+  type: 'test'
+  ...
+# Subtest: fitness import preserves explicit activation and fills only absent activation flags
+ok 229 - fitness import preserves explicit activation and fills only absent activation flags
+  ---
+  duration_ms: 6.0278
+  type: 'test'
+  ...
+# Subtest: fitness validates real dates, precise non-negative recorded quantities, and distinct unknown versus zero
+ok 230 - fitness validates real dates, precise non-negative recorded quantities, and distinct unknown versus zero
+  ---
+  duration_ms: 11.0585
+  type: 'test'
+  ...
+# Subtest: week boundaries are Monday to Sunday and month/day navigation handles leap years and year boundaries
+ok 231 - week boundaries are Monday to Sunday and month/day navigation handles leap years and year boundaries
+  ---
+  duration_ms: 3.1016
+  type: 'test'
+  ...
+# Subtest: selection isolates each fitness space and excludes archives while totals show partial recording coverage
+ok 232 - selection isolates each fitness space and excludes archives while totals show partial recording coverage
+  ---
+  duration_ms: 30.7818
+  type: 'test'
+  ...
+# Subtest: time series never estimates missing calories; day details and weekly/monthly points stay consistent with totals
+ok 233 - time series never estimates missing calories; day details and weekly/monthly points stay consistent with totals
+  ---
+  duration_ms: 3.328
+  type: 'test'
+  ...
+# Subtest: existing named fitness spaces work without rewriting metadata; disabling and renaming preserve saved data
+ok 234 - existing named fitness spaces work without rewriting metadata; disabling and renaming preserve saved data
+  ---
+  duration_ms: 1.1856
+  type: 'test'
+  ...
+# Subtest: additive fitness imports are idempotent and never overwrite an edited current record
+ok 235 - additive fitness imports are idempotent and never overwrite an edited current record
+  ---
+  duration_ms: 1.1839
+  type: 'test'
+  ...
+# Subtest: decimal input is exact in fen and rejects rounding, zero, negative and exponent notation
+ok 236 - decimal input is exact in fen and rejects rounding, zero, negative and exponent notation
+  ---
+  duration_ms: 15.3176
+  type: 'test'
+  ...
+# Subtest: calendar validation handles leap years without UTC rollover
+ok 237 - calendar validation handles leap years without UTC rollover
+  ---
+  duration_ms: 1.057
+  type: 'test'
+  ...
+# Subtest: initialization is additive and never reseeds an existing cleared ledger
+ok 238 - initialization is additive and never reseeds an existing cleared ledger
+  ---
+  duration_ms: 5.3202
+  type: 'test'
+  ...
+# Subtest: validation rejects broken references, duplicated IDs, invalid cents/dates and unsafe colors
+ok 239 - validation rejects broken references, duplicated IDs, invalid cents/dates and unsafe colors
+  ---
+  duration_ms: 2.3215
+  type: 'test'
+  ...
+# Subtest: project total settings preserve explicit booleans and keep legacy absence distinct
+ok 240 - project total settings preserve explicit booleans and keep legacy absence distinct
+  ---
+  duration_ms: 1.4386
+  type: 'test'
+  ...
+# Subtest: daily, project and total scopes count separate ledgers without double counting
+ok 241 - daily, project and total scopes count separate ledgers without double counting
+  ---
+  duration_ms: 2.7233
+  type: 'test'
+  ...
+# Subtest: total scope respects legacy settings, archived project history and income as well as expense
+ok 242 - total scope respects legacy settings, archived project history and income as well as expense
+  ---
+  duration_ms: 0.5473
+  type: 'test'
+  ...
+# Subtest: accounting scopes compose with date, type, project, query and archive filters
+ok 243 - accounting scopes compose with date, type, project, query and archive filters
+  ---
+  duration_ms: 1.4763
+  type: 'test'
+  ...
+# Subtest: inclusive date/project filters and archived selection produce precise independent summaries
+ok 244 - inclusive date/project filters and archived selection produce precise independent summaries
+  ---
+  duration_ms: 1.6715
+  type: 'test'
+  ...
+# Subtest: backup roundtrip keeps cents, projects and archive/example markers without mutating source
+ok 245 - backup roundtrip keeps cents, projects and archive/example markers without mutating source
+  ---
+  duration_ms: 2.4065
+  type: 'test'
+  ...
+# Subtest: backup merge is additive and idempotent, retains conflicts and preserves ledger through old backups
+ok 246 - backup merge is additive and idempotent, retains conflicts and preserves ledger through old backups
+  ---
+  duration_ms: 5.0626
+  type: 'test'
+  ...
+# Subtest: a saved key cannot make an unavailable engine ready, including a stale Hermes flag
+ok 247 - a saved key cannot make an unavailable engine ready, including a stale Hermes flag
+  ---
+  duration_ms: 2.4252
+  type: 'test'
+  ...
+# Subtest: direct engine readiness does not require Hermes, while legacy status remains compatible
+ok 248 - direct engine readiness does not require Hermes, while legacy status remains compatible
+  ---
+  duration_ms: 0.8228
+  type: 'test'
+  ...
+# Subtest: unavailable engine rejects before data flush or job creation and retains source text and files
+ok 249 - unavailable engine rejects before data flush or job creation and retains source text and files
+  ---
+  duration_ms: 3.0057
+  type: 'test'
+  ...
+# Subtest: direct engine starts the existing job protocol without a Hermes dependency
+ok 250 - direct engine starts the existing job protocol without a Hermes dependency
+  ---
+  duration_ms: 1.0348
+  type: 'test'
+  ...
+# Subtest: status check is not displayed as a running reply and prevents duplicate submissions
+ok 251 - status check is not displayed as a running reply and prevents duplicate submissions
+  ---
+  duration_ms: 1.0512
+  type: 'test'
+  ...
+# Subtest: timetable size persists on the current device without mutating or copying workspace data
+ok 252 - timetable size persists on the current device without mutating or copying workspace data
+  ---
+  duration_ms: 3.8354
+  type: 'test'
+  ...
+# Subtest: unsupported or corrupt preferences cannot create invalid layout dimensions
+ok 253 - unsupported or corrupt preferences cannot create invalid layout dimensions
+  ---
+  duration_ms: 1.2354
+  type: 'test'
+  ...
+# Subtest: storage failures preserve a usable session and explicitly report that persistence failed
+ok 254 - storage failures preserve a usable session and explicitly report that persistence failed
+  ---
+  duration_ms: 1.3218
+  type: 'test'
+  ...
+# Subtest: initialization is empty for personal and demo and preserves cleared/customized timetables
+ok 255 - initialization is empty for personal and demo and preserves cleared/customized timetables
+  ---
+  duration_ms: 10.8375
+  type: 'test'
+  ...
+# Subtest: UTC calendar math preserves week boundaries, leap days, Sundays, and vacation numbers
+ok 256 - UTC calendar math preserves week boundaries, leap days, Sundays, and vacation numbers
+  ---
+  duration_ms: 9.2293
+  type: 'test'
+  ...
+# Subtest: week expressions handle bounded ranges, odd/even weeks and roundtrip display
+ok 257 - week expressions handle bounded ranges, odd/even weeks and roundtrip display
+  ---
+  duration_ms: 2.8402
+  type: 'test'
+  ...
+# Subtest: validation checks semester, lesson ranges, clocks, safe values, and detached defaults
+ok 258 - validation checks semester, lesson ranges, clocks, safe values, and detached defaults
+  ---
+  duration_ms: 4.0962
+  type: 'test'
+  ...
+# Subtest: week selection omits archived/other weeks, preserves collisions and reports lesson times
+ok 259 - week selection omits archived/other weeks, preserves collisions and reports lesson times
+  ---
+  duration_ms: 3.3758
+  type: 'test'
+  ...
+# Subtest: additive timetable merges retain current edits, add new lessons and semesters, and are idempotent
+ok 260 - additive timetable merges retain current edits, add new lessons and semesters, and are idempotent
+  ---
+  duration_ms: 2.288
+  type: 'test'
+  ...
+# Subtest: backup import/export preserves lessons independently from calendar/tasks and accepts old backups
+ok 261 - backup import/export preserves lessons independently from calendar/tasks and accepts old backups
+  ---
+  duration_ms: 7.2256
+  type: 'test'
+  ...
+# Subtest: reviewed competition actions create linked records and preserve the source conversation
+ok 262 - reviewed competition actions create linked records and preserve the source conversation
+  ---
+  duration_ms: 18.9341
+  type: 'test'
+  ...
+# Subtest: preview exposes every changed competition field and never mutates real state
+ok 263 - preview exposes every changed competition field and never mutates real state
+  ---
+  duration_ms: 4.208
+  type: 'test'
+  ...
+# Subtest: unknown fields, forged IDs, invalid values and child relocation are rejected
+ok 264 - unknown fields, forged IDs, invalid values and child relocation are rejected
+  ---
+  duration_ms: 9.0739
+  type: 'test'
+  ...
+# Subtest: updates require matching parent and restore-before-update without cascading archive
+ok 265 - updates require matching parent and restore-before-update without cascading archive
+  ---
+  duration_ms: 7.2255
+  type: 'test'
+  ...
+# Subtest: undo keeps a newly created parent if a later child or edited child remains
+ok 266 - undo keeps a newly created parent if a later child or edited child remains
+  ---
+  duration_ms: 3.3432
+  type: 'test'
+  ...
+# Subtest: create/update replay unwinds exactly even after record normalization, with save rollback
+ok 267 - create/update replay unwinds exactly even after record normalization, with save rollback
+  ---
+  duration_ms: 5.2094
+  type: 'test'
+  ...
+# Subtest: actions create linked containers and move real notes/files without touching the source request
+ok 268 - actions create linked containers and move real notes/files without touching the source request
+  ---
+  duration_ms: 38.5059
+  type: 'test'
+  ...
+# Subtest: money updates use integer fen and project inclusion remains explicit
+ok 269 - money updates use integer fen and project inclusion remains explicit
+  ---
+  duration_ms: 9.0177
+  type: 'test'
+  ...
+# Subtest: failed later action leaves all domains, colour cursor and original references unchanged
+ok 270 - failed later action leaves all domains, colour cursor and original references unchanged
+  ---
+  duration_ms: 2.2841
+  type: 'test'
+  ...
+# Subtest: validation rejects arbitrary properties, fabricated ids, forward and mismatched references
+ok 271 - validation rejects arbitrary properties, fabricated ids, forward and mismatched references
+  ---
+  duration_ms: 1.019
+  type: 'test'
+  ...
+# Subtest: archive/restore is reversible and course prompt edits retain file and note content
+ok 272 - archive/restore is reversible and course prompt edits retain file and note content
+  ---
+  duration_ms: 5.1081
+  type: 'test'
+  ...
+# Subtest: undo keeps edited child and its parent, and rolls all changes back if persistence fails
+ok 273 - undo keeps edited child and its parent, and rolls all changes back if persistence fails
+  ---
+  duration_ms: 4.1756
+  type: 'test'
+  ...
+# Subtest: ledger project undo retains project when another entry depends on it
+ok 274 - ledger project undo retains project when another entry depends on it
+  ---
+  duration_ms: 2.1066
+  type: 'test'
+  ...
+# Subtest: undo keeps a parent space with a later customized internal canvas
+ok 275 - undo keeps a parent space with a later customized internal canvas
+  ---
+  duration_ms: 2.5127
+  type: 'test'
+  ...
+# Subtest: preview is read-only and shows changed amounts, project settings and moves as human-readable fields
+ok 276 - preview is read-only and shows changed amounts, project settings and moves as human-readable fields
+  ---
+  duration_ms: 9.5748
+  type: 'test'
+  ...
+# Subtest: backup export/import permits reverse undo of repeated core record changes and nested moves
+ok 277 - backup export/import permits reverse undo of repeated core record changes and nested moves
+  ---
+  duration_ms: 22.7922
+  type: 'test'
+  ...
+# Subtest: backup normalization keeps original sparse before snapshots and does not block valid undo
+ok 278 - backup normalization keeps original sparse before snapshots and does not block valid undo
+  ---
+  duration_ms: 4.8252
+  type: 'test'
+  ...
+# Subtest: edited note/file and parent dependencies remain protected after backup import
+ok 279 - edited note/file and parent dependencies remain protected after backup import
+  ---
+  duration_ms: 14.1722
+  type: 'test'
+  ...
+# Subtest: all study/settings adapters run through the actual transaction engine and backup roundtrip undo
+ok 280 - all study/settings adapters run through the actual transaction engine and backup roundtrip undo
+  ---
+  duration_ms: 18.2645
+  type: 'test'
+  ...
+# Subtest: confirmed actions create grounded fitness rows with unknown measurements kept null
+ok 281 - confirmed actions create grounded fitness rows with unknown measurements kept null
+  ---
+  duration_ms: 12.6054
+  type: 'test'
+  ...
+# Subtest: new fitness template can be referenced by later entry and undo removes both safely
+ok 282 - new fitness template can be referenced by later entry and undo removes both safely
+  ---
+  duration_ms: 8.5059
+  type: 'test'
+  ...
+# Subtest: actual-data evidence, non-future date, quantities and existing enabled space are enforced atomically
+ok 283 - actual-data evidence, non-future date, quantities and existing enabled space are enforced atomically
+  ---
+  duration_ms: 19.1284
+  type: 'test'
+  ...
+# Subtest: updates require evidence only for changed actual facts and allow scoped moves, archive and restore
+ok 284 - updates require evidence only for changed actual facts and allow scoped moves, archive and restore
+  ---
+  duration_ms: 9.1429
+  type: 'test'
+  ...
+# Subtest: backup preserves fitness action undo and edited fitness records protect their parent space
+ok 285 - backup preserves fitness action undo and edited fitness records protect their parent space
+  ---
+  duration_ms: 12.6116
+  type: 'test'
+  ...
+# Subtest: fitness preview is read-only and distinguishes missing measurement from measured zero
+ok 286 - fitness preview is read-only and distinguishes missing measurement from measured zero
+  ---
+  duration_ms: 4.5162
+  type: 'test'
+  ...
+# Subtest: distance and calorie writes must match supplied values, including common unit conversions
+ok 287 - distance and calorie writes must match supplied values, including common unit conversions
+  ---
+  duration_ms: 7.8434
+  type: 'test'
+  ...
+# Subtest: unchanged measurements need no new proof, clear-to-null is allowed, and changed known values need a matching correction
+ok 288 - unchanged measurements need no new proof, clear-to-null is allowed, and changed known values need a matching correction
+  ---
+  duration_ms: 4.3329
+  type: 'test'
+  ...
+# Subtest: calendar creates a dated plan with random non-repeating color, without timetable writes
+ok 289 - calendar creates a dated plan with random non-repeating color, without timetable writes
+  ---
+  duration_ms: 10.3561
+  type: 'test'
+  ...
+# Subtest: calendar rejects impossible dates, hidden timed/all-day mismatch and wrong chronological ranges
+ok 290 - calendar rejects impossible dates, hidden timed/all-day mismatch and wrong chronological ranges
+  ---
+  duration_ms: 8.3412
+  type: 'test'
+  ...
+# Subtest: calendar update, archive, restore and safe undo keep intervening edits
+ok 291 - calendar update, archive, restore and safe undo keep intervening edits
+  ---
+  duration_ms: 1.5378
+  type: 'test'
+  ...
+# Subtest: timetable requires real Monday, explicit periods and consistent weeks, separated from calendar
+ok 292 - timetable requires real Monday, explicit periods and consistent weeks, separated from calendar
+  ---
+  duration_ms: 5.5853
+  type: 'test'
+  ...
+# Subtest: timetable shrinking a term cannot invalidate existing entries and container scope is mandatory
+ok 293 - timetable shrinking a term cannot invalidate existing entries and container scope is mandatory
+  ---
+  duration_ms: 5.823
+  type: 'test'
+  ...
+# Subtest: new term and its child undo in reverse order; active term prevents unsafe removal
+ok 294 - new term and its child undo in reverse order; active term prevents unsafe removal
+  ---
+  duration_ms: 3.0028
+  type: 'test'
+  ...
+# Subtest: English plan accepts unset user choices and does not alter practice accomplishments
+ok 295 - English plan accepts unset user choices and does not alter practice accomplishments
+  ---
+  duration_ms: 1.4685
+  type: 'test'
+  ...
+# Subtest: English words are personal and new, reject duplicates, and mastery needs actual user evidence
+ok 296 - English words are personal and new, reject duplicates, and mastery needs actual user evidence
+  ---
+  duration_ms: 2.2438
+  type: 'test'
+  ...
+# Subtest: actual English sessions require user evidence and reject future/planned dates
+ok 297 - actual English sessions require user evidence and reject future/planned dates
+  ---
+  duration_ms: 3.845
+  type: 'test'
+  ...
+# Subtest: English mistakes store provided answers only and do not change scored results
+ok 298 - English mistakes store provided answers only and do not change scored results
+  ---
+  duration_ms: 2.0773
+  type: 'test'
+  ...
+# Subtest: English archive/restore is reversible and never changes durations or answers
+ok 299 - English archive/restore is reversible and never changes durations or answers
+  ---
+  duration_ms: 1.9119
+  type: 'test'
+  ...
+# Subtest: English draft save has safe undo and cannot write reading scores or unknown draft keys
+ok 300 - English draft save has safe undo and cannot write reading scores or unknown draft keys
+  ---
+  duration_ms: 1.4231
+  type: 'test'
+  ...
+# Subtest: profile and UI allow only non-sensitive preferences and retain unrelated values
+ok 301 - profile and UI allow only non-sensitive preferences and retain unrelated values
+  ---
+  duration_ms: 2.7981
+  type: 'test'
+  ...
+# Subtest: canvas layout and snap changes are scoped to known boards and safely reversible
+ok 302 - canvas layout and snap changes are scoped to known boards and safely reversible
+  ---
+  duration_ms: 2.412
+  type: 'test'
+  ...
+# Subtest: canvas card geometry and color changes leave other cards/data intact and reject invalid dimensions
+ok 303 - canvas card geometry and color changes leave other cards/data intact and reject invalid dimensions
+  ---
+  duration_ms: 1.4959
+  type: 'test'
+  ...
+# Subtest: all adapters reject unknown properties, prototype keys and unsupported destructive operations
+ok 304 - all adapters reject unknown properties, prototype keys and unsupported destructive operations
+  ---
+  duration_ms: 1.5434
+  type: 'test'
+  ...
+# Subtest: real action engine and backup roundtrip preserve all study changes and reverse dependency order
+ok 305 - real action engine and backup roundtrip preserve all study changes and reverse dependency order
+  ---
+  duration_ms: 30.2703
+  type: 'test'
+  ...
+# Subtest: engine later validation failure rolls back random colors and study domains atomically
+ok 306 - engine later validation failure rolls back random colors and study domains atomically
+  ---
+  duration_ms: 1.5174
+  type: 'test'
+  ...
+# Subtest: initializing old and synced workspaces preserves independent card layouts and pointer positions
+ok 307 - initializing old and synced workspaces preserves independent card layouts and pointer positions
+  ---
+  duration_ms: 6.9237
+  type: 'test'
+  ...
+# Subtest: routing persists destination and receipt together; a retry never duplicates content
+ok 308 - routing persists destination and receipt together; a retry never duplicates content
+  ---
+  duration_ms: 7.9215
+  type: 'test'
+  ...
+# Subtest: storage failures leave no phantom routed records or modified receipt
+ok 309 - storage failures leave no phantom routed records or modified receipt
+  ---
+  duration_ms: 1.7154
+  type: 'test'
+  ...
+# Subtest: manual routing colors every new record before snapshotting and restores the cursor on failed save
+ok 310 - manual routing colors every new record before snapshotting and restores the cursor on failed save
+  ---
+  duration_ms: 2.1944
+  type: 'test'
+  ...
+# Subtest: failed undo restores records; successful undo protects edited content and original request
+ok 311 - failed undo restores records; successful undo protects edited content and original request
+  ---
+  duration_ms: 3.2783
+  type: 'test'
+  ...
+# Subtest: Android CLI refuses before SDK lookup, signing reads or artifact creation
+ok 312 - Android CLI refuses before SDK lookup, signing reads or artifact creation
+  ---
+  duration_ms: 184.6072
+  type: 'test'
+  ...
+# Subtest: historical timetable CLI refuses before opening supplied files or data directories
+ok 313 - historical timetable CLI refuses before opening supplied files or data directories
+  ---
+  duration_ms: 264.1043
+  type: 'test'
+  ...
+# Subtest: Python deployment guards precede every import and business statement
+ok 314 - Python deployment guards precede every import and business statement
+  ---
+  duration_ms: 4.5328
+  type: 'test'
+  ...
+# Subtest: mobile entry points use independent app identity and have no original production origin
+ok 315 - mobile entry points use independent app identity and have no original production origin
+  ---
+  duration_ms: 4.7861
+  type: 'test'
+  ...
+# Subtest: streams exact binary using bounded sequential chunks and waits for native completion
+ok 316 - streams exact binary using bounded sequential chunks and waits for native completion
+  ---
+  duration_ms: 121.0067
+  type: 'test'
+  ...
+# Subtest: starts reading the blob immediately and waits for a later native port
+ok 317 - starts reading the blob immediately and waits for a later native port
+  ---
+  duration_ms: 4.3389
+  type: 'test'
+  ...
+# Subtest: intercepts detached programmatic download anchors and real click events once
+ok 318 - intercepts detached programmatic download anchors and real click events once
+  ---
+  duration_ms: 6.7446
+  type: 'test'
+  ...
+# Subtest: keeps ordinary/external links untouched and rejects foreign files from the native API
+ok 319 - keeps ordinary/external links untouched and rejects foreign files from the native API
+  ---
+  duration_ms: 3.6374
+  type: 'test'
+  ...
+# Subtest: uses authenticated same-origin fetch and accepts safe data exports
+ok 320 - uses authenticated same-origin fetch and accepts safe data exports
+  ---
+  duration_ms: 7.01
+  type: 'test'
+  ...
+# Subtest: rejects oversized headers before allocating a Blob and oversized Blob values before opening picker
+ok 321 - rejects oversized headers before allocating a Blob and oversized Blob values before opening picker
+  ---
+  duration_ms: 5.8032
+  type: 'test'
+  ...
+# Subtest: allows empty files and native chooser cancellation without a false success notice
+ok 322 - allows empty files and native chooser cancellation without a false success notice
+  ---
+  duration_ms: 5.6682
+  type: 'test'
+  ...
+# Subtest: coalesces a repeated URL, rejects concurrent transfers, and explicit cancel releases the bridge
+ok 323 - coalesces a repeated URL, rejects concurrent transfers, and explicit cancel releases the bridge
+  ---
+  duration_ms: 4.4608
+  type: 'test'
+  ...
+# Subtest: does not install on another origin or inside an iframe; injection is idempotent
+ok 324 - does not install on another origin or inside an iframe; injection is idempotent
+  ---
+  duration_ms: 5.3781
+  type: 'test'
+  ...
+# Subtest: accepts only a native/trusted main-frame port and closes duplicate ports
+ok 325 - accepts only a native/trusted main-frame port and closes duplicate ports
+  ---
+  duration_ms: 2.2568
+  type: 'test'
+  ...
+# Subtest: rejects an incorrect ACK and never advances the transfer
+ok 326 - rejects an incorrect ACK and never advances the transfer
+  ---
+  duration_ms: 14.2552
+  type: 'test'
+  ...
+# Subtest: times out unavailable native integration with a visible retry message
+ok 327 - times out unavailable native integration with a visible retry message
+  ---
+  duration_ms: 10.6111
+  type: 'test'
+  ...
+# Subtest: leaving the page cancels pending work and disconnects the old port silently
+ok 328 - leaving the page cancels pending work and disconnects the old port silently
+  ---
+  duration_ms: 4.2395
+  type: 'test'
+  ...
+# Subtest: real frontend complete backup exports through the native bridge in a mobile browser
+ok 329 - real frontend complete backup exports through the native bridge in a mobile browser # SKIP
+  ---
+  duration_ms: 0.2083
+  type: 'test'
+  ...
+1..329
+# tests 329
+# suites 0
+# pass 327
+# fail 1
+# cancelled 0
+# skipped 1
+# todo 0
+# duration_ms 10810.6772

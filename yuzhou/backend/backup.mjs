@@ -5,13 +5,43 @@ import { resolve, join, dirname, sep } from 'node:path';
 import { randomBytes, createHash } from 'node:crypto';
 import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
+import { setTimeout as delay } from 'node:timers/promises';
 import { FILE_ID } from './store.mjs';
 import { isCliEntry } from './is-cli.mjs';
 import { assertRuntimePath, assertOrdinaryTree, RUNTIME_ROOT, assertOrdinaryPath } from '../runtime.mjs';
 
 async function privateDirectory(path) { await mkdir(path, { recursive: true, mode: 0o700 }); if (process.platform !== 'win32') await chmod(path, 0o700); }
 async function privateFile(path) { if (process.platform !== 'win32') await chmod(path, 0o600); }
-async function hashFile(path) { const hash = createHash('sha256'); let size = 0; for await (const chunk of createReadStream(path)) { hash.update(chunk); size += chunk.length; } return { sha256: hash.digest('hex'), size }; }
+async function hashFile(path) {
+  const hash = createHash('sha256'); let size = 0;
+  const handle = await open(path, 'r');
+  try {
+    const buffer = Buffer.alloc(64 * 1024);
+    for (;;) {
+      const { bytesRead } = await handle.read(buffer, 0, buffer.length, null);
+      if (!bytesRead) break;
+      hash.update(buffer.subarray(0, bytesRead)); size += bytesRead;
+    }
+  } finally { await handle.close(); }
+  return { sha256: hash.digest('hex'), size };
+}
+
+/** Windows scanners can briefly hold a freshly closed file; never replace a prior backup. */
+export async function publishBackupDirectory(staging, completed, { renameDirectory = rename, wait = delay, platform = process.platform } = {}) {
+  const source = assertRuntimePath(staging), target = assertRuntimePath(completed);
+  if (source !== `${target}.partial` || dirname(source) !== dirname(target)) throw new Error('Backup staging and completed directories do not match');
+  const retryDelays = [40, 80, 160, 320, 640];
+  for (let attempt = 0; ; attempt++) {
+    assertRuntimePath(source); assertRuntimePath(target);
+    const existing = await lstat(target).catch(error => { if (error.code !== 'ENOENT') throw error; });
+    if (existing) throw new Error('Backup target already exists');
+    try { await renameDirectory(source, target); return; }
+    catch (error) {
+      if (platform !== 'win32' || !['EPERM', 'EBUSY'].includes(error.code) || attempt >= retryDelays.length) throw error;
+      await wait(retryDelays[attempt]);
+    }
+  }
+}
 async function copyPrivate(source, target) {
   await privateDirectory(dirname(target));
   const sourceStat = await lstat(source);
@@ -86,7 +116,7 @@ export async function backupWorkbench({ dataDir, outputDir, now = new Date() }) 
       entries.push({ path: `files/${file.id}`, ...result });
     }
     await writeFile(join(staging, 'backup-manifest.json'), JSON.stringify(manifest, null, 2), { flag: 'wx', mode: 0o600 });
-    await rename(staging, completed);
+    await publishBackupDirectory(staging, completed);
     return { path: completed, revision: manifest.databaseRevision, files: entries.length, bytes: entries.reduce((sum, item) => sum + item.size, 0) };
   } catch (error) {
     // This is only the unique directory created by this invocation; existing backups are never touched.
