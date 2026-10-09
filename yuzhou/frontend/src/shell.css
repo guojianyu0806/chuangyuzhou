@@ -32,9 +32,10 @@
 .space-shell .profile{padding:9px 10px 0;gap:12px;width:100%;min-width:0;margin-top:4px;border-top:1px solid #e7e1f0}
 .space-shell .profile .avatar{flex:none;min-width:36px;width:36px;height:36px;background:#e4f8ad;color:#496008;border:1px solid #b8d962}
 .space-shell .rail-resize{position:absolute;top:0;right:0;bottom:0;z-index:2;width:8px;cursor:col-resize;touch-action:none;outline-offset:-3px}
-.space-shell .rail-resize:before{content:'';position:absolute;top:0;bottom:0;right:0;width:2px;background:transparent;transition:background .15s}
+.space-shell .rail-resize:before{content:'';position:absolute;top:0;bottom:0;right:0;width:2px;background:transparent}
 .space-shell .rail-resize:after{content:'';position:absolute;top:50%;right:2px;width:3px;height:40px;border-radius:3px;background:#c7b4e7;transform:translateY(-50%)}
-.space-shell .rail-resize:is(:hover,:focus-visible):before,.space-shell.rail-resizing .rail-resize:before{background:#9163ea}
+.space-shell .rail-resize:focus-visible:before,.space-shell.rail-resizing .rail-resize:before{background:#9163ea}
+.space-shell .rail-resize:hover:after{background:#9163ea}
 .space-shell.rail-resizing,.space-shell.rail-resizing *{cursor:col-resize!important;user-select:none!important}
 @media(min-width:761px){
  .space-shell .sidebar:not(.rail-pinned) :is(.brand>span,.workspace-switch>span:nth-child(2),.workspace-switch>svg,.primary-nav a>span,.primary-nav a>b,.rail-pin>span,.rail-section-title,#rail-space-links>a>span:last-child,.rail-new>span,.settings-link>span,.profile>span:last-child){display:none}

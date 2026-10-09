@@ -50,6 +50,8 @@ export function mountSidebarResize({body,sidebar,handle,pinButton,win=window,rea
   function release(){
     const previous=gesture;gesture=null;body.classList.remove('rail-resizing');
     if(previous&&handle.hasPointerCapture?.(previous.id))handle.releasePointerCapture(previous.id);
+    // Pointer focus must not leave a full-height keyboard outline after a drop.
+    if(previous)handle.blur?.();
   }
   function cancel(){release();stopMotion();sync();}
   function commit(value,{animate=false}={}){
