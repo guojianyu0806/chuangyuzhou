@@ -1,10 +1,10 @@
-export const RAIL_COLLAPSED=80,RAIL_MIN=180,RAIL_DEFAULT=254,RAIL_MAX=380;
+export const RAIL_COLLAPSED=80,RAIL_LABELS_AT=180,RAIL_DEFAULT=254,RAIL_MAX=380;
 export function sidebarMaxWidth(viewport){
-  return Math.max(RAIL_MIN,Math.min(RAIL_MAX,Number.isFinite(viewport)?viewport-480:RAIL_MAX));
+  return Math.max(RAIL_COLLAPSED,Math.min(RAIL_MAX,Number.isFinite(viewport)?viewport-480:RAIL_MAX));
 }
 export function sidebarStoredWidth(value){
   const width=Number(value);
-  return Number.isFinite(width)&&width>=RAIL_MIN?Math.min(RAIL_MAX,width):RAIL_DEFAULT;
+  return Number.isFinite(width)&&width>RAIL_COLLAPSED?Math.min(RAIL_MAX,width):RAIL_DEFAULT;
 }
 
 /** The width is local presentation state; only an actual collapse/expand changes ui.sidebarPinned. */
@@ -14,10 +14,11 @@ export function mountSidebarResize({body,sidebar,handle,pinButton,win=window,rea
   const mobile=()=>win.innerWidth<=760;
   const max=()=>sidebarMaxWidth(win.innerWidth);
   const clamp=value=>Math.max(RAIL_COLLAPSED,Math.min(max(),value));
-  function paint(width,expanded=width>=RAIL_MIN){
+  function paint(width,expanded=width>RAIL_COLLAPSED){
     current=clamp(width);
     body.style.setProperty('--rail-width',`${current}px`);
-    sidebar.classList.toggle('rail-pinned',expanded);
+    // Labels adapt to available space without snapping or discarding the chosen width.
+    sidebar.classList.toggle('rail-pinned',current>=RAIL_LABELS_AT);
     handle.setAttribute('aria-valuemax',String(max()));
     handle.setAttribute('aria-valuenow',String(Math.round(current)));
     handle.setAttribute('aria-valuetext',expanded?`侧栏宽度 ${Math.round(current)} 像素`:'侧栏已收起');
@@ -32,7 +33,7 @@ export function mountSidebarResize({body,sidebar,handle,pinButton,win=window,rea
   }
   function cancel(){release();sync();}
   function commit(value){
-    const width=clamp(value),expanded=width>=RAIL_MIN;
+    const width=clamp(value),expanded=width>RAIL_COLLAPSED;
     try{if(expanded!==!!readExpanded())writeExpanded(expanded);}catch(error){sync();onError(error);return;}
     if(expanded){
       preferred=width;
@@ -47,7 +48,7 @@ export function mountSidebarResize({body,sidebar,handle,pinButton,win=window,rea
   }
   function move(event){
     if(!gesture||gesture.id!==event.pointerId||!Number.isFinite(event.clientX))return;
-    if(Math.abs(event.clientX-gesture.x)>2)gesture.moved=true;
+    if(event.clientX!==gesture.x)gesture.moved=true;
     if(gesture.moved)paint(clamp(gesture.width+event.clientX-gesture.x));
   }
   function up(event){
@@ -60,8 +61,8 @@ export function mountSidebarResize({body,sidebar,handle,pinButton,win=window,rea
     if(event.key==='Escape'&&gesture){event.preventDefault();cancel();return;}
     if(event.target!==handle||mobile()||gesture||event.ctrlKey||event.metaKey||event.altKey)return;
     let width;
-    if(event.key==='ArrowRight')width=current<RAIL_MIN?RAIL_MIN:current+(event.shiftKey?40:20);
-    if(event.key==='ArrowLeft')width=current<=RAIL_MIN?RAIL_COLLAPSED:Math.max(RAIL_MIN,current-(event.shiftKey?40:20));
+    if(event.key==='ArrowRight')width=current+(event.shiftKey?40:20);
+    if(event.key==='ArrowLeft')width=current-(event.shiftKey?40:20);
     if(event.key==='Home')width=RAIL_COLLAPSED;
     if(event.key==='End')width=max();
     if(event.key==='Enter')width=readExpanded()?RAIL_COLLAPSED:preferred;

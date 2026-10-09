@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mountSidebarResize,sidebarMaxWidth,sidebarStoredWidth,RAIL_COLLAPSED,RAIL_MIN,RAIL_DEFAULT,RAIL_MAX} from '../src/sidebar-resize.js';
+import {mountSidebarResize,sidebarMaxWidth,sidebarStoredWidth,RAIL_COLLAPSED,RAIL_LABELS_AT,RAIL_DEFAULT,RAIL_MAX} from '../src/sidebar-resize.js';
 
 class Surface {
   constructor(){
@@ -40,10 +40,11 @@ function fixture(t,{expanded=false,width=null,viewport=1200,readFailure=false}={
 }
 
 test('stored widths fall back safely and the desktop maximum reserves 480 pixels for content',()=>{
-  assert.deepEqual([RAIL_COLLAPSED,RAIL_MIN,RAIL_DEFAULT,RAIL_MAX],[80,180,254,380]);
-  for(const value of [undefined,null,'',80,179,NaN,Infinity,'invalid'])assert.equal(sidebarStoredWidth(value),254);
+  assert.deepEqual([RAIL_COLLAPSED,RAIL_LABELS_AT,RAIL_DEFAULT,RAIL_MAX],[80,180,254,380]);
+  for(const value of [undefined,null,'',0,79,80,NaN,Infinity,'invalid'])assert.equal(sidebarStoredWidth(value),254);
+  for(const value of [81,140,149.625,179])assert.equal(sidebarStoredWidth(String(value)),value);
   assert.equal(sidebarStoredWidth('320'),320);assert.equal(sidebarStoredWidth(1000),380);
-  for(const viewport of [761,800,860,1200]){const maximum=sidebarMaxWidth(viewport);assert.ok(maximum>=180&&maximum<=380);assert.ok(viewport-maximum>=480);}
+  for(const viewport of [560,620,660,761,800,860,1200]){const maximum=sidebarMaxWidth(viewport);assert.ok(maximum>=80&&maximum<=380);assert.ok(viewport-maximum>=480);}
 });
 
 test('resizing an expanded sidebar previews continuously and persists only the local width on release',t=>{
@@ -65,10 +66,45 @@ test('opening by drag reveals labels at 180 pixels but commits the expanded stat
   f.drag(10000);assert.equal(f.paintWidth(),380);assert.deepEqual(f.writes.slice(2),[['width',380]]);
 });
 
-test('collapsing snaps to the icon rail and reopening retains the previous expanded width',t=>{
-  const f=fixture(t,{expanded:true,width:'310'});f.drag(-170);
+test('dragging down to the 80-pixel boundary collapses while reopening retains the last custom width',t=>{
+  const f=fixture(t,{expanded:true,width:'310'});f.drag(-230);
   assert.equal(f.paintWidth(),80);assert.deepEqual(f.writes,[['expanded',false]]);assert.equal(f.stored(),'310');assert.equal(f.pinButton.span.textContent,'展开侧边栏');
   f.key('Enter');assert.equal(f.paintWidth(),310);assert.deepEqual(f.writes.slice(1),[['expanded',true],['width',310]]);
+});
+
+test('every intermediate width, including subpixel values, persists and restores without snapping on remount',t=>{
+  for(const width of [81,140,179,149.625,180.25]){
+    const f=fixture(t,{expanded:true,width:254}),before=structuredClone(f.state);f.drag(width-254);
+    assert.equal(f.paintWidth(),width);assert.equal(f.stored(),width);assert.deepEqual(f.writes,[['width',width]]);assert.deepEqual(f.state,before);
+    assert.equal(f.sidebar.classList.contains('rail-pinned'),width>=180);assert.equal(f.pinButton.attributes['aria-pressed'],'true');
+    f.controller.destroy();
+    const restored=fixture(t,{expanded:f.state.ui.sidebarPinned,width:String(f.stored())});
+    assert.equal(restored.paintWidth(),width);assert.equal(restored.sidebar.classList.contains('rail-pinned'),width>=180);assert.deepEqual(restored.writes,[]);
+  }
+});
+
+test('a one-pixel drag can expand to 81 pixels and collapse can restore that narrow width',t=>{
+  const f=fixture(t);f.handle.fire('pointerdown');f.handle.fire('pointermove',{clientX:101});
+  assert.equal(f.paintWidth(),81);assert.deepEqual(f.writes,[]);assert.equal(f.state.ui.sidebarPinned,false);
+  f.handle.fire('pointerup',{clientX:101});assert.equal(f.paintWidth(),81);assert.deepEqual(f.writes,[['expanded',true],['width',81]]);assert.equal(f.sidebar.classList.contains('rail-pinned'),false);
+  f.key('Home');assert.equal(f.paintWidth(),80);assert.equal(f.stored(),81);assert.equal(f.state.ui.sidebarPinned,false);
+  f.key('Enter');assert.equal(f.paintWidth(),81);assert.equal(f.state.ui.sidebarPinned,true);assert.equal(f.sidebar.classList.contains('rail-pinned'),false);
+});
+
+test('crossing the label threshold changes only label visibility and cancelling restores an exact fractional width',t=>{
+  const f=fixture(t,{expanded:true,width:190}),before=structuredClone(f.state);
+  for(const width of [179,180,179.75]){
+    f.drag(width-f.paintWidth());assert.equal(f.paintWidth(),width);assert.equal(f.sidebar.classList.contains('rail-pinned'),width>=180);
+  }
+  assert.ok(f.writes.every(([type])=>type==='width'));assert.deepEqual(f.state,before);
+  const committed=f.stored(),count=f.writes.length;f.drag(30,{end:false});assert.equal(f.sidebar.classList.contains('rail-pinned'),true);f.key('Escape');
+  assert.equal(f.paintWidth(),179.75);assert.equal(f.sidebar.classList.contains('rail-pinned'),false);assert.equal(f.stored(),committed);assert.equal(f.writes.length,count);
+});
+
+test('a single quarter-pixel movement is committed exactly and restored by a new controller',t=>{
+  const f=fixture(t,{expanded:true,width:140}),before=structuredClone(f.state);f.drag(0.25);
+  assert.equal(f.paintWidth(),140.25);assert.equal(f.stored(),140.25);assert.deepEqual(f.writes,[['width',140.25]]);assert.deepEqual(f.state,before);
+  f.controller.destroy();const restored=fixture(t,{expanded:true,width:String(f.stored())});assert.equal(restored.paintWidth(),140.25);assert.deepEqual(restored.writes,[]);
 });
 
 test('secondary pointers, non-left buttons and invalid pointer positions cannot replace or finish a drag',t=>{
@@ -93,7 +129,7 @@ test('pointer cancel, lost capture, window blur and Escape roll back previews wi
 
 test('keyboard controls offer small and large steps, collapse, maximum and toggle without changing content',t=>{
   const f=fixture(t),tasks=structuredClone(f.state.tasks);
-  for(const [key,extra,width] of [['ArrowRight',{},180],['ArrowRight',{},200],['ArrowRight',{shiftKey:true},240],['ArrowLeft',{shiftKey:true},200],['ArrowLeft',{},180],['ArrowLeft',{},80],['End',{},380],['Home',{},80],['Enter',{},380]]){
+  for(const [key,extra,width] of [['ArrowRight',{},100],['ArrowRight',{},120],['ArrowRight',{shiftKey:true},160],['ArrowLeft',{shiftKey:true},120],['ArrowLeft',{},100],['ArrowLeft',{},80],['End',{},380],['Home',{},80],['Enter',{},380]]){
     assert.equal(f.key(key,extra).prevented,true);assert.equal(f.paintWidth(),width);
   }
   assert.deepEqual(f.state.tasks,tasks);assert.deepEqual(f.writes.filter(([type])=>type==='expanded'),[['expanded',true],['expanded',false],['expanded',true],['expanded',false],['expanded',true]]);
@@ -130,8 +166,8 @@ test('an unreadable width preference falls back to default and double-click rese
   f.handle.fire('pointerup');assert.deepEqual(f.writes,[['width',254]]);
 });
 
-test('a click or tiny pointer jitter does not persist, and destroy releases capture and all listeners',t=>{
-  const f=fixture(t,{expanded:true,width:300}),before=structuredClone(f.state);f.handle.fire('pointerdown');f.handle.fire('pointermove',{clientX:102});f.handle.fire('pointerup');assert.deepEqual(f.writes,[]);
+test('a pointer that never moves does not persist, and destroy releases capture and all listeners',t=>{
+  const f=fixture(t,{expanded:true,width:300}),before=structuredClone(f.state);f.handle.fire('pointerdown');f.handle.fire('pointermove',{clientX:100});f.handle.fire('pointerup');assert.deepEqual(f.writes,[]);
   f.drag(-80,{end:false});f.controller.destroy();assert.equal(f.paintWidth(),300);assert.equal(f.handle.hasPointerCapture(1),false);assert.equal(f.body.classList.contains('rail-resizing'),false);
   for(const listeners of [...f.handle.listeners.values(),...f.win.listeners.values()])assert.equal(listeners.size,0);
   f.drag(50);f.key('Home');f.win.innerWidth=800;f.win.fire('resize');f.controller.sync();assert.equal(f.paintWidth(),300);assert.deepEqual(f.writes,[]);assert.deepEqual(f.state,before);
