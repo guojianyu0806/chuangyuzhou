@@ -1,0 +1,310 @@
+TAP version 13
+# Subtest: competition startup uses its own localhost origin, data directory and frontend
+ok 1 - competition startup uses its own localhost origin, data directory and frontend
+  ---
+  duration_ms: 31.8997
+  type: 'test'
+  ...
+# Subtest: store, server, Hermes and backup reject out-of-copy directories before reading or writing
+ok 2 - store, server, Hermes and backup reject out-of-copy directories before reading or writing
+  ---
+  duration_ms: 2.0223
+  type: 'test'
+  ...
+# Subtest: linked runtime directory and hard-linked credentials are rejected without changing originals
+ok 3 - linked runtime directory and hard-linked credentials are rejected without changing originals
+  ---
+  duration_ms: 18.4923
+  type: 'test'
+  ...
+# Subtest: setup code stays stable in this copy and a linked token is never overwritten
+ok 4 - setup code stays stable in this copy and a linked token is never overwritten
+  ---
+  duration_ms: 17.4096
+  type: 'test'
+  ...
+# Subtest: actual listening remains loopback and only the new cookie authenticates
+ok 5 - actual listening remains loopback and only the new cookie authenticates
+  ---
+  duration_ms: 159.3245
+  type: 'test'
+  ...
+# Subtest: Hermes starts unconfigured without reading old engine paths or model keys
+ok 6 - Hermes starts unconfigured without reading old engine paths or model keys
+  ---
+  duration_ms: 108.6448
+  type: 'test'
+  ...
+# Subtest: runner construction is offline and each supported model uses the fixed official request contract
+ok 7 - runner construction is offline and each supported model uses the fixed official request contract
+  ---
+  duration_ms: 33.3049
+  type: 'test'
+  ...
+# Subtest: missing or unapproved model configuration and pre-cancelled work never reach the network
+ok 8 - missing or unapproved model configuration and pre-cancelled work never reach the network
+  ---
+  duration_ms: 0.3572
+  type: 'test'
+  ...
+# Subtest: HTTP errors return fixed classifications without retaining provider diagnostics
+ok 9 - HTTP errors return fixed classifications without retaining provider diagnostics
+  ---
+  duration_ms: 2.0833
+  type: 'test'
+  ...
+# Subtest: redirected responses are refused even if a transport returns one
+ok 10 - redirected responses are refused even if a transport returns one
+  ---
+  duration_ms: 0.3792
+  type: 'test'
+  ...
+# Subtest: truncated, unfinished and unsolicited tool responses never become a proposal
+ok 11 - truncated, unfinished and unsolicited tool responses never become a proposal
+  ---
+  duration_ms: 2.0564
+  type: 'test'
+  ...
+# Subtest: response limit covers both declared length and unannounced streamed bytes
+ok 12 - response limit covers both declared length and unannounced streamed bytes
+  ---
+  duration_ms: 1.8049
+  type: 'test'
+  ...
+# Subtest: timeout interrupts transport and returns a safe retryable result
+ok 13 - timeout interrupts transport and returns a safe retryable result
+  ---
+  duration_ms: 21.3743
+  type: 'test'
+  ...
+# Subtest: caller cancellation aborts an in-flight request without exposing its reason
+ok 14 - caller cancellation aborts an in-flight request without exposing its reason
+  ---
+  duration_ms: 0.8237
+  type: 'test'
+  ...
+# Subtest: ledger directory exposes project names and total-account setting without being crowded out by courses
+ok 15 - ledger directory exposes project names and total-account setting without being crowded out by courses
+  ---
+  duration_ms: 5.3751
+  type: 'test'
+  ...
+# Subtest: ledger proposals validate precise money, real dates, source provenance and one selected destination
+ok 16 - ledger proposals validate precise money, real dates, source provenance and one selected destination
+  ---
+  duration_ms: 10.1268
+  type: 'test'
+  ...
+# Subtest: named project is supplied to the model, reviewed, then written once only after confirmation
+ok 17 - named project is supplied to the model, reviewed, then written once only after confirmation
+  ---
+  duration_ms: 82.3715
+  type: 'test'
+  ...
+# Subtest: daily ledger is a distinct confirmed destination and chat confirmation alone writes nothing
+ok 18 - daily ledger is a distinct confirmed destination and chat confirmation alone writes nothing
+  ---
+  duration_ms: 72.7425
+  type: 'test'
+  ...
+# Subtest: project archived or removed after review cannot receive ledger records
+ok 19 - project archived or removed after review cannot receive ledger records
+  ---
+  duration_ms: 134.8107
+  type: 'test'
+  ...
+# Subtest: later corrections invalidate a ledger review before any write
+ok 20 - later corrections invalidate a ledger review before any write
+  ---
+  duration_ms: 66.723
+  type: 'test'
+  ...
+# Subtest: legacy organizer cannot auto-file ledger output even when the model selects it automatically
+ok 21 - legacy organizer cannot auto-file ledger output even when the model selects it automatically
+  ---
+  duration_ms: 24.6155
+  type: 'test'
+  ...
+# Subtest: continuing a completed ledger conversation sends actual receipts and only reviews newly added expenses
+ok 22 - continuing a completed ledger conversation sends actual receipts and only reviews newly added expenses
+  ---
+  duration_ms: 100.0529
+  type: 'test'
+  ...
+# Subtest: continued receipt context respects edited, removed and undone ledger records
+ok 23 - continued receipt context respects edited, removed and undone ledger records
+  ---
+  duration_ms: 205.1925
+  type: 'test'
+  ...
+# Subtest: edited ledger rows retained by undo remain visible in this request and its follow-up context
+ok 24 - edited ledger rows retained by undo remain visible in this request and its follow-up context
+  ---
+  duration_ms: 200.1803
+  type: 'test'
+  ...
+# Subtest: attachment-first conversation can cite later user text even when the attachment has no readable text
+ok 25 - attachment-first conversation can cite later user text even when the attachment has no readable text
+  ---
+  duration_ms: 57.9463
+  type: 'test'
+  ...
+# Subtest: conversation asks, remembers corrections, and only explicit confirmation files once
+ok 26 - conversation asks, remembers corrections, and only explicit confirmation files once
+  ---
+  duration_ms: 110.5882
+  type: 'test'
+  ...
+# Subtest: saying confirm in chat still only produces a review and performs no workspace actions
+ok 27 - saying confirm in chat still only produces a review and performs no workspace actions
+  ---
+  duration_ms: 60.4903
+  type: 'test'
+  ...
+# Subtest: conversation rejects outdated proposals and preserves later user messages
+ok 28 - conversation rejects outdated proposals and preserves later user messages
+  ---
+  duration_ms: 48.6776
+  type: 'test'
+  ...
+# Subtest: late conversation response cannot replace an edited or cancelled conversation
+ok 29 - late conversation response cannot replace an edited or cancelled conversation
+  ---
+  duration_ms: 60.2611
+  type: 'test'
+  ...
+# Subtest: model parser accepts a whole JSON fence without guessing missing or ambiguous content
+ok 30 - model parser accepts a whole JSON fence without guessing missing or ambiguous content
+  ---
+  duration_ms: 1.4974
+  type: 'test'
+  ...
+# Subtest: format repair stays in the same job, displays progress, and still requires explicit ledger confirmation
+ok 31 - format repair stays in the same job, displays progress, and still requires explicit ledger confirmation
+  ---
+  duration_ms: 57.5033
+  type: 'test'
+  ...
+# Subtest: whole fenced conversation response works without another provider request
+ok 32 - whole fenced conversation response works without another provider request
+  ---
+  duration_ms: 64.1019
+  type: 'test'
+  ...
+# Subtest: exhausted format repair is bounded, preserves the original request, and never exposes raw failed output
+ok 33 - exhausted format repair is bounded, preserves the original request, and never exposes raw failed output
+  ---
+  duration_ms: 54.8114
+  type: 'test'
+  ...
+# Subtest: authentication, quota and service failures do not consume automatic format attempts
+ok 34 - authentication, quota and service failures do not consume automatic format attempts
+  ---
+  duration_ms: 219.6003
+  type: 'test'
+  ...
+# Subtest: truncated output can retry as clarification without silently saving a partial bill
+ok 35 - truncated output can retry as clarification without silently saving a partial bill
+  ---
+  duration_ms: 74.7837
+  type: 'test'
+  ...
+# Subtest: conversation changes during a failed attempt stop correction of the old input
+ok 36 - conversation changes during a failed attempt stop correction of the old input
+  ---
+  duration_ms: 47.6468
+  type: 'test'
+  ...
+# Subtest: unconfigured status is truthful; secret config never returns or changes endpoint
+ok 37 - unconfigured status is truthful; secret config never returns or changes endpoint
+  ---
+  duration_ms: 41.7186
+  type: 'test'
+  ...
+# Subtest: direct engine and per-format extraction status work independently of Hermes and never call the model on configure
+ok 38 - direct engine and per-format extraction status work independently of Hermes and never call the model on configure
+  ---
+  duration_ms: 64.8521
+  type: 'test'
+  ...
+# Subtest: explicitly unavailable engine stops before any model request
+ok 39 - explicitly unavailable engine stops before any model request
+  ---
+  duration_ms: 27.4572
+  type: 'test'
+  ...
+# Subtest: closing the service aborts the active injected runner and preserves business records
+ok 40 - closing the service aborts the active injected runner and preserves business records
+  ---
+  duration_ms: 50.0979
+  type: 'test'
+  ...
+# Subtest: model proposal validates target, real calendar dates and source provenance
+ok 41 - model proposal validates target, real calendar dates and source provenance
+  ---
+  duration_ms: 0.5488
+  type: 'test'
+  ...
+# Subtest: the prompt includes untrusted content as data and directory is bounded
+ok 42 - the prompt includes untrusted content as data and directory is bounded
+  ---
+  duration_ms: 0.4632
+  type: 'test'
+  ...
+# Subtest: jobs are idempotent while running and completed; listing omits original text and secrets
+ok 43 - jobs are idempotent while running and completed; listing omits original text and secrets
+  ---
+  duration_ms: 57.0302
+  type: 'test'
+  ...
+# Subtest: failed output preserves original input; the same input may retry
+ok 44 - failed output preserves original input; the same input may retry
+  ---
+  duration_ms: 111.2757
+  type: 'test'
+  ...
+# Subtest: only one job calls the model at a time
+ok 45 - only one job calls the model at a time
+  ---
+  duration_ms: 141.423
+  type: 'test'
+  ...
+# Subtest: legacy auto-file is rejected before any model call or workspace write
+ok 46 - legacy auto-file is rejected before any model call or workspace write
+  ---
+  duration_ms: 27.5709
+  type: 'test'
+  ...
+# Subtest: editing or cancelling input during inference retains proposal without filing
+ok 47 - editing or cancelling input during inference retains proposal without filing
+  ---
+  duration_ms: 90.941
+  type: 'test'
+  ...
+# Subtest: cached legacy output cannot be reapplied by enabling auto-file
+ok 48 - cached legacy output cannot be reapplied by enabling auto-file
+  ---
+  duration_ms: 46.2714
+  type: 'test'
+  ...
+# Subtest: unsynced auto-file input and missing files are rejected before calling model
+ok 49 - unsynced auto-file input and missing files are rejected before calling model
+  ---
+  duration_ms: 27.4299
+  type: 'test'
+  ...
+# Subtest: restarted unfinished jobs become explicit failed attempts
+ok 50 - restarted unfinished jobs become explicit failed attempts
+  ---
+  duration_ms: 33.3068
+  type: 'test'
+  ...
+1..50
+# tests 50
+# suites 0
+# pass 50
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2723.3046

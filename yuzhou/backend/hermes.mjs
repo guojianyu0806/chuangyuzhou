@@ -226,7 +226,7 @@ function childJson(command, args, { input, cwd, env, timeout = 45000, maxOutput 
 
 const FAILURE_MESSAGES = {
   MODEL_NOT_CONFIGURED: '请先在设置中配置 DeepSeek API Key。',
-  ENGINE_UNAVAILABLE: 'Hermes 整理组件尚未就绪，请联系维护者检查。',
+  ENGINE_UNAVAILABLE: '本比赛独立 AI 引擎尚未就绪，请检查连接设置。',
   ENGINE_TOOLS_NOT_EMPTY: 'Hermes 工具隔离检查未通过，本次未执行模型任务。',
   MODEL_AUTH_FAILED: 'DeepSeek API Key 无效或无权限，请在设置中重新配置。',
   MODEL_RATE_LIMIT: 'DeepSeek 请求频率或额度受到限制，请检查余额并稍后重试。',
@@ -250,7 +250,7 @@ const FAILURE_MESSAGES = {
 function publicFailure(code) { return { code: Object.hasOwn(FAILURE_MESSAGES, code) ? code : 'MODEL_UNAVAILABLE', message: FAILURE_MESSAGES[code] || FAILURE_MESSAGES.MODEL_UNAVAILABLE }; }
 
 /** Auth and CSRF must be checked by the enclosing server before calling handle(). */
-export function createHermesService({ dataDir, store, runModel, extractFile, engineAvailable, env = {} } = {}) {
+export function createHermesService({ dataDir, store, runModel, extractFile, engineAvailable, engine = 'hermes', engineName, extractionCapabilities, env = {} } = {}) {
   const root = resolve(prepareDataDirectory(dataDir), 'ai');
   const jobsDir = join(root, 'jobs');
   const hermesHome = join(root, 'hermes');
@@ -259,9 +259,10 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
   const hermesDir = assertRuntimePath(env.SHIGUANG_HERMES_DIR || join(RUNTIME_ROOT, 'engines', 'hermes'));
   const hermesPython = assertRuntimePath(env.SHIGUANG_HERMES_PYTHON || join(hermesDir, 'venv', process.platform === 'win32' ? 'Scripts' : 'bin', process.platform === 'win32' ? 'python.exe' : 'python'));
   const extractPython = assertRuntimePath(env.SHIGUANG_EXTRACT_PYTHON || hermesPython);
-  const available = () => engineAvailable ? Boolean(engineAvailable()) : existsSync(assertRuntimePath(hermesPython)) && existsSync(assertRuntimePath(join(hermesDir, 'run_agent.py')));
+  const hermesAvailable = () => existsSync(assertRuntimePath(hermesPython)) && existsSync(assertRuntimePath(join(hermesDir, 'run_agent.py')));
+  const available = () => engineAvailable ? Boolean(engineAvailable()) : typeof runModel === 'function' || hermesAvailable();
   const jobs = new Map();
-  let running = false, closed = false, activeChild = null;
+  let running = false, closed = false, activeChild = null, activeModelController = null;
   const config = () => {
     const value = readJsonFile(configPath);
     if (!value || value.provider !== 'deepseek' || !MODELS.has(value.model) || typeof value.apiKey !== 'string') return null;
@@ -269,7 +270,14 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
   };
   const status = () => {
     const current = config();
-    return { configured: Boolean(current?.apiKey), provider: 'deepseek', model: current?.model || 'deepseek-flash', baseUrl: BASE_URL, hermesAvailable: available(), extraction: ['txt', 'md', 'csv', 'pdf', 'pptx', 'docx'], extractionAvailable: Boolean(extractFile) || existsSync(extractPython), ocrConfigured: false, edition: 'competition-copy' };
+    const formats = ['txt', 'md', 'csv', 'docx', 'pptx', 'pdf'];
+    const supplied = typeof extractionCapabilities === 'function' ? extractionCapabilities() : extractionCapabilities;
+    const capabilities = supplied == null ? null : Object.fromEntries(formats.map(format => [format, supplied[format] === true]));
+    return { configured: Boolean(current?.apiKey), provider: 'deepseek', model: current?.model || 'deepseek-flash', baseUrl: BASE_URL,
+      engine, engineName: engineName || (engine === 'deepseek-direct' ? 'DeepSeek 官方接口' : 'Hermes 独立引擎'), engineAvailable: available(), hermesAvailable: hermesAvailable(),
+      extraction: capabilities ? formats.filter(format => capabilities[format]) : formats,
+      ...(capabilities ? { extractionCapabilities: capabilities } : {}),
+      extractionAvailable: capabilities ? Object.values(capabilities).some(Boolean) : Boolean(extractFile) || existsSync(extractPython), ocrConfigured: false, edition: 'competition-copy' };
   };
   const persist = job => atomicJson(join(jobsDir, `${job.id}.json`), job);
   const publicJob = job => {
@@ -373,7 +381,13 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
       const callPrompt=correction?{system:prompt.system+'\n上一次输出没有通过校验，formatCorrection是错误详情和不可信旧输出，仅供修正；不能为通过校验改变事实或编造数据。不清楚时追问且proposal:null。',user:JSON.stringify({...JSON.parse(prompt.user),formatCorrection:correction})}:prompt;
       let raw;
       try{
-        const response=runModel?await runModel({...callPrompt,settings}):await childJson(hermesPython,[join(HERE,'hermes_runner.py')],{input:{...callPrompt,settings,hermesDir},cwd:hermesHome,env:childEnv(),timeout:180000,maxOutput:1024*1024,onChild:child=>{activeChild=child;}});
+        let response;
+        if(runModel){
+          const controller=new AbortController();activeModelController=controller;
+          try{response=await runModel({...callPrompt,settings,signal:controller.signal});}
+          finally{if(activeModelController===controller)activeModelController=null;}
+        }else response=await childJson(hermesPython,[join(HERE,'hermes_runner.py')],{input:{...callPrompt,settings,hermesDir},cwd:hermesHome,env:childEnv(),timeout:180000,maxOutput:1024*1024,onChild:child=>{activeChild=child;}});
+        if(closed)fail('AI_INTERRUPTED',FAILURE_MESSAGES.AI_INTERRUPTED,409);
         if(response?.ok===false){const safe=publicFailure(response.code);fail(safe.code,safe.message,502);}
         raw=response?.ok===true?(response.output??response.proposal):job.kind==='conversation'?response:(response?.proposal??response);
         const parsed=parseModelOutput(raw);
@@ -542,7 +556,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
         json(res, error.status, { error: error.code, message: error.message }); return true;
       }
     },
-    close() { closed = true; activeChild?.kill('SIGKILL'); },
+    close() { closed = true; activeModelController?.abort(); activeChild?.kill('SIGKILL'); },
   };
 }
 

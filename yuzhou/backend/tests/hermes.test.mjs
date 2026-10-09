@@ -411,6 +411,43 @@ test('unconfigured status is truthful; secret config never returns or changes en
   assert.equal((await ctx.call('PUT', '/api/model/config', { enabled: false })).body.configured, false);
 });
 
+test('direct engine and per-format extraction status work independently of Hermes and never call the model on configure', async t => {
+  let calls = 0;
+  const capabilities = { txt: true, md: true, csv: true, docx: false, pptx: false, pdf: false, apiKey: 'must-not-return' };
+  const ctx = setup(t, { engine: 'deepseek-direct', engineAvailable: undefined,
+    runModel: async () => { calls++; return proposal(); }, extractionCapabilities: () => capabilities });
+  const initial = (await ctx.call('GET', '/api/model/status')).body;
+  assert.equal(initial.configured, false); assert.equal(initial.engineAvailable, true); assert.equal(initial.hermesAvailable, false);
+  assert.equal(initial.engine, 'deepseek-direct'); assert.equal(initial.engineName, 'DeepSeek 官方接口');
+  assert.deepEqual(initial.extractionCapabilities, { txt: true, md: true, csv: true, docx: false, pptx: false, pdf: false });
+  assert.deepEqual(initial.extraction, ['txt', 'md', 'csv']); assert.equal(initial.extractionAvailable, true);
+  assert.equal(JSON.stringify(initial).includes('must-not-return'), false);
+  await ctx.configure(); await ctx.call('GET', '/api/model/status'); assert.equal(calls, 0);
+  const started = await ctx.call('POST', '/api/ai/jobs', { requestId: 'direct-engine', text: '整理复习资料。' });
+  assert.equal(started.status, 202); assert.equal((await ctx.finish(started.body.job.id)).status, 'succeeded'); assert.equal(calls, 1);
+  capabilities.txt = false; capabilities.md = false; capabilities.csv = false;
+  assert.equal((await ctx.call('GET', '/api/model/status')).body.extractionAvailable, false);
+});
+
+test('explicitly unavailable engine stops before any model request', async t => {
+  let calls = 0; const ctx = setup(t, { engine: 'deepseek-direct', engineAvailable: () => false, runModel: async () => { calls++; return proposal(); } });
+  await ctx.configure();
+  const started = await ctx.call('POST', '/api/ai/jobs', { requestId: 'unavailable-engine', text: '整理复习资料。' });
+  assert.equal(started.status, 503); assert.equal(started.body.error, 'ENGINE_UNAVAILABLE'); assert.equal(calls, 0);
+});
+
+test('closing the service aborts the active injected runner and preserves business records', async t => {
+  let started, requestSignal; const entered = new Promise(resolve => { started = resolve; });
+  const ctx = setup(t, { engine: 'deepseek-direct', engineAvailable: undefined, runModel: async ({ signal }) => {
+    requestSignal = signal; started();
+    return new Promise(resolve => signal.addEventListener('abort', () => resolve({ ok: false, code: 'AI_INTERRUPTED' }), { once: true }));
+  } });
+  await ctx.configure(); const before = structuredClone(ctx.state());
+  const pending = await ctx.call('POST', '/api/ai/jobs', { requestId: 'closing-engine', text: '整理复习资料。' });
+  await entered; ctx.service.close(); const result = await ctx.finish(pending.body.job.id);
+  assert.equal(requestSignal.aborted, true); assert.equal(result.status, 'failed'); assert.equal(result.error.code, 'AI_INTERRUPTED'); assert.deepEqual(ctx.state(), before);
+});
+
 test('model proposal validates target, real calendar dates and source provenance', () => {
   const destinations = workspaceDestinations({ courses: [{ id: 'data', title: '数据结构' }], spaces: [{ id: 'old', title: '已归档', archived: true }] });
   assert.equal(destinations.some(item => item.id === 'space:old'), false);
