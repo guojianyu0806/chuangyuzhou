@@ -14,7 +14,10 @@ for(const section of ['frontend/tests','backend/tests','mobile/tests'])walk(reso
 const env={};
 for(const key of ['PATH','Path','SystemRoot','WINDIR','COMSPEC','PATHEXT'])if(process.env[key])env[key]=process.env[key];
 Object.assign(env,{TEMP:temp,TMP:temp,TMPDIR:temp,PYTHONDONTWRITEBYTECODE:'1'});
-const name='DEV-002-tests-'+new Date().toISOString().replaceAll(':','-').replaceAll('.','-')+'.tap';
+const devIndex=process.argv.indexOf('--dev');
+const devId=devIndex<0?'DEV-003':process.argv[devIndex+1];
+if(!/^DEV-\d{3}$/.test(devId||''))throw Error('Use --dev DEV-003 or another real development record.');
+const name=devId+'-tests-'+new Date().toISOString().replaceAll(':','-').replaceAll('.','-')+'.tap';
 const output=resolve(root,'evidence/engineering',name);if(existsSync(output))throw Error('Report already exists.');
 const log=createWriteStream(output,{flags:'wx'});
 const child=spawn(process.execPath,['--test','--test-reporter=tap',...tests.sort()],{cwd:copy,env,windowsHide:true,stdio:['ignore','pipe','pipe']});
