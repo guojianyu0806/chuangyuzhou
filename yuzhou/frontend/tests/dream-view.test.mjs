@@ -236,6 +236,35 @@ test('resize changes view positions without modifying the captured content',()=>
   assert.deepEqual(h.scene.children.map(node=>[node.style.left,node.style.top,node.style.width]),positions,'duplicate observer notifications cannot reshuffle the current thoughts');h.destroy();
 });
 
+test('temporarily unmeasurable or too-small surfaces keep paused thoughts until valid dimensions return',()=>{
+  const h=harness();h.click('pause');const existing=h.scene.children.slice(),ids=h.ids();
+  for(const [width,height] of [[0,0],[200,600],[339,180]]){
+    h.surface.clientWidth=width;h.scene.clientWidth=width;h.scene.clientHeight=height;
+    h.observers.find(observer=>observer.kind==='resize').emit([]);
+    assert.deepEqual(h.scene.children,existing,'a transient non-layout measurement must not retire existing thoughts');
+    assert.deepEqual(h.ids(),ids);assert.equal(h.paused(),true);assert.equal(h.time.pending(),0);
+  }
+  h.surface.clientWidth=1000;h.scene.clientWidth=1000;h.scene.clientHeight=600;h.window.emit('resize');
+  assert.deepEqual(h.ids(),ids);assert.equal(h.paused(),true);h.time.advance(60000);assert.deepEqual(h.ids(),ids);assert.equal(h.time.pending(),0);h.destroy();
+});
+
+test('resizing a paused full scene down to a valid single slot keeps at least one thought without restarting time',()=>{
+  const h=harness();while(h.ids().length<5)h.click('next');h.click('pause');
+  for(const [width,height] of [[339,270],[248,215],[1000,600]]){
+    h.surface.clientWidth=width;h.scene.clientWidth=width;h.scene.clientHeight=height;h.window.emit('resize');
+    assert.ok(h.ids().length>=1,'a valid view must retain or replace at least one existing thought');
+    assert.equal(h.paused(),true);assert.equal(h.time.pending(),0);
+  }
+  const shown=h.ids();h.time.advance(60000);assert.deepEqual(h.ids(),shown);assert.equal(h.time.pending(),0);h.destroy();
+});
+
+test('restoring a measurable viewport fills an initially empty paused scene without resuming automatic arrivals',()=>{
+  const h=harness({width:0,height:0});h.click('pause');assert.deepEqual(h.ids(),[]);assert.equal(h.time.pending(),0);
+  h.surface.clientWidth=339;h.scene.clientWidth=339;h.scene.clientHeight=270;h.window.emit('resize');
+  assert.equal(h.ids().length,1);assert.equal(h.paused(),true);assert.equal(h.time.pending(),0);
+  const shown=h.ids();h.time.advance(60000);assert.deepEqual(h.ids(),shown);h.destroy();
+});
+
 test('unmount clears timers, observer subscriptions, listeners and pending detail state',async()=>{
   const h=harness();h.surface.emit('click',{target:h.clouds()[0]});await tick();assert.equal(h.dialog.open,true);
   h.destroy();await tick();assert.equal(h.dialog.open,false);assert.equal(h.time.pending(),0);

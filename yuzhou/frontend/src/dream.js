@@ -169,6 +169,8 @@ export function mountDream(ctx, options={}) {
   const resize=()=>{
     compact=surface.getBoundingClientRect().width<700;surface.classList.toggle('dream-compact',compact);
     const size=bounds(),signature=`${size.width}:${size.height}`;
+    // A hidden/captured surface can briefly report no usable area. Keep its thoughts until visible.
+    if(size.width<248||size.height<215)return;
     if(signature===lastSize)return;lastSize=signature;
     const occupied=[];
     for(const thought of thoughts.values()){
@@ -177,6 +179,7 @@ export function mountDream(ctx, options={}) {
       thought.position=position;occupied.push(position);
       Object.assign(thought.element.style,{left:position.x+'px',top:position.y+'px',width:position.w+'px'});
     }
+    if(!thoughts.size&&found.length)emitThought(true);
   };
   const searchChange=()=>{query=search.value.trim().toLocaleLowerCase();found=matches();emitter=createDreamEmitter(found);draw();playback.reset();};
   const pointerOver=event=>{if(event.pointerType!=='touch'&&event.target.closest('[data-cloud]')){hovered=true;setPaused();}};
