@@ -1,0 +1,37 @@
+{
+  "revision": 2,
+  "updatedAt": "2026-10-12T11:03:48.080Z",
+  "stateHash": "aa2eebf720077d27a07012fc030c0982fee59275809ed9267b02e02e0fa7217d",
+  "captureCount": 16,
+  "archived": 2,
+  "boards": {
+    "presentation": "canvas",
+    "customized": true,
+    "initialized": true,
+    "snap": true,
+    "cards": [
+      {
+        "id": "dev016-window",
+        "x": 136,
+        "y": 92,
+        "w": 360,
+        "h": 280,
+        "color": "#FF9CCE"
+      },
+      {
+        "id": "dev016-map",
+        "x": 612,
+        "y": 284,
+        "w": 380,
+        "h": 320,
+        "color": "#63E6DC"
+      }
+    ],
+    "view": {
+      "x": 28,
+      "y": -16,
+      "zoom": 0.8
+    }
+  },
+  "unchanged": true
+}

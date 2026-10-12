@@ -159,4 +159,3 @@ test('a delay function is sampled anew for each emergence, pause resume and manu
   playback.setPaused(false);assert.equal(samples,4);time.advance(4999);assert.equal(advances,2);
   playback.reset();assert.equal(samples,5);time.advance(3000);assert.equal(advances,3);playback.destroy();
 });
-
