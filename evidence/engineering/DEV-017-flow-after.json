@@ -1,0 +1,35 @@
+{
+  "revision": 1,
+  "stateSha256": "a15a329749316929bf24ffc748e02917599dc0ef85cd4c9d6ad65b65469cd0ca",
+  "inboxView": "dream",
+  "board": {
+    "presentation": "canvas",
+    "customized": true,
+    "initialized": true,
+    "snap": true,
+    "cards": [
+      {
+        "id": "dev017-window",
+        "x": 136,
+        "y": 92,
+        "w": 360,
+        "h": 280,
+        "color": "#FF9CCE"
+      },
+      {
+        "id": "dev017-map",
+        "x": 612,
+        "y": 284,
+        "w": 380,
+        "h": 320,
+        "color": "#63E6DC"
+      }
+    ],
+    "view": {
+      "x": 28,
+      "y": -16,
+      "zoom": 0.8
+    }
+  },
+  "captures": 16
+}

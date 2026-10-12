@@ -1,0 +1,322 @@
+TAP version 13
+# Subtest: emitter samples the complete pool, including old records beyond any visible page
+ok 1 - emitter samples the complete pool, including old records beyond any visible page
+  ---
+  duration_ms: 546.273
+  type: 'test'
+  ...
+# Subtest: independent random emergence is not a fixed deck or a requirement to finish one full round
+ok 2 - independent random emergence is not a fixed deck or a requirement to finish one full round
+  ---
+  duration_ms: 3.6892
+  type: 'test'
+  ...
+# Subtest: visible IDs stay excluded and the last eight emitted ideas cool down while alternatives exist
+ok 3 - visible IDs stay excluded and the last eight emitted ideas cool down while alternatives exist
+  ---
+  duration_ms: 3.3064
+  type: 'test'
+  ...
+# Subtest: small pools relax the oldest cooldowns while never reusing a visible idea
+ok 4 - small pools relax the oldest cooldowns while never reusing a visible idea
+  ---
+  duration_ms: 0.6124
+  type: 'test'
+  ...
+# Subtest: invalid, archived and duplicate entries never enter the emitter
+ok 5 - invalid, archived and duplicate entries never enter the emitter
+  ---
+  duration_ms: 0.5675
+  type: 'test'
+  ...
+# Subtest: empty and single-record emitters are stable and filters can rebuild an independent pool
+ok 6 - empty and single-record emitters are stable and filters can rebuild an independent pool
+  ---
+  duration_ms: 1.7153
+  type: 'test'
+  ...
+# Subtest: invalid random samples are bounded and cannot return outside the eligible pool
+ok 7 - invalid random samples are bounded and cannot return outside the eligible pool
+  ---
+  duration_ms: 0.6329
+  type: 'test'
+  ...
+# Subtest: playback starts paused, advances on a full reading interval, and repeated resume calls preserve it
+ok 8 - playback starts paused, advances on a full reading interval, and repeated resume calls preserve it
+  ---
+  duration_ms: 0.7346
+  type: 'test'
+  ...
+# Subtest: pause removes pending work and resume gives the reader a complete new interval without catching up
+ok 9 - pause removes pending work and resume gives the reader a complete new interval without catching up
+  ---
+  duration_ms: 0.3655
+  type: 'test'
+  ...
+# Subtest: manual navigation resets the reading interval but cannot resume a paused or destroyed dream
+ok 10 - manual navigation resets the reading interval but cannot resume a paused or destroyed dream
+  ---
+  duration_ms: 0.4764
+  type: 'test'
+  ...
+# Subtest: a pause or destroy during an advance cannot schedule orphaned continuation work
+ok 11 - a pause or destroy during an advance cannot schedule orphaned continuation work
+  ---
+  duration_ms: 0.3526
+  type: 'test'
+  ...
+# Subtest: advance handlers may reset or briefly pause and resume while retaining exactly one timer
+ok 12 - advance handlers may reset or briefly pause and resume while retaining exactly one timer
+  ---
+  duration_ms: 0.3927
+  type: 'test'
+  ...
+# Subtest: a delay function is sampled anew for each emergence, pause resume and manual reset
+ok 13 - a delay function is sampled anew for each emergence, pause resume and manual reset
+  ---
+  duration_ms: 0.3076
+  type: 'test'
+  ...
+# Subtest: random bursts remain inside every supported size without overlapping existing clouds
+ok 14 - random bursts remain inside every supported size without overlapping existing clouds
+  ---
+  duration_ms: 37.1229
+  type: 'test'
+  ...
+# Subtest: fallback fills available space even if random repeatedly selects the same occupied corner
+ok 15 - fallback fills available space even if random repeatedly selects the same occupied corner
+  ---
+  duration_ms: 0.5097
+  type: 'test'
+  ...
+# Subtest: narrow views admit fewer clouds instead of overlaps or clipping
+ok 16 - narrow views admit fewer clouds instead of overlaps or clipping
+  ---
+  duration_ms: 0.7266
+  type: 'test'
+  ...
+# Subtest: full and too-small stages return null with finite work
+ok 17 - full and too-small stages return null with finite work
+  ---
+  duration_ms: 0.3827
+  type: 'test'
+  ...
+# Subtest: placement does not mutate frozen input and malformed rectangles are ignored
+ok 18 - placement does not mutate frozen input and malformed rectangles are ignored
+  ---
+  duration_ms: 1.5197
+  type: 'test'
+  ...
+# Subtest: different random draws produce different positions and malformed random values remain bounded
+ok 19 - different random draws produce different positions and malformed random values remain bounded
+  ---
+  duration_ms: 0.4323
+  type: 'test'
+  ...
+# Subtest: wide stages carry thoughts a visible distance instead of rocking in place
+ok 20 - wide stages carry thoughts a visible distance instead of rocking in place
+  ---
+  duration_ms: 18.4596
+  type: 'test'
+  ...
+# Subtest: narrow stages flow along available height without crossing the stage or footer
+ok 21 - narrow stages flow along available height without crossing the stage or footer
+  ---
+  duration_ms: 0.3943
+  type: 'test'
+  ...
+# Subtest: a randomly chosen cramped side gives way to the longer available current
+ok 22 - a randomly chosen cramped side gives way to the longer available current
+  ---
+  duration_ms: 0.2958
+  type: 'test'
+  ...
+# Subtest: edge and corner starts move inward, including adversarial random draws
+ok 23 - edge and corner starts move inward, including adversarial random draws
+  ---
+  duration_ms: 8.3142
+  type: 'test'
+  ...
+# Subtest: continuous interpolated paths stay bounded across wide and tiny valid spaces
+ok 24 - continuous interpolated paths stay bounded across wide and tiny valid spaces
+  ---
+  duration_ms: 43.6063
+  type: 'test'
+  ...
+# Subtest: exact-fit stages remain finite and start without a visual jump
+ok 25 - exact-fit stages remain finite and start without a visual jump
+  ---
+  duration_ms: 0.3214
+  type: 'test'
+  ...
+# Subtest: invalid or already clipped positions are rejected instead of hiding a jump
+ok 26 - invalid or already clipped positions are rejected instead of hiding a jump
+  ---
+  duration_ms: 0.5024
+  type: 'test'
+  ...
+# Subtest: motion plans are deterministic for a seed, vary by direction, and never change positions
+ok 27 - motion plans are deterministic for a seed, vary by direction, and never change positions
+  ---
+  duration_ms: 0.6614
+  type: 'test'
+  ...
+# Subtest: a current that would cross another text region finds a safe direction
+ok 28 - a current that would cross another text region finds a safe direction
+  ---
+  duration_ms: 0.6785
+  type: 'test'
+  ...
+# Subtest: later clouds reserve against whole previous paths rather than just starting positions
+ok 29 - later clouds reserve against whole previous paths rather than just starting positions
+  ---
+  duration_ms: 0.6179
+  type: 'test'
+  ...
+# Subtest: short paths and stationary exact-clearance pockets remain bounded and readable
+ok 30 - short paths and stationary exact-clearance pockets remain bounded and readable
+  ---
+  duration_ms: 2.1986
+  type: 'test'
+  ...
+# Subtest: already unsafe starts return null and invalid occupied entries cannot corrupt a plan
+ok 31 - already unsafe starts return null and invalid occupied entries cannot corrupt a plan
+  ---
+  duration_ms: 0.6431
+  type: 'test'
+  ...
+# Subtest: new thoughts emerge independently after a variable delay while existing DOM and positions remain intact
+ok 32 - new thoughts emerge independently after a variable delay while existing DOM and positions remain intact
+  ---
+  duration_ms: 42.5447
+  type: 'test'
+  ...
+# Subtest: manual pause freezes automatic arrivals and leaves the user able to request more inspiration
+ok 33 - manual pause freezes automatic arrivals and leaves the user able to request more inspiration
+  ---
+  duration_ms: 4.6881
+  type: 'test'
+  ...
+# Subtest: hover holds only the chosen thought while other thoughts keep moving and arriving
+ok 34 - hover holds only the chosen thought while other thoughts keep moving and arriving
+  ---
+  duration_ms: 21.1988
+  type: 'test'
+  ...
+# Subtest: keyboard focus holds its own thought and search focus leaves the entire stream running
+ok 35 - keyboard focus holds its own thought and search focus leaves the entire stream running
+  ---
+  duration_ms: 4.3858
+  type: 'test'
+  ...
+# Subtest: leaving a hovered thought does not resume it while keyboard focus still holds it
+ok 36 - leaving a hovered thought does not resume it while keyboard focus still holds it
+  ---
+  duration_ms: 3.0447
+  type: 'test'
+  ...
+# Subtest: moving between thoughts transfers the hover hold and touch pointers do not leave a stuck hold
+ok 37 - moving between thoughts transfers the hover hold and touch pointers do not leave a stuck hold
+  ---
+  duration_ms: 2.5524
+  type: 'test'
+  ...
+# Subtest: closing details keeps the returned focus safe without freezing the rest of the dream
+ok 38 - closing details keeps the returned focus safe without freezing the rest of the dream
+  ---
+  duration_ms: 5.5528
+  type: 'test'
+  ...
+# Subtest: global editor and AI overlays, hidden pages and offscreen surfaces pause both lifecycle and visual state
+ok 39 - global editor and AI overlays, hidden pages and offscreen surfaces pause both lifecycle and visual state
+  ---
+  duration_ms: 11.5098
+  type: 'test'
+  ...
+# Subtest: reduced motion stays static, permits requested arrivals and resumes scheduling when preference changes
+ok 40 - reduced motion stays static, permits requested arrivals and resumes scheduling when preference changes
+  ---
+  duration_ms: 3.9446
+  type: 'test'
+  ...
+# Subtest: switching to reduced motion removes already-departing thoughts without relying on animationend
+ok 41 - switching to reduced motion removes already-departing thoughts without relying on animationend
+  ---
+  duration_ms: 13.8722
+  type: 'test'
+  ...
+# Subtest: search rebuilds empty and single-record surfaces without timers or editing source records
+ok 42 - search rebuilds empty and single-record surfaces without timers or editing source records
+  ---
+  duration_ms: 6.8859
+  type: 'test'
+  ...
+# Subtest: each thought retires on its own departure animation and frees space without replacing remaining thoughts
+ok 43 - each thought retires on its own departure animation and frees space without replacing remaining thoughts
+  ---
+  duration_ms: 8.0572
+  type: 'test'
+  ...
+# Subtest: a narrow one-slot scene keeps emitting new ideas after the sole visible thought completes its lifetime
+ok 44 - a narrow one-slot scene keeps emitting new ideas after the sole visible thought completes its lifetime
+  ---
+  duration_ms: 7.3446
+  type: 'test'
+  ...
+# Subtest: a genuinely single-record pool stays visible without automatic departure in the same narrow scene
+ok 45 - a genuinely single-record pool stays visible without automatic departure in the same narrow scene
+  ---
+  duration_ms: 2.0083
+  type: 'test'
+  ...
+# Subtest: requesting inspiration in a full scene removes only the oldest visible thought and keeps other nodes
+ok 46 - requesting inspiration in a full scene removes only the oldest visible thought and keeps other nodes
+  ---
+  duration_ms: 3.391
+  type: 'test'
+  ...
+# Subtest: requesting more inspiration in a full scene preserves the thought held for reading
+ok 47 - requesting more inspiration in a full scene preserves the thought held for reading
+  ---
+  duration_ms: 7.4632
+  type: 'test'
+  ...
+# Subtest: resize changes view positions without modifying the captured content
+ok 48 - resize changes view positions without modifying the captured content
+  ---
+  duration_ms: 5.1893
+  type: 'test'
+  ...
+# Subtest: temporarily unmeasurable or too-small surfaces keep paused thoughts until valid dimensions return
+ok 49 - temporarily unmeasurable or too-small surfaces keep paused thoughts until valid dimensions return
+  ---
+  duration_ms: 2.7505
+  type: 'test'
+  ...
+# Subtest: resizing a paused full scene down to a valid single slot keeps at least one thought without restarting time
+ok 50 - resizing a paused full scene down to a valid single slot keeps at least one thought without restarting time
+  ---
+  duration_ms: 2.683
+  type: 'test'
+  ...
+# Subtest: restoring a measurable viewport fills an initially empty paused scene without resuming automatic arrivals
+ok 51 - restoring a measurable viewport fills an initially empty paused scene without resuming automatic arrivals
+  ---
+  duration_ms: 1.5858
+  type: 'test'
+  ...
+# Subtest: unmount clears timers, observer subscriptions, listeners and pending detail state
+ok 52 - unmount clears timers, observer subscriptions, listeners and pending detail state
+  ---
+  duration_ms: 2.2117
+  type: 'test'
+  ...
+1..52
+# tests 52
+# suites 0
+# pass 52
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 785.9218
