@@ -2,6 +2,7 @@
 import {mountSurfaceFullscreen} from './fullscreen.js';
 import {createDreamEmitter,createDreamPlayback} from './dream-flow.js';
 import {placeDreamThought} from './dream-layout.js';
+import {createDreamMotion} from './dream-motion.js';
 
 const CLOUD_PATH='M58 155C28 155 12 141 12 122c0-19 13-33 33-35C39 61 59 38 86 43c10-31 51-33 69-8 26-10 55 5 58 30 25-4 49 15 48 39 21 3 31 16 28 30-3 15-17 21-41 21Z';
 const TINTS={'备忘':['#ffe1ef','#b25480'],'学习灵感':['#e6ddff','#7652b2'],'英语':['#eff7bf','#657525'],'链接':['#dceaff','#4974a8'],'消息摘录':['#d2f5ee','#317d72']};
@@ -23,22 +24,27 @@ export function mountDream(ctx, options={}) {
   const {root,icon,esc}=ctx;
   const items=(Array.isArray(options.items)?options.items:[]).filter(item=>!item.archived);
   const reduced=matchMedia('(prefers-reduced-motion:reduce)');
-  let alive=true,query='',paused=false,offscreen=false,hovered=false,selected=null,source=null,animation=null,closing=false,historyPending=false,afterClose=null,closeTimer=0;
-  let emitter=createDreamEmitter(items),found=items,compact=false,tickMs=4000,lastSize='';
+  let alive=true,query='',paused=false,offscreen=false,selected=null,source=null,animation=null,closing=false,historyPending=false,afterClose=null,closeTimer=0;
+  let emitter=createDreamEmitter(items),found=items,compact=false,tickMs=2400,lastSize='',stopped=false;
   const thoughts=new Map();
   const token=`dream-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const matches=()=>items.filter(item=>!query||`${item.text||''} ${item.tags||''} ${item.category||''} ${item.fileName||''}`.toLocaleLowerCase().includes(query));
-  root.innerHTML=`<section class="dream-surface" aria-label="灵感梦境"><header class="dream-toolbar"><div class="dream-heading"><span class="dream-mode-icon">${icon('cloud',22)}</span><div><h2>梦境模式</h2><p>让旧念头，重新流过来。</p></div></div><div class="dream-tools"><button type="button" class="btn compact" data-dream="exit">${icon('layers',16)}<span>灵感墙</span></button><button type="button" class="btn compact" data-dream="pause" aria-label="暂停流动" aria-pressed="false">${icon('pause',17)}<span>暂停</span></button><button type="button" class="icon-btn" data-dream="fullscreen" aria-label="全屏梦境">${fullIcon}</button><button type="button" class="btn compact primary" data-dream="create">${icon('plus',17)}<span>记下联想</span></button></div></header><div class="dream-search-row"><label class="dream-search">${icon('search',17)}<input type="search" data-dream-view placeholder="从一个词开始联想…" aria-label="搜索梦境中的灵感" maxlength="12000"></label><span class="dream-count" aria-live="polite"></span></div><div class="dream-sky"><div class="dream-horizon" aria-hidden="true"></div><div class="dream-current" aria-hidden="true"></div><div class="dream-scene" role="list" aria-label="正在浮现的旧念头" aria-live="off"></div><div class="dream-empty" hidden></div><div class="dream-sky-note">不急着整理，看看哪个念头会让你停下来。<small>点一下，接住它；停留时，流动会暂停。</small></div></div><footer class="dream-footer"><span class="dream-motion-note"></span><button type="button" class="btn compact" data-dream="next">${icon('sparkles',17)}<span>让灵感涌来</span></button></footer><dialog class="dream-dialog" aria-labelledby="dream-detail-title"><article class="dream-detail"></article></dialog></section>`;
+  root.innerHTML=`<section class="dream-surface" aria-label="灵感梦境"><header class="dream-toolbar"><div class="dream-heading"><span class="dream-mode-icon">${icon('cloud',22)}</span><div><h2>梦境模式</h2><p>让旧念头，重新流过来。</p></div></div><div class="dream-tools"><button type="button" class="btn compact" data-dream="exit">${icon('layers',16)}<span>灵感墙</span></button><button type="button" class="btn compact" data-dream="pause" aria-label="暂停流动" aria-pressed="false">${icon('pause',17)}<span>暂停</span></button><button type="button" class="icon-btn" data-dream="fullscreen" aria-label="全屏梦境">${fullIcon}</button><button type="button" class="btn compact primary" data-dream="create">${icon('plus',17)}<span>记下联想</span></button></div></header><div class="dream-search-row"><label class="dream-search">${icon('search',17)}<input type="search" data-dream-view placeholder="从一个词开始联想…" aria-label="搜索梦境中的灵感" maxlength="12000"></label><span class="dream-count" aria-live="polite"></span></div><div class="dream-sky"><div class="dream-horizon" aria-hidden="true"></div><div class="dream-current" aria-hidden="true"></div><div class="dream-scene" role="list" aria-label="正在浮现的旧念头" aria-live="off"></div><div class="dream-empty" hidden></div><div class="dream-sky-note">不急着整理，看看哪个念头会让你停下来。<small>念头正在自行流动。悬停接住一条，其余继续；点开阅读全文。</small></div></div><footer class="dream-footer"><span class="dream-motion-note"></span><button type="button" class="btn compact" data-dream="next">${icon('sparkles',17)}<span>让灵感涌来</span></button></footer><dialog class="dream-dialog" aria-labelledby="dream-detail-title"><article class="dream-detail"></article></dialog></section>`;
   const surface=root.querySelector('.dream-surface'),scene=root.querySelector('.dream-scene'),dialog=root.querySelector('.dream-dialog'),detail=root.querySelector('.dream-detail');
   const search=root.querySelector('.dream-search input');
-  const playback=createDreamPlayback({delay:()=>{tickMs=3000+Math.random()*3500;return tickMs;},advance:evolve});
+  const playback=createDreamPlayback({delay:()=>{tickMs=1800+Math.random()*1400;return tickMs;},advance:evolve});
   // Pause both the clock and the visual layers. Global editor/AI overlays can sit outside this surface.
   const setPaused=()=>{
     if(!alive)return;
     if(reduced.matches)for(const thought of thoughts.values())if(thought.leaving)retire(thought,true);
-    const reading=hovered||scene.contains(document.activeElement)||document.activeElement===search;
     const overlay=!!document.querySelector('#modal[open],#ai-drawer:not([hidden])');
-    const stopped=paused||offscreen||document.hidden||!!selected||reduced.matches||reading||overlay;
+    stopped=paused||offscreen||document.hidden||!!selected||reduced.matches||overlay;
+    for(const thought of thoughts.values()){
+      thought.held=thought.hovered||thought.element.contains(document.activeElement);
+      thought.element.classList.toggle('dream-held',thought.held);
+      if(thought.held&&!thought.leaving)thought.element.classList.add('dream-instant');
+      if(stopped||thought.held)thought.motion?.pause();else thought.motion?.play();
+    }
     if(stopped)for(const thought of thoughts.values())if(!thought.leaving)thought.element.classList.add('dream-instant');
     surface.classList.toggle('dream-paused',stopped);
     playback.setPaused(stopped||found.length<2);
@@ -46,13 +52,26 @@ export function mountDream(ctx, options={}) {
     button.disabled=reduced.matches;button.setAttribute('aria-pressed',String(paused||reduced.matches));
     button.setAttribute('aria-label',paused?'继续流动':'暂停流动');
     button.innerHTML=icon(paused?'play':'pause',17)+`<span>${paused?'继续':'暂停'}</span>`;
-    surface.querySelector('.dream-motion-note').textContent=reduced.matches?'静态梦境 · 可手动唤起灵感':paused?'已暂停 · 按自己的节奏读':reading||selected||overlay?'为你停留 · 正在读的念头不会换走':found.length<2?'留在这个念头里 · 随时记下新的联想':'随机浮现 · 来自你保存的全部未归档灵感';
+    surface.querySelector('.dream-motion-note').textContent=reduced.matches?'静态梦境 · 可手动唤起灵感':paused?'已暂停 · 按自己的节奏读':selected||overlay?'为你停留 · 关闭后自动继续':found.length===0?'记下念头，让它在这里流动':found.length===1?'念头正在流动 · 随时记下新的联想':'自动流动中 · 旧念头会不断随机浮现';
   };
   const bounds=()=>({width:scene.clientWidth,height:scene.clientHeight});
   const capacity=()=>compact?3:5;
+  function startMotion(thought,occupied=occupiedPositions(thought)){
+    thought.motion?.cancel();thought.motion=null;
+    const plan=createDreamMotion({...bounds(),position:thought.position,occupied});
+    thought.area=plan?.area||thought.position;
+    if(!plan||typeof thought.element.animate!=='function')return;
+    thought.life=plan.duration;
+    thought.motion=thought.element.animate(plan.keyframes,{duration:plan.duration,iterations:Infinity,direction:'alternate',easing:'ease-in-out',fill:'both'});
+    if(stopped||reduced.matches||thought.held)thought.motion.pause();
+  }
+  function occupiedPositions(exclude){
+    // Reserve each whole journey so two readable clouds cannot drift through one another.
+    return [...thoughts.values()].filter(thought=>thought!==exclude).map(thought=>thought.area||thought.position);
+  }
   function emitThought(instant=false){
     if(thoughts.size>=capacity())return false;
-    const position=placeDreamThought({...bounds(),occupied:[...thoughts.values()].map(thought=>thought.position)});
+    const position=placeDreamThought({...bounds(),occupied:occupiedPositions()});
     if(!position)return false;
     const item=emitter.pick([...thoughts.keys()]);if(!item)return false;
     const n=hash(item.id),[tint,ink]=cloudPalette(item),title=String(item.text||item.fileName||'未命名灵感');
@@ -60,16 +79,17 @@ export function mountDream(ctx, options={}) {
     const element=document.createElement('div');
     element.className='dream-cloud-slot'+(Math.random()<.55?' dream-bright':'')+(instant?' dream-instant':'');
     element.setAttribute('role','listitem');
-    element.style.cssText=`--cloud-tint:${tint};--cloud-ink:${ink};--cloud-x:${n%9-4}px;--cloud-y:${(n>>>4)%9-4}px;--cloud-turn:${(n%5-2)*.35}deg;--cloud-duration:${18+Math.random()*17}s;--cloud-delay:-${Math.random()*18}s;left:${position.x}px;top:${position.y}px;width:${position.w}px;`;
+    element.style.cssText=`--cloud-tint:${tint};--cloud-ink:${ink};--cloud-shimmer:${4+n%4}s;--cloud-phase:-${n%7}s;left:${position.x}px;top:${position.y}px;width:${position.w}px;`;
     element.innerHTML=`<div class="dream-cloud-arrival"><button type="button" class="dream-cloud" data-cloud="${esc(item.id)}" aria-label="展开灵感：${esc(title.slice(0,100))}">${cloudSVG()}<span class="dream-cloud-copy"><span class="dream-cloud-category">${esc(item.category||'灵感')}${item.fileName?` · ${icon('file',11)}`:''}</span><strong>${esc(title.slice(0,130))}</strong><small>${esc(when)}的念头</small></span><span class="dream-cloud-glint" aria-hidden="true">✦</span></button></div>`;
     scene.append(element);
-    thoughts.set(item.id,{item,element,position,age:0,life:18000+Math.random()*16000,leaving:false});
+    const thought={item,element,position,age:0,life:24000,leaving:false,hovered:false,held:false,motion:null};
+    thoughts.set(item.id,thought);startMotion(thought);
     return true;
   }
   function retire(thought,immediate=false){
     if(thought.leaving&&!immediate)return;
     thought.leaving=true;
-    if(immediate||reduced.matches){thought.element.remove();thoughts.delete(thought.item.id);return;}
+    if(immediate||reduced.matches){thought.motion?.cancel();thought.element.remove();thoughts.delete(thought.item.id);return;}
     thought.element.classList.add('dream-leaving');
   }
   const depart=event=>{
@@ -77,12 +97,13 @@ export function mountDream(ctx, options={}) {
     const element=event.target.closest('.dream-cloud-slot');
     const thought=[...thoughts.values()].find(value=>value.element===element);
     if(thought?.leaving){
-      element.remove();thoughts.delete(thought.item.id);
+      thought.motion?.cancel();element.remove();thoughts.delete(thought.item.id);
       if(alive&&!thoughts.size)emitThought();
     }
   };
   function evolve(){
     for(const thought of thoughts.values()){
+      if(thought.held)continue;
       thought.age+=tickMs;
       if(found.length>1&&thought.age>=thought.life)retire(thought);
     }
@@ -92,7 +113,7 @@ export function mountDream(ctx, options={}) {
   function burst(){
     let added=emitThought(paused||reduced.matches);
     if(!added){
-      const oldest=[...thoughts.values()].sort((a,b)=>b.age-a.age)[0];
+      const oldest=[...thoughts.values()].filter(thought=>!thought.held).sort((a,b)=>b.age-a.age)[0];
       if(oldest)retire(oldest,true);
       added=emitThought(true);
     }
@@ -100,6 +121,7 @@ export function mountDream(ctx, options={}) {
     playback.reset();setPaused();
   }
   function draw(){
+    for(const thought of thoughts.values())thought.motion?.cancel();
     thoughts.clear();scene.innerHTML='';
     for(let i=0;i<Math.min(2,found.length);i++)emitThought(true);
     surface.querySelector('.dream-count').textContent=`${found.length} 个${query?'匹配的':'旧'}念头`;
@@ -107,7 +129,7 @@ export function mountDream(ctx, options={}) {
     const empty=surface.querySelector('.dream-empty');empty.hidden=found.length>0;
     empty.innerHTML=`${cloudSVG()}<h3>${query?'还没有与这个词有关的念头':'让第一个念头，在这里出现。'}</h3><p>${query?'试试内容中的其他词，或清空搜索。':'随手记下的灵感，会在这里不期而遇。'}</p><button type="button" class="btn primary" data-dream="${query?'clear':'create'}">${query?'清空搜索':'记下第一个想法'}</button>`;
     surface.querySelector('.dream-sky-note').hidden=!found.length;
-    hovered=false;setPaused();
+    setPaused();
   }
   function stopAnimation(){animation?.cancel();animation=null;}
   function animateZoom(open){
@@ -176,14 +198,21 @@ export function mountDream(ctx, options={}) {
     for(const thought of thoughts.values()){
       const position=placeDreamThought({...bounds(),occupied});
       if(!position){if(thought.item!==selected&&!thought.element.contains(document.activeElement))retire(thought,true);continue;}
-      thought.position=position;occupied.push(position);
+      thought.position=position;
       Object.assign(thought.element.style,{left:position.x+'px',top:position.y+'px',width:position.w+'px'});
+      thought.age=0;startMotion(thought,occupied);occupied.push(thought.area);
     }
     if(!thoughts.size&&found.length)emitThought(true);
   };
   const searchChange=()=>{query=search.value.trim().toLocaleLowerCase();found=matches();emitter=createDreamEmitter(found);draw();playback.reset();};
-  const pointerOver=event=>{if(event.pointerType!=='touch'&&event.target.closest('[data-cloud]')){hovered=true;setPaused();}};
-  const pointerOut=event=>{if(event.target.closest('[data-cloud]')&&!event.relatedTarget?.closest?.('[data-cloud]')){hovered=false;setPaused();}};
+  const pointerOver=event=>{
+    const cloud=event.target.closest('[data-cloud]'),thought=thoughts.get(cloud?.dataset.cloud);
+    if(event.pointerType!=='touch'&&thought){thought.hovered=true;setPaused();}
+  };
+  const pointerOut=event=>{
+    const cloud=event.target.closest('[data-cloud]'),thought=thoughts.get(cloud?.dataset.cloud);
+    if(thought&&event.relatedTarget?.closest?.('[data-cloud]')!==cloud){thought.hovered=false;setPaused();}
+  };
   const focusChange=()=>queueMicrotask(setPaused);
   const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{offscreen=!entries[0]?.isIntersecting;setPaused();},{threshold:.02}):null;
   const sizeObserver=typeof ResizeObserver==='function'?new ResizeObserver(resize):null;
@@ -199,6 +228,7 @@ export function mountDream(ctx, options={}) {
   resize();draw();
   return ()=>{
     alive=false;clearTimeout(closeTimer);stopAnimation();playback.destroy();observer?.disconnect();sizeObserver?.disconnect();overlayObserver?.disconnect();fullscreen.destroy();
+    for(const thought of thoughts.values())thought.motion?.cancel();
     if(history.state?.__czbYuzhouDream===token){const next={...history.state};delete next.__czbYuzhouDream;history.replaceState(next,'',location.href);}
     if(dialog.open)dialog.close();
     surface.removeEventListener('click',click);search.removeEventListener('input',searchChange);dialog.removeEventListener('cancel',cancel);dialog.removeEventListener('close',unexpectedClose);

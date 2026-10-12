@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {createDreamEmitter,createDreamPlayback} from '../src/dream-flow.js';
 import {placeDreamThought} from '../src/dream-layout.js';
+import {createDreamMotion} from '../src/dream-motion.js';
 
 // Execute the actual mounted view with deterministic browser event/timer surfaces.
 // Fullscreen is a lifecycle stub; its browser behaviour has its own test suite.
@@ -11,7 +12,8 @@ const viewSource=fs.readFileSync(new URL('../src/dream.js',import.meta.url),'utf
   .replace(/^import .*;\r?$/gm,'').replace('export function mountDream','function mountDream');
 const capture=(id,text=id)=>({id,text,category:'备忘',tags:'合成',archived:false,createdAt:'2026-10-12T00:00:00Z'});
 const fixtures=()=>[capture('one','树叶与手写字'),capture('two','海风与旧照片'),capture('three','钟摆与时间'),...Array.from({length:12},(_,i)=>capture(`old-${i}`,`另一条旧念头 ${i}`))];
-const tick=async()=>{await Promise.resolve();await Promise.resolve();};
+const tick=async()=>{for(let i=0;i<8;i++)await Promise.resolve();};
+const fillScene=(h,count)=>{for(let attempt=0;attempt<20&&h.ids().length<count;attempt++)h.click('next');assert.equal(h.ids().length,count,'the roomy test scene reaches its capacity');};
 
 function clock(){
   let now=0,sequence=0;const jobs=new Map();
@@ -39,7 +41,7 @@ class Events {
   listenerCount(){return [...this.listeners.values()].reduce((n,set)=>n+set.size,0);}
 }
 function harness({items=fixtures(),reduced=false,width=1000,height=600}={}){
-  const time=clock(),observers=[],window=new Events(),document=new Events();
+  const time=clock(),observers=[],animations=[],window=new Events(),document=new Events();
   const media=new Events();media.matches=reduced;
   let fullscreenDestroyed=0,seed=3;
   class Element extends Events {
@@ -59,10 +61,23 @@ function harness({items=fixtures(),reduced=false,width=1000,height=600}={}){
     closest(selector){if(selector==='[data-cloud]')return this.dataset.cloud?this:this.parentElement?.closest(selector);if(selector==='[data-dream]')return this.dataset.dream?this:this.parentElement?.closest(selector);if(selector==='.dream-cloud-slot')return String(this.className).includes('dream-cloud-slot')?this:this.parentElement?.closest(selector);return null;}
     querySelector(selector){
       if(this===scene){const exact=selector.match(/^\[data-cloud="([^"]+)"\]$/);const clouds=this.children.flatMap(child=>child.children);return exact?clouds.find(node=>node.dataset.cloud===exact[1])||null:clouds[0]||null;}
+      if(selector==='[data-cloud]'&&this.children.some(node=>node.dataset.cloud))return this.children.find(node=>node.dataset.cloud);
       if(this===detail&&selector==='[data-dream="close"]')return detailClose;
       return selectors.get(selector)||null;
     }
-    getBoundingClientRect(){return {width:this.clientWidth,height:this.clientHeight,left:0,top:0};}
+    getBoundingClientRect(){
+      if(String(this.className).includes('dream-cloud-slot')){
+        const numeric=name=>parseFloat(this.style[name]??String(this.style.cssText||'').match(new RegExp(`(?:^|;)${name}:([^;]+)`))?.[1]);
+        const width=numeric('width'),left=numeric('left'),top=numeric('top');
+        return {width,height:width*176/300,left,top,right:left+width,bottom:top+width*176/300};
+      }
+      return {width:this.clientWidth,height:this.clientHeight,left:0,top:0};
+    }
+    animate(keyframes,options){
+      const animation={element:this,keyframes,options,playState:'running',cancelled:false,finished:Promise.resolve(),
+        pause(){this.playState='paused';},play(){this.playState='running';},cancel(){this.playState='idle';this.cancelled=true;}};
+      animations.push(animation);return animation;
+    }
     focus(){document.activeElement=this;surface.emit('focusin',{target:this});}
     showModal(){this.open=true;}
     close(){this.open=false;this.emit('close');}
@@ -92,15 +107,17 @@ function harness({items=fixtures(),reduced=false,width=1000,height=600}={}){
     IntersectionObserver:makeObserver('intersection'),ResizeObserver:makeObserver('resize'),MutationObserver:makeObserver('mutation'),
     createDreamEmitter:(input,options)=>createDreamEmitter(input,{random:math.random,...options}),
     placeDreamThought:options=>placeDreamThought({...options,random:math.random}),
+    createDreamMotion:options=>createDreamMotion({...options,random:math.random}),
     createDreamPlayback:options=>createDreamPlayback({...options,setTimer:time.setTimer,clearTimer:time.clearTimer}),
     mountSurfaceFullscreen:()=>({toggle(){},destroy(){fullscreenDestroyed++;}}),
   });
   vm.runInContext(`${viewSource}\nglobalThis.mountDream=mountDream;`,context);
   const destroy=context.mountDream({root,icon:()=>'',esc:value=>String(value).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;')},{items});
-  return {time,root,surface,scene,dialog,detail,search,media,document,window,body,modal,ai,history,buttons,observers,destroy,
+  return {time,root,surface,scene,dialog,detail,search,media,document,window,body,modal,ai,history,buttons,observers,animations,destroy,
     ids:()=>scene.children.map(slot=>slot.children[0]?.dataset.cloud),
     clouds:()=>scene.children.flatMap(slot=>slot.children),
     paused:()=>surface.classList.contains('dream-paused'),
+    motion:slot=>animations.filter(animation=>animation.element===slot&&!animation.cancelled).at(-1),
     click:action=>surface.emit('click',{target:buttons.get(action)}),
     focus:node=>{document.activeElement=node;surface.emit('focusout',{target:node});},
     overlayChange:()=>observers.find(item=>item.kind==='mutation').emit([]),
@@ -112,41 +129,72 @@ function harness({items=fixtures(),reduced=false,width=1000,height=600}={}){
 test('new thoughts emerge independently after a variable delay while existing DOM and positions remain intact',()=>{
   const h=harness(),original=h.scene.children.slice(),styles=original.map(node=>node.style.cssText);
   assert.equal(original.length,2);assert.equal(h.paused(),false);
-  h.time.advance(2999);assert.deepEqual(h.scene.children,original);
-  h.time.advance(3501);assert.ok(h.scene.children.length>2);assert.ok(original.every(node=>h.scene.children.includes(node)));
+  assert.ok(original.every(node=>h.motion(node)?.playState==='running'),'flow begins without a user gesture');
+  h.time.advance(1799);assert.deepEqual(h.scene.children,original);
+  h.time.advance(1401);assert.ok(h.scene.children.length>2);assert.ok(original.every(node=>h.scene.children.includes(node)));
   assert.deepEqual(original.map(node=>node.style.cssText),styles,'arrivals do not redraw or reposition existing thoughts');
   assert.equal(new Set(h.ids()).size,h.ids().length);assert.ok(h.ids().every(id=>fixtures().some(item=>item.id===id)));h.destroy();
 });
 
 test('manual pause freezes automatic arrivals and leaves the user able to request more inspiration',()=>{
   const h=harness();h.click('pause');const initial=h.ids();assert.equal(h.paused(),true);
+  assert.ok(h.scene.children.every(node=>h.motion(node)?.playState==='paused'));
   assert.equal(h.buttons.get('pause').getAttribute('aria-pressed'),'true');h.time.advance(60000);assert.deepEqual(h.ids(),initial);
   h.click('next');assert.ok(h.ids().length>initial.length);assert.equal(h.paused(),true);const requested=h.ids();
   h.time.advance(60000);assert.deepEqual(h.ids(),requested);
-  h.click('pause');assert.equal(h.paused(),false);assert.equal(h.time.pending(),1);h.destroy();
+  h.click('pause');assert.equal(h.paused(),false);assert.equal(h.time.pending(),1);
+  assert.ok(h.scene.children.every(node=>h.motion(node)?.playState==='running'));h.destroy();
 });
 
-test('hover and keyboard reading suspend arrivals and lifetimes until reading ends',async()=>{
-  const h=harness(),original=h.ids(),cloud=h.clouds()[0];
-  h.time.advance(2000);h.scene.emit('pointerover',{target:cloud,pointerType:'mouse'});assert.equal(h.paused(),true);
-  h.time.advance(30000);assert.deepEqual(h.ids(),original);assert.ok(h.scene.children.every(node=>!node.classList.contains('dream-leaving')));
-  h.scene.emit('pointerout',{target:cloud,relatedTarget:h.body});assert.equal(h.paused(),false);
-  h.time.advance(2999);assert.deepEqual(h.ids(),original);
-  h.focus(cloud);await tick();assert.equal(h.paused(),true);h.time.advance(30000);assert.deepEqual(h.ids(),original);
-  h.focus(h.search);await tick();assert.equal(h.paused(),true);h.time.advance(30000);assert.deepEqual(h.ids(),original);
-  h.focus(h.body);await tick();assert.equal(h.paused(),false);h.time.advance(6500);assert.ok(h.ids().length>original.length);h.destroy();
+test('hover holds only the chosen thought while other thoughts keep moving and arriving',()=>{
+  const h=harness(),[held,other]=h.scene.children,cloud=held.children[0];
+  h.scene.emit('pointerover',{target:cloud,pointerType:'mouse'});
+  assert.equal(h.paused(),false);assert.equal(h.motion(held).playState,'paused');assert.equal(h.motion(other).playState,'running');
+  h.time.advance(6400);assert.ok(h.ids().length>2,'hover must not stop automatic arrivals');
+  h.time.advance(60000);assert.ok(h.scene.children.includes(held));assert.ok(!held.classList.contains('dream-leaving'),'held thought does not expire during reading');
+  assert.ok(other.classList.contains('dream-leaving'),'other thoughts still complete their own lifetime');
+  h.scene.emit('pointerout',{target:cloud,relatedTarget:h.body});assert.equal(h.motion(held).playState,'running');
+  h.time.advance(60000);assert.ok(held.classList.contains('dream-leaving'),'released thought resumes aging');h.destroy();
 });
 
-test('opened thoughts stay present until details close and their returned focus leaves the thought',async()=>{
-  const h=harness(),original=h.ids();h.surface.emit('click',{target:h.clouds()[0]});await tick();
+test('keyboard focus holds its own thought and search focus leaves the entire stream running',async()=>{
+  const h=harness(),[held,other]=h.scene.children,cloud=held.children[0];
+  h.focus(cloud);await tick();assert.equal(h.paused(),false);assert.equal(h.motion(held).playState,'paused');assert.equal(h.motion(other).playState,'running');
+  h.time.advance(6400);assert.ok(h.ids().length>2);
+  h.focus(h.search);await tick();assert.equal(h.paused(),false);assert.equal(h.motion(held).playState,'running');
+  assert.ok(h.scene.children.every(node=>h.motion(node)?.playState==='running'));
+  assert.equal(h.time.pending(),1);h.destroy();
+});
+
+test('leaving a hovered thought does not resume it while keyboard focus still holds it',async()=>{
+  const h=harness(),held=h.scene.children[0],cloud=held.children[0];
+  h.scene.emit('pointerover',{target:cloud,pointerType:'mouse'});h.focus(cloud);await tick();
+  h.scene.emit('pointerout',{target:cloud,relatedTarget:h.body});assert.equal(h.motion(held).playState,'paused');
+  h.focus(h.body);await tick();assert.equal(h.motion(held).playState,'running');h.destroy();
+});
+
+test('moving between thoughts transfers the hover hold and touch pointers do not leave a stuck hold',()=>{
+  const h=harness(),[first,second]=h.scene.children,a=first.children[0],b=second.children[0];
+  h.scene.emit('pointerover',{target:a,pointerType:'mouse'});assert.equal(h.motion(first).playState,'paused');
+  h.scene.emit('pointerout',{target:a,relatedTarget:b});h.scene.emit('pointerover',{target:b,pointerType:'mouse'});
+  assert.equal(h.motion(first).playState,'running');assert.equal(h.motion(second).playState,'paused');assert.equal(h.paused(),false);
+  h.scene.emit('pointerout',{target:b,relatedTarget:h.body});h.scene.emit('pointerover',{target:a,pointerType:'touch'});
+  assert.ok(h.scene.children.every(node=>h.motion(node)?.playState==='running'));h.destroy();
+});
+
+test('closing details keeps the returned focus safe without freezing the rest of the dream',async()=>{
+  const h=harness(),original=h.ids(),[held,other]=h.scene.children;h.surface.emit('click',{target:held.children[0]});await tick();
   assert.equal(h.dialog.open,true);assert.equal(h.paused(),true);h.time.advance(60000);assert.deepEqual(h.ids(),original);
-  h.click('close');await tick();assert.equal(h.dialog.open,false);assert.equal(h.paused(),true,'focus returns to the captured cloud');
-  h.focus(h.body);await tick();assert.equal(h.paused(),false);h.time.advance(6500);assert.ok(h.ids().length>original.length);h.destroy();
+  assert.ok(h.scene.children.every(node=>h.motion(node)?.playState==='paused'));
+  h.click('close');await tick();assert.equal(h.dialog.open,false);assert.equal(h.paused(),false);
+  assert.equal(h.document.activeElement,held.children[0]);assert.equal(h.motion(held).playState,'paused');assert.equal(h.motion(other).playState,'running');
+  h.time.advance(6400);assert.ok(h.ids().length>original.length);
+  h.focus(h.body);await tick();assert.equal(h.motion(held).playState,'running');h.destroy();
 });
 
 test('global editor and AI overlays, hidden pages and offscreen surfaces pause both lifecycle and visual state',()=>{
   for(const reason of ['modal','ai','hidden','offscreen']){
-    const h=harness(),original=h.ids();h.time.advance(2000);
+    const h=harness(),original=h.ids();h.time.advance(900);
     const change=value=>{
       if(reason==='modal'){h.modal.open=value;h.overlayChange();}
       if(reason==='ai'){h.ai.hidden=!value;h.overlayChange();}
@@ -154,17 +202,21 @@ test('global editor and AI overlays, hidden pages and offscreen surfaces pause b
       if(reason==='offscreen')h.offscreen(value);
     };
     change(true);assert.equal(h.paused(),true,reason);h.time.advance(120000);assert.deepEqual(h.ids(),original,reason);
+    assert.ok(h.scene.children.every(node=>h.motion(node)?.playState==='paused'),reason);
     assert.ok(h.scene.children.every(node=>!node.classList.contains('dream-leaving')));assert.equal(h.time.pending(),0);
-    change(false);assert.equal(h.paused(),false,reason);h.time.advance(2999);assert.deepEqual(h.ids(),original);
-    h.time.advance(3501);assert.ok(h.ids().length>original.length);h.destroy();
+    change(false);assert.equal(h.paused(),false,reason);assert.ok(h.scene.children.every(node=>h.motion(node)?.playState==='running'),reason);
+    h.time.advance(1799);assert.deepEqual(h.ids(),original);
+    h.time.advance(1401);assert.ok(h.ids().length>original.length);h.destroy();
   }
 });
 
 test('reduced motion stays static, permits requested arrivals and resumes scheduling when preference changes',()=>{
   const h=harness({reduced:true}),original=h.ids();assert.equal(h.paused(),true);assert.equal(h.buttons.get('pause').disabled,true);
+  assert.ok(h.scene.children.every(node=>h.motion(node)?.playState!=='running'));
   h.time.advance(60000);assert.deepEqual(h.ids(),original);h.click('next');assert.ok(h.ids().length>original.length);const requested=h.ids();
   h.time.advance(60000);assert.deepEqual(h.ids(),requested);
   h.media.matches=false;h.media.emit('change');assert.equal(h.paused(),false);assert.equal(h.buttons.get('pause').disabled,false);
+  assert.ok(h.scene.children.every(node=>h.motion(node)?.playState==='running'));
   assert.equal(h.time.pending(),1);h.destroy();
 });
 
@@ -181,9 +233,12 @@ test('switching to reduced motion removes already-departing thoughts without rel
 
 test('search rebuilds empty and single-record surfaces without timers or editing source records',async()=>{
   const items=fixtures(),before=structuredClone(items),h=harness({items});
+  const priorMotions=h.scene.children.map(node=>h.motion(node));
   h.search.value='not-present';h.search.emit('input');assert.deepEqual(h.ids(),[]);assert.equal(h.buttons.get('next').disabled,true);
+  assert.ok(priorMotions.every(motion=>motion.cancelled),'filter replacement cleans up the previous animated nodes');
   h.time.advance(60000);assert.equal(h.time.pending(),0);
   h.search.value='海风';h.search.emit('input');assert.deepEqual(h.ids(),['two']);assert.equal(h.buttons.get('next').disabled,true);
+  assert.equal(h.motion(h.scene.children[0]).playState,'running','one matching record still flows');
   h.time.advance(60000);assert.deepEqual(h.ids(),['two']);assert.equal(h.time.pending(),0);
   h.search.value='';h.search.emit('input');h.focus(h.body);await tick();assert.equal(h.buttons.get('next').disabled,false);assert.equal(h.ids().length,2);
   h.time.advance(6500);assert.ok(h.ids().length>2);assert.deepEqual(items,before);h.destroy();
@@ -195,6 +250,7 @@ test('each thought retires on its own departure animation and frees space withou
   const retained=h.scene.children.filter(node=>node!==retiring),departedId=retiring.children[0].dataset.cloud;
   h.scene.emit('animationend',{target:retiring,animationName:'unrelated'});assert.ok(h.scene.children.includes(retiring));
   h.scene.emit('animationend',{target:retiring,animationName:'dream-depart'});assert.ok(!h.scene.children.includes(retiring));
+  assert.equal(h.motion(retiring),undefined,'completed departures cancel their position animation');
   assert.ok(!h.ids().includes(departedId));assert.ok(retained.every(node=>h.scene.children.includes(node)));
   const count=h.ids().length;h.click('next');assert.ok(h.ids().length>=count);assert.equal(new Set(h.ids()).size,h.ids().length);h.destroy();
 });
@@ -216,20 +272,49 @@ test('a genuinely single-record pool stays visible without automatic departure i
   const h=harness({items:[capture('only')],width:339,height:270}),only=h.scene.children[0];
   assert.deepEqual(h.ids(),['only']);assert.equal(h.time.pending(),0);
   h.time.advance(600000);assert.equal(h.scene.children[0],only);assert.ok(!only.classList.contains('dream-leaving'));
+  assert.equal(h.motion(only).playState,'running');assert.equal(h.motion(only).options.iterations,Infinity,'a lone thought keeps flowing beyond one journey');
   assert.equal(h.buttons.get('next').disabled,true);assert.equal(h.time.pending(),0);h.destroy();
 });
 
 test('requesting inspiration in a full scene removes only the oldest visible thought and keeps other nodes',()=>{
-  const h=harness();while(h.ids().length<5)h.click('next');const before=h.scene.children.slice();
+  const h=harness({width:1600,height:900});fillScene(h,5);const before=h.scene.children.slice();
   h.click('next');assert.equal(h.ids().length,5);assert.equal(before.filter(node=>h.scene.children.includes(node)).length,4);
   assert.equal(new Set(h.ids()).size,5);h.destroy();
 });
 
+test('requesting more inspiration in a full scene preserves the thought held for reading',async()=>{
+  const h=harness({width:1600,height:900});fillScene(h,5);const held=h.scene.children[0];
+  h.focus(held.children[0]);await tick();const original=h.scene.children.slice();h.click('next');
+  assert.equal(h.ids().length,5);assert.ok(h.scene.children.includes(held));assert.equal(h.motion(held).playState,'paused');
+  assert.equal(original.filter(node=>h.scene.children.includes(node)).length,4);assert.equal(h.paused(),false);h.destroy();
+});
+
+test('mounted thought paths keep readable cloud rectangles apart even at different animation phases',()=>{
+  const h=harness({width:1600,height:900});fillScene(h,5);
+  const checkSeparated=()=>{
+    const paths=h.scene.children.map(slot=>{
+      const base=slot.getBoundingClientRect(),motion=h.motion(slot);assert.ok(motion,'every visible thought has a flow path');
+      return motion.keyframes.map(frame=>{
+        const [,dx,dy]=frame.transform.match(/^translate\(([-\d.e+]+)px, ([-\d.e+]+)px\)$/);
+        return {x:base.left+Number(dx),y:base.top+Number(dy),w:base.width,h:base.height};
+      });
+    });
+    for(let i=0;i<paths.length;i++)for(let j=i+1;j<paths.length;j++)for(const a of paths[i])for(const b of paths[j]){
+      assert.ok(a.x+a.w<=b.x||b.x+b.w<=a.x||a.y+a.h<=b.y||b.y+b.h<=a.y,'separate thoughts must not cross through each other');
+    }
+  };
+  checkSeparated();h.time.advance(6400);checkSeparated();
+  h.surface.clientWidth=1000;h.scene.clientWidth=1000;h.scene.clientHeight=600;h.window.emit('resize');checkSeparated();h.destroy();
+});
+
 test('resize changes view positions without modifying the captured content',()=>{
   const items=fixtures(),before=structuredClone(items),h=harness({items}),initial=h.scene.children.slice();
+  const originalMotions=initial.map(node=>h.motion(node));
   h.surface.clientWidth=500;h.scene.clientWidth=500;h.scene.clientHeight=700;h.window.emit('resize');
   assert.equal(h.surface.classList.contains('dream-compact'),true);assert.ok(h.scene.children.length>0);
   assert.ok(h.scene.children.every(node=>initial.includes(node)));assert.deepEqual(items,before);
+  assert.ok(originalMotions.every(motion=>motion.cancelled),'motion paths for the former bounds are released');
+  assert.ok(h.scene.children.every(node=>h.motion(node)?.playState==='running'));
   assert.ok(h.scene.children.every(node=>typeof node.style.left==='string'));
   const positions=h.scene.children.map(node=>[node.style.left,node.style.top,node.style.width]);
   h.observers.find(observer=>observer.kind==='resize').emit([]);
@@ -249,11 +334,12 @@ test('temporarily unmeasurable or too-small surfaces keep paused thoughts until 
 });
 
 test('resizing a paused full scene down to a valid single slot keeps at least one thought without restarting time',()=>{
-  const h=harness();while(h.ids().length<5)h.click('next');h.click('pause');
+  const h=harness({width:1600,height:900});fillScene(h,5);h.click('pause');
   for(const [width,height] of [[339,270],[248,215],[1000,600]]){
     h.surface.clientWidth=width;h.scene.clientWidth=width;h.scene.clientHeight=height;h.window.emit('resize');
     assert.ok(h.ids().length>=1,'a valid view must retain or replace at least one existing thought');
     assert.equal(h.paused(),true);assert.equal(h.time.pending(),0);
+    assert.ok(h.scene.children.every(node=>h.motion(node)?.playState==='paused'),'replacement paths respect the existing pause state');
   }
   const shown=h.ids();h.time.advance(60000);assert.deepEqual(h.ids(),shown);assert.equal(h.time.pending(),0);h.destroy();
 });
@@ -271,5 +357,6 @@ test('unmount clears timers, observer subscriptions, listeners and pending detai
   assert.ok(h.observers.every(item=>item.disconnected));assert.equal(h.fullscreenDestroyed(),1);
   for(const target of [h.surface,h.scene,h.dialog,h.search,h.document,h.window,h.media])assert.equal(target.listenerCount(),0,target.name||'external');
   assert.equal(h.history.state.__czbYuzhouDream,undefined);const ids=h.ids();
+  assert.ok(h.animations.every(animation=>animation.cancelled),'no detached movement or detail animation survives unmount');
   h.time.advance(120000);h.document.emit('visibilitychange');h.media.emit('change');assert.deepEqual(h.ids(),ids);assert.equal(h.time.pending(),0);
 });
