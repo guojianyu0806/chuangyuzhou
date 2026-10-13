@@ -17,6 +17,8 @@ import {initializeSpaces,routeContent,undoRoute,openDestination} from './workspa
 import {bootstrapCloud,mountModelSettings} from './cloud.js';
 import {WORKBENCH_MODULES,createWorkbench,getVisibleModules,getWorkbench,configureWorkbench} from './workbench-model.js';
 import {mountBuilder} from './builder.js';
+import {mountWelcome} from './welcome.js';
+import {createWelcomeEntryRoute} from './welcome-route.js';
 import {companionButton,openCompanion} from './companion.js';
 import {createSidebarNavigation} from './sidebar-navigation.js';
 import {mountSidebarResize} from './sidebar-resize.js';
@@ -36,10 +38,11 @@ const mode='personal';
 let route='home',subroute='',filter='all',captureQuery='';
 let cleanupView=null;
 let sidebarResize=null;
+const resolveEntryHash=createWelcomeEntryRoute();
 let lastStored=localStorage.getItem(key(mode));
 const nav=[['home','orbit','我的工作台'],['builder','layers','搭建台'],...WORKBENCH_MODULES.map(item=>[item.id,item.icon,item.title])];
 const visibleNavigation=()=>[...nav.slice(0,2),...getVisibleModules(state).map(item=>[item.id,item.icon,item.title])];
-const navigationLabel=id=>id==='home'?getWorkbench(state).title:visibleNavigation().find(item=>item[0]===id)?.[2]||nav.find(item=>item[0]===id)?.[2]||'偏好与连接';
+const navigationLabel=id=>id==='welcome'?'工作区入口':id==='home'?getWorkbench(state).title:visibleNavigation().find(item=>item[0]===id)?.[2]||nav.find(item=>item[0]===id)?.[2]||'偏好与连接';
 function seed(){
   return {schema:1,mode,workbench:createWorkbench('blank'),profile:{name:'我',major:'',provider:'deepseek'},courses:[],english:seedEnglish(false),tasks:[],captures:[],updatedAt:new Date().toISOString()};
 }
@@ -199,7 +202,7 @@ function shell(){
   document.body.classList.add('space-shell');
   document.querySelector('#app').innerHTML=`
   <button class="rail-scrim" data-action="close-nav" aria-label="关闭导航" hidden></button>
-  <aside class="sidebar ${state.ui.sidebarPinned?'rail-pinned':''}" aria-label="空间导航"><a href="#/home" class="brand" aria-label="宇宙空间主页"><img src="./icon.svg" alt="" width="39" height="39"><span>宇宙<small>传智杯独立副本</small></span></a>
+  <aside class="sidebar ${state.ui.sidebarPinned?'rail-pinned':''}" aria-label="空间导航"><a href="#/welcome" class="brand" aria-label="返回宇宙工作区入口"><img src="./icon.svg" alt="" width="39" height="39"><span>宇宙<small>传智杯独立副本</small></span></a>
   <button class="rail-pin" data-action="pin-nav" aria-label="${state.ui.sidebarPinned?'收起侧边栏':'展开侧边栏'}" aria-pressed="${!!state.ui.sidebarPinned}">${icon('pin',17)}<span>${state.ui.sidebarPinned?'收起侧边栏':'展开侧边栏'}</span></button>
   <div class="workspace-switch"><span class="workspace-avatar">我</span><span><strong data-workbench-title>${esc(getWorkbench(state).title)}</strong><small>按你的方式搭建</small></span></div>
   <div class="rail-scroll"><div class="rail-navigation"></div></div>
@@ -435,14 +438,16 @@ function render(){
   if(!ctx.root)return;
   sidebarResize?.sync();
   cleanupView?.();cleanupView=null;
+  const entryHash=resolveEntryHash(location.hash);
+  if(entryHash!==location.hash)history.replaceState(history.state,'',entryHash);
   const [page,id]=location.hash.replace(/^#\/?/,'').split('/');
-  route=nav.some(n=>n[0]===page)||['settings','space','block'].includes(page)?page:'home';
+  route=nav.some(n=>n[0]===page)||['welcome','settings','space','block'].includes(page)?page:'home';
   try{subroute=id?decodeURIComponent(id):'';}catch{subroute='';}
   ctx.root.onclick=null;ctx.root.onchange=null;ctx.root.oninput=null;ctx.root.ondragover=null;ctx.root.ondragleave=null;ctx.root.ondrop=null;
   if(route==='home'&&!getWorkbench(state).onboardingComplete){route='builder';history.replaceState(null,'','#/builder');}
   const label=route==='space'?(state.spaces.find(s=>s.id===subroute)?.title||'工作区'):route==='block'?(getCustomBlocks(state).items.find(block=>block.id===subroute)?.title||'自定义方块'):navigationLabel(route);
   document.title=label+' · 宇宙 · 传智杯独立副本';document.querySelector('#current-page').textContent=label;
-  document.body.classList.toggle('on-canvas',route==='home');document.body.classList.toggle('on-ai',route==='ai');
+  document.body.classList.toggle('on-canvas',route==='home');document.body.classList.toggle('on-ai',route==='ai');document.body.classList.toggle('on-welcome',route==='welcome');
   document.querySelectorAll('[data-nav]').forEach(a=>{a.classList.toggle('active',a.dataset.nav===route);if(a.dataset.nav===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   ctx.state=state;const view=makeContext();ctx.save=view.save;
   updateModuleNavigation();
@@ -454,6 +459,7 @@ function render(){
     };
     cloudEditing=false;cloudDirtyFields.clear();if(cloudClient)updateCloudShell();return;
   }
+  if(route==='welcome')cleanupView=mountWelcome(view);
   if(route==='builder')cleanupView=mountBuilder(view);
   if(route==='home'){ensureCanvas(state);cleanupView=mountCanvas({...view,fitOnMount:subroute==='layout'});if(subroute==='layout')history.replaceState(null,'','#/home');}
   if(route==='ai')cleanupView=mountAI(view,state.spaces.some(s=>s.id===subroute)?`space:${subroute}`:subroute);
@@ -466,7 +472,7 @@ function render(){
   if(route==='timetable')cleanupView=mountTimetable(view);
   if(route==='competitions')cleanupView=mountCompetitions(view,subroute);
   if(route==='tasks')renderTasks();if(route==='inbox')renderInbox();if(route==='review')renderReview();if(route==='settings')renderSettings();
-  if(!['home','builder'].includes(route)&&!matchMedia('(prefers-reduced-motion: reduce)').matches)ctx.root.animate([{opacity:0,transform:'translateY(15px) scale(.985)'},{opacity:1,transform:'none'}],{duration:350,easing:'cubic-bezier(.22,1,.36,1)'});
+  if(!['welcome','home','builder'].includes(route)&&!matchMedia('(prefers-reduced-motion: reduce)').matches)ctx.root.animate([{opacity:0,transform:'translateY(15px) scale(.985)'},{opacity:1,transform:'none'}],{duration:350,easing:'cubic-bezier(.22,1,.36,1)'});
   cloudEditing=false;cloudDirtyFields.clear();
   if(cloudClient)updateCloudShell();
 }
