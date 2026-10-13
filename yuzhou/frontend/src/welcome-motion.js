@@ -14,7 +14,7 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
     const motion = node.querySelector('.welcome-float-motion');
     const rawDepth = Number(node.dataset.depth);
     const rawPhase = Number(node.dataset.phase);
-    return {node, motion, depth: clamp(Number.isFinite(rawDepth) ? rawDepth : 1, .6, 1.4),
+    return {node, motion, isCenter: Object.hasOwn(node.dataset, 'welcomeCenter'), depth: clamp(Number.isFinite(rawDepth) ? rawDepth : 1, .6, 1.4),
       phase: Number.isFinite(rawPhase) ? rawPhase : index, center: {x: 0, y: 0},
       current: zero(), velocity: zero(), target: zero(), hovered: false, focused: false, pressed: new Set(),
       previousHeld: node.classList.contains('welcome-card-held'), previousTransform: motion?.style.transform || ''};
@@ -23,7 +23,7 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
     text: label?.textContent, pressed: button?.getAttribute('aria-pressed'),
     ariaLabel: button?.getAttribute('aria-label'), disabled: button?.disabled};
   let disposed = false, manualPaused = false, visible = true, pointer = null;
-  let scene = null, frame = null, lastTime = null;
+  let scene = null, frame = null, lastTime = null, layoutPositions = null;
   const paused = () => manualPaused || !!reduced?.matches || !!doc.hidden || !visible;
   const held = card => card.hovered || card.focused || card.pressed.size > 0;
   function syncHeld(card) {
@@ -73,9 +73,9 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
     const ny = active ? clamp((pointer.y - scene.top) / scene.height * 2 - 1, -1, 1) : 0;
     for (const card of cards) {
       if (held(card)) continue;
-      const amplitude = 18 + (card.depth - .6) / .8 * 17;
+      const amplitude = card.isCenter ? 4 : 18 + (card.depth - .6) / .8 * 17;
       let pushX = 0, pushY = 0;
-      if (active) {
+      if (active && !card.isCenter) {
         const dx = card.center.x - pointer.x, dy = card.center.y - pointer.y;
         const distance = Math.hypot(dx, dy);
         if (distance < 180) {
@@ -86,16 +86,20 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
         }
       }
       card.target = {x: nx * amplitude + pushX, y: ny * amplitude + pushY,
-        rx: clamp(-ny * card.depth * 2.15, -3, 3), ry: clamp(nx * card.depth * 2.15, -3, 3)};
+        rx: clamp(-ny * card.depth * (card.isCenter ? .5 : 2.15), -3, 3), ry: clamp(nx * card.depth * (card.isCenter ? .5 : 2.15), -3, 3)};
     }
     schedule();
   }
   function measure() {
     if (disposed) return;
     scene = stage.getBoundingClientRect();
-    for (const card of cards) {
-      const rect = card.node.getBoundingClientRect();
-      card.center = {x: rect.left + rect.width / 2, y: rect.top + rect.height / 2};
+    for (const [index, card] of cards.entries()) {
+      const position = layoutPositions?.[index];
+      if (position) card.center = {x: scene.left + position.x + position.w / 2, y: scene.top + position.y + position.h / 2};
+      else {
+        const rect = card.node.getBoundingClientRect();
+        card.center = {x: rect.left + rect.width / 2, y: rect.top + rect.height / 2};
+      }
     }
     targets();
   }
@@ -196,7 +200,7 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
   doc.addEventListener('visibilitychange', syncPause);
   reduced?.addEventListener?.('change', syncPause);
   measure(); syncPause();
-  return () => {
+  const dispose = () => {
     if (disposed) return;
     disposed = true; stop();
     resizeObserver?.disconnect(); intersection?.disconnect();
@@ -226,4 +230,17 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
       }
     }
   };
+  // Layout interpolation supplies plain geometry, avoiding layout reads on
+  // every frame while keeping pointer response centered on moving cards.
+  dispose.setLayoutPositions = positions => {
+    if (disposed || !Array.isArray(positions)) return;
+    layoutPositions = positions;
+    if (!scene) return;
+    for (const [index, card] of cards.entries()) {
+      const position = positions[index];
+      if (position) card.center = {x: scene.left + position.x + position.w / 2, y: scene.top + position.y + position.h / 2};
+    }
+    targets();
+  };
+  return dispose;
 }

@@ -30,11 +30,12 @@ function fixture(t, {positions = [[100, 100, .6], [200, 100, 1.4]], reducedMotio
   const win = new Surface(), doc = new Surface(), reduced = new Surface();
   stage.rect = {left: 0, top: 0, width: 1000, height: 600};
   button.querySelector = () => label; label.textContent = '暂停浮动';
-  const cards = positions.map(([x, y, depth], index) => {
+  const cards = positions.map(([x, y, depth, isCenter], index) => {
     const node = new Surface(), motion = new Surface();
     motion.parentNode = node;
     node.rect = {left: x - 50, top: y - 40, width: 100, height: 80};
     node.dataset = {depth: String(depth), phase: String(index + 1)};
+    if (isCenter) node.dataset.welcomeCenter = '';
     node.style.transform = 'translate(-50%, -50%)';
     node.querySelector = selector => selector === '.welcome-float-motion' ? motion : null;
     return {node, motion};
@@ -266,4 +267,32 @@ test('held cards remain protected across pause and reduced-motion changes and cl
     assert.equal(item.node.listenerCount(), 0);
   }
   card.node.fire('focusin'); assert.equal(card.node.classList.contains('welcome-card-held'), false);
+});
+
+
+test('interpolated geometry updates pointer origins without per-frame DOM reads', t => {
+  const f = fixture(t, {positions:[[100,100,1]]});
+  const reads = [f.stage.reads, f.cards[0].node.reads];
+  f.cleanup.setLayoutPositions([{x:500,y:260,w:100,h:80}]);
+  f.root.fire('pointermove', {clientX:500,clientY:300}); f.settle();
+  assert.ok(f.values(0)[0] > 0, 'the pointer pushes from the supplied card center at x=550');
+  assert.deepEqual([f.stage.reads, f.cards[0].node.reads], reads);
+  f.cleanup.setLayoutPositions([{x:850,y:260,w:100,h:80}]); f.settle();
+  assert.deepEqual(f.values(0), [0,0,0,0], 'the old hit position must not keep repelling');
+  f.cleanup(); const transform = f.cards[0].motion.style.transform;
+  f.cleanup.setLayoutPositions([{x:450,y:260,w:100,h:80}]);
+  assert.equal(f.cards[0].motion.style.transform, transform);
+});
+
+test('central entrance moves softly without pointer repulsion and holds still for its CTA', t => {
+  const f = fixture(t, {positions:[[550,300,.6,true],[550,300,.6,false]]});
+  f.root.fire('pointermove', {clientX:500,clientY:300}); f.settle();
+  assert.deepEqual(f.values(0), [0,0,0,0]);
+  assert.ok(f.values(1)[0] > 0);
+  f.root.fire('pointermove', {clientX:1000,clientY:600}); f.settle();
+  assert.deepEqual(f.values(0), [4,4,-.3,.3]);
+  f.cards[0].node.fire('pointerover');
+  const before=f.values(0);
+  f.root.fire('pointermove', {clientX:0,clientY:0}); f.settle();
+  assert.deepEqual(f.values(0), before);
 });
