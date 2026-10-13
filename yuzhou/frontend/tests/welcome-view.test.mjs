@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
 import {mountWelcome,selectWelcomeCards,welcomeHTML} from '../src/welcome.js';
 import {getWelcomeModel} from '../src/welcome-model.js';
 import {createWorkbench,configureWorkbench} from '../src/workbench-model.js';
@@ -27,13 +29,16 @@ test('welcome uses the current workspace and escapes every displayed user-suppli
   assert.deepEqual(state,before);
 });
 
-test('entrance shows at most ten representative cards, including a space and a custom block when available',()=>{
+test('entrance shows at most twenty real cards, prioritizing all modules and representing spaces and custom blocks',()=>{
   const state=withBlock(workspace());
-  for(let index=0;index<8;index++)state.spaces.push({id:`more-${index}`,title:`空间${index}`});
+  for(let index=0;index<30;index++)state.spaces.push({id:`more-${index}`,title:`空间${index}`});
   const cards=getWelcomeModel(state).cards,before=structuredClone(cards),selected=selectWelcomeCards(freeze(cards));
-  assert.equal(selected.length,10);assert.equal(new Set(selected.map(card=>card.id)).size,10);
+  assert.equal(selected.length,20);assert.equal(new Set(selected.map(card=>card.id)).size,20);
+  assert.deepEqual(selected.slice(0,10).map(card=>card.id),state.workbench.modules.map(module=>module.id));
   assert.ok(selected.some(card=>card.kind==='space'));assert.ok(selected.some(card=>card.kind==='block'));
-  assert.equal((welcomeHTML(state).match(/class="welcome-float welcome-slot-\d+"/g)||[]).length,10);
+  assert.equal((welcomeHTML(state).match(/class="welcome-float welcome-slot-\d+"/g)||[]).length,20);
+  assert.deepEqual(selectWelcomeCards([cards[0],...cards,cards[1]]).map(card=>card.id),selected.map(card=>card.id));
+  assert.ok(selected.every(card=>cards.includes(card)));
   assert.deepEqual(cards,before);
 });
 
@@ -42,7 +47,7 @@ test('bounded large catalogues still provide a custom-block representative and a
   const html=welcomeHTML(freeze(state));
   assert.ok(html.includes('自己的小工具'));
   assert.match(html,/10 个模块<span>·<\/span>150 个空间<span>·<\/span>1 个自定义方块/);
-  assert.equal((html.match(/class="welcome-float welcome-slot-\d+"/g)||[]).length,10);
+  assert.equal((html.match(/class="welcome-float welcome-slot-\d+"/g)||[]).length,20);
 });
 
 test('small or empty card catalogues do not invent duplicate modules or decorative records',()=>{
@@ -54,11 +59,17 @@ test('small or empty card catalogues do not invent duplicate modules or decorati
   assert.doesNotMatch(html,/welcome-kind-space|welcome-kind-block/);
 });
 
-test('rendered previews are decorative, use only local imagery, and preserve the central entry and pause controls',()=>{
+test('cards are labelled native buttons with no hidden ancestor or DOM-supplied routes and use only local imagery',()=>{
   const state=withBlock(workspace());
   state.spaces[0].description='https://external.example/private-image.png';
   const html=welcomeHTML(freeze(state));
-  assert.match(html,/<div class="welcome-constellation" aria-hidden="true">/);
+  assert.match(html,/<div class="welcome-constellation">/);
+  const buttons=[...html.matchAll(/<button\b[^>]*data-welcome-card="[^"]+"[^>]*>/g)].map(match=>match[0]);
+  assert.equal(buttons.length,12);
+  for(const button of buttons){
+    assert.match(button,/type="button"/);assert.match(button,/title="进入[^\"]+"/);assert.match(button,/aria-label="进入[^\"]+"/);
+    assert.doesNotMatch(button,/aria-hidden|tabindex="-1"|disabled|data-(?:go|route|subroute)=/);
+  }
   assert.deepEqual([...html.matchAll(/<(?:img|iframe|script)[^>]*\bsrc="([^"]+)"/g)].map(match=>match[1]),['./icon.svg']);
   assert.doesNotMatch(html,/https:\/\/external\.example|must never execute/);
   assert.match(html,/<button type="button" class="welcome-enter" data-welcome-action="enter">/);
@@ -82,7 +93,7 @@ class Surface {
   getBoundingClientRect(){return {left:0,top:0,width:1200,height:800};}
 }
 
-function mounted(t){
+function mounted(t,{state:providedState,freezeState=true,go}={}){
   const old=new Map(['window','document','fetch'].map(name=>[name,Object.getOwnPropertyDescriptor(globalThis,name)]));
   const win=new Surface(),doc=new Surface(),media=new Surface(),observers=[],frames=new Map(),calls=[];
   doc.hidden=false;media.matches=false;win.matchMedia=()=>media;
@@ -104,10 +115,12 @@ function mounted(t){
   }
   root.contains=button=>button.inside===true;
   let current=true;
-  const state=freeze(withBlock(workspace())),before=structuredClone(state);
-  const cleanup=mountWelcome({root,state,go:route=>calls.push(['go',route]),isCurrent:()=>current,save:()=>calls.push('save'),requestAI:()=>calls.push('AI'),executeActions:()=>calls.push('execute')});
+  const state=providedState||withBlock(workspace());if(freezeState)freeze(state);
+  const before=structuredClone(state);
+  const cleanup=mountWelcome({root,state,go:(...args)=>{calls.push(['go',...args]);go?.(...args);},isCurrent:()=>current,save:()=>calls.push('save'),requestAI:()=>calls.push('AI'),executeActions:()=>calls.push('execute')});
   t.after(()=>{cleanup();for(const [name,descriptor]of old){if(descriptor)Object.defineProperty(globalThis,name,descriptor);else delete globalThis[name];}});
-  return {root,scene,win,doc,media,frames,motion,pause,label,buttons,observers,calls,state,before,cleanup,setCurrent:value=>current=value,click:button=>root.fire('click',{target:button})};
+  const card=(id,extra={})=>({dataset:{welcomeCard:id,...extra},inside:true,closest(){return this;}});
+  return {root,scene,win,doc,media,frames,motion,pause,label,buttons,observers,calls,state,before,cleanup,card,setCurrent:value=>current=value,click:(button,properties={})=>root.fire('click',{target:button,...properties})};
 }
 
 test('mounted entry actions use existing routes without saving state, executing code or calling a model',t=>{
@@ -130,6 +143,50 @@ test('delegated routes ignore unrelated buttons, detached targets and stale view
   f.setCurrent(true);f.click(f.buttons.enter);assert.deepEqual(f.calls,[['go','home']]);
 });
 
+test('native card activation routes modules, spaces and blocks using current catalogue identities only',t=>{
+  const f=mounted(t);
+  // Native Enter/Space activation dispatches a click with detail=0. There is no
+  // custom keydown handler to trigger a second navigation.
+  f.click(f.card('courses',{route:'settings',subroute:'forged'}),{detail:0});
+  f.click(f.card('my-project',{route:'https://external.example',subroute:'forged'}),{detail:0});
+  f.click(f.card('block:own-tool'),{detail:0});
+  assert.deepEqual(f.calls,[['go','courses'],['go','space','my-project'],['go','block','block:own-tool']]);
+  assert.equal(f.root.listeners.get('keydown')?.size||0,0);
+  assert.deepEqual(f.state,f.before);assert.ok(!f.calls.some(call=>typeof call==='string'));
+});
+
+test('space and block identities reach the actual app router once and are correctly URL encoded',t=>{
+  const state=withBlock(workspace());state.spaces[0].id='研究 / A?#%';
+  const source=readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
+  const router=source.match(/^function go\(page,id=''\)\{[^\n]+\}/m)?.[0];
+  assert.ok(router,'test must run the actual app route encoder');
+  const location={hash:''},renders=[];
+  const go=runInNewContext(`${router};go`,{location,render:()=>renders.push('render')});
+  const f=mounted(t,{state,go});
+  f.click(f.card(state.spaces[0].id));
+  assert.equal(location.hash,'#/space/%E7%A0%94%E7%A9%B6%20%2F%20A%3F%23%25');
+  f.click(f.card('block:own-tool'));assert.equal(location.hash,'#/block/block%3Aown-tool');
+  f.click(f.card('block:own-tool'));assert.deepEqual(renders,['render']);
+});
+
+test('unknown, unrendered and detached card identities cannot navigate',t=>{
+  const state=withBlock(workspace());
+  for(let index=0;index<30;index++)state.spaces.push({id:`more-${index}`,title:`空间${index}`});
+  const f=mounted(t,{state});
+  for(const id of ['missing','constructor','__proto__','settings','more-29'])f.click(f.card(id,{route:'home'}));
+  const external=f.card('courses');external.inside=false;f.click(external);
+  f.setCurrent(false);f.click(f.card('my-project'));
+  assert.deepEqual(f.calls,[]);
+});
+
+test('cards removed, archived or disabled after mounting cannot act through a stale button',t=>{
+  const state=withBlock(workspace()),f=mounted(t,{state,freezeState:false});
+  configureWorkbench(state,{moduleId:'courses',enabled:false});state.spaces[0].archived=true;state.customBlocks.items[0].archived=true;
+  for(const id of ['courses','my-project','block:own-tool'])f.click(f.card(id));
+  assert.deepEqual(f.calls,[]);
+  f.click(f.card('tasks'));assert.deepEqual(f.calls,[['go','tasks']]);
+});
+
 test('view cleanup stops pending pointer motion, observers and handlers and prevents late navigation',t=>{
   const f=mounted(t),handler=[...f.root.listeners.get('click')][0];
   f.scene.fire('pointermove',{clientX:900,clientY:350,pointerType:'mouse',isPrimary:true,buttons:0});
@@ -138,6 +195,6 @@ test('view cleanup stops pending pointer motion, observers and handlers and prev
   assert.equal(f.frames.size,0);assert.equal(f.motion.style.transform,'');
   assert.ok(f.observers.every(observer=>observer.disconnected));
   for(const surface of [f.root,f.scene,f.win,f.doc,f.media,f.pause])assert.equal(surface.count(),0);
-  f.click(f.buttons.enter);handler({target:f.buttons.enter});
+  f.click(f.buttons.enter);handler({target:f.buttons.enter});f.click(f.card('my-project'));handler({target:f.card('my-project')});
   assert.deepEqual(f.calls,[]);assert.deepEqual(f.state,f.before);
 });

@@ -14,9 +14,10 @@ class Surface {
   setAttribute(name, value) {this.attributes[name] = String(value);}
   getAttribute(name) {return this.attributes[name] ?? null;}
   removeAttribute(name) {delete this.attributes[name];}
+  contains(element) {for (let candidate = element; candidate; candidate = candidate.parentNode) if (candidate === this) return true; return false;}
   getBoundingClientRect() {this.reads++; return {...this.rect};}
   fire(name, properties = {}) {
-    const event = {target: this, pointerType: 'mouse', clientX: 500, clientY: 300, buttons: 0, prevented: false,
+    const event = {type: name, target: this, pointerType: 'mouse', pointerId: 1, button: 0, clientX: 500, clientY: 300, buttons: 0, prevented: false,
       preventDefault() {this.prevented = true;}, ...properties};
     for (const fn of this.listeners.get(name) || []) fn(event);
     return event;
@@ -31,6 +32,7 @@ function fixture(t, {positions = [[100, 100, .6], [200, 100, 1.4]], reducedMotio
   button.querySelector = () => label; label.textContent = '暂停浮动';
   const cards = positions.map(([x, y, depth], index) => {
     const node = new Surface(), motion = new Surface();
+    motion.parentNode = node;
     node.rect = {left: x - 50, top: y - 40, width: 100, height: 80};
     node.dataset = {depth: String(depth), phase: String(index + 1)};
     node.style.transform = 'translate(-50%, -50%)';
@@ -185,4 +187,83 @@ test('window resize remains functional without optional observers', t => {
   f.root.fire('pointermove', {clientX: 1000, clientY: 600}); f.settle();
   f.stage.rect.width = 2000; f.stage.rect.height = 1200; f.win.fire('resize'); f.settle();
   assert.deepEqual(f.values(0), [0, 0, 0, 0]);
+});
+
+test('hover freezes the chosen card at its current pose while other cards continue responding', t => {
+  const f = fixture(t), card = f.cards[0];
+  f.root.fire('pointermove', {clientX: 1000, clientY: 600}); f.step();
+  const pose = f.values(0), other = f.values(1);
+  card.node.fire('pointerover', {target: card.motion});
+  assert.equal(card.node.classList.contains('welcome-card-held'), true);
+  f.root.fire('pointermove', {clientX: 0, clientY: 0}); f.settle();
+  assert.deepEqual(f.values(0), pose);
+  assert.notDeepEqual(f.values(1), other);
+  card.node.fire('pointerout', {relatedTarget: f.stage});
+  assert.equal(card.node.classList.contains('welcome-card-held'), false);
+  assert.deepEqual(f.values(0), pose, 'releasing hover must not jump');
+  f.settle(); assert.ok(f.values(0)[0] < 0);
+});
+
+test('internal pointer and focus transitions keep a card held until both hover and focus leave', t => {
+  const f = fixture(t), card = f.cards[0];
+  const child = new Surface(); child.parentNode = card.node;
+  card.node.fire('pointerover'); card.node.fire('focusin', {target: card.motion});
+  card.node.fire('pointerout', {relatedTarget: child});
+  card.node.fire('focusout', {relatedTarget: child});
+  assert.equal(card.node.classList.contains('welcome-card-held'), true);
+  card.node.fire('pointerout', {relatedTarget: f.stage});
+  assert.equal(card.node.classList.contains('welcome-card-held'), true, 'keyboard focus still protects the card');
+  f.root.fire('pointermove', {clientX: 1000, clientY: 600}); f.settle();
+  assert.deepEqual(f.values(0), [0, 0, 0, 0]);
+  card.node.fire('focusout', {relatedTarget: f.button});
+  assert.equal(card.node.classList.contains('welcome-card-held'), false);
+  f.settle(); assert.ok(f.values(0)[0] > 0);
+});
+
+test('a pressed card stays still through pointer exit and release does not intercept the native click', t => {
+  const f = fixture(t), card = f.cards[0];
+  f.root.fire('pointermove', {clientX: 1000, clientY: 600}); f.step();
+  const pose = f.values(0);
+  card.node.fire('pointerover');
+  const down = card.node.fire('pointerdown');
+  card.node.fire('pointerout', {relatedTarget: f.stage}); f.root.fire('pointerleave');
+  f.settle(); assert.deepEqual(f.values(0), pose);
+  assert.equal(card.node.classList.contains('welcome-card-held'), true);
+  const up = f.win.fire('pointerup');
+  assert.equal(down.prevented, false); assert.equal(up.prevented, false);
+  assert.deepEqual(f.values(0), pose, 'pointerup must preserve the click target until the next frame');
+  assert.equal(card.node.classList.contains('welcome-card-held'), false);
+  f.settle(); assert.deepEqual(f.values(0), [0, 0, 0, 0]);
+});
+
+test('touch scroll cancellation and window blur release pressed holds without seizing input', t => {
+  const f = fixture(t), card = f.cards[0];
+  card.node.fire('pointerover', {pointerType: 'touch'});
+  assert.equal(card.node.classList.contains('welcome-card-held'), false);
+  const down = card.node.fire('pointerdown', {pointerType: 'touch', pointerId: 7});
+  assert.equal(card.node.classList.contains('welcome-card-held'), true);
+  const move = f.root.fire('pointermove', {pointerType: 'touch', pointerId: 7, clientX: 1000});
+  f.win.fire('pointercancel', {pointerType: 'touch', pointerId: 7});
+  assert.equal(down.prevented, false); assert.equal(move.prevented, false);
+  assert.equal(card.node.classList.contains('welcome-card-held'), false);
+  assert.equal(f.frames.size, 0);
+  card.node.fire('pointerdown'); card.node.fire('pointerover'); f.win.fire('blur');
+  assert.equal(card.node.classList.contains('welcome-card-held'), false);
+});
+
+test('held cards remain protected across pause and reduced-motion changes and clean up fully', t => {
+  const f = fixture(t), card = f.cards[0];
+  f.root.fire('pointermove', {clientX: 1000, clientY: 600}); f.step();
+  card.node.fire('focusin'); const pose = f.values(0);
+  f.button.fire('click'); f.button.fire('click'); f.settle();
+  assert.deepEqual(f.values(0), pose); assert.equal(card.node.classList.contains('welcome-card-held'), true);
+  f.setReduced(true); assert.deepEqual(f.values(0), [0, 0, 0, 0]);
+  f.setReduced(false); f.root.fire('pointermove', {clientX: 1000, clientY: 600}); f.settle();
+  assert.deepEqual(f.values(0), [0, 0, 0, 0]);
+  f.cleanup();
+  for (const item of f.cards) {
+    assert.equal(item.node.classList.contains('welcome-card-held'), false);
+    assert.equal(item.node.listenerCount(), 0);
+  }
+  card.node.fire('focusin'); assert.equal(card.node.classList.contains('welcome-card-held'), false);
 });

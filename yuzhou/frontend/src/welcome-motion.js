@@ -16,7 +16,8 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
     const rawPhase = Number(node.dataset.phase);
     return {node, motion, depth: clamp(Number.isFinite(rawDepth) ? rawDepth : 1, .6, 1.4),
       phase: Number.isFinite(rawPhase) ? rawPhase : index, center: {x: 0, y: 0},
-      current: zero(), velocity: zero(), target: zero(), previousTransform: motion?.style.transform || ''};
+      current: zero(), velocity: zero(), target: zero(), hovered: false, focused: false, pressed: new Set(),
+      previousHeld: node.classList.contains('welcome-card-held'), previousTransform: motion?.style.transform || ''};
   }).filter(card => card.motion);
   const previous = {paused: root.classList.contains('welcome-paused'), state: root.dataset.motionState,
     text: label?.textContent, pressed: button?.getAttribute('aria-pressed'),
@@ -24,6 +25,12 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
   let disposed = false, manualPaused = false, visible = true, pointer = null;
   let scene = null, frame = null, lastTime = null;
   const paused = () => manualPaused || !!reduced?.matches || !!doc.hidden || !visible;
+  const held = card => card.hovered || card.focused || card.pressed.size > 0;
+  function syncHeld(card) {
+    const active = held(card);
+    card.node.classList.toggle('welcome-card-held', active);
+    if (active) {card.target = {...card.current}; card.velocity = zero();}
+  }
 
   function stop() {
     if (frame !== null) win.cancelAnimationFrame?.(frame);
@@ -34,7 +41,7 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
     card.motion.style.transform = `translate3d(${x.toFixed(3)}px, ${y.toFixed(3)}px, 0) rotateX(${rx.toFixed(3)}deg) rotateY(${ry.toFixed(3)}deg)`;
   }
   function unsettled(card) {
-    return axes.some(axis => Math.abs(card.target[axis] - card.current[axis]) > .025 || Math.abs(card.velocity[axis]) > .025);
+    return !held(card) && axes.some(axis => Math.abs(card.target[axis] - card.current[axis]) > .025 || Math.abs(card.velocity[axis]) > .025);
   }
   function tick(time) {
     frame = null;
@@ -43,6 +50,7 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
     lastTime = time;
     let moving = false;
     for (const card of cards) {
+      if (held(card)) continue;
       for (const axis of axes) {
         card.velocity[axis] += ((card.target[axis] - card.current[axis]) * 180 - card.velocity[axis] * 25) * dt;
         card.current[axis] += card.velocity[axis] * dt;
@@ -57,13 +65,14 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
   function schedule() {
     if (disposed || paused() || frame !== null || !cards.some(unsettled)) return;
     if (win.requestAnimationFrame) frame = win.requestAnimationFrame(tick);
-    else for (const card of cards) {card.current = {...card.target}; card.velocity = zero(); paint(card);}
+    else for (const card of cards) if (!held(card)) {card.current = {...card.target}; card.velocity = zero(); paint(card);}
   }
   function targets() {
     const active = pointer && scene && scene.width > 0 && scene.height > 0;
     const nx = active ? clamp((pointer.x - scene.left) / scene.width * 2 - 1, -1, 1) : 0;
     const ny = active ? clamp((pointer.y - scene.top) / scene.height * 2 - 1, -1, 1) : 0;
     for (const card of cards) {
+      if (held(card)) continue;
       const amplitude = 18 + (card.depth - .6) / .8 * 17;
       let pushX = 0, pushY = 0;
       if (active) {
@@ -98,7 +107,23 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
   }
   function leave() {
     if (disposed) return;
+    for (const card of cards) {card.hovered = false; syncHeld(card);}
     pointer = null; targets();
+  }
+  function release(event) {
+    if (disposed) return;
+    for (const card of cards) {
+      const wasPressed = card.pressed.delete(event.pointerId);
+      if (event.type === 'pointercancel' && wasPressed) card.hovered = false;
+      syncHeld(card);
+    }
+    if (event.type === 'pointercancel') pointer = null;
+    targets();
+  }
+  function blur() {
+    if (disposed) return;
+    for (const card of cards) card.pressed.clear();
+    leave();
   }
   function syncPause() {
     if (disposed) return;
@@ -129,11 +154,43 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
     if (entry) {visible = entry.isIntersecting; syncPause();}
   }, {threshold: 0}) : null;
   intersection?.observe(stage);
+  // Keep the target under the pointer or keyboard focus without stopping its
+  // neighbors. Press holds also protect a native tap until release or cancel.
+  const cardListeners = [];
+  for (const card of cards) {
+    function hold(event) {
+      if (disposed) return;
+      if (event.type === 'focusin') card.focused = true;
+      else {
+        if (event.isPrimary === false) return;
+        if (event.type === 'pointerover') {
+          if (event.pointerType === 'touch') return;
+          card.hovered = true;
+        } else if (event.button === 0) card.pressed.add(event.pointerId);
+        else return;
+      }
+      syncHeld(card);
+    }
+    function unhold(event) {
+      if (disposed || (event.relatedTarget && card.node.contains(event.relatedTarget))) return;
+      if (event.type === 'focusout') card.focused = false;
+      else {
+        if (event.pointerType === 'touch' || event.isPrimary === false) return;
+        card.hovered = false;
+      }
+      syncHeld(card); targets();
+    }
+    for (const [name, listener] of [['pointerover', hold], ['pointerdown', hold], ['focusin', hold], ['pointerout', unhold], ['focusout', unhold]]) {
+      card.node.addEventListener(name, listener);
+      cardListeners.push([card.node, name, listener]);
+    }
+  }
   root.addEventListener('pointermove', move, {passive: true});
   root.addEventListener('pointerleave', leave);
-  root.addEventListener('pointercancel', leave);
   button?.addEventListener('click', toggle);
-  win.addEventListener('blur', leave);
+  win.addEventListener('pointerup', release);
+  win.addEventListener('pointercancel', release);
+  win.addEventListener('blur', blur);
   win.addEventListener('resize', measure);
   win.addEventListener('scroll', measure, {passive: true, capture: true});
   doc.addEventListener('visibilitychange', syncPause);
@@ -145,14 +202,19 @@ export function mountWelcomeMotion({root, win = window, doc = document}) {
     resizeObserver?.disconnect(); intersection?.disconnect();
     root.removeEventListener('pointermove', move);
     root.removeEventListener('pointerleave', leave);
-    root.removeEventListener('pointercancel', leave);
     button?.removeEventListener('click', toggle);
-    win.removeEventListener('blur', leave);
+    win.removeEventListener('pointerup', release);
+    win.removeEventListener('pointercancel', release);
+    win.removeEventListener('blur', blur);
     win.removeEventListener('resize', measure);
     win.removeEventListener('scroll', measure, true);
     doc.removeEventListener('visibilitychange', syncPause);
     reduced?.removeEventListener?.('change', syncPause);
-    for (const card of cards) card.motion.style.transform = card.previousTransform;
+    for (const [node, name, listener] of cardListeners) node.removeEventListener(name, listener);
+    for (const card of cards) {
+      card.motion.style.transform = card.previousTransform;
+      card.node.classList.toggle('welcome-card-held', card.previousHeld);
+    }
     root.classList.toggle('welcome-paused', previous.paused);
     if (previous.state === undefined) delete root.dataset.motionState;
     else root.dataset.motionState = previous.state;
