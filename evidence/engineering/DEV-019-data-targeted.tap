@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: detached plan fills all modules and counts actual additions without changing English or AI state
+ok 1 - detached plan fills all modules and counts actual additions without changing English or AI state
+  ---
+  duration_ms: 18.6102
+  type: 'test'
+  ...
+# Subtest: dates cross year end locally and the current week contains three independent timetable examples
+ok 2 - dates cross year end locally and the current week contains three independent timetable examples
+  ---
+  duration_ms: 5.6131
+  type: 'test'
+  ...
+# Subtest: all seven block kinds are editable and miniapp reuses the existing manual-run calculator code
+ok 3 - all seven block kinds are editable and miniapp reuses the existing manual-run calculator code
+  ---
+  duration_ms: 3.5817
+  type: 'test'
+  ...
+# Subtest: new examples retain existing records, custom labels and order, view geometry, and active semester
+ok 4 - new examples retain existing records, custom labels and order, view geometry, and active semester
+  ---
+  duration_ms: 7.9226
+  type: 'test'
+  ...
+# Subtest: extending an installed old package never restores modified or removed old content
+ok 5 - extending an installed old package never restores modified or removed old content
+  ---
+  duration_ms: 4.6345
+  type: 'test'
+  ...
+# Subtest: a deleted old guide with surviving old children is not silently rebuilt
+ok 6 - a deleted old guide with surviving old children is not silently rebuilt
+  ---
+  duration_ms: 2.8232
+  type: 'test'
+  ...
+# Subtest: repeat installation keeps user edits and deletions and does not re-enable a hidden module
+ok 7 - repeat installation keeps user edits and deletions and does not re-enable a hidden module
+  ---
+  duration_ms: 5.1737
+  type: 'test'
+  ...
+# Subtest: reserved identifiers in records or canvas reject the whole plan before any write
+ok 8 - reserved identifiers in records or canvas reject the whole plan before any write
+  ---
+  duration_ms: 5.8924
+  type: 'test'
+  ...
+# Subtest: one synchronous save installs every domain and failure restores exact prior references and absence
+ok 9 - one synchronous save installs every domain and failure restores exact prior references and absence
+  ---
+  duration_ms: 5.2637
+  type: 'test'
+  ...
+# Subtest: backup validation and additive merge retain every new domain and the shared record links
+ok 10 - backup validation and additive merge retain every new domain and the shared record links
+  ---
+  duration_ms: 8.511
+  type: 'test'
+  ...
+# Subtest: calendar projections and fitness totals follow source records while English materials share captures
+ok 11 - calendar projections and fitness totals follow source records while English materials share captures
+  ---
+  duration_ms: 5.9535
+  type: 'test'
+  ...
+# Subtest: invalid dates, block capacity and malformed existing domains stop before saving
+ok 12 - invalid dates, block capacity and malformed existing domains stop before saving
+  ---
+  duration_ms: 8.0959
+  type: 'test'
+  ...
+# Subtest: persistence failure also restores populated new domains using their original object references
+ok 13 - persistence failure also restores populated new domains using their original object references
+  ---
+  duration_ms: 5.3617
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 313.4104

@@ -1,0 +1,37 @@
+历史工具输出事实摘要
+本文件不是原始日志，也不是重新运行失败版本得到的输出。
+来源：DEV-019 子任务 showcase_gallery_ui 当轮可见工具返回（chunk_id ae63cc）。当时没有单独保存完整原始输出；本文件只记录可准确核对的失败事实。
+
+日期：2026-10-13（Asia/Shanghai）
+工作目录：E:\传智杯\传智杯AI创新应用挑战赛
+
+当时执行的命令：
+node --test yuzhou/frontend/tests/builder.test.mjs yuzhou/frontend/tests/custom-blocks-builder-integration.test.mjs
+git diff --check -- yuzhou/frontend/src/builder.js yuzhou/frontend/src/builder.css yuzhou/frontend/tests/builder.test.mjs
+
+错误位置：yuzhou/frontend/src/builder.js:29
+工具输出中的错误文字：
+SyntaxError: Missing } in template expression
+
+直接原因：增加可收起示例目录时，PowerShell 字符串替换漏掉了模板条件表达式中空字符串的一个单引号。
+错误表达式：${expanded?'open':'}
+正确表达式：${expanded?'open':''}
+
+当轮 Node 测试输出结尾：
+Node.js v25.7.0
+tests 2
+suites 0
+pass 0
+fail 2
+cancelled 0
+skipped 0
+todo 0
+duration_ms 275.2969
+
+两项失败均发生在测试文件加载阶段：
+yuzhou/frontend/tests/builder.test.mjs
+yuzhou/frontend/tests/custom-blocks-builder-integration.test.mjs
+
+注意：整条 PowerShell 命令的工具返回 exit_code 为 0，因为后续 git diff --check 成功；这不表示当轮 Node 测试通过。不能将该返回码当成通过证据。
+
+随后处理：补齐缺失引号，执行 node --check，并重跑上述两个测试文件，结果为 29 项通过、0 项失败（chunk_id 8c6146）。未复跑错误版本来伪装历史日志。

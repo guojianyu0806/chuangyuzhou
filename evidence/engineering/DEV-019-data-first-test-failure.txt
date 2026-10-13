@@ -1,0 +1,52 @@
+DEV-019 first data test run — verbatim stdout excerpts from exec_command chunk faa7bd
+Command: node --test --test-reporter=tap yuzhou/frontend/tests/showcase-gallery.test.mjs
+Exit code: 1
+
+The first command returned stdout to the tool without redirecting it to a file.
+The excerpts below are copied from that returned stdout, not reconstructed by a rerun.
+Unrelated passing subtests, the lengthy expected/actual canvas object dump, and the
+stack trace are omitted. This file is an excerpt, not a complete raw TAP report.
+
+# Subtest: backup validation and additive merge retain every new domain and the shared record links
+not ok 10 - backup validation and additive merge retain every new domain and the shared record links
+  ---
+  duration_ms: 10.3922
+  type: 'test'
+  location: 'E:\\传智杯\\传智杯AI创新应用挑战赛\\yuzhou\\frontend\\tests\\showcase-gallery.test.mjs:130:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    canvas must not lose a generated field
+    + actual - expected
+    ... Skipped lines
+    
+      {
+        cards: [
+          {
+            color: '#63E6DC',
+            h: 280,
+    ...
+        ],
+    +   initialized: false,
+        snap: true,
+        view: {
+          x: 0,
+          y: 0,
+          zoom: 1
+    
+  code: 'ERR_ASSERTION'
+
+1..12
+# tests 12
+# suites 0
+# pass 11
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 541.2412
+
+Repair note: Backup validation adds the documented default initialized:false when
+the existing canvas omitted it. No generated card or geometry was lost. The
+corrected test compares the generated cards/view/snap exactly and compares the
+restored canvas with the normalized backup canvas. A separate regression check
+also verifies rollback of populated calendar, timetable, fitness and courses.

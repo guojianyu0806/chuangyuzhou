@@ -1,0 +1,35 @@
+{
+  "formalInstance": "http://127.0.0.1:4397",
+  "authentication": "User logged in through normal UI; no credentials read",
+  "action": "Previewed and added full module examples through builder",
+  "preview": {
+    "courses": 2,
+    "courseNotes": 4,
+    "captures": 13,
+    "tasks": 5,
+    "spaces": 3,
+    "spaceNotes": 7,
+    "calendarEvents": 3,
+    "timetableEvents": 3,
+    "competitions": 1,
+    "milestones": 2,
+    "competitionTasks": 2,
+    "fitnessSessions": 4,
+    "independentLedgers": 1,
+    "ledgerEntries": 2,
+    "customBlocks": 9
+  },
+  "verifiedAfterReload": {
+    "openGalleryVisible": true,
+    "addGalleryButtonCount": 0,
+    "galleryText": "可编辑的示例导览\n\n从一个例子，看看每块能做什么\n\n点击下面的入口查看示例，随时回到搭建台继续探索。\n\n打开示例导览\n按模块浏览 12 个入口\n课程空间\n主题笔记与整理方法\n英语\n原创题目与写作参考\n灵感收集箱\n12 条创作念头 · 试试梦境\n备忘与待办\n从想法到具体行动\n生活回顾\n查看模拟活动与完成记录\n记账\n独立模拟账本\n日历\n日程与待办的日期关联\n学期课表\n进入后选择“本周练习学期 · 示例”\n比赛\n内部节点与准备清单\n自定义方块\n7 种类型 · 从便签到小工具\n运动记录\n一次活动怎样留下记录\nAI伙伴\n准备一条需求 · 由你发送\n\n示例均已标注，可继续编辑；再次打开不会重置内容。AI 需求需自行发送，小工具需手动运行。"
+  },
+  "layout": {
+    "clientWidth": 305,
+    "innerHeight": 543,
+    "innerWidth": 319,
+    "scrollWidth": 305
+  },
+  "limitations": "Only gallery UI was observed; formal private database, credentials and business bodies were not exported. This narrow-panel observation is not a 390x844 or physical-device test.",
+  "aiSent": false
+}

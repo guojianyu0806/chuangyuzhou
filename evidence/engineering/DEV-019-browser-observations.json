@@ -1,0 +1,85 @@
+{
+  "synthetic": true,
+  "routes": [
+    {
+      "label": "课程空间 主题笔记与学习资料",
+      "url": "http://127.0.0.1:4398/#/courses/showcase-dev019-course-design",
+      "view": "全部课程\n示例课程 · 软件工程\n交互产品设计 · 示例\n\n从用户场景到可验证原型的两章原创参考笔记。\n\n助教偏好\n上传资料\n学习笔记 2\n课程资料 0\n整理课程资料\n新建笔记\n排列\n−\n69%\n+\n全屏\n学习笔记\n第一章 · 场景\n从一句需求拆成使用场景 · 示例\n\n示例场景 一位创作者希望在思路卡住时重新看到以前的想法。 意图与操作 意图：获得联想线索。操作：进入梦境，随机遇见旧念头，暂停阅读，然后继续记录。 待验证问题 移动速度是否便于阅读？长短内容能否同时看清？用户能否找到编辑入口？ 这些是设计假设和问题，并不是已完成的用户研究。\n\n内置示例\n版本 1\n留下自己的理解\n阅读笔记\n学习笔记\n第二章 · 验证\n把体验感受写成观察问题 · 示例\n\n示例观察清单 - 能否从搭建台拖入一个模块？ - 双击后能否进入实际内容？ - 修改一条待办日期后，日历是否显示同一日期？ 记录方式 操作步骤 → 实际看到的情况 → 困惑点 → 下一次改进。 这里没有预填通过结论；请在真正试用后补充。\n\n内置示例\n版本 1\n留下自己的理解\n阅读笔记\n\n文件可以拖入这个课程空间。正文提取不调用模型；AI 整理需单独连接模型。"
+    },
+    {
+      "label": "英语 原创题目与写作参考",
+      "url": "http://127.0.0.1:4398/#/english/reading",
+      "view": "A LITTLE EVERY DAY\n英语学习\n\n从日常沟通到项目表达，选择适合自己的练习。\n\nAI 教练\n设置学习计划\nYOUR NEXT CHAPTER · ENGLISH\n慢慢积累，\n也在稳稳向前。\n\n不用急着填满计划。先从一次感兴趣的练习开始。\n\n目标分数 待设置\n考试日期 待设置\n开始今日练习\n✦\n+\nA LITTLE\nEVERY DAY\nEN\n↗\nONE STEP CLOSER ↗\nMake it a habit.\n近 7 天投入\n0 分钟\n已标记掌握\n0 个单词\n待回顾错题\n0 道\n练习空间\n词汇卡片\n错题本\n学习记录\n我的资料\n阅读\n听力\n写作\n翻译\n原创题库\n8 篇 · 24 道选择题 · 各题进度独立保存\n难度\n全部难度\n基础\n进阶\n挑战\n选择题目\n进阶 · A quieter kind of progress\n基础 · A cup to return\n基础 · The workshop has moved\n进阶 · A note for the next shift\n进阶 · Preparing for a quiet screen\n挑战 · Before sharing the headline\n挑战 · What five trials can tell us\n进阶 · One appointment, two views\n原创练习 · 进阶 · 校园学习 · 非历年真题\nA quieter kind of progress\n\n学习方法 · 原创短文 · 3 道理解题\n\n01\nWhen a university library introduced a quiet study hour, its aim was simple: give students a place to work without notifications or conversations. Participation was voluntary, and phones were kept in bags rather than collected at the door. The library wanted students to choose attention, not feel that it had been imposed on them.\n\n02\nAfter a month, the organisers asked participants about their experience. Many said they had completed fewer tasks than they had expected. Yet they understood difficult material more clearly and could explain it in their own words. One engineering student realised that repeatedly checking messages had made a short programming problem stretch across an entire afternoon.\n\n03\nThe findings did not prove that silence improves everyone’s performance. Students had chosen to attend, and the survey relied on their own reports. Some preferred background music, while others worked better with a partner. What the project offered was an opportunity to notice a habit and test a different one.\n\n04\nThe library therefore kept the quiet hour but added other options, including a discussion room and a short refl"
+    },
+    {
+      "label": "生活回顾 查看模拟活动与完成记录",
+      "url": "http://127.0.0.1:4398/#/review",
+      "view": "你走过的路，都算数。\n\n回头看看，那些小小的积累正在连成线。\n\n根据工作台记录统计 · 含示例内容\nYOUR EVERYDAY JOURNEY\n把注意力放在成长上。\n\n在这里回看待办、学习与灵感。\n不必填满每一天，每一步都有意义。\n\n看看接下来的安排\nlittle by little.\n1\n件待办已完成\n0\n分钟英语学习\n11\n篇空间笔记\n14\n条灵感被记下\n积累的足迹\n\n来自已完成待办与英语学习记录。含明确标注的示例，模拟内容不代表实际成果。\n\n模拟回顾 · 示例：整理一次创作提纲\n模拟完成 · 示例\n10月12日"
+    },
+    {
+      "label": "记账 独立模拟账本",
+      "url": "http://127.0.0.1:4398/#/ledger/showcase-dev012-budget",
+      "view": "记账\n\n日常零钱单独记，项目收支自由决定是否计入总账。\n\nAI 记账\n新建项目\n记一笔\n日常零钱\n项目账本\n总账单\n本月\n今天\n全部日期\n查看归档账目\n开始日期\n结束日期\n项目\n全部项目\n参赛展示预算 · 示例\n收支\n全部收支\n支出\n收入\n搜索\n参赛展示预算 · 示例\n\n只统计本项目，可按日期和收支类型筛选。\n\n计入总账单\n项目设置\n支出\n¥40.00\n收入\n¥0.00\n收支结余\n¥-40.00\n全部日期 · 2 笔账目 · 参赛展示预算 · 示例\n人民币 CNY\n项目账本\n管理项目\n参赛展示预算 · 示例\n累计支出\n¥40.00\n独立核算 · 不计入总账\n收入 ¥0.00\n2 笔\n账目明细\n按日期\n按项目\n2026-10-13 · 周二 · 今天\n2 笔 · 收 ¥0.00 / 支 ¥40.00\n−\n物料\n示例\n参赛展示预算 · 示例\n\n模拟支出：展示说明卡 28 元，仅用于演示，未实际付款。\n\n−¥28.00\n归档\n−\n打印\n示例\n参赛展示预算 · 示例\n\n模拟支出：演示流程草稿打印 12 元，仅用于核对独立账本汇总，没有真实消费凭据。\n\n−¥12.00\n归档"
+    },
+    {
+      "label": "日历 日程与待办的日期关联",
+      "url": "http://127.0.0.1:4398/#/calendar",
+      "view": "日历✦\n\n把分散的安排，放回每一天。\n\n新建安排\n选择月份\n今天\n月历\n日程\n来源\n全部来源\n自建日历\n待办\n比赛\n英语\n事项类型\n全部类型\n计划\n标注\n注意事项\n完成度\n全部状态\n未完成\n已完成\n已归档\n2026 年 10 月·12 项其中 9 项自动关联\n点日期查看或添加\n周一\n周二\n周三\n周四\n周五\n周六\n周日\n28\n0项\n添加\n29\n0项\n添加\n30\n0项\n添加\n1\n0项\n添加\n2\n0项\n添加\n3\n0项\n添加\n4\n0项\n添加\n5\n0项\n添加\n6\n0项\n添加\n7\n0项\n添加\n8\n0项\n添加\n9\n0项\n添加\n10\n0项\n添加\n11\n0项\n添加\n12\n1项\n待办\n模拟回顾 · 示例：整理一次创作提纲\n查看\n13\n1项\n计划\n留二十分钟整理灵感 · 示例\n查看\n14\n3项\n待办\n整理三分钟演示路线 · 示例\n比赛\n工作台项目展示准备 · 示例 · 编写讲解脚本 · 示例\n+1 项\n15\n1项\n标注\n下次小组交流 · 示例\n查看\n16\n4项\n比赛\n工作台项目展示准备 · 示例 · 自定示例：模块关联核对\n比赛\n工作台项目展示准备 · 示例 · 准备演示录制清单 · 示例\n+2 项\n17\n0项\n添加\n18\n0项\n添加\n19\n0项\n添加\n20\n2项\n比赛\n工作台项目展示准备 · 示例 · 自定示例：内部演示预演\n待办\n把预演想法整理成观察问题 · 示例\n查看\n21\n0项\n添加\n22\n0项\n添加\n23\n0项\n添加\n24\n0项\n添加\n25\n0项\n添加\n26\n0项\n添加\n27\n0项\n添加\n28\n0项\n添加\n29\n0项\n添加\n30\n0项\n添加\n31\n0项\n添加\n1\n0项\n添加\n2\n0项\n添加\n3\n0项\n添加\n4\n0项\n添加\n5\n0项\n添加\n6\n0项\n添加\n7\n0项\n添加\n8\n0项\n添加\n今天 2026\n10月13日\n1\n项安排\n计划\n标注\n注意事项\n计划\n留二十分钟整理灵感 · 示例\n19:00–19:20\n\n示例：练习安排；独立日程，不会自动生成待办。\n\n查看安排\n\n待办、比赛和英语日期自动关联；课表仍单独查看。"
+    },
+    {
+      "label": "学期课表 教学周与节次安排",
+      "url": "http://127.0.0.1:4398/#/timetable",
+      "view": "学期课表\n\n模拟学习安排 · 当前第 1 周\n\n学期设置\n新增课程\n选择学期\n本周练习学期 · 示例\n周课表\n课程清单\n选择周次\n第 1 周 · 本周\n第 2 周\n第 3 周\n第 4 周\n2026-10-12 — 10.18\n回到本周\n大小\n仅本机\n−\n100%\n重置\n点击课程查看详情；缩小看整周，放大后可滑动\n3 个上课安排\n节次\n周一\n10.12\n周二\n今天\n10.13\n周三\n10.14\n周四\n10.15\n周五\n10.16\n周六\n10.17\n周日\n10.18\n1\n09:00\n09:45\n2\n09:55\n10:40\n3\n14:00\n14:45\n交互产品设计 · 示例\n模拟：学习室 A\n示例自主学习\n项目英语表达 · 示例\n模拟：学习室 B\n示例自主学习\n创作回顾与分享 · 示例\n模拟：线上交流\n示例自主学习\n学期备注"
+    },
+    {
+      "label": "灵感收集箱 12 条创作念头 · 试试梦境",
+      "url": "http://127.0.0.1:4398/#/inbox",
+      "view": "灵感收集箱\n接住，这一闪念。\n\n一句话、一个问题、一段摘录。先记下来，慢慢连成想法。\n\n记下一闪念\n添加附件\n和 AI 理一理\n灵感墙\n自由画布\n梦境\n全部灵感\n学习灵感\n备忘\n英语\n链接\n摘录\n已归档\n14 个想法\n点击展开 · 让灵感长成行动\n学习灵感\n10月13日\n\n预演观察想法 · 示例\n请一位体验者从搭建台选择模块，再查看一项空间待办如何出现在日历。记录卡住的步骤与原话，暂不预设成功率。此内容为示例设计，不代表已经开展真人试用。\n\n展开这个念头 \n\n# 示例,参赛展示,体验观察\n\n查看待办\n归档\n学习灵感\n10月13日\n\n让念头像窗边光斑 · 示例\n创作卡住时，让旧念头轻轻经过，而不是强迫自己一次读完所有笔记。\n\n展开这个念头 \n\n# 示例,体验导览\n\n变成行动\n归档\n备忘\n10月13日\n\n把“待确认”也放上桌 · 示例\n工作台不仅保存答案，也应该给还没想清楚的问题留一个位置。\n\n展开这个念头 \n\n# 示例,体验导览\n\n变成行动\n归档\n学习灵感\n10月13日\n\n一次只邀请一个动作 · 示例\n首次使用时，是否可以先让人放下一块便笺，再慢慢介绍其他工具？\n\n展开这个念头 \n\n# 示例,体验导览\n\n变成行动\n归档\n工作\n10月13日\n\n会议结束的两分钟 · 示例\n讨论之后，把已经决定的事和还缺信息的事分开写；它们应有不同的下一步。\n\n展开这个念头 \n\n# 示例,体验导览\n\n变成行动\n归档\n学习灵感\n10月13日\n\n从一张卡片走到日历 · 示例\n把想法转成待办，只在需要安排时间时填日期；日历显示来源，让人知道去哪里修改。\n\n展开这个念头 \n\n# 示例,体验导览\n\n变成行动\n归档\n学习灵感\n10月13日\n\n颜色也可以讲述用途 · 示例\n同样是卡片，资料、想法与行动能否通过轻微的层次变化更容易辨认？\n\n展开这个念头 \n\n# 示例,体验导览\n\n变成行动\n归档\n生活\n10月13日\n\n散步之后写下一句 · 示例\n模拟创作提示：不用完整叙述，先留住一个画面、一句听到的话或者一个问题。\n\n展开这个念头 \n\n# 示例,体验导览\n\n变成行动\n归档\n备忘\n10月13日\n\n给未来的自己一条线索 · 示例\n记录时补上一点背景：为什么重要、当时想到什么。几周后重看，仍能接上原来的思路。\n\n展开这个念头 \n\n# 示例,体验导览\n\n变成行动\n归档\n学习灵感\n10月13日\n\n一个可逆的尝试 · 示例\n如果一次整理容易撤回，用户也许会更愿意试试新的排列。先观察，不把这句话当作已验证结论。\n\n展开这个念头 \n\n# 示例,体验导览\n\n变成行动\n归档\n学习灵感\n10月13日\n\n理想的 AI 助手 · 示例\n能够理解我想做什么，说明它准备改变什么；有疑问时保留问题，让我决定是否执行。\n\n展开这个念头 \n\n# 示例,体验导览\n\n变成行动\n归档\n英语\n10月13日\n\n给初次体验者的项目介绍 · 示例\nThis workbench brings ideas, tasks and plans into a space you can arrange yourself. Try saving one idea, turning it into a task, and choosing a date. The assistant can propose changes, but you review them before they are applied.\n\n原创示例原文，可在“英语 → 我的资料”看到同一条记录；不是用户作文或模型答复。\n\n展开这个念头 \n\n# 示例,体验导览,英语素材\n\n查看待办\n归档\n英语\n10月13日\n\n礼貌地调整约定 · 示例\n抱歉，我周五下午有课，不能按原计划与你见面。我们可以改到周六上午或者周日下午吗？如果这两个时间都不方便，请告诉我你什么时候有空。\n\n参考表达：\nI’m sorry, but I have a class on Friday afternoon and cannot meet you as planned. Could we meet on Saturday morning or Sunday afternoon instead? If neither time works for you, please let me know whe"
+    },
+    {
+      "label": "备忘与待办 从想法到具体行动",
+      "url": "http://127.0.0.1:4398/#/tasks",
+      "view": "给每件事，一个着落。\n\n一件事，一张卡片。长按拾起，按自己的节奏摆放。\n\n新建待办\n5\n等待完成\n0\n今日安排\n1\n已经完成\n全部\n今天\n待完成\n已完成\n已归档\n6 件事项\n排列\n−\n69%\n+\n全屏\n待办事项\n待完成\n个人\n既有合成待办：不能被示例覆盖\n\n验收原记录完整保留。\n\n手动记录\n还没有安排日期\n查看事项\n优先处理\n待完成\n个人\n整理三分钟演示路线 · 示例\n\n自定示例计划：从搭建、记录到 AI 确认执行，写下讲解顺序。此待办同时出现在本空间、全局待办和日历。\n\n工作台参赛筹备 · 示例\n10月14日\n查看事项\n待办事项\n待完成\n个人\n核对一次空间待办联动 · 示例\n\n自定示例计划：修改本条日期或完成状态，检查空间、全局待办与日历显示同一结果；实际检查后再标记完成。\n\n工作台参赛筹备 · 示例\n10月16日\n查看事项\n待办事项\n待完成\n个人\n把预演想法整理成观察问题 · 示例\n\n示例来源：观察新用户能否找到搭建入口，能否理解 AI 方案需要确认。将观察问题写入预演观察表；这条记录不会自动填表。\n\n工作台参赛筹备 · 示例\n10月20日\n查看事项\n待办事项\n待完成\n个人\n观察英语素材共享 · 示例\n\n自定练习计划：编辑收集箱中的“给初次体验者的项目介绍 · 示例”，再到英语“我的资料”查看同一正文；此待办日期也投影到日历。\n\n全模块体验导览 · 示例\n10月14日\n查看事项\n已经完成\n已完成\n个人\n模拟回顾 · 示例：整理一次创作提纲\n\n仅用于展示生活回顾的时间线；没有真实完成这项活动。可取消完成、编辑或归档，不代表学习成绩。\n\n全模块体验导览 · 示例\n10月12日\n查看事项"
+    },
+    {
+      "label": "比赛 内部节点与准备清单",
+      "url": "http://127.0.0.1:4398/#/competitions/showcase-dev012-competition",
+      "view": "全部比赛\n比赛工作区\n内部演示练习\n工作台项目展示准备 · 示例\n\n主办方待补充\n\n当前比赛进度\n关注中\n准备中\n已提交\n已结束\n交给 AI\n关键节点\n2\n添加节点\n北京时间 · 按截止日期排列\n已归档\n10月16日\n2026\n当日截止\n自定示例：模块关联核对\n还有 3 天\n10月20日\n2026\n当日截止\n自定示例：内部演示预演\n还有 7 天\n\n带日期的节点和准备事项会自动显示在日历，并随原记录更新。右侧日历按钮可另建独立标注，后续修改互不影响。\n\n准备事项\n0/2\n添加事项\n0% 完成\n已归档\n编写讲解脚本 · 示例\n2026-10-14\n\n未完成的示例任务。先解释使用场景，再演示实际操作。\n\n准备演示录制清单 · 示例\n2026-10-16\n\n未完成的示例任务。核对入口、画面、演示资料与尚未验证的限制，不视为已经录制。\n\n材料与参赛要求\n示例练习目标：能解释项目用途、操作一条关联流程，并保留尚未验证的限制。此处不是赛事官方通知。\n团队与分工\n示例：由项目作者准备演示，具体分工按实际情况填写。\n比赛笔记\n本条为展示流程示例，不代表报名或提交事实。两个节点均为自定内部计划：2026-10-16 核对关联、2026-10-20 内部预演；并非官方截止时间。准备事项独立于全局待办，但会投影到日历。"
+    },
+    {
+      "label": "自定义方块 7 种类型 · 从便签到小工具",
+      "url": "http://127.0.0.1:4398/#/block/block%3Ashowcase-dev019-note",
+      "view": "← 回到工作台\n在搭建台摆放\n文本便签\n会议记录便笺 · 示例\n\n示例：可编辑的假设场景，不代表已举行会议。\n\n编辑方块\n收起方块\n主题：怎样让新用户找到第一块积木。\n讨论问题：入口是否清楚？空白工作台需要什么提示？\n待确认：先观察一位体验者，再决定下一步。\n\n这是一份可编辑的示例草稿，未开展真实会议。"
+    },
+    {
+      "label": "运动记录 一次活动怎样留下记录",
+      "url": "http://127.0.0.1:4398/#/space/showcase-dev019-fitness",
+      "view": "回到空间主页\n私人云端同步\n运动健身 / MY SPACE\n活动与运动 · 示例\n\n四条模拟活动记录，用于体验按日、周、月查看时长和里程；非真实测量、训练建议或健康效果。\n\n空间设置\n交给 AI\n1 篇笔记\n0 份文件\n0 件待办\n归档空间\n运动统计\n总览\n笔记\n文件\n待办\n运动统计✦\n\n记下每一次实际运动\n\n记一次运动\n日\n周\n月\n选择统计日期\n今天\n2026-10-12 — 2026-10-18\n周一至周日\n运动时长\n48\n分钟\n2 次运动\n运动次数\n2\n次\n2 天留下记录\n运动里程\n2.1\n公里\n已填写 1 / 2 次\n记录消耗\n—\n千卡\n未记录\n本周节奏\n\n按天汇总，点柱查看\n\n分钟\n千卡\n公里\n30\n0\n30\n周一\n18\n周二\n0\n周三\n0\n周四\n0\n周五\n0\n周六\n0\n周日\n时长来自已保存的运动记录。\n运动记录2\n\n手动录入，或抄录手表和 App 中已有的数值。\n\n已归档\n轻松活动 · 模拟示例\n2026-10-13\n时长\n18分钟\n里程\n未记录\n消耗\n未记录\n手动记录\n\n模拟数值，仅用于体验图表和编辑，不是实际运动、设备测量或健康建议。未估算热量。\n\n散步 · 模拟示例\n2026-10-12\n时长\n30分钟\n里程\n2.1公里\n消耗\n未记录\n手动记录\n\n模拟数值，仅用于体验图表和编辑，不是实际运动、设备测量或健康建议。未估算热量。\n\n当前未接入设备自动同步，消耗与里程以你填写的数据为准。"
+    }
+  ],
+  "englishMaterials": "LIBRARY / 资料卡片\n我的英语资料\n\n从收件台归入这里的原文与文件。\n\n添加资料\nNOTE / 原文笔记\n01\n\n给初次体验者的项目介绍 · 示例\nThis workbench brings ideas, tasks and plans into a space you can arrange yourself. Try saving one idea, turning it into a task, and choosing a date. The assistant can propose changes, but you review them before they are applied.\n\n原创示例原文，可在“英语 → 我的资料”看到同一条记录；不是用户作文或模型答复。\n\n示例,体验导览,英语素材\nNOTE / 原文笔记\n02\n\n礼貌地调整约定 · 示例\n抱歉，我周五下午有课，不能按原计划与你见面。我们可以改到周六上午或者周日下午吗？如果这两个时间都不方便，请告诉我你什么时候有空。\n\n参考表达：\nI’m sorry, but I have a class on Friday afternoon and cannot meet you as planned. Could we meet on Saturday morning or Sunday afternoon instead? If neither time works for you, please let me know when you are available.\n\n来自应用已有原创练习，仅作参考；等义表达也可成立。\n\n示例,体验导览,英语素材",
+  "calculator": {
+    "inputs": [
+      12,
+      28
+    ],
+    "operation": "add",
+    "result": 40,
+    "manualStart": true,
+    "saved": true
+  },
+  "attemptedNarrowViewport": {
+    "requested": [
+      390,
+      844
+    ],
+    "actual": {
+      "client": 1265,
+      "directoryColumns": "220.25px 220.25px 220.25px 220.25px",
+      "galleryWidth": 951,
+      "scroll": 1265,
+      "width": 1280
+    },
+    "verified": false
+  }
+}

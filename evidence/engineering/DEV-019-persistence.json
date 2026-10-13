@@ -1,0 +1,42 @@
+{
+  "synthetic": true,
+  "revision": 6,
+  "counts": {
+    "courses": 2,
+    "spaces": 3,
+    "tasks": 6,
+    "captures": 14,
+    "blocks": 9,
+    "calendar": 3,
+    "timetable": 1,
+    "fitness": 4
+  },
+  "preservedExistingTask": true,
+  "preservedExistingCapture": true,
+  "preservedCanvasPosition": true,
+  "initialAi": {
+    "id": "ai",
+    "x": 120,
+    "y": 80,
+    "w": 400,
+    "h": 300,
+    "color": "#B3A0FF"
+  },
+  "normalizedAi": {
+    "id": "ai",
+    "x": 120,
+    "y": 80,
+    "w": 400,
+    "h": 350,
+    "color": "#B3A0FF"
+  },
+  "normalizationNote": "Existing app startup ensureCanvas clamps AI height from invalid fixture 300 to 350 before import. Position and width unchanged.",
+  "repeatIsNoop": true,
+  "aiRequests": 0,
+  "miniappData": {
+    "a": 12,
+    "b": 28,
+    "op": "add",
+    "result": 40
+  }
+}
