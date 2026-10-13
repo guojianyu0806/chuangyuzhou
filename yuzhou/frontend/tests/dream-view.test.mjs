@@ -13,7 +13,7 @@ const viewSource=fs.readFileSync(new URL('../src/dream.js',import.meta.url),'utf
 const capture=(id,text=id)=>({id,text,category:'备忘',tags:'合成',archived:false,createdAt:'2026-10-12T00:00:00Z'});
 const fixtures=()=>[capture('one','树叶与手写字'),capture('two','海风与旧照片'),capture('three','钟摆与时间'),...Array.from({length:12},(_,i)=>capture(`old-${i}`,`另一条旧念头 ${i}`))];
 const tick=async()=>{for(let i=0;i<8;i++)await Promise.resolve();};
-const fillScene=(h,count)=>{for(let attempt=0;attempt<20&&h.ids().length<count;attempt++)h.click('next');assert.equal(h.ids().length,count,'the roomy test scene reaches its capacity');};
+const fillScene=(h,count)=>{for(let attempt=0;attempt<20&&h.ids().length<count;attempt++){h.click('next');h.time.advance(740);}assert.equal(h.ids().length,count,'the roomy test scene reaches its capacity');};
 
 function clock(){
   let now=0,sequence=0;const jobs=new Map();
@@ -31,6 +31,8 @@ function clock(){
       now=end;
     },
     pending(){return jobs.size;},
+    now(){return now;},
+    nextAt(){return Math.min(...[...jobs.values()].map(job=>job.at));},
   };
 }
 class Events {
@@ -103,7 +105,7 @@ function harness({items=fixtures(),reduced=false,width=1000,height=600}={}){
   const history={state:{},previous:null,pushState(state){this.previous=this.state;this.state=state;},replaceState(state){this.state=state;},back(){this.state=this.previous||{};window.emit('popstate');}};
   const math=Object.create(Math);math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
   const context=vm.createContext({document,window,history,location:{href:'http://synthetic.test/#/inbox'},CSS:{escape:value=>String(value)},Math:math,
-    matchMedia:()=>media,setTimeout:time.setTimer,clearTimeout:time.clearTimer,queueMicrotask,
+    performance:{now:time.now},matchMedia:()=>media,setTimeout:time.setTimer,clearTimeout:time.clearTimer,queueMicrotask,
     IntersectionObserver:makeObserver('intersection'),ResizeObserver:makeObserver('resize'),MutationObserver:makeObserver('mutation'),
     createDreamEmitter:(input,options)=>createDreamEmitter(input,{random:math.random,...options}),
     placeDreamThought:options=>placeDreamThought({...options,random:math.random}),
@@ -276,17 +278,134 @@ test('a genuinely single-record pool stays visible without automatic departure i
   assert.equal(h.buttons.get('next').disabled,true);assert.equal(h.time.pending(),0);h.destroy();
 });
 
-test('requesting inspiration in a full scene removes only the oldest visible thought and keeps other nodes',()=>{
-  const h=harness({width:1600,height:900});fillScene(h,5);const before=h.scene.children.slice();
-  h.click('next');assert.equal(h.ids().length,5);assert.equal(before.filter(node=>h.scene.children.includes(node)).length,4);
+test('a requested arrival does not postpone the already-scheduled automatic deadline',()=>{
+  const h=harness({width:1600,height:900});h.time.advance(300);const deadline=h.time.nextAt(),original=h.scene.children.slice();
+  h.click('next');const incoming=h.scene.children.find(node=>!original.includes(node));assert.ok(incoming);
+  assert.ok(!String(incoming.className).includes('dream-instant'));
+  h.scene.emit('animationend',{target:incoming,animationName:'dream-arrive'});
+  assert.equal(h.buttons.get('next').getAttribute('aria-busy'),'false');assert.equal(h.time.nextAt(),deadline,'manual feedback must not restart the automatic clock');h.destroy();
+});
+
+test('a manual request cannot alter the scene while a hard blocker owns attention',()=>{
+  const h=harness();h.modal.open=true;h.overlayChange();const original=h.scene.children.slice();h.click('next');
+  assert.deepEqual(h.scene.children,original);assert.notEqual(h.buttons.get('next').getAttribute('aria-busy'),'true');assert.equal(h.time.pending(),0);h.destroy();
+});
+
+test('requesting inspiration in a full scene fades one thought before arrival without restarting its neighbours',()=>{
+  const h=harness({width:1600,height:900});fillScene(h,5);const before=h.scene.children.slice(),motions=before.map(node=>h.motion(node));
+  h.click('next');assert.deepEqual(h.scene.children,before,'the full scene never deletes a thought on the click frame');
+  const leaving=before.filter(node=>node.classList.contains('dream-leaving'));assert.equal(leaving.length,1);
+  assert.equal(h.buttons.get('next').getAttribute('aria-busy'),'true');
+  h.time.advance(419);assert.deepEqual(h.scene.children,before,'the departing thought remains through its fade');
+  h.scene.emit('animationend',{target:leaving[0],animationName:'dream-depart'});
+  assert.equal(h.ids().length,5);assert.equal(before.filter(node=>h.scene.children.includes(node)).length,4);
+  const incoming=h.scene.children.find(node=>!before.includes(node));assert.ok(incoming);
+  assert.ok(!String(incoming.className).includes('dream-instant'),'the new cloud has a real arrival animation');
+  for(let i=0;i<before.length;i++)if(before[i]!==leaving[0])assert.equal(h.motion(before[i]),motions[i],'the other position animations are reused');
+  h.time.advance(740);assert.equal(h.buttons.get('next').getAttribute('aria-busy'),'false');
   assert.equal(new Set(h.ids()).size,5);h.destroy();
 });
 
-test('requesting more inspiration in a full scene preserves the thought held for reading',async()=>{
+test('repeated requests coalesce throughout departure and arrival while keyboard focus stays on the button',async()=>{
+  const h=harness({width:1600,height:900});fillScene(h,5);h.focus(h.buttons.get('next'));await tick();const before=h.scene.children.slice();
+  for(let i=0;i<15;i++)h.click('next');
+  assert.equal(before.filter(node=>node.classList.contains('dream-leaving')).length,1);
+  h.time.advance(480);const incoming=h.scene.children.find(node=>!before.includes(node));assert.ok(incoming);
+  for(let i=0;i<15;i++)h.click('next');h.time.advance(740);
+  assert.equal(before.filter(node=>h.scene.children.includes(node)).length,4);
+  assert.equal(h.document.activeElement,h.buttons.get('next'));assert.equal(h.buttons.get('next').disabled,false);
+  assert.equal(h.buttons.get('next').getAttribute('aria-busy'),'false');assert.equal(h.time.pending(),1);h.destroy();
+});
+
+test('a request joins an existing natural departure without restarting or removing its node',()=>{
+  const h=harness({width:1600,height:900});h.time.advance(40000);h.click('pause');
+  const before=h.scene.children.slice(),alreadyLeaving=before.filter(node=>node.classList.contains('dream-leaving'));
+  assert.ok(alreadyLeaving.length);const motions=before.map(node=>h.motion(node));h.click('next');
+  assert.deepEqual(h.scene.children,before);const waiting=before.find(node=>node.classList.contains('dream-manual-wait'));assert.ok(alreadyLeaving.includes(waiting));
+  assert.equal(before.filter(node=>node.classList.contains('dream-leaving')).length,alreadyLeaving.length,'joining a departure does not retire an additional thought');
+  before.forEach((node,i)=>assert.equal(h.motion(node),motions[i]));
+  h.scene.emit('animationend',{target:waiting,animationName:'dream-depart'});h.time.advance(740);
+  assert.equal(h.buttons.get('next').getAttribute('aria-busy'),'false');assert.ok(!h.scene.children.includes(waiting));h.destroy();
+});
+
+test('late animation events after the manual fallback cannot replace a second thought or finish the next phase',()=>{
+  const h=harness({width:1600,height:900});fillScene(h,5);h.click('pause');const before=h.scene.children.slice();h.click('next');
+  const leaving=before.find(node=>node.classList.contains('dream-leaving'));h.time.advance(480);
+  const incoming=h.scene.children.find(node=>!before.includes(node));assert.ok(incoming);
+  h.scene.emit('animationend',{target:leaving,animationName:'dream-depart'});
+  assert.ok(h.scene.children.includes(incoming));assert.equal(h.buttons.get('next').getAttribute('aria-busy'),'true');
+  h.time.advance(740);h.scene.emit('animationend',{target:incoming,animationName:'dream-arrive'});
+  assert.equal(before.filter(node=>h.scene.children.includes(node)).length,4);assert.equal(h.buttons.get('next').getAttribute('aria-busy'),'false');assert.equal(h.time.pending(),0);h.destroy();
+});
+
+test('a two-record pool completes manual replacement when its only available record is the one just released',()=>{
+  const h=harness({items:[capture('one'),capture('two')],width:1600,height:900});h.click('pause');assert.equal(h.ids().length,2);
+  h.click('next');h.time.advance(1220);assert.deepEqual([...h.ids()].sort(),['one','two']);
+  assert.equal(h.buttons.get('next').getAttribute('aria-busy'),'false');assert.equal(h.time.pending(),0);h.destroy();
+});
+
+test('requesting more inspiration preserves the thought held for reading',async()=>{
   const h=harness({width:1600,height:900});fillScene(h,5);const held=h.scene.children[0];
   h.focus(held.children[0]);await tick();const original=h.scene.children.slice();h.click('next');
   assert.equal(h.ids().length,5);assert.ok(h.scene.children.includes(held));assert.equal(h.motion(held).playState,'paused');
+  assert.ok(!held.classList.contains('dream-leaving'));h.time.advance(1220);
   assert.equal(original.filter(node=>h.scene.children.includes(node)).length,4);assert.equal(h.paused(),false);h.destroy();
+});
+
+test('a paused scene can complete a requested transition while every movement and automatic clock remains paused',()=>{
+  const h=harness({width:1600,height:900});fillScene(h,5);h.click('pause');const before=h.scene.children.slice();h.click('next');
+  assert.deepEqual(h.scene.children,before);h.time.advance(1220);
+  assert.equal(before.filter(node=>h.scene.children.includes(node)).length,4);assert.equal(h.paused(),true);
+  assert.ok(h.scene.children.every(node=>h.motion(node).playState==='paused'));
+  assert.equal(h.buttons.get('next').getAttribute('aria-busy'),'false');assert.equal(h.time.pending(),0);
+  const after=h.ids();h.time.advance(60000);assert.deepEqual(h.ids(),after);h.destroy();
+});
+
+test('hard blockers freeze an in-flight manual transition and resume its remaining time',()=>{
+  for(const reason of ['modal','ai','hidden','offscreen']){
+    const h=harness({width:1600,height:900});fillScene(h,5);h.click('pause');h.click('next');h.time.advance(100);const before=h.scene.children.slice();
+    const change=value=>{
+      if(reason==='modal'){h.modal.open=value;h.overlayChange();}
+      if(reason==='ai'){h.ai.hidden=!value;h.overlayChange();}
+      if(reason==='hidden'){h.document.hidden=value;h.document.emit('visibilitychange');}
+      if(reason==='offscreen')h.offscreen(value);
+    };
+    change(true);assert.ok(h.surface.classList.contains('dream-burst-blocked'));h.time.advance(60000);assert.deepEqual(h.scene.children,before,reason);assert.equal(h.time.pending(),0);
+    change(false);h.time.advance(379);assert.deepEqual(h.scene.children,before,'hidden time does not consume the remaining transition');
+    h.time.advance(741);assert.equal(before.filter(node=>h.scene.children.includes(node)).length,4);assert.equal(h.buttons.get('next').getAttribute('aria-busy'),'false');h.destroy();
+  }
+});
+
+test('reading a manually departing thought freezes that transition until the pointer leaves',()=>{
+  const h=harness({width:1600,height:900});fillScene(h,5);h.click('pause');h.click('next');
+  const leaving=h.scene.children.find(node=>node.classList.contains('dream-leaving')),cloud=leaving.children[0];
+  h.scene.emit('pointerover',{target:cloud,pointerType:'mouse'});const before=h.scene.children.slice();h.time.advance(60000);
+  assert.deepEqual(h.scene.children,before);assert.equal(h.time.pending(),0);
+  h.scene.emit('pointerout',{target:cloud,relatedTarget:h.body});h.time.advance(1220);
+  assert.ok(!h.scene.children.includes(leaving));assert.equal(h.buttons.get('next').getAttribute('aria-busy'),'false');h.destroy();
+});
+
+test('search and resize cancel a pending request without a later arrival from the old view',()=>{
+  for(const action of ['search','resize']){
+    const h=harness({width:1600,height:900});fillScene(h,5);h.click('pause');h.click('next');
+    if(action==='search'){h.search.value='海风';h.search.emit('input');}
+    else{h.surface.clientWidth=1000;h.scene.clientWidth=1000;h.scene.clientHeight=600;h.window.emit('resize');}
+    const after=h.ids();assert.equal(h.buttons.get('next').getAttribute('aria-busy'),'false');assert.equal(h.time.pending(),0);
+    h.time.advance(60000);assert.deepEqual(h.ids(),after,action);assert.ok(h.scene.children.every(node=>!node.classList.contains('dream-manual-transition')));h.destroy();
+  }
+});
+
+test('reducing motion completes a pending request immediately without leaving a busy button or transition timer',()=>{
+  const h=harness({width:1600,height:900});fillScene(h,5);const before=h.scene.children.slice();h.click('next');
+  h.media.matches=true;h.media.emit('change');assert.equal(before.filter(node=>h.scene.children.includes(node)).length,4);
+  assert.equal(h.buttons.get('next').getAttribute('aria-busy'),'false');assert.equal(h.time.pending(),0);
+  assert.ok(h.scene.children.every(node=>h.motion(node).playState==='paused'));h.destroy();
+});
+
+test('unmount cancels a pending manual request and cannot insert detached thoughts later',()=>{
+  const h=harness({width:1600,height:900});fillScene(h,5);h.click('next');const before=h.scene.children.slice();
+  h.destroy();assert.equal(h.time.pending(),0);h.time.advance(60000);assert.deepEqual(h.scene.children,before);
+  assert.ok(h.animations.every(animation=>animation.cancelled));
 });
 
 test('mounted thought paths keep readable cloud rectangles apart even at different animation phases',()=>{

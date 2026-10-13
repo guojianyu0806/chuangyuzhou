@@ -8,7 +8,7 @@ const separate=(a,b)=>a.x+a.w+12<=b.x+1e-8||b.x+b.w+12<=a.x+1e-8||
   a.y+a.h+12<=b.y+1e-8||b.y+b.h+12<=a.y+1e-8;
 function verify(plan,position,width,height,occupied=[]){
   assert.ok(plan);
-  assert.ok(plan.duration>=18000&&plan.duration<=28000);
+  assert.ok(plan.duration>=15000&&plan.duration<=28000/1.2);
   assert.deepEqual(plan.keyframes.map(frame=>frame.offset),[0,.25,.5,.75,1]);
   assert.deepEqual(xy(plan.keyframes[0]),[0,0]);
   assert.ok(plan.area.x>=22-1e-8&&plan.area.x+plan.area.w<=width-22+1e-8);

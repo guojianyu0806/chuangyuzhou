@@ -25,7 +25,7 @@ export function mountDream(ctx, options={}) {
   const items=(Array.isArray(options.items)?options.items:[]).filter(item=>!item.archived);
   const reduced=matchMedia('(prefers-reduced-motion:reduce)');
   let alive=true,query='',paused=false,offscreen=false,selected=null,source=null,animation=null,closing=false,historyPending=false,afterClose=null,closeTimer=0;
-  let emitter=createDreamEmitter(items),found=items,compact=false,tickMs=2400,lastSize='',stopped=false;
+  let emitter=createDreamEmitter(items),found=items,compact=false,tickMs=2400,lastSize='',stopped=false,hardBlocked=false,burstRequest=null;
   const thoughts=new Map();
   const token=`dream-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const matches=()=>items.filter(item=>!query||`${item.text||''} ${item.tags||''} ${item.category||''} ${item.fileName||''}`.toLocaleLowerCase().includes(query));
@@ -36,16 +36,18 @@ export function mountDream(ctx, options={}) {
   // Pause both the clock and the visual layers. Global editor/AI overlays can sit outside this surface.
   const setPaused=()=>{
     if(!alive)return;
-    if(reduced.matches)for(const thought of thoughts.values())if(thought.leaving)retire(thought,true);
+    if(reduced.matches)for(const thought of thoughts.values())if(thought.leaving&&thought!==burstRequest?.thought)retire(thought,true);
     const overlay=!!document.querySelector('#modal[open],#ai-drawer:not([hidden])');
-    stopped=paused||offscreen||document.hidden||!!selected||reduced.matches||overlay;
+    hardBlocked=offscreen||document.hidden||!!selected||overlay;
+    stopped=paused||hardBlocked||reduced.matches;
+    surface.classList.toggle('dream-burst-blocked',hardBlocked);
     for(const thought of thoughts.values()){
       thought.held=thought.hovered||thought.element.contains(document.activeElement);
       thought.element.classList.toggle('dream-held',thought.held);
-      if(thought.held&&!thought.leaving)thought.element.classList.add('dream-instant');
+      if(thought.held&&!thought.leaving&&thought!==burstRequest?.thought)thought.element.classList.add('dream-instant');
       if(stopped||thought.held)thought.motion?.pause();else thought.motion?.play();
     }
-    if(stopped)for(const thought of thoughts.values())if(!thought.leaving)thought.element.classList.add('dream-instant');
+    if(stopped)for(const thought of thoughts.values())if(!thought.leaving&&thought!==burstRequest?.thought)thought.element.classList.add('dream-instant');
     surface.classList.toggle('dream-paused',stopped);
     playback.setPaused(stopped||found.length<2);
     const button=surface.querySelector('[data-dream="pause"]');
@@ -53,6 +55,7 @@ export function mountDream(ctx, options={}) {
     button.setAttribute('aria-label',paused?'继续流动':'暂停流动');
     button.innerHTML=icon(paused?'play':'pause',17)+`<span>${paused?'继续':'暂停'}</span>`;
     surface.querySelector('.dream-motion-note').textContent=reduced.matches?'静态梦境 · 可手动唤起灵感':paused?'已暂停 · 按自己的节奏读':selected||overlay?'为你停留 · 关闭后自动继续':found.length===0?'记下念头，让它在这里流动':found.length===1?'念头正在流动 · 随时记下新的联想':'自动流动中 · 旧念头会不断随机浮现';
+    syncBurst();
   };
   const bounds=()=>({width:scene.clientWidth,height:scene.clientHeight});
   const capacity=()=>compact?3:5;
@@ -69,7 +72,7 @@ export function mountDream(ctx, options={}) {
     // Reserve each whole journey so two readable clouds cannot drift through one another.
     return [...thoughts.values()].filter(thought=>thought!==exclude).map(thought=>thought.area||thought.position);
   }
-  function emitThought(instant=false){
+  function emitThought(instant=false,manual=false){
     if(thoughts.size>=capacity())return false;
     const position=placeDreamThought({...bounds(),occupied:occupiedPositions()});
     if(!position)return false;
@@ -77,14 +80,14 @@ export function mountDream(ctx, options={}) {
     const n=hash(item.id),[tint,ink]=cloudPalette(item),title=String(item.text||item.fileName||'未命名灵感');
     const date=new Date(item.createdAt),when=Number.isNaN(date.getTime())?'曾经记下':date.toLocaleDateString('zh-CN',{month:'long',day:'numeric'});
     const element=document.createElement('div');
-    element.className='dream-cloud-slot'+(Math.random()<.55?' dream-bright':'')+(instant?' dream-instant':'');
+    element.className='dream-cloud-slot'+(Math.random()<.55?' dream-bright':'')+(instant?' dream-instant':'')+(manual?' dream-manual-transition':'');
     element.setAttribute('role','listitem');
     element.style.cssText=`--cloud-tint:${tint};--cloud-ink:${ink};--cloud-shimmer:${4+n%4}s;--cloud-phase:-${n%7}s;left:${position.x}px;top:${position.y}px;width:${position.w}px;`;
     element.innerHTML=`<div class="dream-cloud-arrival"><button type="button" class="dream-cloud" data-cloud="${esc(item.id)}" aria-label="展开灵感：${esc(title.slice(0,100))}">${cloudSVG()}<span class="dream-cloud-copy"><span class="dream-cloud-category">${esc(item.category||'灵感')}${item.fileName?` · ${icon('file',11)}`:''}</span><strong>${esc(title.slice(0,130))}</strong><small>${esc(when)}的念头</small></span><span class="dream-cloud-glint" aria-hidden="true">✦</span></button></div>`;
     scene.append(element);
     const thought={item,element,position,age:0,life:24000,leaving:false,hovered:false,held:false,motion:null};
     thoughts.set(item.id,thought);startMotion(thought);
-    return true;
+    return thought;
   }
   function retire(thought,immediate=false){
     if(thought.leaving&&!immediate)return;
@@ -93,34 +96,96 @@ export function mountDream(ctx, options={}) {
     thought.element.classList.add('dream-leaving');
   }
   const depart=event=>{
-    if(event.animationName!=='dream-depart')return;
     const element=event.target.closest('.dream-cloud-slot');
+    if(burstRequest?.thought.element===element){
+      const expected=burstRequest.phase!=='arrive'?'dream-depart':['dream-arrive','dream-emerge'];
+      if((Array.isArray(expected)?expected.includes(event.animationName):event.animationName===expected)&&!hardBlocked&&!burstRequest.thought.held)finishBurstPhase(burstRequest);
+      return;
+    }
+    if(event.animationName!=='dream-depart')return;
     const thought=[...thoughts.values()].find(value=>value.element===element);
     if(thought?.leaving){
       thought.motion?.cancel();element.remove();thoughts.delete(thought.item.id);
-      if(alive&&!thoughts.size)emitThought();
+      if(alive&&!thoughts.size&&!burstRequest)emitThought();
     }
   };
   function evolve(){
     for(const thought of thoughts.values()){
-      if(thought.held)continue;
+      if(thought.held||thought===burstRequest?.thought)continue;
       thought.age+=tickMs;
       if(found.length>1&&thought.age>=thought.life)retire(thought);
     }
-    // Independent arrivals and lifetimes: other thoughts keep their own place and phase.
-    emitThought();if(Math.random()<.24)emitThought();
+    // A requested arrival owns the next free slot, without resetting anyone else's clock.
+    if(!burstRequest){emitThought();if(Math.random()<.24)emitThought();}
+  }
+  function updateBurstButton(){
+    const button=surface.querySelector('[data-dream="next"]');
+    button.setAttribute('aria-busy',String(!!burstRequest));
+    button.classList.toggle('dream-burst-pending',!!burstRequest);
+  }
+  function pauseBurstTimer(request){
+    if(!request.timer)return;
+    clearTimeout(request.timer);request.timer=0;
+    request.remaining=Math.max(0,request.remaining-(performance.now()-request.started));
+  }
+  function syncBurst(){
+    const request=burstRequest;if(!request)return;
+    if(hardBlocked||request.thought.held){pauseBurstTimer(request);return;}
+    if(reduced.matches){finishBurstPhase(request);return;}
+    if(request.timer)return;
+    request.started=performance.now();
+    // animationend is primary; the bounded fallback also handles a cancelled CSS animation.
+    request.timer=setTimeout(()=>{request.timer=0;if(alive&&burstRequest===request)finishBurstPhase(request);},request.remaining);
+  }
+  function beginBurstPhase(thought,phase){
+    thought.element.classList.remove('dream-instant');
+    thought.element.classList.add('dream-manual-transition');
+    thought.element.classList.toggle('dream-manual-wait',phase==='wait');
+    burstRequest={thought,phase,timer:0,started:0,remaining:(phase==='wait'?1100:phase==='depart'?420:680)+60};
+    updateBurstButton();syncBurst();
+  }
+  function finishBurstPhase(request){
+    if(!alive||burstRequest!==request||hardBlocked||request.thought.held)return;
+    clearTimeout(request.timer);request.timer=0;
+    const thought=request.thought;burstRequest=null;
+    thought.element.classList.remove('dream-manual-transition','dream-manual-wait');
+    if(request.phase!=='arrive'){
+      retire(thought,true);
+      const added=emitThought(reduced.matches,true);
+      if(added){beginBurstPhase(added,'arrive');return;}
+    }else{
+      // Removing the shorter animation must not restart the natural arrival on this node.
+      thought.element.classList.add('dream-instant');
+    }
+    updateBurstButton();
+  }
+  function cancelBurst(){
+    const request=burstRequest;if(!request)return;
+    clearTimeout(request.timer);burstRequest=null;
+    request.thought.element.classList.remove('dream-manual-transition','dream-manual-wait');
+    if(request.phase!=='wait'){request.thought.element.classList.remove('dream-leaving');request.thought.leaving=false;}
+    request.thought.element.classList.add('dream-instant');
+    updateBurstButton();
   }
   function burst(){
-    let added=emitThought(paused||reduced.matches);
-    if(!added){
-      const oldest=[...thoughts.values()].filter(thought=>!thought.held).sort((a,b)=>b.age-a.age)[0];
-      if(oldest)retire(oldest,true);
-      added=emitThought(true);
+    // Repeated presses merge into the transition already in flight; focus stays on the button.
+    if(!alive||burstRequest||found.length<2||hardBlocked)return;
+    const added=emitThought(reduced.matches,true);
+    if(added){beginBurstPhase(added,'arrive');return;}
+    const candidates=[...thoughts.values()].filter(thought=>!thought.held).sort((a,b)=>b.age-a.age);
+    const oldest=candidates.find(thought=>thought.leaving)||candidates[0];
+    if(!oldest)return;
+    if(reduced.matches){
+      retire(oldest,true);const replacement=emitThought(true);
+      if(replacement)replacement.element.classList.add('dream-instant');
+      return;
     }
-    if(added&&Math.random()<.5)emitThought(paused||reduced.matches);
-    playback.reset();setPaused();
+    // Adopt an existing departure at its current opacity/phase instead of fading another cloud.
+    if(oldest.leaving)beginBurstPhase(oldest,'wait');
+    else{retire(oldest);beginBurstPhase(oldest,'depart');}
   }
   function draw(){
+    cancelBurst();
     for(const thought of thoughts.values())thought.motion?.cancel();
     thoughts.clear();scene.innerHTML='';
     for(let i=0;i<Math.min(2,found.length);i++)emitThought(true);
@@ -194,6 +259,7 @@ export function mountDream(ctx, options={}) {
     // A hidden/captured surface can briefly report no usable area. Keep its thoughts until visible.
     if(size.width<248||size.height<215)return;
     if(signature===lastSize)return;lastSize=signature;
+    cancelBurst();
     const occupied=[];
     for(const thought of thoughts.values()){
       const position=placeDreamThought({...bounds(),occupied});
@@ -227,7 +293,7 @@ export function mountDream(ctx, options={}) {
   window.addEventListener('popstate',popstate);window.addEventListener('resize',resize);document.addEventListener('visibilitychange',setPaused);reduced.addEventListener('change',setPaused);
   resize();draw();
   return ()=>{
-    alive=false;clearTimeout(closeTimer);stopAnimation();playback.destroy();observer?.disconnect();sizeObserver?.disconnect();overlayObserver?.disconnect();fullscreen.destroy();
+    alive=false;cancelBurst();clearTimeout(closeTimer);stopAnimation();playback.destroy();observer?.disconnect();sizeObserver?.disconnect();overlayObserver?.disconnect();fullscreen.destroy();
     for(const thought of thoughts.values())thought.motion?.cancel();
     if(history.state?.__czbYuzhouDream===token){const next={...history.state};delete next.__czbYuzhouDream;history.replaceState(next,'',location.href);}
     if(dialog.open)dialog.close();

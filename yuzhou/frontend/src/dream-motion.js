@@ -26,7 +26,7 @@ export function createDreamMotion({position,width,height,occupied=[],random=Math
   const available=sign=>sign<0?-range[0]:range[1];
   if(available(direction)<Math.min(140,room(axis)))direction=-direction;
   const desired=140+unit()*110,crossFactor=(unit()-.5)*.28,bendFactor=(unit()-.5)*2;
-  const duration=18000+unit()*10000;
+  const duration=(18000+unit()*10000)/1.2;
   function candidate(mainAxis,sign,fraction,bendScale){
     const crossAxis=mainAxis==='x'?'y':'x',mainRange=limits[mainAxis],crossRange=limits[crossAxis];
     const distance=Math.min(sign<0?-mainRange[0]:mainRange[1],desired)*fraction*sign;

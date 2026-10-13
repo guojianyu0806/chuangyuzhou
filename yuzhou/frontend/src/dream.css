@@ -52,5 +52,12 @@
 .dream-instant .dream-cloud-arrival{animation:none;opacity:1;transform:none}
 .dream-leaving .dream-cloud-arrival{animation:dream-depart 1100ms cubic-bezier(.4,0,.7,1) both}
 .dream-paused .dream-cloud-arrival,.dream-held .dream-cloud-arrival{animation-play-state:paused}
+.dream-manual-transition:not(.dream-leaving) .dream-cloud-arrival{animation-duration:680ms}
+.dream-manual-transition.dream-leaving .dream-cloud-arrival{animation-duration:420ms}
+.dream-manual-transition.dream-manual-wait .dream-cloud-arrival{animation-duration:1100ms}
+.dream-paused:not(.dream-burst-blocked) .dream-manual-transition:not(.dream-held) .dream-cloud-arrival{animation-play-state:running}
+.dream-footer [data-dream="next"]{transition:background-color 180ms ease,border-color 180ms ease,box-shadow 220ms ease}
+.dream-footer [data-dream="next"][aria-busy="true"]{background:#353052;border-color:#b39bd6;box-shadow:0 0 16px #b59ae829}
+.dream-footer [data-dream="next"]:active{background:#44385f}
 @keyframes dream-depart{from{opacity:1;transform:translate(0,0) scale(1)}to{opacity:0;transform:translate(14px,-16px) scale(.93)}}
 @media(prefers-reduced-motion:reduce){.dream-cloud-arrival{animation:none!important}}
