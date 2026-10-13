@@ -1,0 +1,818 @@
+{
+  "synthetic": true,
+  "initialReview": {
+    "size": [
+      320,
+      238
+    ],
+    "art": [
+      59.859375,
+      61.546875
+    ],
+    "title": "24px"
+  },
+  "earlyChecks": [
+    {
+      "art": [
+        {
+          "h": 133.96875,
+          "w": 130.296875,
+          "x": 481.703125,
+          "y": 342.234375
+        }
+      ],
+      "body": {
+        "h": 401.40625,
+        "w": 592,
+        "x": 24,
+        "y": 79.796875
+      },
+      "id": "review",
+      "overflow": [],
+      "size": [
+        640,
+        560
+      ],
+      "title": "50.32px"
+    },
+    {
+      "art": [
+        {
+          "h": 47.4375,
+          "w": 46.140625,
+          "x": 145.859375,
+          "y": 96.5625
+        }
+      ],
+      "body": {
+        "h": 90,
+        "w": 172,
+        "x": 24,
+        "y": 59
+      },
+      "id": "review",
+      "overflow": [],
+      "size": [
+        220,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [
+        {
+          "h": 57.328125,
+          "w": 55.75,
+          "x": 1016.25,
+          "y": 86.671875
+        }
+      ],
+      "body": {
+        "h": 80,
+        "w": 1052,
+        "x": 24,
+        "y": 69
+      },
+      "id": "review",
+      "overflow": [
+        {
+          "class": "cv-card-detail",
+          "rect": {
+            "h": 33.890625,
+            "w": 973.453125,
+            "x": 24,
+            "y": 121.671875
+          }
+        }
+      ],
+      "size": [
+        1100,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [
+        {
+          "h": 47.4375,
+          "w": 46.140625,
+          "x": 145.859375,
+          "y": 710.5625
+        }
+      ],
+      "body": {
+        "h": 685,
+        "w": 172,
+        "x": 24,
+        "y": 78
+      },
+      "id": "review",
+      "overflow": [],
+      "size": [
+        220,
+        850
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [
+        {
+          "h": 61.546875,
+          "w": 59.859375,
+          "x": 232.140625,
+          "y": 100.453125
+        }
+      ],
+      "body": {
+        "h": 108,
+        "w": 272,
+        "x": 24,
+        "y": 59
+      },
+      "id": "review",
+      "overflow": [],
+      "size": [
+        320,
+        238
+      ],
+      "title": "24px"
+    }
+  ],
+  "finalModuleChecks": [
+    {
+      "art": [
+        {
+          "h": 47.4375,
+          "w": 46.140625,
+          "x": 145.859375,
+          "y": 96.5625
+        }
+      ],
+      "body": {
+        "h": 90,
+        "w": 172,
+        "x": 24,
+        "y": 59
+      },
+      "id": "review",
+      "overflow": [],
+      "size": [
+        220,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [
+        {
+          "h": 133.96875,
+          "w": 130.296875,
+          "x": 481.703125,
+          "y": 342.234375
+        }
+      ],
+      "body": {
+        "h": 401.40625,
+        "w": 592,
+        "x": 24,
+        "y": 79.796875
+      },
+      "id": "review",
+      "overflow": [],
+      "size": [
+        640,
+        560
+      ],
+      "title": "50.32px"
+    },
+    {
+      "art": [
+        {
+          "h": 53.296875,
+          "w": 58.484375,
+          "x": 132.515625,
+          "y": 92.703125
+        }
+      ],
+      "body": {
+        "h": 90,
+        "w": 172,
+        "x": 24,
+        "y": 59
+      },
+      "id": "courses",
+      "overflow": [],
+      "size": [
+        220,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [
+        {
+          "h": 150.484375,
+          "w": 165.15625,
+          "x": 445.84375,
+          "y": 327.71875
+        }
+      ],
+      "body": {
+        "h": 401.40625,
+        "w": 592,
+        "x": 24,
+        "y": 79.796875
+      },
+      "id": "courses",
+      "overflow": [],
+      "size": [
+        640,
+        560
+      ],
+      "title": "50.32px"
+    },
+    {
+      "art": [
+        {
+          "h": 40.6455078125,
+          "w": 65.3193359375,
+          "x": 107.87158203125,
+          "y": 57.84912109375
+        }
+      ],
+      "body": {
+        "h": 90,
+        "w": 172,
+        "x": 24,
+        "y": 59
+      },
+      "id": "english",
+      "overflow": [],
+      "size": [
+        220,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [
+        {
+          "h": 178.5462646484375,
+          "w": 286.8388671875,
+          "x": 18.76806640625,
+          "y": 182.36749267578125
+        }
+      ],
+      "body": {
+        "h": 408.203125,
+        "w": 592,
+        "x": 24,
+        "y": 73
+      },
+      "id": "english",
+      "overflow": [],
+      "size": [
+        640,
+        560
+      ],
+      "title": "50.32px"
+    },
+    {
+      "art": [
+        {
+          "h": 57.042022705078125,
+          "w": 57.04205322265625,
+          "x": 135.43209838867188,
+          "y": 86.43209838867188
+        }
+      ],
+      "body": {
+        "h": 90,
+        "w": 172,
+        "x": 24,
+        "y": 59
+      },
+      "id": "inbox",
+      "overflow": [],
+      "size": [
+        220,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [
+        {
+          "h": 161.06317138671875,
+          "w": 161.06317138671875,
+          "x": 459.5699462890625,
+          "y": 322.77313232421875
+        }
+      ],
+      "body": {
+        "h": 401.40625,
+        "w": 592,
+        "x": 24,
+        "y": 79.796875
+      },
+      "id": "inbox",
+      "overflow": [],
+      "size": [
+        640,
+        560
+      ],
+      "title": "50.32px"
+    },
+    {
+      "art": [],
+      "body": {
+        "h": 90,
+        "w": 172,
+        "x": 24,
+        "y": 59
+      },
+      "id": "tasks",
+      "overflow": [],
+      "size": [
+        220,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [],
+      "body": {
+        "h": 401.40625,
+        "w": 592,
+        "x": 24,
+        "y": 79.796875
+      },
+      "id": "tasks",
+      "overflow": [],
+      "size": [
+        640,
+        560
+      ],
+      "title": "50.32px"
+    },
+    {
+      "art": [],
+      "body": {
+        "h": 90,
+        "w": 172,
+        "x": 24,
+        "y": 59
+      },
+      "id": "calendar",
+      "overflow": [],
+      "size": [
+        220,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [],
+      "body": {
+        "h": 401.40625,
+        "w": 592,
+        "x": 24,
+        "y": 79.796875
+      },
+      "id": "calendar",
+      "overflow": [],
+      "size": [
+        640,
+        560
+      ],
+      "title": "50.32px"
+    },
+    {
+      "art": [],
+      "body": {
+        "h": 90,
+        "w": 172,
+        "x": 24,
+        "y": 59
+      },
+      "id": "timetable",
+      "overflow": [],
+      "size": [
+        220,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [],
+      "body": {
+        "h": 401.40625,
+        "w": 592,
+        "x": 24,
+        "y": 79.796875
+      },
+      "id": "timetable",
+      "overflow": [],
+      "size": [
+        640,
+        560
+      ],
+      "title": "50.32px"
+    },
+    {
+      "art": [],
+      "body": {
+        "h": 90,
+        "w": 172,
+        "x": 24,
+        "y": 59
+      },
+      "id": "competitions",
+      "overflow": [],
+      "size": [
+        220,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [],
+      "body": {
+        "h": 401.40625,
+        "w": 592,
+        "x": 24,
+        "y": 79.796875
+      },
+      "id": "competitions",
+      "overflow": [],
+      "size": [
+        640,
+        560
+      ],
+      "title": "50.32px"
+    },
+    {
+      "art": [],
+      "body": {
+        "h": 90,
+        "w": 172,
+        "x": 24,
+        "y": 59
+      },
+      "id": "ledger",
+      "overflow": [],
+      "size": [
+        220,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [],
+      "body": {
+        "h": 401.40625,
+        "w": 592,
+        "x": 24,
+        "y": 79.796875
+      },
+      "id": "ledger",
+      "overflow": [],
+      "size": [
+        640,
+        560
+      ],
+      "title": "50.32px"
+    },
+    {
+      "art": [
+        {
+          "h": 55.503875732421875,
+          "w": 55.50390625,
+          "x": 136.849609375,
+          "y": 89.84963989257812
+        }
+      ],
+      "body": {
+        "h": 90,
+        "w": 172,
+        "x": 24,
+        "y": 59
+      },
+      "id": "showcase-dev012-project",
+      "overflow": [],
+      "size": [
+        220,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [],
+      "body": {
+        "h": 90,
+        "w": 172,
+        "x": 24,
+        "y": 59
+      },
+      "id": "block:showcase-dev019-note",
+      "overflow": [],
+      "size": [
+        220,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [],
+      "body": {
+        "h": 213.5,
+        "w": 342,
+        "x": 24,
+        "y": 64
+      },
+      "id": "ai",
+      "overflow": [],
+      "size": [
+        390,
+        350
+      ],
+      "title": "29.07px"
+    }
+  ],
+  "englishFinal": [
+    {
+      "art": [
+        {
+          "h": 40.6455078125,
+          "w": 65.3193359375,
+          "x": 107.87158203125,
+          "y": 57.84912109375
+        }
+      ],
+      "body": {
+        "h": 90,
+        "w": 172,
+        "x": 24,
+        "y": 59
+      },
+      "id": "english",
+      "overflow": [],
+      "size": [
+        220,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [
+        {
+          "h": 42.98811340332031,
+          "w": 69.09716796875,
+          "x": 204.162353515625,
+          "y": 61.72468566894531
+        }
+      ],
+      "body": {
+        "h": 146,
+        "w": 272,
+        "x": 24,
+        "y": 63
+      },
+      "id": "english",
+      "overflow": [],
+      "size": [
+        320,
+        280
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [
+        {
+          "h": 42.98811340332031,
+          "w": 69.09716796875,
+          "x": 204.162353515625,
+          "y": 61.72468566894531
+        }
+      ],
+      "body": {
+        "h": 185.390625,
+        "w": 272,
+        "x": 24,
+        "y": 63
+      },
+      "id": "english",
+      "overflow": [],
+      "size": [
+        320,
+        320
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [
+        {
+          "h": 86.00634765625,
+          "w": 138.18096923828125,
+          "x": 21.47979736328125,
+          "y": 119.965576171875
+        }
+      ],
+      "body": {
+        "h": 208.671875,
+        "w": 272,
+        "x": 24,
+        "y": 63
+      },
+      "id": "english",
+      "overflow": [],
+      "size": [
+        320,
+        344
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [
+        {
+          "h": 72.24150085449219,
+          "w": 116.1239013671875,
+          "x": 937.99267578125,
+          "y": 56.17613220214844
+        }
+      ],
+      "body": {
+        "h": 90,
+        "w": 1052,
+        "x": 24,
+        "y": 59
+      },
+      "id": "english",
+      "overflow": [],
+      "size": [
+        1100,
+        220
+      ],
+      "title": "24px"
+    },
+    {
+      "art": [
+        {
+          "h": 63.22314453125,
+          "w": 101.6112060546875,
+          "x": 22.14752197265625,
+          "y": 144.513427734375
+        }
+      ],
+      "body": {
+        "h": 700,
+        "w": 172,
+        "x": 24,
+        "y": 63
+      },
+      "id": "english",
+      "overflow": [],
+      "size": [
+        220,
+        850
+      ],
+      "title": "24px"
+    }
+  ],
+  "pointerResize": {
+    "art": [
+      {
+        "h": 156.59375,
+        "w": 152.296875,
+        "x": 559.703125,
+        "y": 319.609375
+      }
+    ],
+    "body": {
+      "h": 401.40625,
+      "w": 692,
+      "x": 24,
+      "y": 79.796875
+    },
+    "id": "review",
+    "overflow": [],
+    "size": [
+      740,
+      560
+    ],
+    "title": "57.97px"
+  },
+  "refreshPreservedPointerResult": true,
+  "modes": [
+    {
+      "artDisplay": "flex",
+      "container": "none",
+      "presentation": "cv-viewport is-list",
+      "size": [
+        347,
+        280
+      ],
+      "title": "27px"
+    },
+    {
+      "artDisplay": "none",
+      "container": "none",
+      "presentation": "cv-viewport is-list is-grid is-grid-2",
+      "size": [
+        536,
+        290
+      ],
+      "title": "24px"
+    },
+    {
+      "artDisplay": "none",
+      "container": "none",
+      "presentation": "cv-viewport is-list is-grid is-grid-3",
+      "size": [
+        350,
+        290
+      ],
+      "title": "24px"
+    },
+    {
+      "artDisplay": "flex",
+      "container": "none",
+      "presentation": "cv-viewport is-stack",
+      "size": [
+        620,
+        331
+      ],
+      "title": "27px"
+    }
+  ],
+  "ai": [
+    {
+      "body": {
+        "height": 214,
+        "overflow": "auto",
+        "scrollHeight": 257
+      },
+      "composerTransform": "none",
+      "composerZoom": "1",
+      "iframeCount": 0,
+      "sendButton": true,
+      "size": [
+        390,
+        350
+      ]
+    },
+    {
+      "body": {
+        "height": 689,
+        "overflow": "auto",
+        "scrollHeight": 689
+      },
+      "composerTransform": "none",
+      "composerZoom": "1",
+      "iframeCount": 0,
+      "sendButton": true,
+      "size": [
+        1100,
+        850
+      ]
+    }
+  ],
+  "zoom": {
+    "artUnit": "2.1452px",
+    "cameraTransform": "translate(224.151px, 114.611px) scale(0.756144)",
+    "card": [
+      740,
+      560
+    ],
+    "title": "57.97px"
+  },
+  "keyboard": {
+    "art": [
+      {
+        "h": 119.77789306640624,
+        "w": 116.493408203125,
+        "x": 427.93006896972656,
+        "y": 246.16021728515625
+      }
+    ],
+    "body": {
+      "h": 309.19189453125,
+      "w": 529.3006591796875,
+      "x": 18.147445678710938,
+      "y": 60.52693176269531
+    },
+    "id": "review",
+    "overflow": [],
+    "size": [
+      748,
+      568
+    ],
+    "title": "58.85px"
+  },
+  "observedCorrections": [
+    "1100x220 review bottom statistics initially exceeded body by approximately 6.6px; compact header restored the available height.",
+    "Legacy short-card selectors initially hid English artwork and applied an extra .75 course-art scale; scoped specificity corrected.",
+    "320x280 English action row initially exceeded body by 30.5px; artwork now uses a compact side position below 300px container height."
+  ],
+  "limits": "Synthetic desktop browser only; no physical phone, paid model, formal private data or formal layout change."
+}
