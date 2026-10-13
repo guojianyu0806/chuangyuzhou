@@ -1,0 +1,138 @@
+{
+  "initial": {
+    "cards": 10,
+    "client": 1280,
+    "fab": "none",
+    "firstTileTransform": "matrix(0.990769, -0.135562, 0.135562, 0.990769, 0.522205, -5.43338)",
+    "height": 720,
+    "inventory": "10 个模块·3 个空间·9 个自定义方块",
+    "pageHeight": 720,
+    "pointerTransform": "",
+    "scroll": 1280,
+    "title": "我的工作台",
+    "url": "#/welcome",
+    "width": 1280
+  },
+  "pointer": {
+    "pointer": "translate3d(-10.192px, -15.121px, 0px) rotateX(0.942deg) rotateY(-0.524deg)",
+    "state": "running",
+    "tile": "matrix(0.99032, -0.138805, 0.138805, 0.99032, 0.0532965, -6.84011)"
+  },
+  "paused": {
+    "animation": "paused",
+    "pointer": "translate3d(-7.45px, -5.787px, 0px) rotateX(0.303deg) rotateY(-0.384deg)",
+    "state": "paused",
+    "tile": "matrix(0.99028, -0.139087, 0.139087, 0.99028, 0.0125137, -6.96246)"
+  },
+  "pausedLater": {
+    "pointer": "translate3d(-7.45px, -5.787px, 0px) rotateX(0.303deg) rotateY(-0.384deg)",
+    "tile": "matrix(0.99028, -0.139087, 0.139087, 0.99028, 0.0125137, -6.96246)"
+  },
+  "entered": {
+    "canvas": true,
+    "cards": 22,
+    "route": "#/home",
+    "sidebar": "flex",
+    "welcome": false
+  },
+  "refreshedHome": "http://127.0.0.1:4398/#/welcome",
+  "deepLink": "http://127.0.0.1:4398/#/builder",
+  "longMobile": {
+    "client": 390,
+    "enter": {
+      "bottom": 503.93701171875,
+      "height": 51.9019775390625,
+      "left": 114.49005889892578,
+      "right": 276.18473052978516,
+      "top": 452.0350341796875,
+      "width": 161.69467163085938,
+      "x": 114.49005889892578,
+      "y": 452.0350341796875
+    },
+    "height": 844,
+    "scroll": 390,
+    "titleHeight": 58.8887939453125,
+    "titleLength": 80,
+    "width": 390
+  },
+  "mobile": {
+    "client": 390,
+    "enter": {
+      "bottom": 495.9333801269531,
+      "height": 51.78802490234375,
+      "left": 115.0598602294922,
+      "right": 276.39947509765625,
+      "top": 444.1453552246094,
+      "width": 161.33961486816406,
+      "x": 115.0598602294922,
+      "y": 444.1453552246094
+    },
+    "height": 844,
+    "motion": "running",
+    "scroll": 390,
+    "width": 390
+  },
+  "mobileEntered": "http://127.0.0.1:4398/#/home",
+  "finalDesktop": {
+    "client": 1280,
+    "height": 720,
+    "pageHeight": 720,
+    "route": "#/welcome",
+    "scroll": 1280,
+    "state": "running",
+    "tiles": [
+      {
+        "bottom": 155,
+        "tileHeight": 168,
+        "title": "AI伙伴"
+      },
+      {
+        "bottom": 155,
+        "tileHeight": 168,
+        "title": "课程空间"
+      },
+      {
+        "bottom": 155,
+        "tileHeight": 168,
+        "title": "英语"
+      },
+      {
+        "bottom": 155,
+        "tileHeight": 168,
+        "title": "灵感收集箱"
+      },
+      {
+        "bottom": 155,
+        "tileHeight": 168,
+        "title": "备忘与待办"
+      },
+      {
+        "bottom": 155,
+        "tileHeight": 168,
+        "title": "生活回顾"
+      },
+      {
+        "bottom": 155,
+        "tileHeight": 168,
+        "title": "记账"
+      },
+      {
+        "bottom": 155,
+        "tileHeight": 168,
+        "title": "日历"
+      },
+      {
+        "bottom": 155,
+        "tileHeight": 168,
+        "title": "工作台参赛筹备 · 示例"
+      },
+      {
+        "bottom": 155,
+        "tileHeight": 168,
+        "title": "演示讲解提纲 · 示例"
+      }
+    ],
+    "width": 1280
+  },
+  "errors": []
+}
