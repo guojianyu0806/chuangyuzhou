@@ -1,0 +1,199 @@
+{
+  "desktop": {
+    "cards": 20,
+    "center": {
+      "bottom": 507.21875,
+      "height": 258.453125,
+      "left": 438.328125,
+      "right": 826.65625,
+      "top": 248.765625,
+      "width": 388.328125,
+      "x": 438.328125,
+      "y": 248.765625
+    },
+    "client": 1265,
+    "height": 720,
+    "pageHeight": 736,
+    "scroll": 1265,
+    "stage": {
+      "bottom": 668,
+      "height": 580,
+      "left": 0,
+      "right": 1265,
+      "top": 88,
+      "width": 1265,
+      "x": 0,
+      "y": 88
+    },
+    "tile": {
+      "bottom": 240.69552612304688,
+      "height": 134.93600463867188,
+      "left": 29.260129928588867,
+      "right": 219.04778861999512,
+      "top": 105.759521484375,
+      "width": 189.78765869140625,
+      "x": 29.260129928588867,
+      "y": 105.759521484375
+    },
+    "width": 1280
+  },
+  "course": "http://127.0.0.1:4398/#/courses",
+  "space": "http://127.0.0.1:4398/#/space/showcase-dev012-project",
+  "block": "http://127.0.0.1:4398/#/block/block%3Ashowcase-dev012-narration",
+  "hoverA": {
+    "course": "matrix(0.996274, 0.08624, -0.08624, 0.996274, 2.36833, 0.104998)",
+    "held": [
+      "courses"
+    ],
+    "motion": "",
+    "neighbor": "matrix(0.998642, -0.0520975, 0.0520975, 0.998642, 0.0342042, -6.89739)"
+  },
+  "hitTargets": [
+    {
+      "name": "进入AI伙伴",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入课程空间",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入英语",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入灵感收集箱",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入备忘与待办",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入生活回顾",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入记账",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入日历",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入学期课表",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入比赛",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入工作台参赛筹备 · 示例",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入演示讲解提纲 · 示例",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入预演观察表 · 示例",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入全模块体验导览 · 示例",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入活动与运动 · 示例",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入会议记录便笺 · 示例",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入出门前检查 · 示例",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入常用资料入口 · 示例",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入内容整理进度 · 示例",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入下一次创作回顾 · 示例",
+      "targetReceivesCenter": true
+    },
+    {
+      "name": "进入工作台",
+      "targetReceivesCenter": true
+    }
+  ],
+  "hoverB": {
+    "course": "matrix(0.996274, 0.08624, -0.08624, 0.996274, 2.36833, 0.104998)",
+    "held": [
+      "courses"
+    ],
+    "motion": "",
+    "neighbor": "matrix(0.999794, -0.0202883, 0.0202883, 0.999794, 4.59372, 6.78116)"
+  },
+  "tablet": {
+    "client": 785,
+    "height": 900,
+    "scroll": 785,
+    "width": 800
+  },
+  "mobile": {
+    "cards": 20,
+    "center": {
+      "bottom": 466.453125,
+      "height": 50,
+      "left": 106.5,
+      "right": 268.5,
+      "top": 416.453125,
+      "width": 162,
+      "x": 106.5,
+      "y": 416.453125
+    },
+    "client": 375,
+    "height": 844,
+    "scroll": 375,
+    "width": 390
+  },
+  "keyboard": "http://127.0.0.1:4398/#/courses",
+  "mobileLast": "http://127.0.0.1:4398/#/block/block%3Ashowcase-dev019-countdown",
+  "central": "http://127.0.0.1:4398/#/home",
+  "centralAfterRender": {
+    "cards": 22,
+    "route": "#/home"
+  },
+  "longTitle": {
+    "entry": {
+      "bottom": 469.0303039550781,
+      "height": 49,
+      "left": 558.154541015625,
+      "right": 721.8145141601562,
+      "top": 420.0303039550781,
+      "width": 163.65997314453125,
+      "x": 558.154541015625,
+      "y": 420.0303039550781
+    },
+    "entryAccessible": true,
+    "titleLength": 80
+  },
+  "finalDesktop": {
+    "cards": 20,
+    "client": 1280,
+    "height": 720,
+    "hint": "点击方块，直接进入",
+    "pageHeight": 720,
+    "scroll": 1280,
+    "width": 1280
+  },
+  "errors": []
+}
