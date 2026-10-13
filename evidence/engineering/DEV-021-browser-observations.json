@@ -1,0 +1,77 @@
+{
+  "synthetic": true,
+  "persisted": {
+    "more": [
+      "english",
+      "space:showcase-dev012-project"
+    ],
+    "primary": [
+      "courses",
+      "home",
+      "builder",
+      "ai",
+      "inbox",
+      "tasks",
+      "ledger",
+      "calendar",
+      "timetable",
+      "competitions",
+      "space:showcase-dev019-guide",
+      "space:showcase-dev019-fitness"
+    ],
+    "sync": "已同步"
+  },
+  "reset": {
+    "more": false,
+    "primary": [
+      "home",
+      "builder",
+      "ai",
+      "courses",
+      "english",
+      "inbox",
+      "tasks",
+      "review",
+      "ledger",
+      "calendar",
+      "timetable",
+      "competitions",
+      "space:showcase-dev012-project",
+      "space:showcase-dev019-guide",
+      "space:showcase-dev019-fitness"
+    ],
+    "status": "已恢复默认导航，全部可用入口直接显示。"
+  },
+  "narrow": {
+    "active": "english",
+    "client": 375,
+    "drawerClosed": true,
+    "innerWidth": 390,
+    "scroll": 375,
+    "title": "英语"
+  },
+  "compactRail": {
+    "active": "english",
+    "labelDisplay": "none",
+    "moreOpen": true,
+    "symbolWidth": 20,
+    "width": 80
+  },
+  "hiddenCanvas": {
+    "cards": 22,
+    "reviewInNav": false,
+    "reviewOnCanvas": true
+  },
+  "observedInteractions": [
+    "英语与示例项目收进更多、生活回顾隐藏后，侧栏三组与设置一致",
+    "课程上移一次，再用真实指针拖到工作台之前；松手保存且拖动标记归零",
+    "从更多进入示例项目，标题和当前导航匹配；刷新后排序与分组保留并显示已同步",
+    "恢复默认后15个可用入口全部直接显示",
+    "390×844下编辑面板client/scroll均339，页面client/scroll均375；折叠导航跳转成功并关闭抽屉"
+  ],
+  "limits": [
+    "仅合成4398账号，不修改正式账号导航配置",
+    "窄屏浏览器检查不代表真机或跨设备",
+    "无真实模型调用"
+  ]
+}
