@@ -125,7 +125,7 @@ export function mountCanvas(ctx, collection) {
   const fitIcon='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg>';
   const gridIcon='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>';
 
-  root.innerHTML=`<section class="space-desktop ${collection?.hideHeader?'cv-nested':''}" aria-labelledby="canvas-title">
+  root.innerHTML=`<section class="space-desktop ${collection?'':'cv-home'} ${collection?.hideHeader?'cv-nested':''}" aria-labelledby="canvas-title">
     <header class="cv-pagehead cv-compact-header"><div class="cv-heading"><h1 id="canvas-title">${esc(collection?.title||getWorkbench(state).title)}<span class="cv-title-dot">.</span></h1></div><div class="cv-head-actions"><button class="cv-button cv-arrange-toggle" type="button" data-cv="arrange" aria-label="选择卡片排列方式" aria-haspopup="dialog">${gridIcon}<span>排列</span>${icon('chevron-down',13)}</button><button class="cv-button cv-create" type="button" data-cv="create" ${collection?.createLabel===false?'hidden':''}>${icon('plus',19)}<span>${esc(collection?.createLabel||(!collection&&ctx.openBuilder?'搭建工作台':'新建空间'))}</span></button></div></header>
     ${collection?.toolbar||''}
 
