@@ -20,6 +20,8 @@ import {mountBuilder} from './builder.js';
 import {companionButton,openCompanion} from './companion.js';
 import {createSidebarNavigation} from './sidebar-navigation.js';
 import {mountSidebarResize} from './sidebar-resize.js';
+import {getNavigationItems} from './navigation-model.js';
+import {renderSidebarNavigation} from './navigation-shell.js';
 import {getCustomBlocks} from './custom-blocks-model.js';
 import {customBlockEditor,mountCustomBlockPage} from './custom-blocks.js';
 
@@ -75,7 +77,7 @@ function save(target=state){
     toast('本机保存失败，本次未覆盖原记录。请导出备份后检查存储空间。');throw error;
   }
   const stored=localStorage.getItem(key(targetMode));baselines.set(target,stored);
-  if(target===state){lastStored=stored;updateModuleNavigation();updateShellCounts();renderSpaceLinks();if(route==='space'){const title=state.spaces.find(s=>s.id===subroute)?.title;if(title){document.title=`${title} · 宇宙 · 传智杯独立副本`;const label=document.querySelector('#current-page');if(label)label.textContent=title;}}}
+  if(target===state){lastStored=stored;updateModuleNavigation();if(route==='space'){const title=state.spaces.find(s=>s.id===subroute)?.title;if(title){document.title=`${title} · 宇宙 · 传智杯独立副本`;const label=document.querySelector('#current-page');if(label)label.textContent=title;}}}
 }
 const dialog=document.querySelector('#modal');
 function insertColoredRecord(target,list,entry){
@@ -200,8 +202,7 @@ function shell(){
   <aside class="sidebar ${state.ui.sidebarPinned?'rail-pinned':''}" aria-label="空间导航"><a href="#/home" class="brand" aria-label="宇宙空间主页"><img src="./icon.svg" alt="" width="39" height="39"><span>宇宙<small>传智杯独立副本</small></span></a>
   <button class="rail-pin" data-action="pin-nav" aria-label="${state.ui.sidebarPinned?'收起侧边栏':'展开侧边栏'}" aria-pressed="${!!state.ui.sidebarPinned}">${icon('pin',17)}<span>${state.ui.sidebarPinned?'收起侧边栏':'展开侧边栏'}</span></button>
   <div class="workspace-switch"><span class="workspace-avatar">我</span><span><strong data-workbench-title>${esc(getWorkbench(state).title)}</strong><small>按你的方式搭建</small></span></div>
-  <div class="rail-scroll"><nav class="primary-nav" aria-label="主导航"></nav>
-  <div class="rail-spaces"><div class="rail-section-title"><span>项目空间</span><button class="icon-btn" data-action="new-space" aria-label="新建工作区">${icon('plus',15)}</button></div><div id="rail-space-links"></div></div></div>
+  <div class="rail-scroll"><div class="rail-navigation"></div></div>
   <div class="sidebar-bottom"><button class="settings-link rail-update" data-action="check-update" aria-label="检查更新" title="检查更新">${icon('refresh')}<span>检查更新</span></button><button class="rail-new" data-action="new-space" aria-label="新建工作区">${icon('plus',20)}<span>新建工作区</span></button><a class="settings-link" href="#/settings" aria-label="偏好与连接" title="偏好与连接">${icon('settings')}<span>偏好与连接</span></a><button class="profile" data-go="settings" aria-label="个人设置"><span class="avatar">${esc(state.profile.name.slice(0,1))}</span><span><strong>${esc(state.profile.name)}</strong><small>项目工作台</small></span></button></div></aside>
   <div class="app-main"><header class="topbar"><div class="breadcrumb"><button class="mobile-menu icon-btn" data-action="toggle-nav" aria-label="展开导航">${icon('menu')}</button><a href="#/home" class="desktop-label">工作台</a><span class="slash desktop-label">/</span><strong id="current-page">空间主页</strong></div><button class="search-trigger" data-action="search" aria-label="搜索所有空间">${icon('search',17)}<span>搜索所有空间…</span><kbd>Ctrl K</kbd></button><div class="topbar-actions"><button class="app-update-trigger" data-action="check-update" aria-label="检查界面更新" title="检查界面更新">${icon('refresh',16)}<span>更新</span></button><button class="sync-indicator" data-go="settings"><span class="status-dot"></span><span>本机已就绪</span></button><button class="icon-btn" data-action="notifications" aria-label="通知">${icon('bell')}</button><button class="avatar small-avatar" data-go="settings" aria-label="个人设置">${esc(state.profile.name.slice(0,1))}</button></div></header>
   <div class="mode-banner personal-banner">${icon('shield',15)}<span>${cloudClient?'工作台数据保存在本比赛实例。':'工作台数据保存在当前浏览器。'}</span></div>
@@ -215,28 +216,15 @@ function shell(){
   handle.title='拖动调节宽度，双击恢复默认；也可用左右方向键调节';sidebar.append(handle);
   sidebarResize=mountSidebarResize({body:document.body,sidebar,handle,pinButton:document.querySelector('[data-action="pin-nav"]'),readExpanded:()=>state.ui.sidebarPinned,writeExpanded:setSidebarExpanded,readWidth:()=>localStorage.getItem(`${key(mode)}:sidebar-width`),writeWidth:width=>localStorage.setItem(`${key(mode)}:sidebar-width`,String(width)),onError:error=>toast(error.message)});
   updateModuleNavigation();
-  renderSpaceLinks();
-  updateShellCounts();
   syncNavigationState();
   if(cloudClient)updateCloudShell();
 }
 function updateModuleNavigation(){
-  const holder=document.querySelector('.primary-nav');
-  const entries=visibleNavigation(),signature=JSON.stringify(entries);
-  if(holder&&holder.dataset.signature!==signature){
-    holder.innerHTML=entries.map(([id,i,label])=>`<a href="#/${id}" data-nav="${id}" aria-label="${esc(label)}" title="${esc(label)}">${icon(i)}<span>${esc(label)}</span><b data-count="${id}"></b></a>`).join('');
-    holder.dataset.signature=signature;
-  }
+  renderSidebarNavigation(document.querySelector('.rail-navigation'),getNavigationItems(state),{route,subroute});
   const title=document.querySelector('[data-workbench-title]');
   if(title)title.textContent=getWorkbench(state).title;
   document.querySelectorAll('[data-nav]').forEach(a=>{a.classList.toggle('active',a.dataset.nav===route);if(a.dataset.nav===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
-}
-function renderSpaceLinks(){
-  const holder=document.querySelector('#rail-space-links');if(!holder)return;
-  const spaces=state.spaces.filter(s=>!s.archived),signature=JSON.stringify(spaces.map(({id,title,color})=>({id,title,color})));
-  if(holder.dataset.signature===signature)return;
-  holder.innerHTML=spaces.map(s=>`<a href="#/space/${encodeURIComponent(s.id)}" title="${esc(s.title)}"><span class="rail-space-dot" style="--space-color:${/^#[\da-f]{6}$/i.test(s.color)?s.color:'#7950f2'}"></span><span>${esc(s.title)}</span></a>`).join('');
-  holder.dataset.signature=signature;
+  updateShellCounts();
 }
 function updateShellCounts(){
   for(const [id,count] of [['inbox',state.captures.filter(x=>!x.archived).length],['tasks',state.tasks.filter(x=>!x.done&&!x.archived).length]]){
@@ -457,7 +445,6 @@ function render(){
   document.body.classList.toggle('on-canvas',route==='home');document.body.classList.toggle('on-ai',route==='ai');
   document.querySelectorAll('[data-nav]').forEach(a=>{a.classList.toggle('active',a.dataset.nav===route);if(a.dataset.nav===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   ctx.state=state;const view=makeContext();ctx.save=view.save;
-  renderSpaceLinks();
   updateModuleNavigation();
   const hiddenModule=WORKBENCH_MODULES.find(item=>item.id===route)&&!getVisibleModules(state).some(item=>item.id===route);
   if(hiddenModule){

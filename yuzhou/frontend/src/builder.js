@@ -2,6 +2,7 @@ import {WORKBENCH_MODULES,WORKBENCH_TEMPLATES,getWorkbench,getVisibleModules,con
 import {escapeHTML as esc} from './services.js';
 import {icon} from './icons.js';
 import {placementHTML,mountPlacement} from './placement.js';
+import {navigationEditorHTML,mountNavigationEditor} from './navigation-editor.js';
 import {getCustomBlocks,CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
 import {createPresetInput} from './custom-block-presets.js';
 import {hasShowcaseExamples,planShowcaseExamples,installShowcaseExamples,SHOWCASE_SPACE_ID,SHOWCASE_COMPETITION_ID,SHOWCASE_LEDGER_ID} from './showcase-examples.js';
@@ -53,13 +54,14 @@ export function templateChanges(state,id) {
     names:[...after].map(moduleId=>moduleTitle(config,moduleId))};
 }
 
-export function builderHTML(state,{galleryExpanded=true}={}) {
+export function builderHTML(state,{galleryExpanded=true,navigationSession={}}={}) {
   const config=getWorkbench(state),visible=getVisibleModules(state),spaces=(state.spaces||[]).filter(space=>!space.archived);
   const optionalCount=visible.filter(module=>module.id!=='ai').length;
   const catalog=WORKBENCH_MODULES.filter(module=>module.id!=='ai');
   return `<section class="wb-builder" aria-labelledby="wb-heading">
     <header class="wb-heading"><div><p class="wb-kicker">搭建台</p><div class="wb-title-row"><h1 id="wb-heading">${esc(config.title)}</h1><button type="button" class="wb-icon-button" data-wb-action="rename-workbench" aria-label="修改工作台名称" title="修改工作台名称">${icon('edit',18)}</button></div><p class="wb-intro">选择需要的模块，把这里搭成适合自己的样子。</p></div><button class="btn primary" type="button" data-wb-action="home">进入我的画布 ${icon('arrow-right',17)}</button></header>
     <div class="wb-assistant-invite"><span class="wb-assistant-mark" aria-hidden="true">${icon('sparkles',26)}</span><div><strong>也可以和 AI 一起搭建</strong><p>告诉它你的场景，先看方案，再决定如何调整。</p></div><button type="button" class="btn" data-wb-action="ask-ai">${icon('message',17)} 让 AI 帮我搭建</button></div>
+    <div data-wb-navigation-host>${navigationEditorHTML(state,navigationSession)}</div>
     ${showcaseGalleryHTML(state,galleryExpanded)}
     <div data-wb-placement-host>${placementHTML(state)}</div>
     <section class="wb-showcase" aria-label="项目示例"><div class="wb-section-head"><div><h2>把一个项目真正用起来</h2><p>资料、待办、日历与准备节点串成一条演示路线，在当前工作台里直接操作。</p></div><button type="button" class="btn" data-wb-action="${hasShowcaseExamples(state)?'open-showcase':'add-showcase'}">${hasShowcaseExamples(state)?'打开示例项目':'加入项目示例'}</button></div>${hasShowcaseExamples(state)?'<p class="muted small">空间待办与全局待办共用记录，带日期的待办和比赛事项自动显示在日历。模拟账本独立核算；讲解提纲与观察表由你编辑。</p><div class="wb-showcase-links"><button type="button" class="btn" data-wb-action="showcase-tasks">查看待办</button><button type="button" class="btn" data-wb-action="showcase-calendar">查看日历关联</button><button type="button" class="btn" data-wb-action="showcase-competition">查看准备节点</button><button type="button" class="btn" data-wb-action="showcase-ledger">查看模拟账本</button></div>':'<p class="muted small">将添加可编辑的“工作台参赛筹备”示例。日期是自定内部计划，费用为模拟数据。</p>'}</section>
@@ -73,7 +75,7 @@ export function builderHTML(state,{galleryExpanded=true}={}) {
       </section>
       <section class="wb-template-section" aria-labelledby="wb-template-heading"><div class="wb-section-head"><div><h2 id="wb-template-heading">从一套组合开始</h2><p>模板提供起点，之后可以继续修改。</p></div></div><div class="wb-template-grid">${WORKBENCH_TEMPLATES.map(template=>`<button type="button" class="wb-template ${template.id==='blank'?'wb-template-blank':''}" data-wb-action="template" data-id="${esc(template.id)}"><span class="wb-template-title">${esc(template.title)}${icon('arrow-right',17)}</span><span class="wb-template-description">${esc(template.description)}</span><span class="wb-template-foot">${template.id==='blank'?'保留 AI，自由选择模块':`AI + ${template.moduleIds.filter(id=>id!=='ai').length} 个模块`}<span>预览组合</span></span></button>`).join('')}</div></section>
     </div>
-    <aside class="wb-composition" aria-labelledby="wb-composition-heading"><div class="wb-section-head"><div><h2 id="wb-composition-heading">我的组合</h2><p>顺序对应导航与列表；画布位置可自由摆放。</p></div><span class="wb-count">${visible.length}</span></div>
+    <aside class="wb-composition" aria-labelledby="wb-composition-heading"><div class="wb-section-head"><div><h2 id="wb-composition-heading">我的组合</h2><p>顺序对应模块列表；侧栏顺序在上方“侧栏导航”中调整。</p></div><span class="wb-count">${visible.length}</span></div>
       ${optionalCount===0?'<div class="wb-blank-hint"><strong>从空白开始，也很好。</strong><p>AI 已在这里。加入一个模块，或者为正在做的事新建空间。</p></div>':''}
       <ol class="wb-slot-list">${visible.map((module,index)=>`<li class="wb-slot" data-wb-module="${esc(module.id)}"><span class="wb-slot-index" aria-hidden="true">${String(index+1).padStart(2,'0')}</span><div class="wb-slot-body"><div class="wb-slot-top"><span class="wb-module-glyph" style="--wb-module-color:${module.color}">${icon(module.icon,18)}</span><div class="wb-slot-name"><strong>${esc(module.title)}</strong><small>${module.id==='ai'?'常驻智能助手':esc(byId(module.id).title)}</small></div><button type="button" class="wb-icon-button" data-wb-action="rename-module" data-id="${esc(module.id)}" aria-label="重命名${esc(module.title)}" title="重命名模块">${icon('edit',16)}</button></div><div class="wb-slot-controls"><button type="button" class="wb-order-button" data-wb-action="up" data-id="${esc(module.id)}" ${index===0?'disabled':''} aria-label="上移${esc(module.title)}">${icon('arrow-left',15)}<span>上移</span></button><button type="button" class="wb-order-button" data-wb-action="down" data-id="${esc(module.id)}" ${index===visible.length-1?'disabled':''} aria-label="下移${esc(module.title)}">${icon('arrow-right',15)}<span>下移</span></button>${module.id==='ai'?'<span class="wb-always">始终可用</span>':`<button type="button" class="wb-hide-button" data-wb-action="hide" data-id="${esc(module.id)}" aria-label="收起${esc(module.title)}">${icon('archive',15)} 收起</button>`}</div></div></li>`).join('')}</ol>
       <section class="wb-personal-spaces" aria-labelledby="wb-spaces-heading"><div class="wb-section-head"><div><h3 id="wb-spaces-heading">自定义空间</h3><p>围绕一个项目、目标或生活主题，收好笔记、文件和待办。</p></div></div>${spaces.length?`<ul class="wb-space-links">${spaces.map(space=>`<li><button type="button" data-wb-action="open-space" data-id="${esc(space.id)}">${icon('folder',16)}<span>${esc(space.title)}</span>${icon('arrow-right',16)}</button></li>`).join('')}</ul>`:''}<button type="button" class="wb-new-space" data-wb-action="new-space">${icon('plus',19)} 新建自定义空间</button></section>
@@ -83,8 +85,8 @@ export function builderHTML(state,{galleryExpanded=true}={}) {
 
 export function mountBuilder(ctx) {
   const {root,state,modal,toast}=ctx;
-  let active=true,disposePlacement=null,galleryExpanded=true;
-  const placementSession={};
+  let active=true,disposePlacement=null,disposeNavigation=null,galleryExpanded=true;
+  const placementSession={},navigationSession={};
   const createPresetAt=(id,placement)=>ctx.openCustomBlockEditor?.(createPresetInput(id),placement?{placement,onCreated(record){
     if(!active){ctx.refresh?.();return;}
     placementSession.selectedId=record.id;placementSession.landingId=record.id;
@@ -92,7 +94,7 @@ export function mountBuilder(ctx) {
     // The app closes the creation dialog after its submit callback returns.
     setTimeout(()=>{if(active)[...root.querySelectorAll('[data-place-card]')].find(button=>button.dataset.placeCard===record.id)?.focus({preventScroll:true});},0);
   }}:undefined);
-  const render=()=>{if(active){disposePlacement?.();root.innerHTML=builderHTML(state,{galleryExpanded});const host=root.querySelector('[data-wb-placement-host]');if(host)disposePlacement=mountPlacement({...ctx,root:host,createPresetAt,onPlacementSaved:render},placementSession);}};
+  const render=()=>{if(active){disposePlacement?.();disposeNavigation?.();root.innerHTML=builderHTML(state,{galleryExpanded,navigationSession});const host=root.querySelector('[data-wb-placement-host]');if(host)disposePlacement=mountPlacement({...ctx,root:host,createPresetAt,onPlacementSaved:render},placementSession);const navigationHost=root.querySelector('[data-wb-navigation-host]');if(navigationHost)disposeNavigation=mountNavigationEditor({...ctx,root:navigationHost,saveChange:mutation=>saveWorkbenchChange(ctx,mutation)},navigationSession);}};
   function change(mutation,message,focus) {
     saveWorkbenchChange(ctx,mutation);
     toast(message);
@@ -197,5 +199,5 @@ export function mountBuilder(ctx) {
   root.addEventListener('click',onClick);
   root.addEventListener('toggle',onToggle,true);
   render();
-  return ()=>{active=false;disposePlacement?.();root.removeEventListener('click',onClick);root.removeEventListener('toggle',onToggle,true);};
+  return ()=>{active=false;disposePlacement?.();disposeNavigation?.();root.removeEventListener('click',onClick);root.removeEventListener('toggle',onToggle,true);};
 }

@@ -45,9 +45,37 @@ function templateFor(id) {
   return template;
 }
 
+export const MAX_NAVIGATION_ITEMS=2048;
+/** Navigation IDs are opaque references, never URLs or property paths. */
+export function isNavigationId(id) {
+  if(typeof id!=='string')return false;
+  if(id==='home'||id==='builder'||moduleById.has(id))return true;
+  if(!id.startsWith('space:'))return false;
+  const spaceId=id.slice(6);
+  if(!spaceId.trim()||spaceId.length>512||/[\u0000-\u001f\u007f-\u009f]/.test(spaceId)||['__proto__','prototype','constructor'].includes(spaceId))return false;
+  try{encodeURIComponent(spaceId);return true;}catch{return false;}
+}
+
+/** Bounded optional sidebar preferences; missing entries retain their default placement. */
+export function validateNavigation(value) {
+  fields(value,['version','items'],'导航配置');
+  if(value.version!==1)fail('导航版本');
+  if(!Array.isArray(value.items)||value.items.length>MAX_NAVIGATION_ITEMS)fail('导航列表');
+  const seen=new Set();
+  const items=value.items.map(item=>{
+    fields(item,['id','placement'],'导航项目');
+    if(!isNavigationId(item.id)||seen.has(item.id))fail('导航编号');
+    seen.add(item.id);
+    if(!['primary','more','hidden'].includes(item.placement))fail('导航显示位置');
+    if(['home','builder'].includes(item.id)&&item.placement!=='primary')fail('固定导航入口');
+    return {id:item.id,placement:item.placement};
+  });
+  return {version:1,items};
+}
+
 /** Validate a configuration from storage, backup, or an action without changing it. */
 export function validateWorkbench(value) {
-  fields(value,['version','title','templateId','onboardingComplete','modules'],'工作台配置');
+  fields(value,['version','title','templateId','onboardingComplete','modules','navigation'],'工作台配置');
   if(value.version!==1)fail('工作台版本');
   const title=name(value.title,'工作台名称',80);
   templateFor(value.templateId);
@@ -61,7 +89,9 @@ export function validateWorkbench(value) {
     if(typeof module.enabled!=='boolean'||(module.id==='ai'&&!module.enabled))fail('模块显示状态');
     return {id:module.id,enabled:module.enabled,title:normalizeWorkbenchModuleTitle(module.id,module.title)};
   });
-  return {version:1,title,templateId:value.templateId,onboardingComplete:value.onboardingComplete,modules};
+  const result={version:1,title,templateId:value.templateId,onboardingComplete:value.onboardingComplete,modules};
+  if(Object.hasOwn(value,'navigation'))result.navigation=validateNavigation(value.navigation);
+  return result;
 }
 
 export function createWorkbench(templateId='blank') {
@@ -120,6 +150,7 @@ export function applyWorkbenchTemplate(state,templateId) {
   if(!plain(state))fail('工作区');
   const current=getWorkbench(state),next=createWorkbench(templateId),titles=new Map(current.modules.map(module=>[module.id,module.title]));
   next.title=current.title;next.onboardingComplete=true;
+  if(current.navigation!==undefined)next.navigation=current.navigation;
   for(const module of next.modules)module.title=titles.get(module.id)||module.title;
   state.workbench=validateWorkbench(next);
   return state.workbench;
