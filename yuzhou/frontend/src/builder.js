@@ -4,10 +4,30 @@ import {icon} from './icons.js';
 import {placementHTML,mountPlacement} from './placement.js';
 import {getCustomBlocks,CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
 import {createPresetInput} from './custom-block-presets.js';
-import {hasShowcaseExamples,planShowcaseExamples,installShowcaseExamples,SHOWCASE_SPACE_ID,SHOWCASE_COMPETITION_ID} from './showcase-examples.js';
+import {hasShowcaseExamples,planShowcaseExamples,installShowcaseExamples,SHOWCASE_SPACE_ID,SHOWCASE_COMPETITION_ID,SHOWCASE_LEDGER_ID} from './showcase-examples.js';
+import {hasShowcaseGallery,planShowcaseGallery,installShowcaseGallery,SHOWCASE_GALLERY_SPACE_ID,SHOWCASE_GALLERY_FITNESS_ID,SHOWCASE_GALLERY_COURSE_IDS,SHOWCASE_GALLERY_BLOCK_IDS} from './showcase-gallery.js';
 
 const byId=id=>WORKBENCH_MODULES.find(module=>module.id===id);
 const moduleTitle=(config,id)=>config.modules.find(module=>module.id===id)?.title||byId(id)?.title||id;
+const galleryDestinations=[
+  {id:'courses',hint:'主题笔记与整理方法',route:'courses',target:SHOWCASE_GALLERY_COURSE_IDS[0]},
+  {id:'english',hint:'原创题目与写作参考',route:'english',target:'reading'},
+  {id:'inbox',hint:'12 条创作念头 · 试试梦境',route:'inbox'},
+  {id:'tasks',hint:'从想法到具体行动',route:'tasks'},
+  {id:'review',hint:'查看模拟活动与完成记录',route:'review'},
+  {id:'ledger',hint:'独立模拟账本',route:'ledger',target:SHOWCASE_LEDGER_ID},
+  {id:'calendar',hint:'日程与待办的日期关联',route:'calendar'},
+  {id:'timetable',hint:'进入后选择“本周练习学期 · 示例”',route:'timetable'},
+  {id:'competitions',hint:'内部节点与准备清单',route:'competitions',target:SHOWCASE_COMPETITION_ID},
+  {id:'blocks',title:'自定义方块',hint:'7 种类型 · 从便签到小工具',icon:'layers',color:'#63E6DC',route:'block',target:SHOWCASE_GALLERY_BLOCK_IDS[0]},
+  {id:'fitness',title:'运动记录',hint:'一次活动怎样留下记录',icon:'chart',color:'#8EDBE8',route:'space',target:SHOWCASE_GALLERY_FITNESS_ID},
+  {id:'ai',hint:'准备一条需求 · 由你发送',route:'ai'},
+];
+
+function showcaseGalleryHTML(state,expanded){
+  const installed=hasShowcaseGallery(state),config=getWorkbench(state);
+  return `<section class="wb-gallery" aria-labelledby="wb-gallery-heading"><div class="wb-gallery-heading"><span class="wb-gallery-mark" aria-hidden="true">${icon('layers',24)}</span><div><p class="wb-gallery-kicker">可编辑的示例导览</p><h2 id="wb-gallery-heading">${installed?'从一个例子，看看每块能做什么':'先逛一遍有内容的工作台'}</h2><p>${installed?'点击下面的入口查看示例，随时回到搭建台继续探索。':'课程、英语、灵感、生活与项目，放入一套可以打开、编辑和关联的示例。'}</p></div><button type="button" class="btn" data-wb-action="${installed?'open-gallery':'add-gallery'}">${icon(installed?'book':'plus',17)} ${installed?'打开示例导览':'加入全模块示例'}</button></div>${installed?`<details class="wb-gallery-directory" data-wb-gallery-directory ${expanded?'open':''}><summary>按模块浏览 <span>12 个入口</span></summary><nav class="wb-gallery-links" aria-label="全模块示例入口">${galleryDestinations.map(item=>{const module=byId(item.id)||item;return `<button type="button" data-wb-action="gallery-destination" data-id="${item.id}"><span class="wb-gallery-glyph" style="--wb-gallery-color:${module.color}">${icon(module.icon,18)}</span><span><strong>${esc(item.title||moduleTitle(config,item.id))}</strong><small>${esc(item.hint)}</small></span>${icon('arrow-right',14)}</button>`;}).join('')}</nav></details>`:'<div class="wb-gallery-topics" aria-label="示例覆盖场景"><span>学习与课程</span><span>灵感与创作</span><span>日常与运动</span><span>项目与日程</span><span>自定义方块与 AI</span></div>'}<p class="wb-gallery-note">${installed?'示例均已标注，可继续编辑；再次打开不会重置内容。AI 需求需自行发送，小工具需手动运行。':'加入前可以预览内容；保留已有资料和布局，模拟费用与活动记录会明确标注。'}</p></section>`;
+}
 
 /** Only the workbench configuration changes; failed saves restore the previous configuration. */
 export function saveWorkbenchChange(ctx,change) {
@@ -33,13 +53,14 @@ export function templateChanges(state,id) {
     names:[...after].map(moduleId=>moduleTitle(config,moduleId))};
 }
 
-export function builderHTML(state) {
+export function builderHTML(state,{galleryExpanded=true}={}) {
   const config=getWorkbench(state),visible=getVisibleModules(state),spaces=(state.spaces||[]).filter(space=>!space.archived);
   const optionalCount=visible.filter(module=>module.id!=='ai').length;
   const catalog=WORKBENCH_MODULES.filter(module=>module.id!=='ai');
   return `<section class="wb-builder" aria-labelledby="wb-heading">
     <header class="wb-heading"><div><p class="wb-kicker">搭建台</p><div class="wb-title-row"><h1 id="wb-heading">${esc(config.title)}</h1><button type="button" class="wb-icon-button" data-wb-action="rename-workbench" aria-label="修改工作台名称" title="修改工作台名称">${icon('edit',18)}</button></div><p class="wb-intro">选择需要的模块，把这里搭成适合自己的样子。</p></div><button class="btn primary" type="button" data-wb-action="home">进入我的画布 ${icon('arrow-right',17)}</button></header>
     <div class="wb-assistant-invite"><span class="wb-assistant-mark" aria-hidden="true">${icon('sparkles',26)}</span><div><strong>也可以和 AI 一起搭建</strong><p>告诉它你的场景，先看方案，再决定如何调整。</p></div><button type="button" class="btn" data-wb-action="ask-ai">${icon('message',17)} 让 AI 帮我搭建</button></div>
+    ${showcaseGalleryHTML(state,galleryExpanded)}
     <div data-wb-placement-host>${placementHTML(state)}</div>
     <section class="wb-showcase" aria-label="项目示例"><div class="wb-section-head"><div><h2>把一个项目真正用起来</h2><p>资料、待办、日历与准备节点串成一条演示路线，在当前工作台里直接操作。</p></div><button type="button" class="btn" data-wb-action="${hasShowcaseExamples(state)?'open-showcase':'add-showcase'}">${hasShowcaseExamples(state)?'打开示例项目':'加入项目示例'}</button></div>${hasShowcaseExamples(state)?'<p class="muted small">空间待办与全局待办共用记录，带日期的待办和比赛事项自动显示在日历。模拟账本独立核算；讲解提纲与观察表由你编辑。</p><div class="wb-showcase-links"><button type="button" class="btn" data-wb-action="showcase-tasks">查看待办</button><button type="button" class="btn" data-wb-action="showcase-calendar">查看日历关联</button><button type="button" class="btn" data-wb-action="showcase-competition">查看准备节点</button><button type="button" class="btn" data-wb-action="showcase-ledger">查看模拟账本</button></div>':'<p class="muted small">将添加可编辑的“工作台参赛筹备”示例。日期是自定内部计划，费用为模拟数据。</p>'}</section>
     <section class="wb-custom-list" aria-label="我的自定义方块"><div class="wb-section-head"><div><h2>我的自定义方块</h2><p>同一场景可以创建多份；编辑内容、让 AI 改造，或收起后保留记录。</p></div><button type="button" class="btn" data-wb-action="create-block">${icon('plus',16)} 创建方块</button></div>${getCustomBlocks(state).items.length?`<ul>${getCustomBlocks(state).items.map(block=>`<li><span><strong>${esc(block.title)}</strong><small>${esc(CUSTOM_BLOCK_KINDS.find(item=>item.kind===block.kind||item.id===block.kind)?.title||block.kind)}${block.archived?' · 已收起':''}</small></span><button type="button" class="btn" data-wb-action="open-block" data-id="${esc(block.id)}">打开</button><button type="button" class="btn" data-wb-action="edit-block" data-id="${esc(block.id)}">编辑</button></li>`).join('')}</ul>`:'<p class="muted">从左侧场景创建第一个方块，或告诉 AI 你需要什么。</p>'}</section>
@@ -62,7 +83,7 @@ export function builderHTML(state) {
 
 export function mountBuilder(ctx) {
   const {root,state,modal,toast}=ctx;
-  let active=true,disposePlacement=null;
+  let active=true,disposePlacement=null,galleryExpanded=true;
   const placementSession={};
   const createPresetAt=(id,placement)=>ctx.openCustomBlockEditor?.(createPresetInput(id),placement?{placement,onCreated(record){
     if(!active){ctx.refresh?.();return;}
@@ -71,7 +92,7 @@ export function mountBuilder(ctx) {
     // The app closes the creation dialog after its submit callback returns.
     setTimeout(()=>{if(active)[...root.querySelectorAll('[data-place-card]')].find(button=>button.dataset.placeCard===record.id)?.focus({preventScroll:true});},0);
   }}:undefined);
-  const render=()=>{if(active){disposePlacement?.();root.innerHTML=builderHTML(state);const host=root.querySelector('[data-wb-placement-host]');if(host)disposePlacement=mountPlacement({...ctx,root:host,createPresetAt,onPlacementSaved:render},placementSession);}};
+  const render=()=>{if(active){disposePlacement?.();root.innerHTML=builderHTML(state,{galleryExpanded});const host=root.querySelector('[data-wb-placement-host]');if(host)disposePlacement=mountPlacement({...ctx,root:host,createPresetAt,onPlacementSaved:render},placementSession);}};
   function change(mutation,message,focus) {
     saveWorkbenchChange(ctx,mutation);
     toast(message);
@@ -114,6 +135,17 @@ export function mountBuilder(ctx) {
       if(ctx.refresh)ctx.refresh();else render();
     }});
   }
+  function reviewGallery(){
+    const now=new Date(),plan=planShowcaseGallery(state,{now});
+    if(plan.alreadyInstalled){ctx.go('space',SHOWCASE_GALLERY_SPACE_ID);return;}
+    const s=plan.summary;
+    modal({title:'加入全模块示例',submitLabel:'加入当前工作台',body:`<p>追加一套有明确标识的示例，方便逐块查看和动手尝试：</p><ul class="wb-showcase-summary"><li>学习：${s.courses} 个课程、${s.courseNotes} 篇课程笔记，附英语练习参考；已有答案和草稿保留</li><li>创作与行动：${s.captures} 条灵感、${s.tasks} 项待办、${s.spaces} 个空间与 ${s.notes} 篇空间笔记</li><li>计划：${s.calendarEvents} 条日程、${s.timetableEvents} 项课表安排，以及 ${s.competitions} 个准备项目、${s.milestones} 个节点和 ${s.competitionTasks} 项事项</li><li>生活：${s.fitnessSessions} 条模拟运动记录，${s.ledgerProjects} 个独立模拟账本与 ${s.ledgerEntries} 条模拟账目</li><li>搭建：${s.blocks} 个自定义方块，包含便签、清单、收藏、进度、日期、记录表和小工具</li></ul><p class="wb-gallery-review-note">已有内容与布局会保留。只追加尚未加入的整套示例，不会重置已经编辑过的示例；相关模块会显示在工作台。</p><p class="muted small">日期为相对今天安排的内部示范，不是官方截止时间。课表与课程分别维护；进入课表后请选择“本周练习学期 · 示例”，原活动学期保留。模拟记录不代表你的真实活动。AI 仅提供需求示范，小工具需手动运行。</p>`,onSubmit(){
+      if(!active||ctx.isCurrent?.()===false)throw new Error('工作台已更新，请重新打开示例预览。');
+      const result=installShowcaseGallery(ctx,{now});
+      toast(result.alreadyInstalled?'示例已在工作台中，保留现有内容':'全模块示例已加入，可从上方目录开始探索');
+      if(ctx.refresh)ctx.refresh();else render();
+    }});
+  }
   function onClick(event) {
     const button=event.target.closest('[data-wb-action]');
     if(!active||!button||!root.contains(button)||button.disabled)return;
@@ -150,10 +182,20 @@ export function mountBuilder(ctx) {
       if(action==='showcase-calendar')ctx.go('calendar');
       if(action==='showcase-competition')ctx.go('competitions',SHOWCASE_COMPETITION_ID);
       if(action==='showcase-ledger')ctx.go('ledger');
+      if(action==='add-gallery')reviewGallery();
+      if(action==='open-gallery')ctx.go('space',SHOWCASE_GALLERY_SPACE_ID);
+      if(action==='gallery-destination'){
+        const destination=galleryDestinations.find(item=>item.id===id);
+        if(!destination)return;
+        if(id==='ai'&&ctx.askAssistant)ctx.askAssistant('这是一次工作台示例练习。请先查看带有“示例”标记的记录，梳理“灵感、待办与日历”的关联，再提出一项小范围调整。请说明修改理由并展示方案，等待我审核确认后再保存；不要修改其他记录。');
+        else ctx.go(destination.route,...(destination.target?[destination.target]:[]));
+      }
 
     }catch(error){toast(error.message||'未能保存这次调整，请重试。');}
   }
+  function onToggle(event){if(active&&event.target?.matches?.('[data-wb-gallery-directory]'))galleryExpanded=event.target.open;}
   root.addEventListener('click',onClick);
+  root.addEventListener('toggle',onToggle,true);
   render();
-  return ()=>{active=false;disposePlacement?.();root.removeEventListener('click',onClick);};
+  return ()=>{active=false;disposePlacement?.();root.removeEventListener('click',onClick);root.removeEventListener('toggle',onToggle,true);};
 }
