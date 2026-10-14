@@ -5,7 +5,7 @@ const interactive = 'button,a,input,select,textarea,summary,label,[role="button"
 
 // Browser zoom is observed by the caller. This controller never intercepts wheel
 // or keyboard zoom and only owns the transient transition and blank-stage double click.
-export function mountWelcomeLayoutControls({root, win = window, doc = document, onProgress = () => {}}) {
+export function mountWelcomeLayoutControls({root, win = window, doc = document, onProgress = () => {}, onManualTarget = () => {}}) {
   const stage = root.querySelector('.welcome-stage');
   if (!stage) return {dispose() {}, setProgress() {}, getProgress: () => 0, getTarget: () => 0};
   const reduced = win.matchMedia?.('(prefers-reduced-motion: reduce)');
@@ -56,6 +56,7 @@ export function mountWelcomeLayoutControls({root, win = window, doc = document, 
     if (disposed || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey ||
       event.target.closest?.('.welcome-float:not(.welcome-center-float)') || event.target.closest?.(interactive)) return;
     const endpoint = progress <= EPSILON ? 1 : progress >= 1 - EPSILON ? 0 : progress < .5 ? 0 : 1;
+    onManualTarget(endpoint);
     animateTo(endpoint); event.preventDefault();
   }
   function visibility() {

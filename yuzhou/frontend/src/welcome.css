@@ -52,3 +52,11 @@
 }
 @media(prefers-reduced-motion:reduce){.welcome-tile,.welcome-center{animation:none}.welcome-enter,.welcome-enter>span,.welcome-tile{transition:none}.welcome-float,.welcome-float-motion{will-change:auto}}
 .welcome-layout-caption{display:grid;gap:5px;line-height:1.5}.welcome-layout-caption>[data-welcome-layout-status]{color:#716383}.welcome-layout-caption>span:last-child{font-size:9px;color:#a09aa8}
+.welcome-enter{max-width:100%;gap:clamp(8px,2vw,26px);padding-inline:clamp(10px,2vw,24px)}.welcome-enter>span{flex-shrink:0}
+@media(max-width:320px){
+  .welcome-header{height:auto;min-height:76px;flex-wrap:wrap;padding:14px 16px;gap:4px}
+  .welcome-header-actions{min-width:0;flex:1 1 100%;justify-content:space-between;gap:6px}
+  .welcome-header-actions>button:first-child{min-width:0;text-align:left;white-space:normal}
+  .welcome-center h1{font-size:clamp(22px,9vw,30px)}.welcome-inventory{gap:4px}
+  .welcome-footer{flex-wrap:wrap}.welcome-layout-caption{max-width:100%}
+}

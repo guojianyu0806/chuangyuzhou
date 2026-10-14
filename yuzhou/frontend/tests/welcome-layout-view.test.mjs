@@ -110,7 +110,7 @@ test('visual viewport native pinch and desktop page zoom share the initial effec
   f.zoom(1.5); assert.ok(Math.abs(f.progress() - .5) < 1e-10);
 });
 
-test('rapid native zoom steps accumulate against the requested endpoint without dropping in-flight changes', t => {
+test('rapid native zoom steps use the zoom anchor without dropping in-flight changes', t => {
   const f = fixture(t, {reduced: false});
   f.zoom(.9); assert.equal(f.progress(), 0);
   f.zoom(.8); assert.equal(f.progress(), 0);
@@ -118,7 +118,58 @@ test('rapid native zoom steps accumulate against the requested endpoint without 
   f.zoom(.7); f.settle();
   assert.ok(Math.abs(f.progress() - .6) < 1e-10);
   f.zoom(.4); f.settle(); assert.equal(f.progress(), 1);
-  f.zoom(.6); f.settle(); assert.ok(Math.abs(f.progress() - .6) < 1e-10);
+  f.zoom(.6); f.settle(); assert.ok(Math.abs(f.progress() - .8) < 1e-10);
+});
+
+test('zooming beyond the scattered endpoint and back restores the same layout at the same zoom', t => {
+  const f = fixture(t);
+  f.zoom(2); assert.equal(f.progress(), 0);
+  f.zoom(1); assert.equal(f.progress(), 0);
+  f.zoom(.8); assert.ok(Math.abs(f.progress() - .4) < 1e-10);
+  f.zoom(3); assert.equal(f.progress(), 0);
+  f.zoom(.8); assert.ok(Math.abs(f.progress() - .4) < 1e-10);
+});
+
+test('zooming beyond the grid endpoint does not shift the return path', t => {
+  const f = fixture(t);
+  f.zoom(.25); assert.equal(f.progress(), 1);
+  f.zoom(.5); assert.equal(f.progress(), 1);
+  f.zoom(.75); assert.equal(f.progress(), .5);
+  f.zoom(1); assert.equal(f.progress(), 0);
+});
+
+test('double clicking an intermediate form anchors its chosen endpoint for later zoom round trips', t => {
+  const f = fixture(t);
+  f.zoom(.8); assert.ok(Math.abs(f.progress() - .4) < 1e-10);
+  assert.equal(f.stage.fire('dblclick').prevented, true);
+  assert.equal(f.progress(), 0);
+  f.zoom(.7); assert.ok(Math.abs(f.progress() - .2) < 1e-10);
+  f.zoom(2); assert.equal(f.progress(), 0);
+  f.zoom(.8); assert.equal(f.progress(), 0);
+  f.stage.fire('dblclick'); assert.equal(f.progress(), 1);
+  f.zoom(1); assert.ok(Math.abs(f.progress() - .6) < 1e-10);
+  f.zoom(.25); assert.equal(f.progress(), 1);
+  f.zoom(.8); assert.equal(f.progress(), 1);
+});
+
+test('double clicking an intermediate form nearer the grid preserves the chosen grid anchor', t => {
+  const f = fixture(t);
+  f.zoom(.6); assert.ok(Math.abs(f.progress() - .8) < 1e-10);
+  f.stage.fire('dblclick'); assert.equal(f.progress(), 1);
+  f.zoom(.8); assert.ok(Math.abs(f.progress() - .6) < 1e-10);
+  f.zoom(.6); assert.equal(f.progress(), 1);
+  f.zoom(.25); assert.equal(f.progress(), 1);
+  f.zoom(.6); assert.equal(f.progress(), 1);
+});
+
+test('native zoom interrupting a manual transition keeps its anchor and continues from the displayed position', t => {
+  const f = fixture(t, {reduced: false});
+  f.stage.fire('dblclick'); f.step(90);
+  assert.ok(Math.abs(f.progress() - .2) < 1e-10);
+  f.zoom(1.1); assert.ok(Math.abs(f.progress() - .2) < 1e-10);
+  f.step(45); assert.ok(Math.abs(f.progress() - .3) < 1e-10);
+  f.settle(); assert.ok(Math.abs(f.progress() - .8) < 1e-10);
+  f.zoom(1); f.settle(); assert.ok(Math.abs(f.progress() - 1) < 1e-10);
 });
 
 test('linear progress paints cached geometry without reading layout dimensions per animation frame', t => {

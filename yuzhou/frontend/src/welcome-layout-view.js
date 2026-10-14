@@ -22,6 +22,7 @@ export function mountWelcomeLayout({root, motion, win = window, doc = document})
   const effectiveScale = () => positive(win.devicePixelRatio, 1) * positive(viewport?.scale, 1);
   const initialScale = effectiveScale();
   let lastScale = initialScale, disposed = false, layouts = null, signature = '', horizontalScale = 1;
+  let anchorScale = initialScale, anchorProgress = 0;
   let progress = 0, controls = null, dprQuery = null, watchedDpr = null;
 
   function paint(value) {
@@ -79,16 +80,20 @@ export function mountWelcomeLayout({root, motion, win = window, doc = document})
     if (disposed) return;
     const nextScale = effectiveScale();
     if (Math.abs(nextScale - lastScale) > 1e-7) {
-      const delta = 2 * (lastScale - nextScale) / initialScale;
       lastScale = nextScale;
-      controls.setProgress(controls.getTarget() + delta, {animate: true});
+      // Keep the zoom mapping independent of its clamped display. Otherwise
+      // zooming past an endpoint and back changes the layout at the same scale.
+      controls.setProgress(anchorProgress + 2 * (anchorScale - nextScale) / initialScale, {animate: true});
     }
     watchDpr();
     measure();
   }
 
   measure();
-  controls = mountWelcomeLayoutControls({root, win, doc, onProgress: paint});
+  controls = mountWelcomeLayoutControls({root, win, doc, onProgress: paint, onManualTarget: target => {
+    // A deliberate double click establishes a new layout at the current zoom.
+    anchorScale = effectiveScale(); anchorProgress = target; lastScale = anchorScale;
+  }});
   const observer = win.ResizeObserver ? new win.ResizeObserver(measure) : null;
   observer?.observe(stage);
   win.addEventListener('resize', onViewportChange);

@@ -26,7 +26,7 @@ const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-8
 function fixture(t, {reducedMotion = false, withoutFrames = false, withoutStage = false} = {}) {
   const root = new Element(), stage = new Element(), centerFloat = new Element(), center = new Element();
   const doc = new Element(), win = new Element(), reduced = new Element();
-  const frames = new Map(), changes = []; let now = 0, frameId = 0;
+  const frames = new Map(), changes = [], manualTargets = []; let now = 0, frameId = 0;
   stage.parentNode = root; centerFloat.parentNode = stage; center.parentNode = centerFloat;
   centerFloat.float = true; centerFloat.centerFloat = true;
   root.querySelector = selector => selector === '.welcome-stage' && !withoutStage ? stage : null;
@@ -34,13 +34,13 @@ function fixture(t, {reducedMotion = false, withoutFrames = false, withoutStage 
   reduced.matches = reducedMotion; win.matchMedia = () => reduced;
   if (!withoutFrames) win.requestAnimationFrame = callback => {frames.set(++frameId, callback); return frameId;};
   win.cancelAnimationFrame = id => frames.delete(id);
-  const controller = mountWelcomeLayoutControls({root, win, doc, onProgress: value => changes.push(value)});
+  const controller = mountWelcomeLayoutControls({root, win, doc, onProgress: value => changes.push(value), onManualTarget: value => manualTargets.push(value)});
   t.after(() => controller.dispose());
   const step = milliseconds => {now += milliseconds; const callbacks = [...frames.values()]; frames.clear(); callbacks.forEach(callback => callback(now));};
   const setHidden = value => {doc.hidden = value; doc.fire('visibilitychange');};
   const setReduced = value => {reduced.matches = value; reduced.fire('change');};
   const immediate = value => controller.setProgress(value, {animate: false});
-  return {root, stage, centerFloat, center, doc, win, reduced, controller, frames, changes, step, setHidden, setReduced, immediate};
+  return {root, stage, centerFloat, center, doc, win, reduced, controller, frames, changes, manualTargets, step, setHidden, setReduced, immediate};
 }
 
 test('a fresh controller emits scatter once and external immediate progress is finite and clamped', t => {
@@ -53,6 +53,7 @@ test('a fresh controller emits scatter once and external immediate progress is f
   for (const value of [NaN, Infinity, -Infinity, '0.5', undefined]) f.controller.setProgress(value);
   assert.equal(f.changes.length, count); assert.equal(f.frames.size, 0);
   assert.deepEqual(f.stage.attributes, {});
+  assert.deepEqual(f.manualTargets, [], 'external scale observations must not reset the manual zoom anchor');
 });
 
 test('external endpoint movement is linear over 450 milliseconds and exposes its pending target', t => {
@@ -84,6 +85,7 @@ test('blank stage and central title or content double clicks toggle endpoints an
   f.immediate(.4); f.stage.fire('dblclick', {target: content}); f.step(180); close(f.controller.getProgress(), 0);
   f.immediate(.6); f.stage.fire('dblclick'); f.step(180); close(f.controller.getProgress(), 1);
   f.immediate(.5); f.stage.fire('dblclick', {target: title}); f.step(225); close(f.controller.getProgress(), 1);
+  assert.deepEqual(f.manualTargets, [1,0,0,1,1]);
 });
 
 test('double clicks on peripheral cards, central CTA descendants and interactive fields retain their own meaning', t => {
@@ -99,6 +101,7 @@ test('double clicks on peripheral cards, central CTA descendants and interactive
     assert.equal(f.stage.fire('dblclick', properties).prevented, false);
   }
   assert.equal(f.frames.size, 0); assert.deepEqual(f.changes, [0]);
+  assert.deepEqual(f.manualTargets, [], 'CTA and modifier clicks must not alter the zoom mapping');
 });
 
 test('native browser zoom, ordinary scrolling, touch and page controls are never intercepted at any width', t => {
