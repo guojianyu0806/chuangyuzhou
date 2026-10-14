@@ -183,12 +183,18 @@ test('linear progress paints cached geometry without reading layout dimensions p
   assert.deepEqual([f.stage.reads, f.content.reads], reads);
 });
 
-test('resize observers preserve intermediate progress and stop after unchanged measurements', t => {
+test('resize observers batch dimension writes into a later frame and preserve intermediate progress', t => {
   const f = fixture(t); f.zoom(.75); assert.equal(f.progress(), .5);
   const observer = f.observersCreated[0], before = f.painted.length;
   observer.callback(); observer.callback(); assert.equal(f.painted.length, before);
+  assert.equal(f.frames.size, 1, 'observer deliveries must coalesce outside the resize notification');
   f.stage.width = 390; observer.callback(); assert.equal(f.progress(), .5);
+  assert.equal(f.painted.length, before, 'never write observed dimensions during the callback');
+  f.step(); assert.equal(f.frames.size, 0); assert.equal(f.painted.length, before + 1);
   assert.ok(f.painted.at(-1).every(position => position.x >= 0 && position.w > 0));
+  const expected = interpolateWelcomeLayout(getWelcomeLayouts({width:390,height:744,count:20,centerHeight:310}), .5);
+  nearPositions(f.painted.at(-1), [...expected.cards,expected.center]);
+  observer.callback(); f.step(); assert.equal(f.painted.length, before + 1, 'unchanged observations stop without repainting');
   assert.equal(observer.target, f.stage);
 });
 
@@ -212,7 +218,8 @@ test('missing optional browser APIs still allow page zoom and extremely narrow C
 
 test('dispose restores presentation, removes observers and listeners, and makes queued callbacks inert', t => {
   const f = fixture(t, {reduced: false}); f.zoom(.6);
-  const queued = [...f.frames.values()], observer = f.observersCreated[0];
+  const observer = f.observersCreated[0]; observer.callback();
+  const queued = [...f.frames.values()];
   f.cleanup(); f.cleanup();
   assert.equal(f.frames.size, 0); assert.equal(observer.disconnected, true);
   assert.equal(f.stage.style.height, ''); assert.equal(f.root.dataset.layoutProgress, undefined);

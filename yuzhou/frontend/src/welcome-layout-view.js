@@ -24,6 +24,7 @@ export function mountWelcomeLayout({root, motion, win = window, doc = document})
   let lastScale = initialScale, disposed = false, layouts = null, signature = '', horizontalScale = 1;
   let anchorScale = initialScale, anchorProgress = 0;
   let progress = 0, controls = null, dprQuery = null, watchedDpr = null;
+  let measureFrame = null;
 
   function paint(value) {
     if (disposed) return;
@@ -94,7 +95,14 @@ export function mountWelcomeLayout({root, motion, win = window, doc = document})
     // A deliberate double click establishes a new layout at the current zoom.
     anchorScale = effectiveScale(); anchorProgress = target; lastScale = anchorScale;
   }});
-  const observer = win.ResizeObserver ? new win.ResizeObserver(measure) : null;
+  function queueMeasure() {
+    if (disposed || measureFrame !== null) return;
+    // Height can change after narrow text wraps. Write in the next frame rather
+    // than synchronously resizing the same element inside its observer delivery.
+    if (!win.requestAnimationFrame) {measure(); return;}
+    measureFrame = win.requestAnimationFrame(() => {measureFrame = null; measure();});
+  }
+  const observer = win.ResizeObserver ? new win.ResizeObserver(queueMeasure) : null;
   observer?.observe(stage);
   win.addEventListener('resize', onViewportChange);
   viewport?.addEventListener('resize', onViewportChange);
@@ -103,6 +111,8 @@ export function mountWelcomeLayout({root, motion, win = window, doc = document})
   return () => {
     if (disposed) return;
     disposed = true;
+    if (measureFrame !== null) win.cancelAnimationFrame?.(measureFrame);
+    measureFrame = null;
     observer?.disconnect(); detachDprQuery(); controls.dispose();
     win.removeEventListener('resize', onViewportChange);
     viewport?.removeEventListener('resize', onViewportChange);
