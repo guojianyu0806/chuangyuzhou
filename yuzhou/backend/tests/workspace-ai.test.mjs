@@ -124,6 +124,33 @@ test('arbitrary query paths and mixed query/action output fail after one bounded
   }
 });
 
+test('explicit null queries permit a valid action plan but never execute before confirmation',async t=>{
+ let calls=0;
+ const f=await fixture(t,async()=>{calls++;return {reply:'请审核测试待办。',proposal:plan([create('task',{title:'空查询后的审核待办'})]),queries:null};});
+ const ready=await f.finish(await f.start(f.conversation('准备一条测试待办，先审核。')));
+ assert.equal(ready.status,'succeeded');assert.equal(ready.replySaved,true);assert.equal(ready.queryRounds,0);assert.equal(calls,1);
+ assert.equal(f.state().tasks.length,0);assert.equal(f.state().aiRequests[0].conversation.pendingJobId,ready.id);
+ assert.equal((await f.confirm(ready)).status,200);assert.deepEqual(f.state().tasks.map(task=>task.title),['空查询后的审核待办']);assert.equal(calls,1);
+});
+
+test('explicit null queries permit ordinary chat without creating an actionable proposal',async t=>{
+ let calls=0;
+ const f=await fixture(t,async()=>{calls++;return {reply:'已收到。',proposal:null,queries:null};});
+ const ready=await f.finish(await f.start(f.conversation('只回复已收到。')));
+ assert.equal(ready.status,'succeeded');assert.equal(ready.replySaved,true);assert.equal(ready.queryRounds,0);assert.equal(calls,1);
+ const conversation=f.state().aiRequests[0].conversation;assert.equal(conversation.messages.at(-1).text,'已收到。');assert.equal(conversation.proposal,undefined);assert.equal(conversation.pendingJobId,undefined);
+ assert.equal((await f.confirm(ready)).status,409);assert.equal(f.state().tasks.length,0);
+});
+
+test('false, string and object query values cannot bypass validation with chat or actions',async t=>{
+ for(const queries of [false,'', '[]',{}])for(const proposal of [null,plan([create('task',{title:'不得执行'})])]){
+  let calls=0;const f=await fixture(t,async()=>{calls++;return {reply:'错误查询字段',proposal,queries};});
+  const ready=await f.finish(await f.start(f.conversation('合成格式检查')));
+  assert.equal(ready.status,'failed');assert.equal(ready.error.code,'INVALID_PROPOSAL');assert.equal(calls,2);
+  assert.equal(f.state().aiRequests[0].conversation.messages.length,1);assert.equal(f.state().tasks.length,0);assert.equal((await f.confirm(ready)).status,409);
+ }
+});
+
 test('one bounded correction identifies bad query fields then permits real queries and a reviewed plan',async t=>{
  let calls=0;
  const f=await fixture(t,async({user})=>{
