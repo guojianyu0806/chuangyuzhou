@@ -1,9 +1,14 @@
 // Offline contract checks. Never starts a listener and never reaches a provider.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {FIXTURE,SEED,MAX_PROVIDER_RESPONSE_BYTES,createSyntheticState,readBoundedProviderResponse,createRecordedModelRunner,restrictFixtureConfig,modelOutputShape,correctionMetadata} from './browser-dev028-fixture.mjs';
+import {mkdirSync,mkdtempSync,writeFileSync,unlinkSync,rmSync} from 'node:fs';
+import {join,relative,resolve} from 'node:path';
+import {randomUUID} from 'node:crypto';
+import {FIXTURE,SEED,MAX_PROVIDER_RESPONSE_BYTES,createSyntheticState,readBoundedProviderResponse,createRecordedModelRunner,restrictFixtureConfig,modelOutputShape,correctionMetadata,
+  parseFixtureInput,validateResumeDirectory,validateSyntheticIdentity,authenticateFixture} from './browser-dev028-fixture.mjs';
 import {validateWorkspace} from '../yuzhou/backend/store.mjs';
 import {validateCustomBlocks} from '../yuzhou/frontend/src/custom-blocks-model.js';
+import {PROJECT_ROOT,RUNTIME_ROOT,assertRuntimePath} from '../yuzhou/runtime.mjs';
 
 const key='synthetic-private-marker-for-offline-checks';
 const input={system:'Unchanged complete synthetic system JSON prompt.',user:'Unchanged synthetic user text.',
@@ -111,4 +116,59 @@ test('correction diagnostics expose exact static whitelist messages but hash all
   const structured=correctionMetadata(JSON.stringify({formatCorrection:{code:'INVALID_PROPOSAL',issue:'bounded detail',queryIssues:[{code:'INVALID_STRING',index:1,kind:'search',field:'text',value:key}]}}));
   assert.deepEqual(structured.queryIssues,[{code:'INVALID_STRING',index:1,kind:'search',field:'text'}]);
   assert.equal(JSON.stringify(structured).includes(key),false);
+});
+
+test('stdin resume contract preserves plain keys and rejects unsupported fields without echoing secrets',()=>{
+  assert.deepEqual(parseFixtureInput(key),{key});
+  const resumeDataDir='yuzhou/.cu-runtime/dev028-browser-test';
+  assert.deepEqual(parseFixtureInput(JSON.stringify({key,resumeDataDir})),{key,resumeDataDir});
+  assert.deepEqual(parseFixtureInput(JSON.stringify({key})),{key});
+  for(const input of ['{broken',JSON.stringify({key,port:4397}),JSON.stringify({key,resumeDataDir:''}),JSON.stringify({key,resumeDataDir:null}),JSON.stringify({key:'bad'}),JSON.stringify({key,resumeDataDir:'path\nextra'})]){
+    assert.throws(()=>parseFixtureInput(input),error=>!error.message.includes(key)&&/Invalid/.test(error.message));
+  }
+});
+
+test('resume path accepts only existing ordinary DEV-028 directories directly inside this project runtime',()=>{
+  assertRuntimePath(RUNTIME_ROOT);mkdirSync(RUNTIME_ROOT,{recursive:true});
+  const directory=assertRuntimePath(mkdtempSync(join(RUNTIME_ROOT,'dev028-browser-contract-')));
+  const file=assertRuntimePath(join(RUNTIME_ROOT,`dev028-browser-file-${randomUUID()}`));
+  try{
+    writeFileSync(file,'synthetic non-database test file',{flag:'wx'});
+    assert.equal(validateResumeDirectory(directory),directory);
+    assert.equal(validateResumeDirectory(relative(resolve(PROJECT_ROOT,'..'),directory)),directory);
+    for(const path of [RUNTIME_ROOT,join(RUNTIME_ROOT,'data'),join(RUNTIME_ROOT,'dev027-browser-other'),join(directory,'nested'),resolve(PROJECT_ROOT,'..','dev028-browser-outside'),file])assert.throws(()=>validateResumeDirectory(path));
+  }finally{
+    // Both absolute cleanup targets were created by this test inside the same runtime boundary.
+    assertRuntimePath(file);unlinkSync(file);
+    assert.equal(validateResumeDirectory(directory),directory);rmSync(directory,{recursive:true,force:true});
+  }
+});
+
+test('resume authenticates synthetic identity through read-only normal APIs and never setup/seeds existing state',async()=>{
+  const initial=createSyntheticState('2026-10-15T00:00:00.000Z');
+  assert.equal(validateSyntheticIdentity(initial),true);
+  let state=structuredClone(initial),calls=[];
+  const fetchImpl=async(url,options)=>{
+    const path=new URL(url).pathname;assert.equal(new URL(url).origin,`http://${FIXTURE.host}:${FIXTURE.port}`);
+    assert.equal(options.redirect,'error');calls.push({path,method:options.method});
+    if(path==='/api/auth/login'||path==='/api/auth/setup'){
+      const body=JSON.parse(options.body);assert.equal(body.username,FIXTURE.username);assert.equal(body.password,FIXTURE.password);
+      if(path==='/api/auth/login')assert.equal(Object.hasOwn(body,'setupToken'),false);
+      return Response.json({authenticated:true,username:FIXTURE.username,csrfToken:'synthetic-csrf'},{status:path.endsWith('setup')?201:200,headers:{'set-cookie':'synthetic-only=session; HttpOnly'}});
+    }
+    assert.equal(options.headers.Cookie,'synthetic-only=session');assert.equal(options.headers['X-CSRF-Token'],'synthetic-csrf');
+    if(path==='/api/workspace'&&options.method==='GET')return Response.json({revision:7,state});
+    if(path==='/api/workspace'&&options.method==='PUT'){const body=JSON.parse(options.body);assert.equal(body.baseRevision,0);state=body.state;return Response.json({revision:1});}
+    assert.equal(path,'/api/auth/logout');return Response.json({authenticated:false});
+  };
+  assert.deepEqual(await authenticateFixture({resumed:true,fetchImpl}),{resumed:true,workspaceRevision:7});
+  assert.deepEqual(calls,[{path:'/api/auth/login',method:'POST'},{path:'/api/workspace',method:'GET'},{path:'/api/auth/logout',method:'POST'}]);
+  assert.deepEqual(state,initial);
+  for(const mutate of [copy=>copy.profile.name='foreign',copy=>copy.tasks=[],copy=>copy.captures=[],copy=>copy.customBlocks.items[0].data.syntheticProtectionBaseline='foreign']){
+    state=structuredClone(initial);mutate(state);calls=[];
+    await assert.rejects(authenticateFixture({resumed:true,fetchImpl}),/DEV-028 synthetic identity/);
+    assert.equal(calls.at(-1).path,'/api/auth/logout');assert.equal(calls.some(call=>call.path.endsWith('setup')||call.method==='PUT'),false);
+  }
+  calls=[];await authenticateFixture({fetchImpl});
+  assert.deepEqual(calls,[{path:'/api/auth/setup',method:'POST'},{path:'/api/workspace',method:'PUT'},{path:'/api/workspace',method:'GET'},{path:'/api/auth/logout',method:'POST'}]);
 });

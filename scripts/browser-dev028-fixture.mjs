@@ -1,8 +1,8 @@
 // DEV-028 synthetic custom-block UI acceptance only; independently copied from DEV-027.
 // Production prompts and review flow are unchanged.
 // The actual provider key is accepted only through stdin and retained only in memory.
-import {mkdirSync,mkdtempSync,writeFileSync,renameSync} from 'node:fs';
-import {join,resolve,dirname} from 'node:path';
+import {mkdirSync,mkdtempSync,writeFileSync,renameSync,lstatSync} from 'node:fs';
+import {join,resolve,dirname,basename} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomUUID,createHash} from 'node:crypto';
 import {createInterface} from 'node:readline';
@@ -17,6 +17,7 @@ import {RUNTIME_ROOT,assertRuntimePath,assertOrdinaryPath} from '../yuzhou/runti
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const ENDPOINT='https://api.deepseek.com/chat/completions';
 const MODEL='deepseek-v4-pro';
+const SETUP_TOKEN='dev028-synthetic-only-setup-token';
 export const MAX_PROVIDER_RESPONSE_BYTES=1024*1024;
 export const FIXTURE=Object.freeze({
   origin:'http://localhost:4398',host:'127.0.0.1',port:4398,
@@ -35,6 +36,27 @@ export const SEED=Object.freeze({
   protectedBlockText:'DEV-028 合成保护便签\n此内容仅用于保护哈希核验；本轮不得修改、归档或删除此方块。',
 });
 const stamp=()=>new Date().toISOString();
+const requireKey=value=>{if(typeof value!=='string'||value.length<12||value.length>500||/[\s\x00-\x1f\x7f]/.test(value))throw Error('Invalid stdin key.');return value;};
+
+/** Parsing does not access any directory or retain/write the key outside the caller's memory. */
+export function parseFixtureInput(line){
+  if(typeof line!=='string'||line.length>4096)throw Error('Invalid fixture input.');
+  if(!line.trimStart().startsWith('{'))return {key:requireKey(line)};
+  let value;try{value=JSON.parse(line);}catch{throw Error('Invalid fixture input.');}
+  if(!value||Array.isArray(value)||Object.keys(value).some(key=>!['key','resumeDataDir'].includes(key))||
+    (value.resumeDataDir!==undefined&&(typeof value.resumeDataDir!=='string'||!value.resumeDataDir||value.resumeDataDir.length>512||/[\x00-\x1f\x7f]/.test(value.resumeDataDir))))throw Error('Invalid fixture input.');
+  return {key:requireKey(value.key),...(value.resumeDataDir===undefined?{}:{resumeDataDir:value.resumeDataDir})};
+}
+
+/** Only direct ordinary dev028-browser-* children of this copy's runtime are resumable. */
+export function validateResumeDirectory(value){
+  if(typeof value!=='string'||!value||value.length>512||/[\x00-\x1f\x7f]/.test(value))throw Error('Invalid resume directory.');
+  const target=resolve(ROOT,value);
+  if(dirname(target).toLowerCase()!==resolve(RUNTIME_ROOT).toLowerCase()||!/^dev028-browser-[A-Za-z0-9-]{1,64}$/.test(basename(target)))throw Error('Resume directory is outside the synthetic fixture boundary.');
+  assertRuntimePath(target);
+  if(!lstatSync(target).isDirectory())throw Error('Resume target must be an existing directory.');
+  return target;
+}
 const safeErrors=new Set(['MODEL_NOT_CONFIGURED','INVALID_PROPOSAL','MODEL_AUTH_FAILED','MODEL_RATE_LIMIT',
   'MODEL_UNAVAILABLE','AI_INTERRUPTED','AI_TIMEOUT','MODEL_OUTPUT_TRUNCATED','MODEL_INCOMPLETE']);
 const staticValidationIssues=new Set([
@@ -134,10 +156,10 @@ function responseMetadata(bytes){
 }
 
 /** No environment or config-file key lookup. fetchImpl is injectable for offline tests only. */
-export function createRecordedModelRunner(apiKey,{fetchImpl=globalThis.fetch,persist=()=>{}}={}){
-  if(typeof apiKey!=='string'||apiKey.length<12||apiKey.length>500||/[\s\x00-\x1f\x7f]/.test(apiKey))throw Error('Invalid stdin key.');
+export function createRecordedModelRunner(apiKey,{fetchImpl=globalThis.fetch,persist=()=>{},resumed=false}={}){
+  requireKey(apiKey);
   const report={development:'DEV-028',scope:'Synthetic localhost UI; unchanged production prompts; no formal workspace reads',
-    model:MODEL,createdAt:stamp(),calls:[],requestCount:0,actualTokensReported:0,missingUsageCount:0,closed:false};
+    model:MODEL,sessionMode:resumed?'resume':'new',createdAt:stamp(),calls:[],requestCount:0,actualTokensReported:0,missingUsageCount:0,closed:false};
   const controllers=new Set(),active=new Set();let closed=false;
   const publish=()=>{
     report.requestCount=report.calls.length;
@@ -219,37 +241,75 @@ export function restrictFixtureConfig(service){
   }};
 }
 
-export async function startFixture(apiKey){
-  assertOrdinaryPath(ROOT,ROOT);assertRuntimePath(RUNTIME_ROOT);mkdirSync(RUNTIME_ROOT,{recursive:true});
-  const dataDir=assertRuntimePath(mkdtempSync(join(RUNTIME_ROOT,'dev028-browser-')));
-  const writer=createReportWriter(),recording=createRecordedModelRunner(apiKey,{persist:writer.persist});apiKey='';
-  const extractor=createDocumentExtractor(); // Native TXT/MD/CSV only; never loads extractor-config.json.
-  let app;const setupToken='dev028-synthetic-only-setup-token';
+async function localJson(response,maxBytes=64*1024){
+  const length=Number(response.headers.get('content-length'));
+  if(Number.isFinite(length)&&length>maxBytes){await response.body?.cancel();throw Error('Synthetic API response limit.');}
+  if(!response.body?.getReader)throw Error('Synthetic API response missing.');
+  const reader=response.body.getReader(),chunks=[];let bytes=0;
+  try{for(;;){const result=await reader.read();if(result.done)break;bytes+=result.value.byteLength;
+    if(bytes>maxBytes){await reader.cancel();throw Error('Synthetic API response limit.');}chunks.push(result.value);}}
+  finally{reader.releaseLock();}
+  try{return JSON.parse(Buffer.concat(chunks,bytes).toString('utf8'));}catch{throw Error('Synthetic API response invalid.');}
+}
+
+export function validateSyntheticIdentity(state){
+  const block=state?.customBlocks?.items?.find(item=>item.id===FIXTURE.protectedBlockId);
+  if(state?.profile?.name!==SEED.profileName||state?.profile?.major!==SEED.profileMajor||state?.workbench?.title!==SEED.workbenchTitle||
+    !state?.tasks?.some(item=>item.id===FIXTURE.protectedTaskId)||!state?.captures?.some(item=>item.id===FIXTURE.captureId)||
+    block?.kind!=='note'||block?.data?.syntheticProtectionBaseline!=='DEV-028')throw Error('Not the DEV-028 synthetic identity.');
+  return true;
+}
+
+/** Resume uses only normal login/GET/logout routes; new fixtures alone may setup/seed. */
+export async function authenticateFixture({resumed=false,fetchImpl=globalThis.fetch}={}){
+  const local=`http://${FIXTURE.host}:${FIXTURE.port}`;let cookie='',csrf='';
+  const request=(path,{method='GET',body}={})=>fetchImpl(local+path,{method,redirect:'error',signal:AbortSignal.timeout(10000),headers:{
+    ...(method!=='GET'?{Origin:FIXTURE.origin}:{}),...(body?{'Content-Type':'application/json'}:{}),
+    ...(cookie?{Cookie:cookie,'X-CSRF-Token':csrf}:{})},...(body?{body:JSON.stringify(body)}:{})});
   try{
-    app=await createWorkbenchServer({dataDir,secureCookie:false,publicOrigin:FIXTURE.origin,setupToken,
+    const login=await request(resumed?'/api/auth/login':'/api/auth/setup',{method:'POST',body:{username:FIXTURE.username,password:FIXTURE.password,...(resumed?{}:{setupToken:SETUP_TOKEN})}});
+    if(login.status!==(resumed?200:201)){await login.body?.cancel();throw Error('Synthetic authentication failed.');}
+    cookie=login.headers.get('set-cookie')?.split(';')[0]||'';
+    const session=await localJson(login);csrf=typeof session.csrfToken==='string'?session.csrfToken:'';
+    if(!cookie||!csrf||session.authenticated!==true||session.username!==FIXTURE.username)throw Error('Synthetic session unavailable.');
+    if(!resumed){
+      const saved=await request('/api/workspace',{method:'PUT',body:{baseRevision:0,state:createSyntheticState()}});
+      if(saved.status!==200){await saved.body?.cancel();throw Error('Synthetic workspace setup failed.');}await saved.body?.cancel();
+    }
+    const snapshot=await request('/api/workspace');
+    if(snapshot.status!==200){await snapshot.body?.cancel();throw Error('Synthetic workspace unavailable.');}
+    const workspace=await localJson(snapshot,13*1024*1024);
+    if(!Number.isSafeInteger(workspace.revision))throw Error('Synthetic workspace envelope invalid.');
+    validateSyntheticIdentity(workspace.state);
+    return {resumed,workspaceRevision:workspace.revision};
+  }finally{
+    if(cookie&&csrf){try{const loggedOut=await request('/api/auth/logout',{method:'POST'});await loggedOut.body?.cancel();
+      if(loggedOut.status!==200)throw Error('Synthetic logout failed.');}finally{cookie='';csrf='';}}
+  }
+}
+
+export async function startFixture(apiKey,{resumeDataDir}={}){
+  requireKey(apiKey);
+  assertOrdinaryPath(ROOT,ROOT);assertRuntimePath(RUNTIME_ROOT);mkdirSync(RUNTIME_ROOT,{recursive:true});
+  const resumed=resumeDataDir!==undefined;
+  const dataDir=resumed?validateResumeDirectory(resumeDataDir):assertRuntimePath(mkdtempSync(join(RUNTIME_ROOT,'dev028-browser-')));
+  const writer=createReportWriter(),recording=createRecordedModelRunner(apiKey,{persist:writer.persist,resumed});apiKey='';
+  const extractor=createDocumentExtractor(); // Native TXT/MD/CSV only; never loads extractor-config.json.
+  let app,identityVerified=false;
+  try{
+    app=await createWorkbenchServer({dataDir,secureCookie:false,publicOrigin:FIXTURE.origin,setupToken:SETUP_TOKEN,
       extractFile:extractor.extractFile,
       modelFactory:({dataDir:directory,store})=>restrictFixtureConfig(createHermesService({dataDir:directory,store,env:{},
-        engine:'deepseek-direct',runModel:recording.runModel,extractFile:extractor.extractFile,extractionCapabilities:()=>extractor.capabilities})),
+        engine:'deepseek-direct',runModel:input=>identityVerified?recording.runModel(input):Promise.resolve({ok:false,code:'MODEL_NOT_CONFIGURED'}),
+        extractFile:extractor.extractFile,extractionCapabilities:()=>extractor.capabilities})),
       onError:()=>process.stderr.write('DEV-028 synthetic request failed; inspect the UI error.\n')});
     await new Promise((ready,reject)=>{app.server.once('error',reject);app.server.listen(FIXTURE.port,FIXTURE.host,ready);});
-    // Bootstrap only this new synthetic account through normal HTTP/auth/CSRF routes.
-    const local=`http://${FIXTURE.host}:${FIXTURE.port}`;
-    const setup=await fetch(local+'/api/auth/setup',{method:'POST',headers:{Origin:FIXTURE.origin,'Content-Type':'application/json'},
-      body:JSON.stringify({username:FIXTURE.username,password:FIXTURE.password,setupToken})});
-    if(setup.status!==201)throw Error('Synthetic account setup failed.');
-    const cookie=setup.headers.get('set-cookie')?.split(';')[0],session=await setup.json();
-    if(!cookie||typeof session.csrfToken!=='string')throw Error('Synthetic session unavailable.');
-    const saved=await fetch(local+'/api/workspace',{method:'PUT',headers:{Origin:FIXTURE.origin,'Content-Type':'application/json',Cookie:cookie,'X-CSRF-Token':session.csrfToken},
-      body:JSON.stringify({baseRevision:0,state:createSyntheticState()})});
-    if(saved.status!==200){await saved.body?.cancel();throw Error('Synthetic workspace setup failed.');}
-    await saved.body?.cancel();
-    const loggedOut=await fetch(local+'/api/auth/logout',{method:'POST',headers:{Origin:FIXTURE.origin,Cookie:cookie,'X-CSRF-Token':session.csrfToken}});
-    await loggedOut.body?.cancel();
+    await authenticateFixture({resumed});identityVerified=true;
   }catch{
     await recording.close();await app?.close();throw Error('DEV-028 fixture startup failed; check port and local directories.');
   }
   let closing;
-  return {origin:FIXTURE.origin,dataDir,reportPath:writer.path,summary:recording.summary,close(){
+  return {origin:FIXTURE.origin,dataDir,resumed,reportPath:writer.path,summary:recording.summary,close(){
     if(!closing)closing=(async()=>{await recording.close();await app.close();})();return closing;
   }};
 }
@@ -266,11 +326,12 @@ async function main(){
     if(first){
       first=false;
       if(line==='STOP'){void stop();return;}
-      starting=startFixture(line);line='';
+      try{const input=parseFixtureInput(line);line='';starting=startFixture(input.key,{resumeDataDir:input.resumeDataDir});input.key='';}
+      catch{line='';process.stderr.write('DEV-028 startup input invalid. No secret diagnostics were retained.\n');process.exitCode=1;void stop();return;}
       starting.then(value=>{
         fixture=value;
         if(shutdownRequested){void fixture.close();return;}
-        process.stdout.write(JSON.stringify({event:'DEV028_READY',origin:fixture.origin,runtime:fixture.dataDir,report:fixture.reportPath,
+        process.stdout.write(JSON.stringify({event:'DEV028_READY',origin:fixture.origin,runtime:fixture.dataDir,resumed:fixture.resumed,report:fixture.reportPath,
           username:FIXTURE.username,password:FIXTURE.password,model:MODEL,placeholderKey:FIXTURE.placeholderKey,
           instruction:'Log in, save only the placeholder in model settings, then send synthetic AI requests. STOP on stdin closes this fixture.'})+'\n');
       }).catch(()=>{process.stderr.write('DEV-028 startup failed. No secret diagnostics were retained.\n');process.exitCode=1;void stop();});
@@ -278,7 +339,7 @@ async function main(){
   });
   lines.once('close',()=>{void stop();});
   for(const signal of ['SIGINT','SIGTERM'])process.once(signal,()=>{void stop();});
-  process.stdout.write('DEV-028 awaiting provider key on stdin first line; keep stdin open, send STOP to close.\n');
+  process.stdout.write('DEV-028 awaiting provider key or {key,resumeDataDir} JSON on stdin first line; keep stdin open, send STOP to close.\n');
 }
 
 if(isCliEntry(import.meta.url))await main();
