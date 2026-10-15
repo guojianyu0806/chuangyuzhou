@@ -1,0 +1,125 @@
+✖ query-only response with omitted proposal continues without publishing a missing reply (246.3703ms)
+✖ query-only response with null proposal continues without publishing a missing reply (165.8306ms)
+✔ query-only compatibility does not accept an explicit empty or invalid reply (1114.9905ms)
+✔ query-only compatibility still rejects empty, malformed and unauthorized queries without a reply (964.8398ms)
+✖ query-only compatibility rejects nonnull proposals and any top-level actions with or without a reply (1073.809ms)
+✖ query-only intermediate output never substitutes for a missing final chat or proposal reply (161.9654ms)
+✖ query-only responses retain the three-round query limit without consuming format repair (134.7576ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 2
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4074.4702
+
+✖ failing tests:
+
+test at yuzhou\backend\tests\workspace-ai.test.mjs:118:40
+✖ query-only response with omitted proposal continues without publishing a missing reply (246.3703ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   attempt: 2,
+  +   code: 'INVALID_PROPOSAL',
+  +   issue: '模型返回的 对话回复 格式不正确。',
+  +   previousOutput: '{"queries":[{"kind":"search","entity":"task"}]}'
+  + }
+  - undefined
+  
+      at TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/backend/tests/workspace-ai.test.mjs:132:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { attempt: 2, code: 'INVALID_PROPOSAL', issue: '模型返回的 对话回复 格式不正确。', previousOutput: '{"queries":[{"kind":"search","entity":"task"}]}' },
+    expected: undefined,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at yuzhou\backend\tests\workspace-ai.test.mjs:118:40
+✖ query-only response with null proposal continues without publishing a missing reply (165.8306ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   attempt: 2,
+  +   code: 'INVALID_PROPOSAL',
+  +   issue: '模型返回的 对话回复 格式不正确。',
+  +   previousOutput: '{"queries":[{"kind":"search","entity":"task"}],"proposal":null}'
+  + }
+  - undefined
+  
+      at TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/backend/tests/workspace-ai.test.mjs:132:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { attempt: 2, code: 'INVALID_PROPOSAL', issue: '模型返回的 对话回复 格式不正确。', previousOutput: '{"queries":[{"kind":"search","entity":"task"}],"proposal":null}' },
+    expected: undefined,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at yuzhou\backend\tests\workspace-ai.test.mjs:158:1
+✖ query-only compatibility rejects nonnull proposals and any top-level actions with or without a reply (1073.809ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'succeeded'
+  - 'failed'
+  
+      at TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/backend/tests/workspace-ai.test.mjs:163:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'succeeded',
+    expected: 'failed',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at yuzhou\backend\tests\workspace-ai.test.mjs:168:1
+✖ query-only intermediate output never substitutes for a missing final chat or proposal reply (161.9654ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/backend/tests/workspace-ai.test.mjs:172:98)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at yuzhou\backend\tests\workspace-ai.test.mjs:177:1
+✖ query-only responses retain the three-round query limit without consuming format repair (134.7576ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'failed'
+  - 'succeeded'
+  
+      at TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/backend/tests/workspace-ai.test.mjs:180:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'failed',
+    expected: 'succeeded',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,394 @@
+TAP version 13
+# Subtest: ledger directory exposes project names and total-account setting without being crowded out by courses
+ok 1 - ledger directory exposes project names and total-account setting without being crowded out by courses
+  ---
+  duration_ms: 5.1459
+  type: 'test'
+  ...
+# Subtest: ledger proposals validate precise money, real dates, source provenance and one selected destination
+ok 2 - ledger proposals validate precise money, real dates, source provenance and one selected destination
+  ---
+  duration_ms: 6.9724
+  type: 'test'
+  ...
+# Subtest: named project is supplied to the model, reviewed, then written once only after confirmation
+ok 3 - named project is supplied to the model, reviewed, then written once only after confirmation
+  ---
+  duration_ms: 84.1877
+  type: 'test'
+  ...
+# Subtest: daily ledger is a distinct confirmed destination and chat confirmation alone writes nothing
+ok 4 - daily ledger is a distinct confirmed destination and chat confirmation alone writes nothing
+  ---
+  duration_ms: 77.9287
+  type: 'test'
+  ...
+# Subtest: project archived or removed after review cannot receive ledger records
+ok 5 - project archived or removed after review cannot receive ledger records
+  ---
+  duration_ms: 127.4679
+  type: 'test'
+  ...
+# Subtest: later corrections invalidate a ledger review before any write
+ok 6 - later corrections invalidate a ledger review before any write
+  ---
+  duration_ms: 60.6821
+  type: 'test'
+  ...
+# Subtest: legacy organizer cannot auto-file ledger output even when the model selects it automatically
+ok 7 - legacy organizer cannot auto-file ledger output even when the model selects it automatically
+  ---
+  duration_ms: 26.9821
+  type: 'test'
+  ...
+# Subtest: continuing a completed ledger conversation sends actual receipts and only reviews newly added expenses
+ok 8 - continuing a completed ledger conversation sends actual receipts and only reviews newly added expenses
+  ---
+  duration_ms: 98.8811
+  type: 'test'
+  ...
+# Subtest: continued receipt context respects edited, removed and undone ledger records
+ok 9 - continued receipt context respects edited, removed and undone ledger records
+  ---
+  duration_ms: 206.7338
+  type: 'test'
+  ...
+# Subtest: edited ledger rows retained by undo remain visible in this request and its follow-up context
+ok 10 - edited ledger rows retained by undo remain visible in this request and its follow-up context
+  ---
+  duration_ms: 200.307
+  type: 'test'
+  ...
+# Subtest: attachment-first conversation can cite later user text even when the attachment has no readable text
+ok 11 - attachment-first conversation can cite later user text even when the attachment has no readable text
+  ---
+  duration_ms: 72.9904
+  type: 'test'
+  ...
+# Subtest: conversation asks, remembers corrections, and only explicit confirmation files once
+ok 12 - conversation asks, remembers corrections, and only explicit confirmation files once
+  ---
+  duration_ms: 93.1448
+  type: 'test'
+  ...
+# Subtest: saying confirm in chat still only produces a review and performs no workspace actions
+ok 13 - saying confirm in chat still only produces a review and performs no workspace actions
+  ---
+  duration_ms: 59.361
+  type: 'test'
+  ...
+# Subtest: conversation rejects outdated proposals and preserves later user messages
+ok 14 - conversation rejects outdated proposals and preserves later user messages
+  ---
+  duration_ms: 65.0507
+  type: 'test'
+  ...
+# Subtest: late conversation response cannot replace an edited or cancelled conversation
+ok 15 - late conversation response cannot replace an edited or cancelled conversation
+  ---
+  duration_ms: 59.3586
+  type: 'test'
+  ...
+# Subtest: model parser accepts a whole JSON fence without guessing missing or ambiguous content
+ok 16 - model parser accepts a whole JSON fence without guessing missing or ambiguous content
+  ---
+  duration_ms: 1.2494
+  type: 'test'
+  ...
+# Subtest: format repair stays in the same job, displays progress, and still requires explicit ledger confirmation
+ok 17 - format repair stays in the same job, displays progress, and still requires explicit ledger confirmation
+  ---
+  duration_ms: 67.7862
+  type: 'test'
+  ...
+# Subtest: whole fenced conversation response works without another provider request
+ok 18 - whole fenced conversation response works without another provider request
+  ---
+  duration_ms: 72.3136
+  type: 'test'
+  ...
+# Subtest: exhausted format repair is bounded, preserves the original request, and never exposes raw failed output
+ok 19 - exhausted format repair is bounded, preserves the original request, and never exposes raw failed output
+  ---
+  duration_ms: 78.2698
+  type: 'test'
+  ...
+# Subtest: authentication, quota and service failures do not consume automatic format attempts
+ok 20 - authentication, quota and service failures do not consume automatic format attempts
+  ---
+  duration_ms: 344.0717
+  type: 'test'
+  ...
+# Subtest: truncated output can retry as clarification without silently saving a partial bill
+ok 21 - truncated output can retry as clarification without silently saving a partial bill
+  ---
+  duration_ms: 158.4198
+  type: 'test'
+  ...
+# Subtest: conversation changes during a failed attempt stop correction of the old input
+ok 22 - conversation changes during a failed attempt stop correction of the old input
+  ---
+  duration_ms: 108.8496
+  type: 'test'
+  ...
+# Subtest: unconfigured status is truthful; secret config never returns or changes endpoint
+ok 23 - unconfigured status is truthful; secret config never returns or changes endpoint
+  ---
+  duration_ms: 122.7743
+  type: 'test'
+  ...
+# Subtest: direct engine and per-format extraction status work independently of Hermes and never call the model on configure
+ok 24 - direct engine and per-format extraction status work independently of Hermes and never call the model on configure
+  ---
+  duration_ms: 517.3524
+  type: 'test'
+  ...
+# Subtest: explicitly unavailable engine stops before any model request
+ok 25 - explicitly unavailable engine stops before any model request
+  ---
+  duration_ms: 97.642
+  type: 'test'
+  ...
+# Subtest: closing the service aborts the active injected runner and preserves business records
+ok 26 - closing the service aborts the active injected runner and preserves business records
+  ---
+  duration_ms: 252.671
+  type: 'test'
+  ...
+# Subtest: model proposal validates target, real calendar dates and source provenance
+ok 27 - model proposal validates target, real calendar dates and source provenance
+  ---
+  duration_ms: 4.2434
+  type: 'test'
+  ...
+# Subtest: the prompt includes untrusted content as data and directory is bounded
+ok 28 - the prompt includes untrusted content as data and directory is bounded
+  ---
+  duration_ms: 2.1721
+  type: 'test'
+  ...
+# Subtest: jobs are idempotent while running and completed; listing omits original text and secrets
+ok 29 - jobs are idempotent while running and completed; listing omits original text and secrets
+  ---
+  duration_ms: 326.3228
+  type: 'test'
+  ...
+# Subtest: failed output preserves original input; the same input may retry
+ok 30 - failed output preserves original input; the same input may retry
+  ---
+  duration_ms: 303.1468
+  type: 'test'
+  ...
+# Subtest: only one job calls the model at a time
+ok 31 - only one job calls the model at a time
+  ---
+  duration_ms: 342.7916
+  type: 'test'
+  ...
+# Subtest: legacy auto-file is rejected before any model call or workspace write
+ok 32 - legacy auto-file is rejected before any model call or workspace write
+  ---
+  duration_ms: 58.5462
+  type: 'test'
+  ...
+# Subtest: editing or cancelling input during inference retains proposal without filing
+ok 33 - editing or cancelling input during inference retains proposal without filing
+  ---
+  duration_ms: 256.4273
+  type: 'test'
+  ...
+# Subtest: cached legacy output cannot be reapplied by enabling auto-file
+ok 34 - cached legacy output cannot be reapplied by enabling auto-file
+  ---
+  duration_ms: 226.9851
+  type: 'test'
+  ...
+# Subtest: unsynced auto-file input and missing files are rejected before calling model
+ok 35 - unsynced auto-file input and missing files are rejected before calling model
+  ---
+  duration_ms: 62.4941
+  type: 'test'
+  ...
+# Subtest: restarted unfinished jobs become explicit failed attempts
+ok 36 - restarted unfinished jobs become explicit failed attempts
+  ---
+  duration_ms: 72.0941
+  type: 'test'
+  ...
+# Subtest: authenticated AI searches and computes, reviews linked project/entry, then confirms exactly once in SQLite
+ok 37 - authenticated AI searches and computes, reviews linked project/entry, then confirms exactly once in SQLite
+  ---
+  duration_ms: 310.1762
+  type: 'test'
+  ...
+# Subtest: existing task update and a calendar event stay a single reviewed transaction
+ok 38 - existing task update and a calendar event stay a single reviewed transaction
+  ---
+  duration_ms: 191.5849
+  type: 'test'
+  ...
+# Subtest: course preferences and actual existing record IDs reach the model before reviewed prompt/note changes
+ok 39 - course preferences and actual existing record IDs reach the model before reviewed prompt/note changes
+  ---
+  duration_ms: 210.4798
+  type: 'test'
+  ...
+# Subtest: three query rounds are bounded and the fourth request becomes a no-write clarification
+ok 40 - three query rounds are bounded and the fourth request becomes a no-write clarification
+  ---
+  duration_ms: 201.6682
+  type: 'test'
+  ...
+# Subtest: query-only response with omitted proposal continues without publishing a missing reply
+ok 41 - query-only response with omitted proposal continues without publishing a missing reply
+  ---
+  duration_ms: 174.7804
+  type: 'test'
+  ...
+# Subtest: query-only response with null proposal continues without publishing a missing reply
+ok 42 - query-only response with null proposal continues without publishing a missing reply
+  ---
+  duration_ms: 207.9087
+  type: 'test'
+  ...
+# Subtest: query-only compatibility does not accept an explicit empty or invalid reply
+ok 43 - query-only compatibility does not accept an explicit empty or invalid reply
+  ---
+  duration_ms: 3501.0646
+  type: 'test'
+  ...
+# Subtest: query-only compatibility still rejects empty, malformed and unauthorized queries without a reply
+ok 44 - query-only compatibility still rejects empty, malformed and unauthorized queries without a reply
+  ---
+  duration_ms: 2135.7418
+  type: 'test'
+  ...
+# Subtest: query-only compatibility rejects nonnull proposals and any top-level actions with or without a reply
+ok 45 - query-only compatibility rejects nonnull proposals and any top-level actions with or without a reply
+  ---
+  duration_ms: 2560.5412
+  type: 'test'
+  ...
+# Subtest: query-only intermediate output never substitutes for a missing final chat or proposal reply
+ok 46 - query-only intermediate output never substitutes for a missing final chat or proposal reply
+  ---
+  duration_ms: 439.5004
+  type: 'test'
+  ...
+# Subtest: query-only responses retain the three-round query limit without consuming format repair
+ok 47 - query-only responses retain the three-round query limit without consuming format repair
+  ---
+  duration_ms: 247.0544
+  type: 'test'
+  ...
+# Subtest: arbitrary query paths and mixed query/action output fail after one bounded format correction
+ok 48 - arbitrary query paths and mixed query/action output fail after one bounded format correction
+  ---
+  duration_ms: 401.8209
+  type: 'test'
+  ...
+# Subtest: explicit null queries permit a valid action plan but never execute before confirmation
+ok 49 - explicit null queries permit a valid action plan but never execute before confirmation
+  ---
+  duration_ms: 194.2001
+  type: 'test'
+  ...
+# Subtest: explicit null queries permit ordinary chat without creating an actionable proposal
+ok 50 - explicit null queries permit ordinary chat without creating an actionable proposal
+  ---
+  duration_ms: 184.8231
+  type: 'test'
+  ...
+# Subtest: false, string and object query values cannot bypass validation with chat or actions
+ok 51 - false, string and object query values cannot bypass validation with chat or actions
+  ---
+  duration_ms: 1337.6322
+  type: 'test'
+  ...
+# Subtest: one bounded correction identifies bad query fields then permits real queries and a reviewed plan
+ok 52 - one bounded correction identifies bad query fields then permits real queries and a reviewed plan
+  ---
+  duration_ms: 171.1838
+  type: 'test'
+  ...
+# Subtest: domain changes after review make confirmation stale without overwriting another device
+ok 53 - domain changes after review make confirmation stale without overwriting another device
+  ---
+  duration_ms: 142.3626
+  type: 'test'
+  ...
+# Subtest: domain changes during inference prevent an outdated action plan from becoming confirmable
+ok 54 - domain changes during inference prevent an outdated action plan from becoming confirmable
+  ---
+  duration_ms: 134.3737
+  type: 'test'
+  ...
+# Subtest: a discarded conversation result can retry the same turn against current data without duplicating execution
+ok 55 - a discarded conversation result can retry the same turn against current data without duplicating execution
+  ---
+  duration_ms: 183.6505
+  type: 'test'
+  ...
+# Subtest: unsent composer draft changes alone do not invalidate an already reviewed action
+ok 56 - unsent composer draft changes alone do not invalidate an already reviewed action
+  ---
+  duration_ms: 143.8624
+  type: 'test'
+  ...
+# Subtest: capabilities, queries and confirmation remain behind server authentication and CSRF
+ok 57 - capabilities, queries and confirmation remain behind server authentication and CSRF
+  ---
+  duration_ms: 131.2394
+  type: 'test'
+  ...
+# Subtest: ledger query calculates all exact fen records and honors independent project accounting
+ok 58 - ledger query calculates all exact fen records and honors independent project accounting
+  ---
+  duration_ms: 7.5626
+  type: 'test'
+  ...
+# Subtest: search/get give actual IDs, pagination, archive filters and no guessed records
+ok 59 - search/get give actual IDs, pagination, archive filters and no guessed records
+  ---
+  duration_ms: 5.6606
+  type: 'test'
+  ...
+# Subtest: calendar overlaps are independent from timetable and English counts only actual unarchived records
+ok 60 - calendar overlaps are independent from timetable and English counts only actual unarchived records
+  ---
+  duration_ms: 1.5467
+  type: 'test'
+  ...
+# Subtest: file read is workspace allowlisted and responses carry truncation instead of claiming full content
+ok 61 - file read is workspace allowlisted and responses carry truncation instead of claiming full content
+  ---
+  duration_ms: 4.7068
+  type: 'test'
+  ...
+# Subtest: query schema rejects arbitrary code/paths, malformed filters; fingerprint excludes conversations only
+ok 62 - query schema rejects arbitrary code/paths, malformed filters; fingerprint excludes conversations only
+  ---
+  duration_ms: 1.571
+  type: 'test'
+  ...
+# Subtest: published query schemas and examples describe only accepted fields and omit empty optional filters
+ok 63 - published query schemas and examples describe only accepted fields and omit empty optional filters
+  ---
+  duration_ms: 2.2359
+  type: 'test'
+  ...
+# Subtest: query correction errors locate all affected queries without echoing values or unsafe field names
+ok 64 - query correction errors locate all affected queries without echoing values or unsafe field names
+  ---
+  duration_ms: 0.9248
+  type: 'test'
+  ...
+1..64
+# tests 64
+# suites 0
+# pass 64
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13508.8271

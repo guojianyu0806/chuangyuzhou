@@ -115,6 +115,72 @@ test('three query rounds are bounded and the fourth request becomes a no-write c
   assert.equal((await f.confirm(ready)).status,409);
 });
 
+for(const withProposal of [false,true])test(`query-only response with ${withProposal?'null':'omitted'} proposal continues without publishing a missing reply`,async t=>{
+  let calls=0,release,observe;
+  const gate=new Promise(resolve=>{release=resolve;}),nextInput=new Promise(resolve=>{observe=resolve;});
+  const finalReply=withProposal?'已查询，请审核这条待办。':'目前没有待办。';
+  const f=await fixture(t,async input=>{
+    const data=JSON.parse(input.user);
+    if(++calls===1)return {queries:[{kind:'search',entity:'task'}],...(withProposal?{proposal:null}:{})};
+    observe(data);await gate;
+    return {reply:finalReply,proposal:withProposal?plan([create('task',{title:'查询后的待办'})]):null};
+  });
+  const job=await f.start(f.conversation('先查看待办，再给出回复或审核方案。'));
+  let data,intermediate;
+  try{data=await nextInput;intermediate={job:(await f.api(`/api/ai/jobs/${job.id}`)).body.job,state:f.state()};}finally{release();}
+  const ready=await f.finish(job);
+  assert.equal(data.formatCorrection,undefined);assert.equal(data.workspaceQueryResults.length,1);assert.equal(data.workspaceQueryResults[0].result.total,0);
+  assert.equal(intermediate.job.status,'running');assert.equal(intermediate.job.replySaved,undefined);assert.equal(intermediate.state.aiRequests[0].conversation.messages.length,1);assert.equal(intermediate.state.tasks.length,0);
+  assert.equal(ready.status,'succeeded');assert.equal(ready.replySaved,true);assert.equal(ready.queryRounds,1);assert.equal(ready.formatAttempt,1);assert.equal(calls,2);
+  const conversation=f.state().aiRequests[0].conversation;assert.equal(conversation.messages.length,2);assert.equal(conversation.messages.at(-1).text,finalReply);assert.equal(f.state().tasks.length,0);
+  if(withProposal){assert.equal(conversation.pendingJobId,ready.id);assert.equal((await f.confirm(ready)).status,200);assert.deepEqual(f.state().tasks.map(task=>task.title),['查询后的待办']);}
+  else{assert.equal(conversation.pendingJobId,undefined);assert.equal((await f.confirm(ready)).status,409);}
+});
+
+test('query-only compatibility does not accept an explicit empty or invalid reply',async t=>{
+  for(const reply of ['', '  ',null,false,4,[],{},'x'.repeat(12001)]){
+    let calls=0;const f=await fixture(t,async()=>{calls++;return {reply,proposal:null,queries:[{kind:'search',entity:'task'}]};});
+    const ready=await f.finish(await f.start(f.conversation('只读查询格式检查')));
+    assert.equal(ready.status,'failed');assert.equal(ready.error.code,'INVALID_PROPOSAL');assert.equal(ready.queryRounds,0);assert.equal(calls,2);
+    assert.equal(f.state().aiRequests[0].conversation.messages.length,1);assert.equal(f.state().tasks.length,0);assert.equal((await f.confirm(ready)).status,409);
+  }
+});
+
+test('query-only compatibility still rejects empty, malformed and unauthorized queries without a reply',async t=>{
+  for(const queries of [[],null,false,'[]',{},[{kind:'search',entity:'task',all:true}],[{kind:'file.read',blobId:'missing',path:'/etc/passwd'}]]){
+    let calls=0;const f=await fixture(t,async()=>{calls++;return {queries,proposal:null};});
+    const ready=await f.finish(await f.start(f.conversation('只读查询格式检查')));
+    assert.equal(ready.status,'failed');assert.equal(ready.error.code,'INVALID_PROPOSAL');assert.equal(ready.queryRounds,0);assert.equal(calls,2);
+    assert.equal(f.state().aiRequests[0].conversation.messages.length,1);assert.equal(f.state().tasks.length,0);assert.equal((await f.confirm(ready)).status,409);
+  }
+});
+
+test('query-only compatibility rejects nonnull proposals and any top-level actions with or without a reply',async t=>{
+  const action=create('task',{title:'不得执行'});
+  for(const fields of [{proposal:plan([action])},{proposal:false},{proposal:{}},{actions:[action]},{actions:[]},{actions:null}])for(const reply of [undefined,'先查询']){
+    let calls=0;const f=await fixture(t,async()=>{calls++;return {queries:[{kind:'search',entity:'task'}],proposal:null,...(reply===undefined?{}:{reply}),...fields};});
+    const ready=await f.finish(await f.start(f.conversation('只读查询格式检查')));
+    assert.equal(ready.status,'failed');assert.equal(ready.error.code,'INVALID_PROPOSAL');assert.equal(ready.queryRounds,0);assert.equal(calls,2);
+    assert.equal(f.state().aiRequests[0].conversation.messages.length,1);assert.equal(f.state().tasks.length,0);assert.equal((await f.confirm(ready)).status,409);
+  }
+});
+
+test('query-only intermediate output never substitutes for a missing final chat or proposal reply',async t=>{
+  for(const proposal of [null,plan([create('task',{title:'缺少最终回复不得执行'})])]){
+    let calls=0;const f=await fixture(t,async()=>{if(++calls===1)return {queries:[{kind:'search',entity:'task'}]};return {proposal};});
+    const ready=await f.finish(await f.start(f.conversation('先查再给审核方案')));
+    assert.equal(ready.status,'failed');assert.equal(ready.error.code,'INVALID_PROPOSAL');assert.equal(ready.queryRounds,1);assert.equal(calls,3);
+    assert.equal(f.state().aiRequests[0].conversation.messages.length,1);assert.equal(f.state().tasks.length,0);assert.equal((await f.confirm(ready)).status,409);
+  }
+});
+
+test('query-only responses retain the three-round query limit without consuming format repair',async t=>{
+  let calls=0;const f=await fixture(t,async()=>{calls++;return {queries:[{kind:'search',entity:'task'}]};});
+  const ready=await f.finish(await f.start(f.conversation('查看待办')));
+  assert.equal(ready.status,'succeeded');assert.equal(ready.proposal,null);assert.equal(ready.queryRounds,3);assert.equal(ready.formatAttempt,1);assert.equal(calls,4);assert.match(ready.reply,/三次|缩小/);
+  assert.equal(f.state().aiRequests[0].conversation.messages.length,2);assert.equal(f.state().tasks.length,0);assert.equal((await f.confirm(ready)).status,409);
+});
+
 test('arbitrary query paths and mixed query/action output fail after one bounded format correction',async t=>{
   for(const mixed of [false,true]){
     let calls=0;
