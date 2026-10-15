@@ -1,0 +1,338 @@
+{
+  "development": "DEV-027",
+  "scope": "Synthetic localhost UI; unchanged production prompts; no formal workspace reads",
+  "model": "deepseek-v4-pro",
+  "createdAt": "2026-10-15T12:02:28.426Z",
+  "calls": [
+    {
+      "index": 1,
+      "startedAt": "2026-10-15T12:03:10.158Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": false,
+      "httpStatus": 200,
+      "responseBytes": 1045,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "reply",
+          "proposal",
+          "queries"
+        ],
+        "replyType": "string",
+        "proposalType": "null",
+        "proposalKeys": [],
+        "queriesType": "array",
+        "queryCount": 4,
+        "queries": [
+          {
+            "kind": "search",
+            "entity": "capture",
+            "fields": [
+              "kind",
+              "entity",
+              "text"
+            ]
+          },
+          {
+            "kind": "search",
+            "entity": "space",
+            "fields": [
+              "kind",
+              "entity"
+            ]
+          },
+          {
+            "kind": "search",
+            "entity": "task",
+            "fields": [
+              "kind",
+              "entity"
+            ]
+          },
+          {
+            "kind": "search",
+            "entity": "workbenchModule",
+            "fields": [
+              "kind",
+              "entity"
+            ]
+          }
+        ],
+        "actionsType": "missing",
+        "actionCount": 0,
+        "actions": []
+      },
+      "usage": {
+        "prompt_tokens": 10071,
+        "completion_tokens": 143,
+        "total_tokens": 10214,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 10071
+      },
+      "completedAt": "2026-10-15T12:03:12.891Z",
+      "elapsedMs": 2734
+    },
+    {
+      "index": 2,
+      "startedAt": "2026-10-15T12:03:12.907Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": false,
+      "httpStatus": 200,
+      "responseBytes": 3790,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "reply",
+          "proposal",
+          "queries"
+        ],
+        "replyType": "string",
+        "proposalType": "object",
+        "proposalKeys": [
+          "title",
+          "summary",
+          "destinationId",
+          "reason",
+          "warnings",
+          "actions"
+        ],
+        "queriesType": "null",
+        "queryCount": 0,
+        "queries": [],
+        "actionsType": "array",
+        "actionCount": 5,
+        "actions": [
+          {
+            "entity": "space",
+            "operation": "create",
+            "fields": [
+              "entity",
+              "operation",
+              "ref",
+              "data"
+            ],
+            "dataFields": [
+              "title",
+              "description",
+              "type"
+            ]
+          },
+          {
+            "entity": "note",
+            "operation": "create",
+            "fields": [
+              "entity",
+              "operation",
+              "containerId",
+              "data"
+            ],
+            "dataFields": [
+              "title",
+              "content",
+              "source"
+            ]
+          },
+          {
+            "entity": "task",
+            "operation": "create",
+            "fields": [
+              "entity",
+              "operation",
+              "data"
+            ],
+            "dataFields": [
+              "title",
+              "description",
+              "category",
+              "date",
+              "priority",
+              "done",
+              "spaceId"
+            ]
+          },
+          {
+            "entity": "workbenchModule",
+            "operation": "update",
+            "fields": [
+              "entity",
+              "operation",
+              "id",
+              "data"
+            ],
+            "dataFields": [
+              "enabled",
+              "title",
+              "position"
+            ]
+          },
+          {
+            "entity": "workbenchModule",
+            "operation": "update",
+            "fields": [
+              "entity",
+              "operation",
+              "id",
+              "data"
+            ],
+            "dataFields": [
+              "enabled",
+              "title",
+              "position"
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 10975,
+        "completion_tokens": 775,
+        "total_tokens": 11750,
+        "prompt_cache_hit_tokens": 9984,
+        "prompt_cache_miss_tokens": 991
+      },
+      "completedAt": "2026-10-15T12:03:21.806Z",
+      "elapsedMs": 8899
+    },
+    {
+      "index": 3,
+      "startedAt": "2026-10-15T12:03:58.884Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": false,
+      "httpStatus": 200,
+      "responseBytes": 3748,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "reply",
+          "proposal"
+        ],
+        "replyType": "string",
+        "proposalType": "object",
+        "proposalKeys": [
+          "title",
+          "summary",
+          "destinationId",
+          "reason",
+          "warnings",
+          "actions"
+        ],
+        "queriesType": "missing",
+        "queryCount": 0,
+        "queries": [],
+        "actionsType": "array",
+        "actionCount": 5,
+        "actions": [
+          {
+            "entity": "space",
+            "operation": "create",
+            "fields": [
+              "entity",
+              "operation",
+              "ref",
+              "data"
+            ],
+            "dataFields": [
+              "title",
+              "description",
+              "type",
+              "color"
+            ]
+          },
+          {
+            "entity": "note",
+            "operation": "create",
+            "fields": [
+              "entity",
+              "operation",
+              "containerId",
+              "data"
+            ],
+            "dataFields": [
+              "title",
+              "content",
+              "source",
+              "color"
+            ]
+          },
+          {
+            "entity": "task",
+            "operation": "create",
+            "fields": [
+              "entity",
+              "operation",
+              "data"
+            ],
+            "dataFields": [
+              "title",
+              "description",
+              "category",
+              "date",
+              "priority",
+              "done",
+              "spaceId",
+              "color"
+            ]
+          },
+          {
+            "entity": "workbenchModule",
+            "operation": "update",
+            "fields": [
+              "entity",
+              "operation",
+              "id",
+              "data"
+            ],
+            "dataFields": [
+              "enabled",
+              "title",
+              "position"
+            ]
+          },
+          {
+            "entity": "workbenchModule",
+            "operation": "update",
+            "fields": [
+              "entity",
+              "operation",
+              "id",
+              "data"
+            ],
+            "dataFields": [
+              "enabled",
+              "title",
+              "position"
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 10924,
+        "completion_tokens": 783,
+        "total_tokens": 11707,
+        "prompt_cache_hit_tokens": 1536,
+        "prompt_cache_miss_tokens": 9388
+      },
+      "completedAt": "2026-10-15T12:04:06.860Z",
+      "elapsedMs": 7976
+    }
+  ],
+  "requestCount": 3,
+  "actualTokensReported": 33671,
+  "missingUsageCount": 0,
+  "closed": true,
+  "closedAt": "2026-10-15T12:08:21.418Z"
+}

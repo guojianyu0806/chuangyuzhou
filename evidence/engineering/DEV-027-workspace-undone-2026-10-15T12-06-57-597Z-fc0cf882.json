@@ -1,0 +1,66 @@
+{
+  "development": "DEV-027",
+  "kind": "read-only-synthetic-workspace-check",
+  "stage": "undone",
+  "observedAt": "2026-10-15T12:06:57.597Z",
+  "origin": "http://localhost:4398",
+  "passed": false,
+  "assertions": {
+    "schemaValid": true,
+    "onlySyntheticIdentity": true,
+    "protectedTaskPresent": true,
+    "protectedCapturePresent": true,
+    "protectedTaskContent": true,
+    "protectedCaptureContent": true,
+    "protectedTaskUnfinished": true,
+    "oneSourceCapture": true,
+    "nativeCalendarEventsZero": true,
+    "coursesStillEmpty": true,
+    "customBlocksStillEmpty": true,
+    "protectedTaskExactHash": true,
+    "protectedCaptureExactHash": true,
+    "noCreatedSpaces": false,
+    "noCreatedTasks": true,
+    "blankModulesRestored": true,
+    "noLinkedCalendarItems": true,
+    "workbenchExactHash": true
+  },
+  "protection": {
+    "task": {
+      "id": "dev027-protected-task",
+      "sha256": "19c946e8fea172651758423d059ce08dab54ba10d89398ae55e35b2e768b6c08"
+    },
+    "capture": {
+      "id": "dev027-source-capture",
+      "sha256": "0bd5fe6d88d191ad0c01dad3096035994e76bab7a86f4c6a2828736c49e9ec2a"
+    },
+    "workbench": {
+      "sha256": "ab6bee243dd3264c6a474074d5c37504083d8cd6325d6929ab421410aabf437f",
+      "enabledModuleIds": [
+        "ai"
+      ]
+    }
+  },
+  "summary": {
+    "captureCount": 1,
+    "taskCount": 1,
+    "spaceCount": 1,
+    "nativeCalendarEventCount": 0,
+    "enabledModuleIds": [
+      "ai"
+    ],
+    "spaces": [
+      {
+        "id": "6af11dc0-773f-43cd-b587-ca22c5ab75ca",
+        "title": "分享会筹备",
+        "noteCount": 0,
+        "notes": []
+      }
+    ],
+    "newTasks": [],
+    "linkedCalendarItems": []
+  },
+  "instanceId": "92e4583ce156634e2a258fd6424d283e7c6ed8edf6bc58a00fb85fa9a2c6c9c5",
+  "workspaceRevision": 11,
+  "baselineReport": "DEV-027-workspace-before-2026-10-15T12-02-44-167Z-b4735821.json"
+}
