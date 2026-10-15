@@ -33,11 +33,12 @@ class Surface {
   listenerCount() {return [...this.listeners.values()].reduce((sum, listeners) => sum + listeners.size, 0);}
 }
 
-function fixture(t, {width = 1280, height = 900, dpr = 1, pinch = 1, reduced = true, count = 20, withViewport = true, observers = true} = {}) {
+function fixture(t, {width = 1280, height = 900, dpr = 1, pinch = 1, reduced = true, count = 20, withViewport = true, observers = true, initialFloatStrength} = {}) {
   const root = new Surface(), stage = new Surface(), center = new Surface(), content = new Surface(), status = new Surface();
   const cards = Array.from({length: count}, () => new Surface());
   const win = new Surface(), doc = new Surface(), viewport = new Surface(), preference = new Surface();
   stage.width = width; win.innerHeight = height; win.devicePixelRatio = dpr; viewport.scale = pinch; preference.matches = reduced;
+  if (initialFloatStrength !== undefined) stage.style.setProperty('--welcome-float-strength', initialFloatStrength);
   if (withViewport) win.visualViewport = viewport;
   const queries = [];
   win.matchMedia = query => {
@@ -181,6 +182,54 @@ test('linear progress paints cached geometry without reading layout dimensions p
   assert.deepEqual(f.painted.at(-1), [...expected.cards, expected.center]);
   f.step(225); assert.equal(f.progress(), 1);
   assert.deepEqual([f.stage.reads, f.content.reads], reads);
+});
+
+test('autonomous float strength follows the displayed layout continuously through both forms', t => {
+  const f = fixture(t, {reduced: false});
+  const strength = () => Number(f.stage.style.getPropertyValue('--welcome-float-strength'));
+  const layouts = getWelcomeLayouts({width: 1280, height: 744, count: 20, centerHeight: 310});
+  assert.equal(f.progress(), 0); assert.equal(strength(), 1);
+  f.stage.fire('dblclick');
+  assert.equal(strength(), 1, 'requesting the grid must not change floating strength before the first frame');
+  f.step(225);
+  assert.equal(f.progress(), .5); assert.ok(Math.abs(strength() - .725) < 1e-10);
+  const halfway = interpolateWelcomeLayout(layouts, .5);
+  nearPositions(f.painted.at(-1), [...halfway.cards, halfway.center]);
+  f.step(225);
+  assert.equal(f.progress(), 1); assert.ok(Math.abs(strength() - .45) < 1e-10);
+  nearPositions(f.painted.at(-1), [...layouts.grid.cards, layouts.grid.center]);
+  f.stage.fire('dblclick'); f.step(225);
+  assert.equal(f.progress(), .5); assert.ok(Math.abs(strength() - .725) < 1e-10);
+  f.step(225); assert.equal(f.progress(), 0); assert.equal(strength(), 1);
+});
+
+test('ordinary window and observed size changes preserve the current floating strength', t => {
+  const f = fixture(t); f.zoom(.75);
+  const strength = f.stage.style.getPropertyValue('--welcome-float-strength');
+  assert.ok(Math.abs(Number(strength) - .725) < 1e-10);
+  f.stage.width = 800; f.win.innerHeight = 1000; f.win.fire('resize');
+  assert.equal(f.progress(), .5); assert.equal(f.stage.style.getPropertyValue('--welcome-float-strength'), strength);
+  f.stage.width = 390; f.observersCreated[0].callback(); f.step();
+  assert.equal(f.progress(), .5); assert.equal(f.stage.style.getPropertyValue('--welcome-float-strength'), strength);
+  const expected = interpolateWelcomeLayout(getWelcomeLayouts({width: 390, height: 844, count: 20, centerHeight: 310}), .5);
+  nearPositions(f.painted.at(-1), [...expected.cards, expected.center]);
+});
+
+test('disposing restores a previous floating strength and prevents queued callbacks from replacing it', t => {
+  for (const original of [undefined, '.63']) {
+    const f = fixture(t, {reduced: false, initialFloatStrength: original});
+    assert.equal(f.stage.style.getPropertyValue('--welcome-float-strength'), '1');
+    f.zoom(.5); f.step(225); f.observersCreated[0].callback();
+    const queued = [...f.frames.values()];
+    f.cleanup(); f.cleanup();
+    assert.equal(f.stage.style.getPropertyValue('--welcome-float-strength'), original ?? '');
+    assert.equal(f.frames.size, 0);
+    f.stage.width = 390; f.observersCreated[0].callback();
+    queued.forEach(callback => callback(10000));
+    f.zoom(.2); f.viewport.fire('resize'); f.stage.fire('dblclick');
+    assert.equal(f.stage.style.getPropertyValue('--welcome-float-strength'), original ?? '');
+    assert.equal(f.frames.size, 0);
+  }
 });
 
 test('resize observers batch dimension writes into a later frame and preserve intermediate progress', t => {

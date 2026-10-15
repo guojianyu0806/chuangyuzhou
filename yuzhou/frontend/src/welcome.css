@@ -10,14 +10,14 @@
 .welcome-header-actions{display:flex;align-items:center;gap:30px}.welcome-header-actions>button{display:flex;align-items:center;gap:7px;font-size:12px;min-height:44px;color:#6f6a7d}.welcome-header-actions>button:hover{color:#7851d9}.welcome-account>span{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#ece7f7;color:#745099;font-size:12px}.welcome-account>strong{font-weight:500;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .welcome-stage{position:relative;height:660px;margin-inline:auto;max-width:1800px;perspective:1100px;isolation:isolate}
 .welcome-atmosphere{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,#f8f9fb 15%,#f8f9fb00 58%);pointer-events:none;z-index:0}
-.welcome-center{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-width:0;text-align:center;padding:22px 20px;pointer-events:auto;border-radius:32px;border:1px solid #ffffffde;background:linear-gradient(145deg,#fffafc,#f1ecfa 72%,#f2f5fc);box-shadow:0 24px 52px -24px #76629438,0 3px 8px #7064830b,inset 0 1px 1px #fff;transform:rotate(var(--tile-angle,0deg));animation:welcome-center-bob 11s ease-in-out -3s infinite;will-change:transform}.welcome-center:before{content:"";position:absolute;inset:6px;border:1px solid #ffffff82;border-radius:27px;pointer-events:none}.welcome-center-content{position:relative;width:100%}.welcome-center-float{z-index:3}
+.welcome-center{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-width:0;text-align:center;padding:22px 20px;pointer-events:auto;border-radius:32px;border:1px solid #ffffffde;background:linear-gradient(145deg,#fffafc,#f1ecfa 72%,#f2f5fc);box-shadow:0 24px 52px -24px #76629438,0 3px 8px #7064830b,inset 0 1px 1px #fff;transform:rotate(var(--tile-angle,0deg));animation:welcome-sway 13.9s ease-in-out -5.7s infinite,welcome-bob 9.7s ease-in-out -3.1s infinite;will-change:transform}.welcome-center:before{content:"";position:absolute;inset:6px;border:1px solid #ffffff82;border-radius:27px;pointer-events:none}.welcome-center-content{position:relative;width:100%}.welcome-center-float{z-index:3}
 .welcome-eyebrow{display:flex;align-items:center;justify-content:center;gap:7px;font-size:10px;letter-spacing:1px;color:#8b8499;margin-bottom:8px}.welcome-eyebrow>span{width:5px;height:5px;background:#9673cd;border-radius:50%;box-shadow:0 0 0 4px #a385d90d}
 .welcome-center h1{font-family:"Microsoft YaHei UI","PingFang SC",sans-serif;font-size:clamp(30px,3.5vw,48px);font-weight:650;letter-spacing:-1.5px;line-height:1.18;overflow-wrap:anywhere;text-wrap:balance;margin:0 auto 10px;max-height:none}
 .welcome-description{font-size:12px;line-height:1.8;color:#7c7986;letter-spacing:.4px}.welcome-inventory{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;font-size:10px;color:#908a99;margin:10px 0 16px}
 .welcome-enter{display:inline-flex;align-items:center;justify-content:center;gap:26px;background:#282436;color:white;border:1px solid #282436;border-radius:13px;min-height:54px;padding:0 24px;font-size:14px;font-weight:550;box-shadow:0 7px 14px #28243613,0 1px 1px #ffffff44 inset;transition:transform .23s cubic-bezier(.2,.8,.2,1),background .2s,box-shadow .2s}.welcome-enter>span{display:grid;place-items:center;transition:transform .23s}.welcome-enter:hover{background:#51406c;transform:translateY(-3px);box-shadow:0 12px 22px #46306722}.welcome-enter:hover>span{transform:translateX(3px)}.welcome-enter:active{transform:translateY(0) scale(.98)}
 .welcome-companion{display:flex;align-items:center;justify-content:center;gap:7px;margin:19px auto 0;font-size:10px;min-height:36px;color:#98909f;max-width:100%}.welcome-companion:hover{color:#7950bf}.welcome-pet{position:relative;display:flex;align-items:center;justify-content:center;gap:4px;width:22px;height:22px;border-radius:9px 9px 10px 10px;background:#a184d8;box-shadow:0 3px 7px #9880bf22;transform:rotate(-8deg)}.welcome-pet i{width:3px;height:7px;background:white;border-radius:3px}.welcome-pet:before{content:'';position:absolute;top:-4px;left:5px;width:4px;height:6px;border-radius:4px;background:#a184d8}
 .welcome-constellation{display:contents;user-select:none}.welcome-float{position:absolute;left:0;top:0;min-width:0;min-height:0;z-index:1;pointer-events:none;will-change:transform}.welcome-float.welcome-center-float{z-index:3}.welcome-float-motion{height:100%;transform-style:preserve-3d;will-change:transform}
-.welcome-tile{position:relative;width:100%;height:100%;text-align:left;cursor:pointer;pointer-events:auto;touch-action:manipulation;padding:12px 14px 10px;border-radius:20px;overflow:hidden;background:color-mix(in srgb,var(--tile-color) 75%,#fff);border:1px solid color-mix(in srgb,var(--tile-color) 68%,#fff);box-shadow:0 20px 34px -22px color-mix(in srgb,var(--tile-color) 65%,#312b4e),0 2px 3px #4c3a7a0a,inset 0 1px 1px #ffffffb3;color:#3d3852;transform:rotate(var(--tile-angle,0deg));animation:welcome-bob var(--tile-duration) ease-in-out var(--tile-delay) infinite;will-change:transform;transition:border-color .2s,box-shadow .2s}
+.welcome-tile{position:relative;width:100%;height:100%;text-align:left;cursor:pointer;pointer-events:auto;touch-action:manipulation;padding:12px 14px 10px;border-radius:20px;overflow:hidden;background:color-mix(in srgb,var(--tile-color) 75%,#fff);border:1px solid color-mix(in srgb,var(--tile-color) 68%,#fff);box-shadow:0 20px 34px -22px color-mix(in srgb,var(--tile-color) 65%,#312b4e),0 2px 3px #4c3a7a0a,inset 0 1px 1px #ffffffb3;color:#3d3852;transform:rotate(var(--tile-angle,0deg));animation:welcome-sway var(--tile-sway-duration) ease-in-out var(--tile-sway-delay) infinite,welcome-bob var(--tile-duration) ease-in-out var(--tile-delay) infinite;will-change:transform;transition:border-color .2s,box-shadow .2s}
 .welcome-tile:hover{border-color:#ffffffbd;box-shadow:0 22px 38px -19px color-mix(in srgb,var(--tile-color) 65%,#312b4e),0 2px 5px #4c3a7a12,inset 0 1px 1px #ffffffc9}
 .welcome-card-held{z-index:5}.welcome-card-held :is(.welcome-tile,.welcome-center){animation-play-state:paused}
 .welcome-tile:after{content:'';position:absolute;inset:4px;border:1px solid #ffffff3d;border-radius:19px;pointer-events:none}.welcome-tile-wash{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 92% 3%,#ffffff73,transparent 65%),linear-gradient(125deg,transparent 34%,#ffffff30 34.5%,transparent 70%)}.welcome-tile-wash:after{content:'';position:absolute;width:140px;height:140px;border:20px solid #ffffff14;border-radius:45%;top:-60px;right:-70px;transform:rotate(25deg)}
@@ -40,8 +40,28 @@
 .welcome-companion{min-height:30px;margin-top:12px;font-size:9px}.welcome-enter{min-height:50px}
 .welcome-center h1{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .welcome-center h1.welcome-title-long{font-size:clamp(24px,2.25vw,30px);letter-spacing:-1px}
-@keyframes welcome-bob{0%,100%{transform:translate3d(0,-7px,0) rotate(var(--tile-angle))}50%{transform:translate3d(5px,8px,0) rotate(calc(var(--tile-angle) + 2deg))}}
-@keyframes welcome-center-bob{0%,100%{transform:translate3d(0,-4px,0) rotate(var(--tile-angle,0deg))}50%{transform:translate3d(2px,4px,0) rotate(calc(var(--tile-angle,0deg) + .6deg))}}
+/* Independent, offset clocks form a continuous drifting path even at rest.
+   Layout, pointer response, and this idle layer never compete for one transform. */
+.welcome-tile{
+  --float-x:calc(clamp(4px,.8vw,12px) * var(--tile-sway-sign,1) * var(--tile-drift,1) * var(--welcome-float-strength,1));
+  --float-y:calc(clamp(7px,1.2vw,18px) * var(--tile-drift,1) * var(--welcome-float-strength,1));
+  --float-tilt:calc(1.8deg * var(--tile-drift,1) * var(--welcome-float-strength,1));
+}
+.welcome-center{
+  --float-x:calc(5px * var(--welcome-float-strength,1));
+  --float-y:calc(8px * var(--welcome-float-strength,1));
+  --float-tilt:calc(.65deg * var(--welcome-float-strength,1));
+}
+@keyframes welcome-sway{
+  0%,100%{translate:calc(-1 * var(--float-x)) 0}
+  50%{translate:var(--float-x) 0}
+}
+@keyframes welcome-bob{
+  0%,100%{transform:translate3d(0,calc(-1 * var(--float-y)),0) rotate(calc(var(--tile-angle,0deg) - var(--float-tilt)))}
+  50%{transform:translate3d(0,var(--float-y),0) rotate(calc(var(--tile-angle,0deg) + var(--float-tilt)))}
+}
+
+
 @media(min-width:1500px){.welcome-tile{padding:16px 18px}.welcome-tile-art{transform:scale(.9)}.welcome-tile-title{font-size:15px}.welcome-center h1{font-size:52px}}
 @media(min-width:601px) and (max-width:1099px){.welcome-center h1{font-size:38px}.welcome-center h1.welcome-title-long{font-size:26px}}
 @media(max-width:600px){

@@ -17,6 +17,7 @@ export function mountWelcomeLayout({root, motion, win = window, doc = document})
   const previous = nodes.map(node => ({values: Object.fromEntries(layoutProperties.map(key => [key, node.style[key] || ''])),
     angle: node.style.getPropertyValue('--tile-angle')}));
   const previousHeight = stage.style.height || '';
+  const previousFloatStrength = stage.style.getPropertyValue('--welcome-float-strength');
   const previousProgress = root.dataset.layoutProgress, previousStatus = status?.textContent;
   const viewport = win.visualViewport;
   const effectiveScale = () => positive(win.devicePixelRatio, 1) * positive(viewport?.scale, 1);
@@ -30,6 +31,9 @@ export function mountWelcomeLayout({root, motion, win = window, doc = document})
     if (disposed) return;
     progress = value;
     root.dataset.layoutProgress = String(progress);
+    // The compact endpoint keeps breathing without drifting into its neighbours.
+    // Changing amplitude never restarts the independent CSS animation clocks.
+    stage.style.setProperty('--welcome-float-strength', String(1 - .55 * progress));
     if (status) status.textContent = progress <= 1e-7 ? '形式 1 · 散落' : progress >= 1 - 1e-7 ? '形式 2 · 整齐' : `两种形式之间 · ${Math.round(progress * 100)}%`;
     if (!layouts) return;
     const layout = interpolateWelcomeLayout(layouts, progress);
@@ -117,6 +121,8 @@ export function mountWelcomeLayout({root, motion, win = window, doc = document})
     win.removeEventListener('resize', onViewportChange);
     viewport?.removeEventListener('resize', onViewportChange);
     stage.style.height = previousHeight;
+    if (previousFloatStrength) stage.style.setProperty('--welcome-float-strength', previousFloatStrength);
+    else stage.style.removeProperty('--welcome-float-strength');
     if (previousProgress === undefined) delete root.dataset.layoutProgress;
     else root.dataset.layoutProgress = previousProgress;
     if (status) status.textContent = previousStatus;
