@@ -1,0 +1,96 @@
+{
+  "scope": "synthetic short prompts through production transport; no formal workspace reads",
+  "model": "deepseek-v4-pro",
+  "maxCalls": 3,
+  "maxTokens": 10000,
+  "calls": [
+    {
+      "label": "connection-json",
+      "startedAt": "2026-10-15T08:42:51.730Z",
+      "promptBytes": 199,
+      "maxOutputTokens": 128,
+      "reservedTokenUpperBound": 1351,
+      "promptHash": "59ee5845d1f45ccddf40b1e896cedb430b8aaa9ed2196d54b45105ffbf8cf9bd",
+      "ok": true,
+      "httpStatus": 200,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "usage": {
+        "prompt_tokens": 71,
+        "completion_tokens": 10,
+        "total_tokens": 81,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 71
+      },
+      "transportOk": true,
+      "checks": {
+        "chineseReply": true,
+        "arithmetic": true,
+        "onlyExpectedFields": true
+      },
+      "elapsedMs": 1612,
+      "completedAt": "2026-10-15T08:42:53.346Z"
+    },
+    {
+      "label": "generate-reviewable-note",
+      "startedAt": "2026-10-15T08:43:54.211Z",
+      "promptBytes": 635,
+      "maxOutputTokens": 512,
+      "reservedTokenUpperBound": 2171,
+      "promptHash": "90a423d320cab185d37cd3a52deb03a8d585aaa08871917429dd281b80279b66",
+      "ok": false,
+      "httpStatus": 200,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "usage": {
+        "prompt_tokens": 168,
+        "completion_tokens": 194,
+        "total_tokens": 362,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 168
+      },
+      "transportOk": true,
+      "checks": {
+        "validStructuredResult": false
+      },
+      "elapsedMs": 2934,
+      "completedAt": "2026-10-15T08:43:57.146Z"
+    },
+    {
+      "label": "note-create-and-revision-one-response",
+      "startedAt": "2026-10-15T08:50:20.376Z",
+      "promptBytes": 869,
+      "maxOutputTokens": 512,
+      "reservedTokenUpperBound": 2405,
+      "promptHash": "d15a9f6470ff3c690e21da3fa3609ad1f7c7c112df04c31b14da655983ffcc90",
+      "ok": true,
+      "httpStatus": 200,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "usage": {
+        "prompt_tokens": 216,
+        "completion_tokens": 327,
+        "total_tokens": 543,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 216
+      },
+      "transportOk": true,
+      "checks": {
+        "initialValidProposal": true,
+        "initialRequestedContent": true,
+        "initialPreviewOnly": true,
+        "initialInMemoryExecution": true,
+        "revisionValidProposal": true,
+        "revisionRequestedContent": true,
+        "revisionPreviewOnly": true,
+        "revisionInMemoryExecution": true,
+        "originalStateUnchanged": true
+      },
+      "elapsedMs": 4218,
+      "completedAt": "2026-10-15T08:50:24.596Z"
+    }
+  ],
+  "actualTokensReported": 986,
+  "reservedTokenUpperBound": 5927,
+  "localValidationContinuation": true
+}
