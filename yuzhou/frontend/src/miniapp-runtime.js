@@ -21,9 +21,12 @@ export function miniappJSON(value,maxBytes=MINIAPP_MESSAGE_BYTES,maxDepth=10){
   return JSON.parse(json);
 }
 
-export function mountMiniapp(host,{code,data,onData,onError,preview=false}={}){
+export function mountMiniapp(host,{code,data,onData,onError,onStop,preview=false}={}){
   if(!host?.ownerDocument)throw new Error('缺少小程序运行容器');
   const doc=host.ownerDocument,win=doc.defaultView;
+  // Terminal events are separate from recoverable persistence errors. Parent
+  // cleanup stays silent; an already-ended run must not reset a newer session.
+  const stopped=message=>{try{onStop?.(message);}catch{}};
   let initial;
   try{
     if(typeof code!=='string'||!code.trim()||code.length>30000)throw new Error('小程序代码需为 1—30000 字符');
@@ -34,6 +37,7 @@ export function mountMiniapp(host,{code,data,onData,onError,preview=false}={}){
   }catch(error){
     const message=doc.createElement('p');message.setAttribute('role','alert');message.textContent=error.message;host.replaceChildren(message);
     try{onError?.(error);}catch{}
+    stopped(error.message);
     return ()=>message.remove();
   }
   const bytes=new Uint8Array(24);win.crypto.getRandomValues(bytes);
@@ -51,9 +55,9 @@ export function mountMiniapp(host,{code,data,onData,onError,preview=false}={}){
   const dispose=(message)=>{
     if(!active)return;active=false;win.clearInterval(timer);win.removeEventListener('message',receive);stop.removeEventListener('click',stopRun);frame.removeEventListener('load',init);
     try{frame.contentWindow?.postMessage({channel:MINIAPP_CHANNEL,token,type:'stop'},'*');}catch{}
-    frame.remove();stop.disabled=true;if(message)status.textContent=message;
+    frame.remove();stop.disabled=true;if(message){status.textContent=message;stopped(message);}
   };
-  const fail=error=>{dispose(error.message);status.setAttribute('role','alert');notify(error);};
+  const fail=error=>{if(!active)return;dispose(error.message);status.setAttribute('role','alert');notify(error);};
   const stopRun=()=>dispose('小程序已停止');
   const receive=async event=>{
     if(!active||event.source!==frame.contentWindow)return;

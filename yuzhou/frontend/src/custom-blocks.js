@@ -144,6 +144,7 @@ export function mountCustomBlockPage(ctx,id){
   const get=()=>find(state,id);
   function stop(){runId++;disposeRuntime?.();disposeRuntime=null;const host=root.querySelector('[data-cb-runtime]');if(host)host.replaceChildren();}
   function status(message){const el=root.querySelector('[data-cb-status]');if(el)el.textContent=message;}
+  function running(value){const run=root.querySelector('[data-cb-action="run"]'),stopButton=root.querySelector('[data-cb-action="stop"]');if(run)run.disabled=value;if(stopButton)stopButton.disabled=!value;}
   function mutate(patch){const result=saveCustomBlockChange(ctx,workspace=>updateCustomBlock(workspace,id,patch));return result;}
   function content(block){
     const c=block.config;
@@ -165,16 +166,16 @@ export function mountCustomBlockPage(ctx,id){
     try{
       if(action==='home')ctx.go('home');
       if(action==='builder')ctx.go('builder');
-      if(action==='edit'){stop();if(get()?.kind==='miniapp'){status('已停止，保存代码后可重新运行。');const run=root.querySelector('[data-cb-action="run"]'),stopButton=root.querySelector('[data-cb-action="stop"]');if(run)run.disabled=false;if(stopButton)stopButton.disabled=true;}customBlockEditor(ctx,id);}
+      if(action==='edit'){stop();if(get()?.kind==='miniapp'){status('已停止，保存代码后可重新运行。');running(false);}customBlockEditor(ctx,id);}
       if(action==='archive'){stop();mutate({archived:!get().archived});render();}
-      if(action==='stop'){stop();status('已停止，最近一次保存的运行数据保留。');root.querySelector('[data-cb-action="run"]').disabled=false;root.querySelector('[data-cb-action="stop"]').disabled=true;}
+      if(action==='stop'){stop();status('已停止，最近一次保存的运行数据保留。');running(false);}
       if(action==='run'){
         stop();const block=get();if(!block||block.archived)return;
         const generation=runId,write=createBlockDataWriter(ctx,id,{isActive:()=>active&&generation===runId});
-        const running=root.querySelector('[data-cb-action="run"]'),stopping=root.querySelector('[data-cb-action="stop"]');running.disabled=true;stopping.disabled=false;status('正在启动运行会话，操作成功后保存数据。');
-        disposeRuntime=mountMiniapp(root.querySelector('[data-cb-runtime]'),{code:block.config.code,data:clone(block.data),onData:data=>{const result=write(data);status('运行中 · 数据已保存');return result;},onError:error=>{if(active&&generation===runId)status(`运行提示：${error?.message||String(error)}`);}});
+        running(true);status('正在启动运行会话，操作成功后保存数据。');
+        disposeRuntime=mountMiniapp(root.querySelector('[data-cb-runtime]'),{code:block.config.code,data:clone(block.data),onData:data=>{const result=write(data);status('运行中 · 数据已保存');return result;},onError:error=>{if(active&&generation===runId)status(`运行提示：${error?.message||String(error)}`);},onStop:message=>{if(!active||generation!==runId)return;runId++;running(false);status(message);}});
       }
-    }catch(error){toast(error.message||'操作未完成，请重试。');status(error.message);}
+    }catch(error){if(action==='run'){stop();running(false);}toast(error.message||'操作未完成，请重试。');status(error.message);}
   }
   function onChange(event){
     if(!event.target.matches('[data-cb-check]')||!active)return;

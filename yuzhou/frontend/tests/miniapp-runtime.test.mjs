@@ -69,6 +69,13 @@ test('stop and four-second watchdog remove the execution surface and its listene
   assert.equal(hung.frame.removed,true);assert.match(hung.status.textContent,/4 秒/);assert.equal(hung.errors.length,1);assert.equal(hung.win.listeners.get('message').size,0);hung.cleanup();
 });
 
+test('terminal notification fires once for internal stop or fatal failure, never for parent cleanup or recoverable save errors',async()=>{
+  const stopped=[],f=hostFixture({onStop:message=>stopped.push(message)});await f.init();const stopCallback=[...f.stop.listeners.get('click')][0];
+  await f.stop.fire('click');stopCallback();f.cleanup();assert.deepEqual(stopped,['小程序已停止']);
+  const failed=[],bad=hostFixture({onStop:message=>failed.push(message)});await bad.init();await bad.receive({type:'error',message:'synthetic worker failure'});bad.cleanup();assert.deepEqual(failed,['synthetic worker failure']);
+  const recoverable=[],retry=hostFixture({onData:()=>{throw new Error('synthetic persistence failure');},onStop:message=>recoverable.push(message)});await retry.init();await retry.receive({type:'save',requestId:1,data:{count:1}});assert.deepEqual(recoverable,[]);assert.equal(retry.frame.removed,undefined);retry.cleanup();assert.deepEqual(recoverable,[]);
+});
+
 function frameFixture(){
   const root=new Element('main'),error=new Element('p'),win=new Element('window'),out=[],workers=[],urls=new Map(),revoked=[];
   let context;

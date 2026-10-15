@@ -1,0 +1,322 @@
+TAP version 13
+# Subtest: custom block transaction restores content, geometry and stamp on save failure
+ok 1 - custom block transaction restores content, geometry and stamp on save failure
+  ---
+  duration_ms: 6.4316
+  type: 'test'
+  ...
+# Subtest: creation initializes real canvas position and save failure removes both new domains
+ok 2 - creation initializes real canvas position and save failure removes both new domains
+  ---
+  duration_ms: 3.5674
+  type: 'test'
+  ...
+# Subtest: success synchronizes the block color with its real canvas geometry
+ok 3 - success synchronizes the block color with its real canvas geometry
+  ---
+  duration_ms: 0.7445
+  type: 'test'
+  ...
+# Subtest: running block accepts consecutive own writes without remount or config changes
+ok 4 - running block accepts consecutive own writes without remount or config changes
+  ---
+  duration_ms: 0.9072
+  type: 'test'
+  ...
+# Subtest: a failed runtime save rolls back and leaves the writer baseline retryable
+ok 5 - a failed runtime save rolls back and leaves the writer baseline retryable
+  ---
+  duration_ms: 1.3256
+  type: 'test'
+  ...
+# Subtest: changed source code or external runtime data rejects the obsolete program
+ok 6 - changed source code or external runtime data rejects the obsolete program
+  ---
+  duration_ms: 1.3871
+  type: 'test'
+  ...
+# Subtest: unmounted programs and a switched workspace cannot write to old state
+ok 7 - unmounted programs and a switched workspace cannot write to old state
+  ---
+  duration_ms: 0.7974
+  type: 'test'
+  ...
+# Subtest: invalid runtime payload and unrelated block updates cannot corrupt program data
+ok 8 - invalid runtime payload and unrelated block updates cannot corrupt program data
+  ---
+  duration_ms: 0.8214
+  type: 'test'
+  ...
+# Subtest: home canvas uses independent block identities and hides archived blocks without deleting coordinates
+ok 9 - home canvas uses independent block identities and hides archived blocks without deleting coordinates
+  ---
+  duration_ms: 1.0839
+  type: 'test'
+  ...
+# Subtest: home summaries expose plain text only and do not execute program source
+ok 10 - home summaries expose plain text only and do not execute program source
+  ---
+  duration_ms: 0.4819
+  type: 'test'
+  ...
+# Subtest: first saved custom block completes onboarding without replacing the chosen layout, and failed creation rolls it all back
+ok 11 - first saved custom block completes onboarding without replacing the chosen layout, and failed creation rolls it all back
+  ---
+  duration_ms: 2.0059
+  type: 'test'
+  ...
+# Subtest: creating a dropped custom block commits its content and snapped location in one save without moving existing cards
+ok 12 - creating a dropped custom block commits its content and snapped location in one save without moving existing cards
+  ---
+  duration_ms: 1.3447
+  type: 'test'
+  ...
+# Subtest: an out-of-bounds drop rejects the newly created block and preserves the original workspace before any save
+ok 13 - an out-of-bounds drop rejects the newly created block and preserves the original workspace before any save
+  ---
+  duration_ms: 1.5978
+  type: 'test'
+  ...
+# Subtest: quota failure after preparing a dropped block restores both domains and allows a clean retry at the chosen location
+ok 14 - quota failure after preparing a dropped block restores both domains and allows a clean retry at the chosen location
+  ---
+  duration_ms: 2.3001
+  type: 'test'
+  ...
+# Subtest: archived miniapp page can open its editor without absent run controls or runtime startup
+ok 15 - archived miniapp page can open its editor without absent run controls or runtime startup
+  ---
+  duration_ms: 2.2461
+  type: 'test'
+  ...
+# Subtest: custom-block previews and descriptions use all seven Chinese kind names without changing calendar terminology
+ok 16 - custom-block previews and descriptions use all seven Chinese kind names without changing calendar terminology
+  ---
+  duration_ms: 14.7883
+  type: 'test'
+  ...
+# Subtest: review configuration text retains every checklist, link, progress, date, table and note value
+ok 17 - review configuration text retains every checklist, link, progress, date, table and note value
+  ---
+  duration_ms: 5.0806
+  type: 'test'
+  ...
+# Subtest: long miniapp code is fully reviewable with original line breaks in create, update and fallback descriptions
+ok 18 - long miniapp code is fully reviewable with original line breaks in create, update and fallback descriptions
+  ---
+  duration_ms: 1.8617
+  type: 'test'
+  ...
+# Subtest: legacy reads and type metadata are isolated; all seven valid block kinds round-trip
+ok 19 - legacy reads and type metadata are isolated; all seven valid block kinds round-trip
+  ---
+  duration_ms: 1.3155
+  type: 'test'
+  ...
+# Subtest: config edits preserve private data, kind cannot change and invalid edits are atomic
+ok 20 - config edits preserve private data, kind cannot change and invalid edits are atomic
+  ---
+  duration_ms: 0.8443
+  type: 'test'
+  ...
+# Subtest: strict configurations reject unsafe links, invalid dates, duplicate rows and excessive collections
+ok 21 - strict configurations reject unsafe links, invalid dates, duplicate rows and excessive collections
+  ---
+  duration_ms: 1.1994
+  type: 'test'
+  ...
+# Subtest: JSON data enforces byte, nesting and finite-value boundaries without executing or retaining input references
+ok 22 - JSON data enforces byte, nesting and finite-value boundaries without executing or retaining input references
+  ---
+  duration_ms: 0.5994
+  type: 'test'
+  ...
+# Subtest: block count, reserved ID namespace and duplicate IDs fail before changing the state
+ok 23 - block count, reserved ID namespace and duplicate IDs fail before changing the state
+  ---
+  duration_ms: 23.946
+  type: 'test'
+  ...
+# Subtest: AI review is read-only, confirmed actions commit the new domain, and later private-data edits prevent destructive undo
+ok 24 - AI review is read-only, confirmed actions commit the new domain, and later private-data edits prevent destructive undo
+  ---
+  duration_ms: 1.9115
+  type: 'test'
+  ...
+# Subtest: undo of untouched new blocks removes their automatic canvas entries and preserves every other card
+ok 25 - undo of untouched new blocks removes their automatic canvas entries and preserves every other card
+  ---
+  duration_ms: 2.8756
+  type: 'test'
+  ...
+# Subtest: later manual or unrecognized canvas placement preserves the new block and all its layout
+ok 26 - later manual or unrecognized canvas placement preserves the new block and all its layout
+  ---
+  duration_ms: 11.0544
+  type: 'test'
+  ...
+# Subtest: new block data edited after creation protects both the record and its automatic canvas entry
+ok 27 - new block data edited after creation protects both the record and its automatic canvas entry
+  ---
+  duration_ms: 0.8819
+  type: 'test'
+  ...
+# Subtest: undo before any canvas visit removes the new block without constructing a canvas
+ok 28 - undo before any canvas visit removes the new block without constructing a canvas
+  ---
+  duration_ms: 0.7087
+  type: 'test'
+  ...
+# Subtest: AI archive, restore and same-kind config updates preserve data and invalid batches never partially commit
+ok 29 - AI archive, restore and same-kind config updates preserve data and invalid batches never partially commit
+  ---
+  duration_ms: 1.4847
+  type: 'test'
+  ...
+# Subtest: failed undo persistence restores both the new domain and timestamp
+ok 30 - failed undo persistence restores both the new domain and timestamp
+  ---
+  duration_ms: 1.5409
+  type: 'test'
+  ...
+# Subtest: backups preserve code and private data, merge new IDs, and never overwrite current block contents
+ok 31 - backups preserve code and private data, merge new IDs, and never overwrite current block contents
+  ---
+  duration_ms: 2.029
+  type: 'test'
+  ...
+# Subtest: internal stop restores page controls and a fresh explicit run persists data
+ok 32 - internal stop restores page controls and a fresh explicit run persists data
+  ---
+  duration_ms: 8.3328
+  type: 'test'
+  ...
+# Subtest: fatal runtime failure remains visible and permits an explicit retry
+ok 33 - fatal runtime failure remains visible and permits an explicit retry
+  ---
+  duration_ms: 1.4422
+  type: 'test'
+  ...
+# Subtest: watchdog termination restores page controls without requiring an extra stop
+ok 34 - watchdog termination restores page controls without requiring an extra stop
+  ---
+  duration_ms: 1.4012
+  type: 'test'
+  ...
+# Subtest: startup envelope rejection leaves no iframe and restores the retry control
+ok 35 - startup envelope rejection leaves no iframe and restores the retry control
+  ---
+  duration_ms: 2.1599
+  type: 'test'
+  ...
+# Subtest: unexpected startup failure restores controls and does not leave a runtime behind
+ok 36 - unexpected startup failure restores controls and does not leave a runtime behind
+  ---
+  duration_ms: 1.655
+  type: 'test'
+  ...
+# Subtest: recoverable persistence errors keep the current runtime alive and allow another save
+ok 37 - recoverable persistence errors keep the current runtime alive and allow another save
+  ---
+  duration_ms: 2.1258
+  type: 'test'
+  ...
+# Subtest: outer stop and unmount invalidate old callbacks without stopping or relabeling a new run
+ok 38 - outer stop and unmount invalidate old callbacks without stopping or relabeling a new run
+  ---
+  duration_ms: 0.9274
+  type: 'test'
+  ...
+# Subtest: callbacks retained across page unmount cannot affect the next mounted session
+ok 39 - callbacks retained across page unmount cannot affect the next mounted session
+  ---
+  duration_ms: 0.9794
+  type: 'test'
+  ...
+# Subtest: JSON boundary rejects executable, non-JSON, oversized, cyclic and over-deep data
+ok 40 - JSON boundary rejects executable, non-JSON, oversized, cyclic and over-deep data
+  ---
+  duration_ms: 3.9035
+  type: 'test'
+  ...
+# Subtest: host mounts a static opaque sandbox and sends only supplied code/data, never srcdoc
+ok 41 - host mounts a static opaque sandbox and sends only supplied code/data, never srcdoc
+  ---
+  duration_ms: 3.7642
+  type: 'test'
+  ...
+# Subtest: host rejects forged source/token and malformed data before invoking persistence
+ok 42 - host rejects forged source/token and malformed data before invoking persistence
+  ---
+  duration_ms: 0.7863
+  type: 'test'
+  ...
+# Subtest: asynchronous persistence is acknowledged only after success and failures remain errors
+ok 43 - asynchronous persistence is acknowledged only after success and failures remain errors
+  ---
+  duration_ms: 0.8655
+  type: 'test'
+  ...
+# Subtest: preview only acknowledges session data and cleanup rejects late asynchronous results
+ok 44 - preview only acknowledges session data and cleanup rejects late asynchronous results
+  ---
+  duration_ms: 0.5704
+  type: 'test'
+  ...
+# Subtest: stop and four-second watchdog remove the execution surface and its listeners
+ok 45 - stop and four-second watchdog remove the execution surface and its listeners
+  ---
+  duration_ms: 1.0904
+  type: 'test'
+  ...
+# Subtest: terminal notification fires once for internal stop or fatal failure, never for parent cleanup or recoverable save errors
+ok 46 - terminal notification fires once for internal stop or fatal failure, never for parent cleanup or recoverable save errors
+  ---
+  duration_ms: 0.8834
+  type: 'test'
+  ...
+# Subtest: trusted frame creates a worker only after parent handshake and embeds no data in worker source
+ok 47 - trusted frame creates a worker only after parent handshake and embeds no data in worker source
+  ---
+  duration_ms: 2.7671
+  type: 'test'
+  ...
+# Subtest: trusted renderer renders HTML-looking strings literally and sends string input snapshots
+ok 48 - trusted renderer renders HTML-looking strings literally and sends string input snapshots
+  ---
+  duration_ms: 3.107
+  type: 'test'
+  ...
+# Subtest: renderer rejects HTML/URL fields, unknown nodes, duplicate IDs and oversized trees
+ok 49 - renderer rejects HTML/URL fields, unknown nodes, duplicate IDs and oversized trees
+  ---
+  duration_ms: 8.1581
+  type: 'test'
+  ...
+# Subtest: timer-driven renders preserve uncommitted input and focus until the declared value changes
+ok 50 - timer-driven renders preserve uncommitted input and focus until the declared value changes
+  ---
+  duration_ms: 1.8944
+  type: 'test'
+  ...
+# Subtest: worker message flooding terminates and revokes the dedicated worker
+ok 51 - worker message flooding terminates and revokes the dedicated worker
+  ---
+  duration_ms: 4.206
+  type: 'test'
+  ...
+# Subtest: worker API runs new interaction logic, waits for saved acknowledgement and has no network/DOM globals
+ok 52 - worker API runs new interaction logic, waits for saved acknowledgement and has no network/DOM globals
+  ---
+  duration_ms: 9.3915
+  type: 'test'
+  ...
+1..52
+# tests 52
+# suites 0
+# pass 52
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 333.8499
