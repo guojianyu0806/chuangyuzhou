@@ -160,6 +160,9 @@ export function describeWorkspaceAction(action){
 export async function undoWorkspaceActions(ctx,receipt,requestId){
   if(!receipt||receipt.destinationId!=='workspace'||!Array.isArray(receipt.items)||receipt.items.length>50)fail('行动回执无效。');
   const copy=structuredClone(ctx.state),{ctx:actionCtx}=actionContext(copy,requestId,{uid:ctx.uid}),snapshots=receipt.items.map(item=>{if(item.collection!=='actions')fail('不能混合撤回不同格式的操作。');identifier(item.id,'回执条目编号');return validateWorkspaceActionSnapshot(JSON.parse(item.snapshot));});
+  // Read-only until commit: child records supply the colours of auto-created
+  // inner-board cards even after reverse undo has removed those children.
+  actionCtx.undoSource=ctx.state;
   let removed=0,retained=0;
   for(const snapshot of snapshots.reverse()){if(ADAPTERS[snapshot.entity].undo(copy,snapshot,actionCtx))removed++;else retained++;}
   const previous={};for(const key of DOMAIN_KEYS)if(Object.hasOwn(ctx.state,key))previous[key]=ctx.state[key];const updatedAt=ctx.state.updatedAt;

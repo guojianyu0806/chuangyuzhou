@@ -1,0 +1,171 @@
+TAP version 13
+# Subtest: browsing and reloading a newly created linked space permits complete undo and removes only its automatic boards
+not ok 1 - browsing and reloading a newly created linked space permits complete undo and removes only its automatic boards
+  ---
+  duration_ms: 11.2328
+  type: 'test'
+  location: 'E:\\传智杯\\传智杯AI创新应用挑战赛\\yuzhou\\frontend\\tests\\workspace-board-undo.test.mjs:20:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      {
+    +   removed: 2,
+    +   retained: 1
+    -   removed: 3,
+    -   retained: 0
+      }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    removed: 3
+    retained: 0
+  actual:
+    removed: 2
+    retained: 1
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/tests/workspace-board-undo.test.mjs:35:10)
+    async Test.run (node:internal/test_runner/test:1127:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: course note and file boards created by browsing do not leave an empty course after undo
+not ok 2 - course note and file boards created by browsing do not leave an empty course after undo
+  ---
+  duration_ms: 2.8605
+  type: 'test'
+  location: 'E:\\传智杯\\传智杯AI创新应用挑战赛\\yuzhou\\frontend\\tests\\workspace-board-undo.test.mjs:40:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      {
+    +   removed: 2,
+    +   retained: 1
+    -   removed: 3,
+    -   retained: 0
+      }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    removed: 3
+    retained: 0
+  actual:
+    removed: 2
+    retained: 1
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/tests/workspace-board-undo.test.mjs:43:10)
+    async Test.run (node:internal/test_runner/test:1127:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:789:7)
+  ...
+# Subtest: undo removes even empty automatic boards and restores both boards and records when saving fails
+not ok 3 - undo removes even empty automatic boards and restores both boards and records when saving fails
+  ---
+  duration_ms: 2.5613
+  type: 'test'
+  location: 'E:\\传智杯\\传智杯AI创新应用挑战赛\\yuzhou\\frontend\\tests\\workspace-board-undo.test.mjs:46:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+    + {
+    +   'space:created-1:files': {},
+    +   'space:created-1:notes': {
+    +     cards: [],
+    +     initialized: true,
+    +     snap: true,
+    +     stackPointer: 0.5,
+    +     view: {
+    +       x: 1,
+    +       y: 0,
+    +       zoom: 0.75
+    +     }
+    +   }
+    + }
+    - {}
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+    space:created-1:notes:
+      cards:
+      view:
+        x: 1
+        y: 0
+        zoom: 0.75
+      snap: true
+      stackPointer: 0.5
+      initialized: true
+    space:created-1:files:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/tests/workspace-board-undo.test.mjs:52:111)
+    async Test.run (node:internal/test_runner/test:1127:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:789:7)
+  ...
+# Subtest: explicit customization and modified timestamps retain the parent and its board
+ok 4 - explicit customization and modified timestamps retain the parent and its board
+  ---
+  duration_ms: 2.4341
+  type: 'test'
+  ...
+# Subtest: unmarked manual geometry, colour, view and presentation changes remain protected
+ok 5 - unmarked manual geometry, colour, view and presentation changes remain protected
+  ---
+  duration_ms: 7.8657
+  type: 'test'
+  ...
+# Subtest: unknown board sections, cards and unmarked content-card colours are conservatively retained
+not ok 6 - unknown board sections, cards and unmarked content-card colours are conservatively retained
+  ---
+  duration_ms: 1.2877
+  type: 'test'
+  location: 'E:\\传智杯\\传智杯AI创新应用挑战赛\\yuzhou\\frontend\\tests\\workspace-board-undo.test.mjs:72:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      {
+    +   removed: 2,
+    +   retained: 0
+    -   removed: 1,
+    -   retained: 1
+      }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    removed: 1
+    retained: 1
+  actual:
+    removed: 2
+    retained: 0
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/tests/workspace-board-undo.test.mjs:78:12)
+    async Test.run (node:internal/test_runner/test:1127:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:789:7)
+  ...
+# Subtest: later business content retains the parent and automatic boards
+ok 7 - later business content retains the parent and automatic boards
+  ---
+  duration_ms: 2.2755
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 3
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 251.5892

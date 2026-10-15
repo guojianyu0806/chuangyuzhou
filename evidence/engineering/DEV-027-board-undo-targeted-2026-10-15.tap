@@ -1,0 +1,268 @@
+TAP version 13
+# Subtest: actions create linked containers and move real notes/files without touching the source request
+ok 1 - actions create linked containers and move real notes/files without touching the source request
+  ---
+  duration_ms: 15.6343
+  type: 'test'
+  ...
+# Subtest: money updates use integer fen and project inclusion remains explicit
+ok 2 - money updates use integer fen and project inclusion remains explicit
+  ---
+  duration_ms: 4.267
+  type: 'test'
+  ...
+# Subtest: failed later action leaves all domains, colour cursor and original references unchanged
+ok 3 - failed later action leaves all domains, colour cursor and original references unchanged
+  ---
+  duration_ms: 2.4988
+  type: 'test'
+  ...
+# Subtest: validation rejects arbitrary properties, fabricated ids, forward and mismatched references
+ok 4 - validation rejects arbitrary properties, fabricated ids, forward and mismatched references
+  ---
+  duration_ms: 1.242
+  type: 'test'
+  ...
+# Subtest: archive/restore is reversible and course prompt edits retain file and note content
+ok 5 - archive/restore is reversible and course prompt edits retain file and note content
+  ---
+  duration_ms: 4.4247
+  type: 'test'
+  ...
+# Subtest: undo keeps edited child and its parent, and rolls all changes back if persistence fails
+ok 6 - undo keeps edited child and its parent, and rolls all changes back if persistence fails
+  ---
+  duration_ms: 2.3306
+  type: 'test'
+  ...
+# Subtest: ledger project undo retains project when another entry depends on it
+ok 7 - ledger project undo retains project when another entry depends on it
+  ---
+  duration_ms: 2.184
+  type: 'test'
+  ...
+# Subtest: undo keeps a parent space with a later customized internal canvas
+ok 8 - undo keeps a parent space with a later customized internal canvas
+  ---
+  duration_ms: 1.4669
+  type: 'test'
+  ...
+# Subtest: preview is read-only and shows changed amounts, project settings and moves as human-readable fields
+ok 9 - preview is read-only and shows changed amounts, project settings and moves as human-readable fields
+  ---
+  duration_ms: 4.9669
+  type: 'test'
+  ...
+# Subtest: backup export/import permits reverse undo of repeated core record changes and nested moves
+ok 10 - backup export/import permits reverse undo of repeated core record changes and nested moves
+  ---
+  duration_ms: 9.8442
+  type: 'test'
+  ...
+# Subtest: backup normalization keeps original sparse before snapshots and does not block valid undo
+ok 11 - backup normalization keeps original sparse before snapshots and does not block valid undo
+  ---
+  duration_ms: 2.6822
+  type: 'test'
+  ...
+# Subtest: edited note/file and parent dependencies remain protected after backup import
+ok 12 - edited note/file and parent dependencies remain protected after backup import
+  ---
+  duration_ms: 2.4917
+  type: 'test'
+  ...
+# Subtest: all study/settings adapters run through the actual transaction engine and backup roundtrip undo
+ok 13 - all study/settings adapters run through the actual transaction engine and backup roundtrip undo
+  ---
+  duration_ms: 10.8075
+  type: 'test'
+  ...
+# Subtest: calendar creates a dated plan with random non-repeating color, without timetable writes
+ok 14 - calendar creates a dated plan with random non-repeating color, without timetable writes
+  ---
+  duration_ms: 4.2522
+  type: 'test'
+  ...
+# Subtest: calendar rejects impossible dates, hidden timed/all-day mismatch and wrong chronological ranges
+ok 15 - calendar rejects impossible dates, hidden timed/all-day mismatch and wrong chronological ranges
+  ---
+  duration_ms: 1.3601
+  type: 'test'
+  ...
+# Subtest: calendar update, archive, restore and safe undo keep intervening edits
+ok 16 - calendar update, archive, restore and safe undo keep intervening edits
+  ---
+  duration_ms: 1.7839
+  type: 'test'
+  ...
+# Subtest: timetable requires real Monday, explicit periods and consistent weeks, separated from calendar
+ok 17 - timetable requires real Monday, explicit periods and consistent weeks, separated from calendar
+  ---
+  duration_ms: 6.3526
+  type: 'test'
+  ...
+# Subtest: timetable shrinking a term cannot invalidate existing entries and container scope is mandatory
+ok 18 - timetable shrinking a term cannot invalidate existing entries and container scope is mandatory
+  ---
+  duration_ms: 1.7236
+  type: 'test'
+  ...
+# Subtest: new term and its child undo in reverse order; active term prevents unsafe removal
+ok 19 - new term and its child undo in reverse order; active term prevents unsafe removal
+  ---
+  duration_ms: 2.1187
+  type: 'test'
+  ...
+# Subtest: English plan accepts unset user choices and does not alter practice accomplishments
+ok 20 - English plan accepts unset user choices and does not alter practice accomplishments
+  ---
+  duration_ms: 1.2845
+  type: 'test'
+  ...
+# Subtest: English target scores allow optional half-point goals without converting legacy scores or accomplishments
+ok 21 - English target scores allow optional half-point goals without converting legacy scores or accomplishments
+  ---
+  duration_ms: 1.7444
+  type: 'test'
+  ...
+# Subtest: English words are personal and new, reject duplicates, and mastery needs actual user evidence
+ok 22 - English words are personal and new, reject duplicates, and mastery needs actual user evidence
+  ---
+  duration_ms: 1.8895
+  type: 'test'
+  ...
+# Subtest: actual English sessions require user evidence and reject future/planned dates
+ok 23 - actual English sessions require user evidence and reject future/planned dates
+  ---
+  duration_ms: 3.6199
+  type: 'test'
+  ...
+# Subtest: English mistakes store provided answers only and do not change scored results
+ok 24 - English mistakes store provided answers only and do not change scored results
+  ---
+  duration_ms: 1.9194
+  type: 'test'
+  ...
+# Subtest: English archive/restore is reversible and never changes durations or answers
+ok 25 - English archive/restore is reversible and never changes durations or answers
+  ---
+  duration_ms: 2.1378
+  type: 'test'
+  ...
+# Subtest: English draft save has safe undo and cannot write reading scores or unknown draft keys
+ok 26 - English draft save has safe undo and cannot write reading scores or unknown draft keys
+  ---
+  duration_ms: 1.1416
+  type: 'test'
+  ...
+# Subtest: profile and UI allow only non-sensitive preferences and retain unrelated values
+ok 27 - profile and UI allow only non-sensitive preferences and retain unrelated values
+  ---
+  duration_ms: 0.6945
+  type: 'test'
+  ...
+# Subtest: canvas layout and snap changes are scoped to known boards and safely reversible
+ok 28 - canvas layout and snap changes are scoped to known boards and safely reversible
+  ---
+  duration_ms: 1.2643
+  type: 'test'
+  ...
+# Subtest: canvas card geometry and color changes leave other cards/data intact and reject invalid dimensions
+ok 29 - canvas card geometry and color changes leave other cards/data intact and reject invalid dimensions
+  ---
+  duration_ms: 0.9992
+  type: 'test'
+  ...
+# Subtest: all adapters reject unknown properties, prototype keys and unsupported destructive operations
+ok 30 - all adapters reject unknown properties, prototype keys and unsupported destructive operations
+  ---
+  duration_ms: 0.8596
+  type: 'test'
+  ...
+# Subtest: real action engine and backup roundtrip preserve all study changes and reverse dependency order
+ok 31 - real action engine and backup roundtrip preserve all study changes and reverse dependency order
+  ---
+  duration_ms: 15.5715
+  type: 'test'
+  ...
+# Subtest: engine later validation failure rolls back random colors and study domains atomically
+ok 32 - engine later validation failure rolls back random colors and study domains atomically
+  ---
+  duration_ms: 0.9188
+  type: 'test'
+  ...
+# Subtest: browsing and reloading a newly created linked space permits complete undo and removes only its automatic boards
+ok 33 - browsing and reloading a newly created linked space permits complete undo and removes only its automatic boards
+  ---
+  duration_ms: 15.6372
+  type: 'test'
+  ...
+# Subtest: course note and file boards created by browsing do not leave an empty course after undo
+ok 34 - course note and file boards created by browsing do not leave an empty course after undo
+  ---
+  duration_ms: 3.6811
+  type: 'test'
+  ...
+# Subtest: undo removes even empty automatic boards and restores both boards and records when saving fails
+ok 35 - undo removes even empty automatic boards and restores both boards and records when saving fails
+  ---
+  duration_ms: 3.8125
+  type: 'test'
+  ...
+# Subtest: explicit customization and modified timestamps retain the parent and its board
+ok 36 - explicit customization and modified timestamps retain the parent and its board
+  ---
+  duration_ms: 3.5129
+  type: 'test'
+  ...
+# Subtest: unmarked manual geometry, colour, view and presentation changes remain protected
+ok 37 - unmarked manual geometry, colour, view and presentation changes remain protected
+  ---
+  duration_ms: 9.9796
+  type: 'test'
+  ...
+# Subtest: unknown board sections, cards and unmarked content-card colours are conservatively retained
+ok 38 - unknown board sections, cards and unmarked content-card colours are conservatively retained
+  ---
+  duration_ms: 4.5814
+  type: 'test'
+  ...
+# Subtest: later business content retains the parent and automatic boards
+ok 39 - later business content retains the parent and automatic boards
+  ---
+  duration_ms: 3.2245
+  type: 'test'
+  ...
+# Subtest: undo refuses a workspace that changed while its action module was loading
+ok 40 - undo refuses a workspace that changed while its action module was loading
+  ---
+  duration_ms: 8.1202
+  type: 'test'
+  ...
+# Subtest: action undo persists business changes and cleared execution metadata in one snapshot
+ok 41 - action undo persists business changes and cleared execution metadata in one snapshot
+  ---
+  duration_ms: 3.7986
+  type: 'test'
+  ...
+# Subtest: failed action undo restores both domain records and the complete conversation receipt
+ok 42 - failed action undo restores both domain records and the complete conversation receipt
+  ---
+  duration_ms: 2.334
+  type: 'test'
+  ...
+# Subtest: manual undo also clears execution metadata atomically and rolls back asynchronous save failure
+ok 43 - manual undo also clears execution metadata atomically and rolls back asynchronous save failure
+  ---
+  duration_ms: 2.6206
+  type: 'test'
+  ...
+1..43
+# tests 43
+# suites 0
+# pass 43
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 391.9484

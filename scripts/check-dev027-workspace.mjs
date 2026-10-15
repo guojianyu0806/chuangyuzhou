@@ -18,6 +18,9 @@ const digest=value=>createHash('sha256').update(JSON.stringify(canonical(value??
 const same=(left,right)=>JSON.stringify(canonical(left))===JSON.stringify(canonical(right));
 const safeText=value=>typeof value==='string'?value.replace(/[\x00-\x1f\x7f]/g,' ').slice(0,180):'';
 const subset=(record,expected)=>!!record&&Object.entries(expected).filter(([key])=>!['createdAt','updatedAt'].includes(key)).every(([key,value])=>same(record[key],value));
+const hasOctoberDate=(content,day)=>typeof content==='string'&&new RegExp(`(?:^|[^0-9年])(?:2026[-/.]10[-/.]${day}|(?:2026年)?10月${day}日)(?![0-9])`).test(content);
+// Space views use space:<space ID>:<tab>; course and global boards are independent.
+const spaceBoardId=key=>key.startsWith('space:')&&key.lastIndexOf(':')>6&&key.lastIndexOf(':')<key.length-1?key.slice(6,key.lastIndexOf(':')):null;
 
 export function checkSyntheticWorkspace(state,{stage,baseline}={}){
   if(!STAGES.has(stage))throw Error('INVALID_STAGE');
@@ -28,8 +31,13 @@ export function checkSyntheticWorkspace(state,{stage,baseline}={}){
   const protectedTasks=tasks.filter(row=>row.id===FIXTURE.protectedTaskId),protectedCaptures=captures.filter(row=>row.id===FIXTURE.captureId);
   const task=protectedTasks[0],capture=protectedCaptures[0],newTasks=tasks.filter(row=>row.id!==FIXTURE.protectedTaskId);
   const enabled=(state.workbench?.modules||[]).filter(row=>row.enabled).map(row=>row.id).sort();
+  const spaceBoardKeys=Object.keys(state.boards||{}).filter(key=>spaceBoardId(key)!==null).sort();
+  const baselineBoardKeys=new Set(baseline?.protection?.spaceBoardKeys||[]);
+  const orphanSpaceBoardKeys=spaceBoardKeys.filter(key=>!baselineBoardKeys.has(key)&&!spaces.some(space=>space.id===spaceBoardId(key)));
+  const conversationRequests=(state.aiRequests||[]).filter(request=>request.conversation),request=conversationRequests[0],conversation=request?.conversation;
+  const messages=conversation?.messages||[],userMessageCount=messages.filter(message=>message.role==='user').length,assistantMessageCount=messages.filter(message=>message.role==='assistant').length;
   const protection={task:{id:FIXTURE.protectedTaskId,sha256:digest(task)},capture:{id:FIXTURE.captureId,sha256:digest(capture)},
-    workbench:{sha256:digest(state.workbench),enabledModuleIds:enabled}};
+    workbench:{sha256:digest(state.workbench),enabledModuleIds:enabled},spaceBoardKeys};
   let schemaValid=true;try{validateWorkspace(state);}catch{schemaValid=false;}
   const assertions={schemaValid,onlySyntheticIdentity:state.workbench?.title==='DEV-027 合成 AI 验收',
     protectedTaskPresent:protectedTasks.length===1,protectedCapturePresent:protectedCaptures.length===1,
@@ -46,6 +54,9 @@ export function checkSyntheticWorkspace(state,{stage,baseline}={}){
     const space=spaces[0],createdTask=newTasks[0],notes=space?.notes||[];
     Object.assign(assertions,{oneNewSpace:spaces.length===1&&space?.archived!==true,
       oneNoteInSpace:notes.length===1&&typeof notes[0]?.content==='string'&&notes[0].content.trim().length>0,
+      noteDeadlineIs26:hasOctoberDate(notes[0]?.content,26),noteActivityIs28:hasOctoberDate(notes[0]?.content,28),
+      noteContainsRealNewline:typeof notes[0]?.content==='string'&&notes[0].content.includes('\n'),
+      noteHasNoLiteralEscapedNewline:typeof notes[0]?.content==='string'&&!notes[0].content.includes('\\n'),
       oneNewTask:newTasks.length===1,taskBelongsToSpace:!!space&&createdTask?.spaceId===space.id,
       speechTaskTitle:typeof createdTask?.title==='string'&&createdTask.title.includes('讲稿'),
       revisedDateIs26:createdTask?.date==='2026-10-26',taskHighPriority:createdTask?.priority==='high',
@@ -56,12 +67,26 @@ export function checkSyntheticWorkspace(state,{stage,baseline}={}){
   }else{
     Object.assign(assertions,{noCreatedSpaces:spaces.length===0,noCreatedTasks:newTasks.length===0,
       blankModulesRestored:same(enabled,['ai']),noLinkedCalendarItems:projections.length===0});
-    if(stage==='undone')assertions.workbenchExactHash=protection.workbench.sha256===baseline.protection?.workbench?.sha256;
+    if(stage==='undone')Object.assign(assertions,{
+      workbenchExactHash:protection.workbench.sha256===baseline.protection?.workbench?.sha256,
+      noNewOrphanSpaceBoards:orphanSpaceBoardKeys.length===0,
+      oneRetainedConversation:conversationRequests.length===1,
+      conversationWaitingAfterUndo:request?.status==='waiting_model',
+      receiptCleared:!!request&&!Object.hasOwn(request,'receipt'),
+      pendingJobCleared:!!conversation&&!Object.hasOwn(conversation,'pendingJobId'),
+      confirmedJobCleared:!!conversation&&!Object.hasOwn(conversation,'confirmedJobId'),
+      proposalCleared:!!conversation&&!Object.hasOwn(conversation,'proposal'),
+      twoUserAndTwoAssistantMessages:messages.length===4&&userMessageCount===2&&assistantMessageCount===2});
   }
   return {development:'DEV-027',kind:'read-only-synthetic-workspace-check',stage,observedAt:new Date().toISOString(),origin:FIXTURE.origin,
     passed:Object.values(assertions).every(Boolean),assertions,protection,
     summary:{captureCount:captures.length,taskCount:tasks.length,spaceCount:spaces.length,nativeCalendarEventCount:(state.calendar?.events||[]).length,
-      enabledModuleIds:enabled,spaces:spaces.slice(0,3).map(row=>({id:safeText(row.id),title:safeText(row.title),noteCount:(row.notes||[]).length,
+      enabledModuleIds:enabled,spaceBoardCount:spaceBoardKeys.length,newOrphanSpaceBoardCount:orphanSpaceBoardKeys.length,
+      newOrphanSpaceBoardKeys:orphanSpaceBoardKeys.slice(0,12).map(safeText),
+      conversation:{count:conversationRequests.length,status:safeText(request?.status),messageCount:messages.length,userMessageCount,assistantMessageCount,
+        hasReceipt:!!request&&Object.hasOwn(request,'receipt'),hasPendingJob:!!conversation&&Object.hasOwn(conversation,'pendingJobId'),
+        hasConfirmedJob:!!conversation&&Object.hasOwn(conversation,'confirmedJobId'),hasProposal:!!conversation&&Object.hasOwn(conversation,'proposal')},
+      spaces:spaces.slice(0,3).map(row=>({id:safeText(row.id),title:safeText(row.title),noteCount:(row.notes||[]).length,
         notes:(row.notes||[]).slice(0,3).map(note=>({id:safeText(note.id),title:safeText(note.title)}))})),
       newTasks:newTasks.slice(0,3).map(row=>({id:safeText(row.id),title:safeText(row.title),spaceId:safeText(row.spaceId),date:safeText(row.date),priority:safeText(row.priority)})),
       linkedCalendarItems:projections.slice(0,3).map(row=>({entity:safeText(row.entity),sourceId:safeText(row.sourceId),date:safeText(row.startDate),parentId:safeText(row.parentId)}))}};
