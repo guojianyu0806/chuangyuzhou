@@ -1,0 +1,210 @@
+TAP version 13
+# Subtest: server validation accepts the isolated block domain and rejects malformed code/data
+ok 1 - server validation accepts the isolated block domain and rejects malformed code/data
+  ---
+  duration_ms: 6.016
+  type: 'test'
+  ...
+# Subtest: private miniapp JSON cannot become a host file reference and is not constrained by unrelated record IDs
+ok 2 - private miniapp JSON cannot become a host file reference and is not constrained by unrelated record IDs
+  ---
+  duration_ms: 1.7758
+  type: 'test'
+  ...
+# Subtest: block content changes invalidate AI proposals while overview and search contain no program or private data
+ok 3 - block content changes invalidate AI proposals while overview and search contain no program or private data
+  ---
+  duration_ms: 7.9741
+  type: 'test'
+  ...
+# Subtest: selected get provides complete long code without the generic 6000-character crop and does not mix other records
+ok 4 - selected get provides complete long code without the generic 6000-character crop and does not mix other records
+  ---
+  duration_ms: 1.0973
+  type: 'test'
+  ...
+# Subtest: selected get clearly rejects oversized editing and marks secret-like private fields as redacted
+ok 5 - selected get clearly rejects oversized editing and marks secret-like private fields as redacted
+  ---
+  duration_ms: 2.391
+  type: 'test'
+  ...
+# Subtest: AI may replace configuration or data only after an untruncated selected read from this turn
+ok 6 - AI may replace configuration or data only after an untruncated selected read from this turn
+  ---
+  duration_ms: 1.0232
+  type: 'test'
+  ...
+# Subtest: AI prompt advertises isolated miniapp API without authorizing DOM, network or hidden-state access
+ok 7 - AI prompt advertises isolated miniapp API without authorizing DOM, network or hidden-state access
+  ---
+  duration_ms: 1.687
+  type: 'test'
+  ...
+# Subtest: SQLite restart retains program and private data and rejects a legacy client dropping the domain
+ok 8 - SQLite restart retains program and private data and rejects a legacy client dropping the domain
+  ---
+  duration_ms: 61.3361
+  type: 'test'
+  ...
+# Subtest: synthetic AI code remains unapplied before confirmation; confirmation creates once and preserves its receipt
+ok 9 - synthetic AI code remains unapplied before confirmation; confirmation creates once and preserves its receipt
+  ---
+  duration_ms: 65.3712
+  type: 'test'
+  ...
+# Subtest: an AI program update queries complete content, preserves private data, and conflicts with later user data edits
+ok 10 - an AI program update queries complete content, preserves private data, and conflicts with later user data edits
+  ---
+  duration_ms: 111.1884
+  type: 'test'
+  ...
+# Subtest: the model worker rejects replacing code without a complete current-turn read even after format repair
+ok 11 - the model worker rejects replacing code without a complete current-turn read even after format repair
+  ---
+  duration_ms: 68.9327
+  type: 'test'
+  ...
+# Subtest: private custom-block file-like fields sync verbatim without reading or requesting host attachments
+ok 12 - private custom-block file-like fields sync verbatim without reading or requesting host attachments
+  ---
+  duration_ms: 8.9127
+  type: 'test'
+  ...
+# Subtest: real attachments still upload before publishing and private fields cannot replace their metadata
+not ok 13 - real attachments still upload before publishing and private fields cannot replace their metadata
+  ---
+  duration_ms: 4.7038
+  type: 'test'
+  location: 'E:\\传智杯\\传智杯AI创新应用挑战赛\\yuzhou\\frontend\\tests\\cloud-attachments.test.mjs:47:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+    -   'capture-blob',
+        'course-blob',
+        'space-blob',
+    +   'capture-blob',
+    +   'request-blob',
+        'audio-blob',
+        'draft-blob',
+    -   'request-blob',
+        'legacy-file',
+        'legacy-audio'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'capture-blob'
+    1: 'course-blob'
+    2: 'space-blob'
+    3: 'audio-blob'
+    4: 'draft-blob'
+    5: 'request-blob'
+    6: 'legacy-file'
+    7: 'legacy-audio'
+  actual:
+    0: 'course-blob'
+    1: 'space-blob'
+    2: 'capture-blob'
+    3: 'request-blob'
+    4: 'audio-blob'
+    5: 'draft-blob'
+    6: 'legacy-file'
+    7: 'legacy-audio'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/tests/cloud-attachments.test.mjs:55:10)
+    async Test.run (node:internal/test_runner/test:1127:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:789:7)
+  ...
+# Subtest: missing real or unknown-domain file references still block sync and retain the pending state
+ok 14 - missing real or unknown-domain file references still block sync and retain the pending state
+  ---
+  duration_ms: 3.3878
+  type: 'test'
+  ...
+# Subtest: matching existing attachment bytes are verified without reuploading before a private-data save
+ok 15 - matching existing attachment bytes are verified without reuploading before a private-data save
+  ---
+  duration_ms: 33.7592
+  type: 'test'
+  ...
+# Subtest: different bytes under a real attachment ID still prevent workspace publication
+ok 16 - different bytes under a real attachment ID still prevent workspace publication
+  ---
+  duration_ms: 1.8565
+  type: 'test'
+  ...
+# Subtest: an atomic outbox quota failure retains prior pending identity, status, timer and stored cache
+ok 17 - an atomic outbox quota failure retains prior pending identity, status, timer and stored cache
+  ---
+  duration_ms: 8.0845
+  type: 'test'
+  ...
+# Subtest: quota failure with an empty outbox does not leave rejected edits waiting to upload
+ok 18 - quota failure with an empty outbox does not leave rejected edits waiting to upload
+  ---
+  duration_ms: 0.5049
+  type: 'test'
+  ...
+# Subtest: failure to preserve conflict recovery restores the previously committed outbox
+ok 19 - failure to preserve conflict recovery restores the previously committed outbox
+  ---
+  duration_ms: 1.0978
+  type: 'test'
+  ...
+# Subtest: an outbox restoration failure retains both errors rather than reporting a complete rollback
+ok 20 - an outbox restoration failure retains both errors rather than reporting a complete rollback
+  ---
+  duration_ms: 0.6982
+  type: 'test'
+  ...
+# Subtest: successful edits during a workspace mutation remain durable without scheduling a flush
+ok 21 - successful edits during a workspace mutation remain durable without scheduling a flush
+  ---
+  duration_ms: 0.551
+  type: 'test'
+  ...
+# Subtest: own confirmation flushes the reviewed state and immediately adopts its receipt without other-device status
+ok 22 - own confirmation flushes the reviewed state and immediately adopts its receipt without other-device status
+  ---
+  duration_ms: 3.5046
+  type: 'test'
+  ...
+# Subtest: edits made during confirmation cannot upload an old snapshot or be discarded by result loading
+ok 23 - edits made during confirmation cannot upload an old snapshot or be discarded by result loading
+  ---
+  duration_ms: 4.7384
+  type: 'test'
+  ...
+# Subtest: an unsaved editor blocks result adoption even when no workspace save has been enqueued
+ok 24 - an unsaved editor blocks result adoption even when no workspace save has been enqueued
+  ---
+  duration_ms: 0.3764
+  type: 'test'
+  ...
+# Subtest: a stale poll response arriving after confirmation cannot report an older revision as another device update
+ok 25 - a stale poll response arriving after confirmation cannot report an older revision as another device update
+  ---
+  duration_ms: 0.4843
+  type: 'test'
+  ...
+# Subtest: failed confirmation releases its lock and keeps the workspace revision unchanged
+ok 26 - failed confirmation releases its lock and keeps the workspace revision unchanged
+  ---
+  duration_ms: 1.1227
+  type: 'test'
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 25
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 531.802

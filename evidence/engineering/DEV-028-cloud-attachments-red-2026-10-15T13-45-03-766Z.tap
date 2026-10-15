@@ -1,0 +1,106 @@
+TAP version 13
+# Subtest: private custom-block file-like fields sync verbatim without reading or requesting host attachments
+not ok 1 - private custom-block file-like fields sync verbatim without reading or requesting host attachments
+  ---
+  duration_ms: 4.4147
+  type: 'test'
+  location: 'E:\\传智杯\\传智杯AI创新应用挑战赛\\yuzhou\\frontend\\tests\\cloud-attachments.test.mjs:38:1'
+  failureType: 'testCodeFailure'
+  error: '附件「ordinary customer value」原件缺失，请重新添加。'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    CloudClient.uploadFiles (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/src/cloud.js:157:30)
+    async file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/src/cloud.js:172:11
+    async CloudClient.flush (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/src/cloud.js:187:16)
+    async TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/tests/cloud-attachments.test.mjs:41:16)
+    async Test.run (node:internal/test_runner/test:1127:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: real attachments still upload before publishing and private fields cannot replace their metadata
+not ok 2 - real attachments still upload before publishing and private fields cannot replace their metadata
+  ---
+  duration_ms: 3.3387
+  type: 'test'
+  location: 'E:\\传智杯\\传智杯AI创新应用挑战赛\\yuzhou\\frontend\\tests\\cloud-attachments.test.mjs:46:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+    -   'capture-blob',
+        'course-blob',
+        'space-blob',
+    +   'capture-blob',
+    +   'request-blob',
+        'audio-blob',
+        'draft-blob',
+    -   'request-blob',
+        'legacy-file',
+        'legacy-audio'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'capture-blob'
+    1: 'course-blob'
+    2: 'space-blob'
+    3: 'audio-blob'
+    4: 'draft-blob'
+    5: 'request-blob'
+    6: 'legacy-file'
+    7: 'legacy-audio'
+  actual:
+    0: 'course-blob'
+    1: 'space-blob'
+    2: 'capture-blob'
+    3: 'request-blob'
+    4: 'audio-blob'
+    5: 'draft-blob'
+    6: 'legacy-file'
+    7: 'legacy-audio'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/tests/cloud-attachments.test.mjs:54:10)
+    async Test.run (node:internal/test_runner/test:1127:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:789:7)
+  ...
+# Subtest: missing real or unknown-domain file references still block sync and retain the pending state
+ok 3 - missing real or unknown-domain file references still block sync and retain the pending state
+  ---
+  duration_ms: 1.8201
+  type: 'test'
+  ...
+# Subtest: matching existing attachment bytes are verified without reuploading before a private-data save
+not ok 4 - matching existing attachment bytes are verified without reuploading before a private-data save
+  ---
+  duration_ms: 22.3219
+  type: 'test'
+  location: 'E:\\传智杯\\传智杯AI创新应用挑战赛\\yuzhou\\frontend\\tests\\cloud-attachments.test.mjs:69:1'
+  failureType: 'testCodeFailure'
+  error: '附件「private-missing-value」原件缺失，请重新添加。'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    CloudClient.uploadFiles (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/src/cloud.js:157:30)
+    async file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/src/cloud.js:172:11
+    async CloudClient.flush (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/src/cloud.js:187:16)
+    async TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/tests/cloud-attachments.test.mjs:72:3)
+    async Test.run (node:internal/test_runner/test:1127:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:789:7)
+  ...
+# Subtest: different bytes under a real attachment ID still prevent workspace publication
+ok 5 - different bytes under a real attachment ID still prevent workspace publication
+  ---
+  duration_ms: 1.7148
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 2
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 158.259

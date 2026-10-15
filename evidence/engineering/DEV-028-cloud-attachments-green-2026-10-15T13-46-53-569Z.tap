@@ -1,0 +1,166 @@
+TAP version 13
+# Subtest: server validation accepts the isolated block domain and rejects malformed code/data
+ok 1 - server validation accepts the isolated block domain and rejects malformed code/data
+  ---
+  duration_ms: 9.3524
+  type: 'test'
+  ...
+# Subtest: private miniapp JSON cannot become a host file reference and is not constrained by unrelated record IDs
+ok 2 - private miniapp JSON cannot become a host file reference and is not constrained by unrelated record IDs
+  ---
+  duration_ms: 1.8106
+  type: 'test'
+  ...
+# Subtest: block content changes invalidate AI proposals while overview and search contain no program or private data
+ok 3 - block content changes invalidate AI proposals while overview and search contain no program or private data
+  ---
+  duration_ms: 6.702
+  type: 'test'
+  ...
+# Subtest: selected get provides complete long code without the generic 6000-character crop and does not mix other records
+ok 4 - selected get provides complete long code without the generic 6000-character crop and does not mix other records
+  ---
+  duration_ms: 2.0124
+  type: 'test'
+  ...
+# Subtest: selected get clearly rejects oversized editing and marks secret-like private fields as redacted
+ok 5 - selected get clearly rejects oversized editing and marks secret-like private fields as redacted
+  ---
+  duration_ms: 2.2229
+  type: 'test'
+  ...
+# Subtest: AI may replace configuration or data only after an untruncated selected read from this turn
+ok 6 - AI may replace configuration or data only after an untruncated selected read from this turn
+  ---
+  duration_ms: 0.9233
+  type: 'test'
+  ...
+# Subtest: AI prompt advertises isolated miniapp API without authorizing DOM, network or hidden-state access
+ok 7 - AI prompt advertises isolated miniapp API without authorizing DOM, network or hidden-state access
+  ---
+  duration_ms: 1.5069
+  type: 'test'
+  ...
+# Subtest: SQLite restart retains program and private data and rejects a legacy client dropping the domain
+ok 8 - SQLite restart retains program and private data and rejects a legacy client dropping the domain
+  ---
+  duration_ms: 55.7884
+  type: 'test'
+  ...
+# Subtest: synthetic AI code remains unapplied before confirmation; confirmation creates once and preserves its receipt
+ok 9 - synthetic AI code remains unapplied before confirmation; confirmation creates once and preserves its receipt
+  ---
+  duration_ms: 61.1411
+  type: 'test'
+  ...
+# Subtest: an AI program update queries complete content, preserves private data, and conflicts with later user data edits
+ok 10 - an AI program update queries complete content, preserves private data, and conflicts with later user data edits
+  ---
+  duration_ms: 110.4209
+  type: 'test'
+  ...
+# Subtest: the model worker rejects replacing code without a complete current-turn read even after format repair
+ok 11 - the model worker rejects replacing code without a complete current-turn read even after format repair
+  ---
+  duration_ms: 53.0018
+  type: 'test'
+  ...
+# Subtest: private custom-block file-like fields sync verbatim without reading or requesting host attachments
+ok 12 - private custom-block file-like fields sync verbatim without reading or requesting host attachments
+  ---
+  duration_ms: 7.0714
+  type: 'test'
+  ...
+# Subtest: real attachments still upload before publishing and private fields cannot replace their metadata
+ok 13 - real attachments still upload before publishing and private fields cannot replace their metadata
+  ---
+  duration_ms: 4.3352
+  type: 'test'
+  ...
+# Subtest: missing real or unknown-domain file references still block sync and retain the pending state
+ok 14 - missing real or unknown-domain file references still block sync and retain the pending state
+  ---
+  duration_ms: 3.2164
+  type: 'test'
+  ...
+# Subtest: matching existing attachment bytes are verified without reuploading before a private-data save
+ok 15 - matching existing attachment bytes are verified without reuploading before a private-data save
+  ---
+  duration_ms: 25.9914
+  type: 'test'
+  ...
+# Subtest: different bytes under a real attachment ID still prevent workspace publication
+ok 16 - different bytes under a real attachment ID still prevent workspace publication
+  ---
+  duration_ms: 2.8184
+  type: 'test'
+  ...
+# Subtest: an atomic outbox quota failure retains prior pending identity, status, timer and stored cache
+ok 17 - an atomic outbox quota failure retains prior pending identity, status, timer and stored cache
+  ---
+  duration_ms: 6.3775
+  type: 'test'
+  ...
+# Subtest: quota failure with an empty outbox does not leave rejected edits waiting to upload
+ok 18 - quota failure with an empty outbox does not leave rejected edits waiting to upload
+  ---
+  duration_ms: 0.526
+  type: 'test'
+  ...
+# Subtest: failure to preserve conflict recovery restores the previously committed outbox
+ok 19 - failure to preserve conflict recovery restores the previously committed outbox
+  ---
+  duration_ms: 1.0197
+  type: 'test'
+  ...
+# Subtest: an outbox restoration failure retains both errors rather than reporting a complete rollback
+ok 20 - an outbox restoration failure retains both errors rather than reporting a complete rollback
+  ---
+  duration_ms: 0.6342
+  type: 'test'
+  ...
+# Subtest: successful edits during a workspace mutation remain durable without scheduling a flush
+ok 21 - successful edits during a workspace mutation remain durable without scheduling a flush
+  ---
+  duration_ms: 0.5711
+  type: 'test'
+  ...
+# Subtest: own confirmation flushes the reviewed state and immediately adopts its receipt without other-device status
+ok 22 - own confirmation flushes the reviewed state and immediately adopts its receipt without other-device status
+  ---
+  duration_ms: 3.7597
+  type: 'test'
+  ...
+# Subtest: edits made during confirmation cannot upload an old snapshot or be discarded by result loading
+ok 23 - edits made during confirmation cannot upload an old snapshot or be discarded by result loading
+  ---
+  duration_ms: 4.6146
+  type: 'test'
+  ...
+# Subtest: an unsaved editor blocks result adoption even when no workspace save has been enqueued
+ok 24 - an unsaved editor blocks result adoption even when no workspace save has been enqueued
+  ---
+  duration_ms: 0.4213
+  type: 'test'
+  ...
+# Subtest: a stale poll response arriving after confirmation cannot report an older revision as another device update
+ok 25 - a stale poll response arriving after confirmation cannot report an older revision as another device update
+  ---
+  duration_ms: 0.4854
+  type: 'test'
+  ...
+# Subtest: failed confirmation releases its lock and keeps the workspace revision unchanged
+ok 26 - failed confirmation releases its lock and keeps the workspace revision unchanged
+  ---
+  duration_ms: 0.5185
+  type: 'test'
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 26
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 535.9518

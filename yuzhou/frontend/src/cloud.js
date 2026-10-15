@@ -138,8 +138,16 @@ export class CloudClient {
   }
   async uploadFiles(state) {
     const refs=new Map();
-    function scan(value){if(value&&typeof value==='object')for(const [key,item] of Object.entries(value)){if(typeof item==='string'&&/^(blobId|fileId|audioId)$/.test(key))refs.set(item,value);else if(item&&typeof item==='object')scan(item);}}
-    scan(state);
+    function scan(value,root=false){
+      if(value&&typeof value==='object')for(const [key,item] of Object.entries(value)){
+        // Match the server's domain boundary: custom-block JSON contains no
+        // host attachments, even when private fields share attachment names.
+        if(root&&key==='customBlocks')continue;
+        if(typeof item==='string'&&/^(blobId|fileId|audioId)$/.test(key))refs.set(item,value);
+        else if(item&&typeof item==='object')scan(item);
+      }
+    }
+    scan(state,true);
     this.uploaded||=new Set();
     for(const [id,meta] of refs){
       if(this.uploaded.has(id))continue;
