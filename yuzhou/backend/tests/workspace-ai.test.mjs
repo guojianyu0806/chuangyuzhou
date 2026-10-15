@@ -139,6 +139,33 @@ test('domain changes during inference prevent an outdated action plan from becom
   const ready=await f.finish(started);assert.equal(ready.status,'succeeded');assert.equal(ready.replySaved,false);assert.match(ready.replyError,/资料已变化/);assert.equal(f.state().aiRequests[0].conversation.messages.length,1);assert.equal((await f.confirm(ready)).status,409);assert.equal(f.state().calendar.events.length,0);
 });
 
+test('a discarded conversation result can retry the same turn against current data without duplicating execution',async t=>{
+  let releaseFirst,releaseRetry,calls=0;
+  const firstGate=new Promise(resolve=>releaseFirst=resolve),retryGate=new Promise(resolve=>releaseRetry=resolve);
+  t.after(()=>{releaseFirst();releaseRetry();});
+  const f=await fixture(t,async()=>{
+    const attempt=++calls;await(attempt===1?firstGate:retryGate);
+    return {reply:'请审核本次方案。',proposal:plan([create('task',{title:attempt===1?'已过期的方案':'重新核对后的方案'})])};
+  });
+  const input=f.conversation('请新建一条测试待办，先给我审核。'),first=await f.start(input);
+  f.change(state=>state.profile.major='推理期间保存的新关注领域');releaseFirst();
+  const discarded=await f.finish(first);
+  assert.equal(discarded.replySaved,false);assert.equal(f.state().tasks.length,0);
+  const retry=await f.start(input);
+  assert.notEqual(retry.id,first.id);
+  const duplicate=await f.api('/api/ai/jobs',{method:'POST',body:input});
+  assert.equal(duplicate.status,200);assert.equal(duplicate.body.job.id,retry.id);assert.equal(calls,2);
+  releaseRetry();const reviewed=await f.finish(retry);
+  assert.equal(reviewed.replySaved,true);assert.equal(f.state().tasks.length,0);
+  assert.equal(f.state().profile.major,'推理期间保存的新关注领域');
+  assert.equal(f.state().aiRequests[0].conversation.pendingJobId,retry.id);
+  assert.equal((await f.confirm(discarded)).status,409);
+  const confirmed=await f.confirm(reviewed);assert.equal(confirmed.status,200);
+  assert.deepEqual(f.state().tasks.map(task=>task.title),['重新核对后的方案']);
+  const repeated=await f.confirm(reviewed);assert.equal(repeated.status,200);assert.deepEqual(repeated.body.receipt,confirmed.body.receipt);
+  assert.equal(f.state().tasks.length,1);assert.equal(calls,2);
+});
+
 test('unsent composer draft changes alone do not invalidate an already reviewed action',async t=>{
   const f=await fixture(t,async()=>({reply:'等待确认',proposal:plan([create('task',{title:'已审核待办'})])}));
   const ready=await f.finish(await f.start(f.conversation('添加已审核待办')));

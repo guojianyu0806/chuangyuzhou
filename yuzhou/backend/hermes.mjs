@@ -515,7 +515,11 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
           }
           const originalSnapshot = requestSnapshot(currentRequest);
           const fingerprint = createHash('sha256').update(JSON.stringify({ requestId: body.requestId, text, fileIds: uniqueFiles, destinationId, autoFile: autoFileRequested, ...(conversational?{inputSnapshot}:{}) })).digest('hex');
-          const existing = [...jobs.values()].find(job => job.fingerprint === fingerprint && job.status !== 'failed');
+          // A completed reply can be discarded when the workspace changes during
+          // inference. Retrying that still-unanswered turn must use fresh state;
+          // queued/running jobs and successfully published replies remain deduped.
+          const existing = [...jobs.values()].find(job => job.fingerprint === fingerprint && job.status !== 'failed'
+            && !(job.kind === 'conversation' && job.status === 'succeeded' && job.replySaved !== true));
           if (existing) {
             // A deliberate new POST after undo may reapply the reviewed result. GET
             // polling never writes a workspace or incurs another model request.
