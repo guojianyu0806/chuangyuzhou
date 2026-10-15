@@ -1,0 +1,16 @@
+{
+  "development": "DEV-027",
+  "checkedAt": "2026-10-15T12:29:23.075Z",
+  "origin": "http://127.0.0.1:4397",
+  "identityMatches": true,
+  "health": {
+    "ok": true,
+    "mode": "cloud",
+    "version": "0.15.0",
+    "edition": "competition-copy"
+  },
+  "pid": 14784,
+  "formalBusinessRead": false,
+  "formalCredentialRead": false,
+  "formalModelRequest": false
+}

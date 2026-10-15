@@ -1,0 +1,70 @@
+{
+  "development": "DEV-027",
+  "kind": "read-only-synthetic-workspace-check",
+  "stage": "before",
+  "observedAt": "2026-10-15T12:27:27.792Z",
+  "origin": "http://localhost:4398",
+  "passed": true,
+  "assertions": {
+    "schemaValid": true,
+    "onlySyntheticIdentity": true,
+    "protectedTaskPresent": true,
+    "protectedCapturePresent": true,
+    "protectedTaskContent": true,
+    "protectedCaptureContent": true,
+    "protectedTaskUnfinished": true,
+    "oneSourceCapture": true,
+    "nativeCalendarEventsZero": true,
+    "coursesStillEmpty": true,
+    "customBlocksStillEmpty": true,
+    "noCreatedSpaces": true,
+    "noCreatedTasks": true,
+    "blankModulesRestored": true,
+    "noLinkedCalendarItems": true
+  },
+  "protection": {
+    "task": {
+      "id": "dev027-protected-task",
+      "sha256": "5ee715db2ec26f6a285a19bacad0a3b0683d4628a51b7ffd74676a604a94c363"
+    },
+    "capture": {
+      "id": "dev027-source-capture",
+      "sha256": "badccf9f639c8dc7fa12f22c9ffede7e7dd38a495cae539578b8e452358c441f"
+    },
+    "workbench": {
+      "sha256": "ab6bee243dd3264c6a474074d5c37504083d8cd6325d6929ab421410aabf437f",
+      "enabledModuleIds": [
+        "ai"
+      ]
+    },
+    "spaceBoardKeys": []
+  },
+  "summary": {
+    "captureCount": 1,
+    "taskCount": 1,
+    "spaceCount": 0,
+    "nativeCalendarEventCount": 0,
+    "enabledModuleIds": [
+      "ai"
+    ],
+    "spaceBoardCount": 0,
+    "newOrphanSpaceBoardCount": 0,
+    "newOrphanSpaceBoardKeys": [],
+    "conversation": {
+      "count": 0,
+      "status": "",
+      "messageCount": 0,
+      "userMessageCount": 0,
+      "assistantMessageCount": 0,
+      "hasReceipt": false,
+      "hasPendingJob": false,
+      "hasConfirmedJob": false,
+      "hasProposal": false
+    },
+    "spaces": [],
+    "newTasks": [],
+    "linkedCalendarItems": []
+  },
+  "instanceId": "9a776c9955411408bb9ef2bbd0d8d28584d79b979e2420f2375698dc838ec3a3",
+  "workspaceRevision": 1
+}

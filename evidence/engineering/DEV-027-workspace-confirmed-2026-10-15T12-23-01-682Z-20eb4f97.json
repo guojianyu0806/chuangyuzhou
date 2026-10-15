@@ -1,0 +1,119 @@
+{
+  "development": "DEV-027",
+  "kind": "read-only-synthetic-workspace-check",
+  "stage": "confirmed",
+  "observedAt": "2026-10-15T12:23:01.682Z",
+  "origin": "http://localhost:4398",
+  "passed": true,
+  "assertions": {
+    "schemaValid": true,
+    "onlySyntheticIdentity": true,
+    "protectedTaskPresent": true,
+    "protectedCapturePresent": true,
+    "protectedTaskContent": true,
+    "protectedCaptureContent": true,
+    "protectedTaskUnfinished": true,
+    "oneSourceCapture": true,
+    "nativeCalendarEventsZero": true,
+    "coursesStillEmpty": true,
+    "customBlocksStillEmpty": true,
+    "protectedTaskExactHash": true,
+    "protectedCaptureExactHash": true,
+    "oneNewSpace": true,
+    "oneNoteInSpace": true,
+    "noteDeadlineIs26": true,
+    "noteActivityIs28": true,
+    "noteContainsRealNewline": true,
+    "noteHasNoLiteralEscapedNewline": true,
+    "oneNewTask": true,
+    "taskBelongsToSpace": true,
+    "speechTaskTitle": true,
+    "revisedDateIs26": true,
+    "taskHighPriority": true,
+    "newTaskUnfinished": true,
+    "tasksCalendarEnabled": true,
+    "taskCalendarProjection": true,
+    "oneLinkedCalendarItem": true
+  },
+  "protection": {
+    "task": {
+      "id": "dev027-protected-task",
+      "sha256": "9d2c4a90b6c1d47bd1f26adb37c2cca3ed1365c2f7eb4fa28b205d978b2f729a"
+    },
+    "capture": {
+      "id": "dev027-source-capture",
+      "sha256": "295c127af233a664e4649c8991944e7dcf483aebd8ae31aebf7194af0148b451"
+    },
+    "workbench": {
+      "sha256": "b4be6883680422bc293e94b3ab419de3bb5c256c311534a47a00d15c66fb7d13",
+      "enabledModuleIds": [
+        "ai",
+        "calendar",
+        "tasks"
+      ]
+    },
+    "spaceBoardKeys": [
+      "space:e2716bd5-154f-4cf0-b1f7-249710f1acfc:notes",
+      "space:e2716bd5-154f-4cf0-b1f7-249710f1acfc:overview",
+      "space:e2716bd5-154f-4cf0-b1f7-249710f1acfc:tasks"
+    ]
+  },
+  "summary": {
+    "captureCount": 1,
+    "taskCount": 2,
+    "spaceCount": 1,
+    "nativeCalendarEventCount": 0,
+    "enabledModuleIds": [
+      "ai",
+      "calendar",
+      "tasks"
+    ],
+    "spaceBoardCount": 3,
+    "newOrphanSpaceBoardCount": 0,
+    "newOrphanSpaceBoardKeys": [],
+    "conversation": {
+      "count": 1,
+      "status": "filed",
+      "messageCount": 4,
+      "userMessageCount": 2,
+      "assistantMessageCount": 2,
+      "hasReceipt": true,
+      "hasPendingJob": false,
+      "hasConfirmedJob": true,
+      "hasProposal": false
+    },
+    "spaces": [
+      {
+        "id": "e2716bd5-154f-4cf0-b1f7-249710f1acfc",
+        "title": "分享会筹备",
+        "noteCount": 1,
+        "notes": [
+          {
+            "id": "6a92d391-b731-460d-aa64-cd6f07b31966",
+            "title": "活动安排"
+          }
+        ]
+      }
+    ],
+    "newTasks": [
+      {
+        "id": "011a1046-6827-400e-bad0-c4d3a4845170",
+        "title": "完成讲稿",
+        "spaceId": "e2716bd5-154f-4cf0-b1f7-249710f1acfc",
+        "date": "2026-10-26",
+        "priority": "high"
+      }
+    ],
+    "linkedCalendarItems": [
+      {
+        "entity": "task",
+        "sourceId": "011a1046-6827-400e-bad0-c4d3a4845170",
+        "date": "2026-10-26",
+        "parentId": "e2716bd5-154f-4cf0-b1f7-249710f1acfc"
+      }
+    ]
+  },
+  "instanceId": "690ca1e2eda740a1cbff02870715c7d218cf2b695b9d348ef4252e0fc25f2229",
+  "workspaceRevision": 11,
+  "baselineReport": "DEV-027-workspace-before-2026-10-15T12-18-56-554Z-4daeb254.json"
+}
