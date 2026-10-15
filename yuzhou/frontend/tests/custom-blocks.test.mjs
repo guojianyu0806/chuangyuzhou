@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {CUSTOM_BLOCK_KINDS,createCustomBlock,updateCustomBlock,getCustomBlocks,validateCustomBlocks,validateBlockData,mergeCustomBlocks} from '../src/custom-blocks-model.js';
 import {applyWorkspaceActions,previewWorkspaceActions,describeWorkspaceAction,undoWorkspaceActions,validateWorkspaceActions,validateWorkspaceActionSnapshot} from '../src/workspace-actions.js';
 import {validateBackup,mergeBackup} from '../src/backup.js';
+import {ensureCanvas} from '../src/canvas.js';
 
 const now='2026-10-09T10:00:00.000Z';
 const state=()=>({schema:1,mode:'personal',profile:{},english:{},courses:[],spaces:[],tasks:[],captures:[],aiRequests:[],updatedAt:now});
@@ -112,6 +113,52 @@ test('AI review is read-only, confirmed actions commit the new domain, and later
   assert.deepEqual(result,{removed:0,retained:1});assert.equal(target.customBlocks.items[0].data.count,4);
 });
 
+test('undo of untouched new blocks removes their automatic canvas entries and preserves every other card',async()=>{
+  const target=state();ensureCanvas(target);
+  target.canvas.cards.push({id:'unrelated-layout',x:3000,y:3000,w:250,h:250,color:'#123456'});
+  target.canvas.customized=true;target.canvas.modifiedAt='2026-10-08T10:00:00.000Z';
+  const originalCanvas=structuredClone(target.canvas);
+  const receipt=applyWorkspaceActions(target,'request',[proposal(input({kind:'note',title:'说明',config:{text:'正文'}})),proposal()],options());
+  const ids=target.customBlocks.items.map(block=>block.id);ensureCanvas(target);
+  assert.ok(ids.every(id=>target.canvas.cards.some(card=>card.id===id)));
+  const reloaded=JSON.parse(JSON.stringify(target));
+  assert.deepEqual(await undoWorkspaceActions({state:reloaded,save:()=>{}},receipt,'request'),{removed:2,retained:0});
+  assert.deepEqual(reloaded.customBlocks.items,[]);assert.deepEqual(reloaded.canvas,originalCanvas);
+  ensureCanvas(reloaded);assert.ok(ids.every(id=>!reloaded.canvas.cards.some(card=>card.id===id)));
+});
+
+test('later manual or unrecognized canvas placement preserves the new block and all its layout',async()=>{
+  const edits=[
+    (canvas,card)=>card.x+=40,(canvas,card)=>card.y+=40,(canvas,card)=>card.w+=20,(canvas,card)=>card.h+=20,
+    (canvas,card)=>card.color='#123456',(canvas,card)=>card.presentation='grid-2',(canvas,card)=>card.futureLayout=true,
+    canvas=>{canvas.customized=true;canvas.modifiedAt='2026-10-09T10:00:01.000Z';},
+    canvas=>{canvas.customized=true;delete canvas.modifiedAt;},
+    canvas=>{canvas.modifiedAt='unknown';},
+    (canvas,card)=>canvas.cards.push(structuredClone(card)),
+  ];
+  for(const edit of edits){
+    const target=state(),receipt=applyWorkspaceActions(target,'request',[proposal()],options());ensureCanvas(target);
+    edit(target.canvas,target.canvas.cards.find(card=>card.id===target.customBlocks.items[0].id));
+    const before=structuredClone(target);
+    assert.deepEqual(await undoWorkspaceActions({state:target,save:()=>{}},receipt,'request'),{removed:0,retained:1});
+    assert.deepEqual(target.customBlocks,before.customBlocks);assert.deepEqual(target.canvas,before.canvas);
+  }
+});
+
+test('new block data edited after creation protects both the record and its automatic canvas entry',async()=>{
+  const target=state(),receipt=applyWorkspaceActions(target,'request',[proposal()],options());ensureCanvas(target);
+  updateCustomBlock(target,target.customBlocks.items[0].id,{data:{count:4}});const before=structuredClone(target);
+  assert.deepEqual(await undoWorkspaceActions({state:target,save:()=>{}},receipt,'request'),{removed:0,retained:1});
+  assert.deepEqual(target.customBlocks,before.customBlocks);assert.deepEqual(target.canvas,before.canvas);
+});
+
+test('undo before any canvas visit removes the new block without constructing a canvas',async()=>{
+  const target=state(),receipt=applyWorkspaceActions(target,'request',[proposal()],options());
+  assert.equal(Object.hasOwn(target,'canvas'),false);
+  assert.deepEqual(await undoWorkspaceActions({state:target,save:()=>{}},receipt,'request'),{removed:1,retained:0});
+  assert.deepEqual(target.customBlocks.items,[]);assert.equal(Object.hasOwn(target,'canvas'),false);
+});
+
 test('AI archive, restore and same-kind config updates preserve data and invalid batches never partially commit',async()=>{
   const target=state(),record=create(target);const data=structuredClone(record.data);
   for(const operation of ['archive','restore']){applyWorkspaceActions(target,'request',[{entity:'customBlock',operation,id:record.id,data:{}}],options());assert.equal(target.customBlocks.items[0].archived,operation==='archive');assert.deepEqual(target.customBlocks.items[0].data,data);}
@@ -122,7 +169,7 @@ test('AI archive, restore and same-kind config updates preserve data and invalid
 });
 
 test('failed undo persistence restores both the new domain and timestamp',async()=>{
-  const target=state(),receipt=applyWorkspaceActions(target,'request',[proposal()],options()),before=structuredClone(target);
+  const target=state(),receipt=applyWorkspaceActions(target,'request',[proposal()],options());ensureCanvas(target);const before=structuredClone(target);
   await assert.rejects(undoWorkspaceActions({state:target,uid:()=>crypto.randomUUID(),save:()=>{throw new Error('synthetic failure');}},receipt,'request'),/synthetic/);
   assert.deepEqual(target,before);
 });

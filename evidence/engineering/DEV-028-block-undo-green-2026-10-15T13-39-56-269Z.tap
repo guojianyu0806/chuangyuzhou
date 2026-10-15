@@ -1,0 +1,340 @@
+TAP version 13
+# Subtest: server validation accepts the isolated block domain and rejects malformed code/data
+ok 1 - server validation accepts the isolated block domain and rejects malformed code/data
+  ---
+  duration_ms: 6.5832
+  type: 'test'
+  ...
+# Subtest: private miniapp JSON cannot become a host file reference and is not constrained by unrelated record IDs
+ok 2 - private miniapp JSON cannot become a host file reference and is not constrained by unrelated record IDs
+  ---
+  duration_ms: 1.5805
+  type: 'test'
+  ...
+# Subtest: block content changes invalidate AI proposals while overview and search contain no program or private data
+ok 3 - block content changes invalidate AI proposals while overview and search contain no program or private data
+  ---
+  duration_ms: 5.851
+  type: 'test'
+  ...
+# Subtest: selected get provides complete long code without the generic 6000-character crop and does not mix other records
+ok 4 - selected get provides complete long code without the generic 6000-character crop and does not mix other records
+  ---
+  duration_ms: 0.9616
+  type: 'test'
+  ...
+# Subtest: selected get clearly rejects oversized editing and marks secret-like private fields as redacted
+ok 5 - selected get clearly rejects oversized editing and marks secret-like private fields as redacted
+  ---
+  duration_ms: 3.3977
+  type: 'test'
+  ...
+# Subtest: AI may replace configuration or data only after an untruncated selected read from this turn
+ok 6 - AI may replace configuration or data only after an untruncated selected read from this turn
+  ---
+  duration_ms: 0.9466
+  type: 'test'
+  ...
+# Subtest: AI prompt advertises isolated miniapp API without authorizing DOM, network or hidden-state access
+ok 7 - AI prompt advertises isolated miniapp API without authorizing DOM, network or hidden-state access
+  ---
+  duration_ms: 1.1228
+  type: 'test'
+  ...
+# Subtest: SQLite restart retains program and private data and rejects a legacy client dropping the domain
+ok 8 - SQLite restart retains program and private data and rejects a legacy client dropping the domain
+  ---
+  duration_ms: 66.4373
+  type: 'test'
+  ...
+# Subtest: synthetic AI code remains unapplied before confirmation; confirmation creates once and preserves its receipt
+ok 9 - synthetic AI code remains unapplied before confirmation; confirmation creates once and preserves its receipt
+  ---
+  duration_ms: 77.3926
+  type: 'test'
+  ...
+# Subtest: an AI program update queries complete content, preserves private data, and conflicts with later user data edits
+ok 10 - an AI program update queries complete content, preserves private data, and conflicts with later user data edits
+  ---
+  duration_ms: 135.6995
+  type: 'test'
+  ...
+# Subtest: the model worker rejects replacing code without a complete current-turn read even after format repair
+ok 11 - the model worker rejects replacing code without a complete current-turn read even after format repair
+  ---
+  duration_ms: 80.9267
+  type: 'test'
+  ...
+# Subtest: authenticated AI searches and computes, reviews linked project/entry, then confirms exactly once in SQLite
+ok 12 - authenticated AI searches and computes, reviews linked project/entry, then confirms exactly once in SQLite
+  ---
+  duration_ms: 301.1506
+  type: 'test'
+  ...
+# Subtest: existing task update and a calendar event stay a single reviewed transaction
+ok 13 - existing task update and a calendar event stay a single reviewed transaction
+  ---
+  duration_ms: 176.9148
+  type: 'test'
+  ...
+# Subtest: course preferences and actual existing record IDs reach the model before reviewed prompt/note changes
+ok 14 - course preferences and actual existing record IDs reach the model before reviewed prompt/note changes
+  ---
+  duration_ms: 155.7607
+  type: 'test'
+  ...
+# Subtest: three query rounds are bounded and the fourth request becomes a no-write clarification
+ok 15 - three query rounds are bounded and the fourth request becomes a no-write clarification
+  ---
+  duration_ms: 184.4417
+  type: 'test'
+  ...
+# Subtest: query-only response with omitted proposal continues without publishing a missing reply
+ok 16 - query-only response with omitted proposal continues without publishing a missing reply
+  ---
+  duration_ms: 149.3327
+  type: 'test'
+  ...
+# Subtest: query-only response with null proposal continues without publishing a missing reply
+ok 17 - query-only response with null proposal continues without publishing a missing reply
+  ---
+  duration_ms: 156.1547
+  type: 'test'
+  ...
+# Subtest: query-only compatibility does not accept an explicit empty or invalid reply
+ok 18 - query-only compatibility does not accept an explicit empty or invalid reply
+  ---
+  duration_ms: 1076.0167
+  type: 'test'
+  ...
+# Subtest: query-only compatibility still rejects empty, malformed and unauthorized queries without a reply
+ok 19 - query-only compatibility still rejects empty, malformed and unauthorized queries without a reply
+  ---
+  duration_ms: 923.1272
+  type: 'test'
+  ...
+# Subtest: query-only compatibility rejects nonnull proposals and any top-level actions with or without a reply
+ok 20 - query-only compatibility rejects nonnull proposals and any top-level actions with or without a reply
+  ---
+  duration_ms: 1604.5996
+  type: 'test'
+  ...
+# Subtest: query-only intermediate output never substitutes for a missing final chat or proposal reply
+ok 21 - query-only intermediate output never substitutes for a missing final chat or proposal reply
+  ---
+  duration_ms: 293.4388
+  type: 'test'
+  ...
+# Subtest: query-only responses retain the three-round query limit without consuming format repair
+ok 22 - query-only responses retain the three-round query limit without consuming format repair
+  ---
+  duration_ms: 165.099
+  type: 'test'
+  ...
+# Subtest: arbitrary query paths and mixed query/action output fail after one bounded format correction
+ok 23 - arbitrary query paths and mixed query/action output fail after one bounded format correction
+  ---
+  duration_ms: 256.9684
+  type: 'test'
+  ...
+# Subtest: explicit null queries permit a valid action plan but never execute before confirmation
+ok 24 - explicit null queries permit a valid action plan but never execute before confirmation
+  ---
+  duration_ms: 131.9985
+  type: 'test'
+  ...
+# Subtest: explicit null queries permit ordinary chat without creating an actionable proposal
+ok 25 - explicit null queries permit ordinary chat without creating an actionable proposal
+  ---
+  duration_ms: 130.9036
+  type: 'test'
+  ...
+# Subtest: false, string and object query values cannot bypass validation with chat or actions
+ok 26 - false, string and object query values cannot bypass validation with chat or actions
+  ---
+  duration_ms: 1027.3087
+  type: 'test'
+  ...
+# Subtest: one bounded correction identifies bad query fields then permits real queries and a reviewed plan
+ok 27 - one bounded correction identifies bad query fields then permits real queries and a reviewed plan
+  ---
+  duration_ms: 157.091
+  type: 'test'
+  ...
+# Subtest: domain changes after review make confirmation stale without overwriting another device
+ok 28 - domain changes after review make confirmation stale without overwriting another device
+  ---
+  duration_ms: 137.6824
+  type: 'test'
+  ...
+# Subtest: domain changes during inference prevent an outdated action plan from becoming confirmable
+ok 29 - domain changes during inference prevent an outdated action plan from becoming confirmable
+  ---
+  duration_ms: 132.8627
+  type: 'test'
+  ...
+# Subtest: a discarded conversation result can retry the same turn against current data without duplicating execution
+ok 30 - a discarded conversation result can retry the same turn against current data without duplicating execution
+  ---
+  duration_ms: 165.712
+  type: 'test'
+  ...
+# Subtest: unsent composer draft changes alone do not invalidate an already reviewed action
+ok 31 - unsent composer draft changes alone do not invalidate an already reviewed action
+  ---
+  duration_ms: 132.5852
+  type: 'test'
+  ...
+# Subtest: capabilities, queries and confirmation remain behind server authentication and CSRF
+ok 32 - capabilities, queries and confirmation remain behind server authentication and CSRF
+  ---
+  duration_ms: 109.5194
+  type: 'test'
+  ...
+# Subtest: custom-block previews and descriptions use all seven Chinese kind names without changing calendar terminology
+ok 33 - custom-block previews and descriptions use all seven Chinese kind names without changing calendar terminology
+  ---
+  duration_ms: 18.6665
+  type: 'test'
+  ...
+# Subtest: review configuration text retains every checklist, link, progress, date, table and note value
+ok 34 - review configuration text retains every checklist, link, progress, date, table and note value
+  ---
+  duration_ms: 4.3303
+  type: 'test'
+  ...
+# Subtest: long miniapp code is fully reviewable with original line breaks in create, update and fallback descriptions
+ok 35 - long miniapp code is fully reviewable with original line breaks in create, update and fallback descriptions
+  ---
+  duration_ms: 1.6137
+  type: 'test'
+  ...
+# Subtest: legacy reads and type metadata are isolated; all seven valid block kinds round-trip
+ok 36 - legacy reads and type metadata are isolated; all seven valid block kinds round-trip
+  ---
+  duration_ms: 1.2763
+  type: 'test'
+  ...
+# Subtest: config edits preserve private data, kind cannot change and invalid edits are atomic
+ok 37 - config edits preserve private data, kind cannot change and invalid edits are atomic
+  ---
+  duration_ms: 0.6897
+  type: 'test'
+  ...
+# Subtest: strict configurations reject unsafe links, invalid dates, duplicate rows and excessive collections
+ok 38 - strict configurations reject unsafe links, invalid dates, duplicate rows and excessive collections
+  ---
+  duration_ms: 0.9894
+  type: 'test'
+  ...
+# Subtest: JSON data enforces byte, nesting and finite-value boundaries without executing or retaining input references
+ok 39 - JSON data enforces byte, nesting and finite-value boundaries without executing or retaining input references
+  ---
+  duration_ms: 0.5357
+  type: 'test'
+  ...
+# Subtest: block count, reserved ID namespace and duplicate IDs fail before changing the state
+ok 40 - block count, reserved ID namespace and duplicate IDs fail before changing the state
+  ---
+  duration_ms: 18.377
+  type: 'test'
+  ...
+# Subtest: AI review is read-only, confirmed actions commit the new domain, and later private-data edits prevent destructive undo
+ok 41 - AI review is read-only, confirmed actions commit the new domain, and later private-data edits prevent destructive undo
+  ---
+  duration_ms: 2.2528
+  type: 'test'
+  ...
+# Subtest: undo of untouched new blocks removes their automatic canvas entries and preserves every other card
+ok 42 - undo of untouched new blocks removes their automatic canvas entries and preserves every other card
+  ---
+  duration_ms: 3.1794
+  type: 'test'
+  ...
+# Subtest: later manual or unrecognized canvas placement preserves the new block and all its layout
+ok 43 - later manual or unrecognized canvas placement preserves the new block and all its layout
+  ---
+  duration_ms: 9.6769
+  type: 'test'
+  ...
+# Subtest: new block data edited after creation protects both the record and its automatic canvas entry
+ok 44 - new block data edited after creation protects both the record and its automatic canvas entry
+  ---
+  duration_ms: 1.0521
+  type: 'test'
+  ...
+# Subtest: undo before any canvas visit removes the new block without constructing a canvas
+ok 45 - undo before any canvas visit removes the new block without constructing a canvas
+  ---
+  duration_ms: 1.1426
+  type: 'test'
+  ...
+# Subtest: AI archive, restore and same-kind config updates preserve data and invalid batches never partially commit
+ok 46 - AI archive, restore and same-kind config updates preserve data and invalid batches never partially commit
+  ---
+  duration_ms: 2.1379
+  type: 'test'
+  ...
+# Subtest: failed undo persistence restores both the new domain and timestamp
+ok 47 - failed undo persistence restores both the new domain and timestamp
+  ---
+  duration_ms: 2.0412
+  type: 'test'
+  ...
+# Subtest: backups preserve code and private data, merge new IDs, and never overwrite current block contents
+ok 48 - backups preserve code and private data, merge new IDs, and never overwrite current block contents
+  ---
+  duration_ms: 2.5097
+  type: 'test'
+  ...
+# Subtest: browsing and reloading a newly created linked space permits complete undo and removes only its automatic boards
+ok 49 - browsing and reloading a newly created linked space permits complete undo and removes only its automatic boards
+  ---
+  duration_ms: 9.3266
+  type: 'test'
+  ...
+# Subtest: course note and file boards created by browsing do not leave an empty course after undo
+ok 50 - course note and file boards created by browsing do not leave an empty course after undo
+  ---
+  duration_ms: 3.1506
+  type: 'test'
+  ...
+# Subtest: undo removes even empty automatic boards and restores both boards and records when saving fails
+ok 51 - undo removes even empty automatic boards and restores both boards and records when saving fails
+  ---
+  duration_ms: 2.1898
+  type: 'test'
+  ...
+# Subtest: explicit customization and modified timestamps retain the parent and its board
+ok 52 - explicit customization and modified timestamps retain the parent and its board
+  ---
+  duration_ms: 1.9734
+  type: 'test'
+  ...
+# Subtest: unmarked manual geometry, colour, view and presentation changes remain protected
+ok 53 - unmarked manual geometry, colour, view and presentation changes remain protected
+  ---
+  duration_ms: 6.5434
+  type: 'test'
+  ...
+# Subtest: unknown board sections, cards and unmarked content-card colours are conservatively retained
+ok 54 - unknown board sections, cards and unmarked content-card colours are conservatively retained
+  ---
+  duration_ms: 4.5122
+  type: 'test'
+  ...
+# Subtest: later business content retains the parent and automatic boards
+ok 55 - later business content retains the parent and automatic boards
+  ---
+  duration_ms: 2.8517
+  type: 'test'
+  ...
+1..55
+# tests 55
+# suites 0
+# pass 55
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7851.9575

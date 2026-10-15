@@ -1,7 +1,28 @@
 import {getCustomBlocks,validateCustomBlock,validateCustomBlockConfig,createCustomBlock,updateCustomBlock,validateBlockData} from './custom-blocks-model.js';
+import {ensureCanvas} from './canvas.js';
 const clone=value=>structuredClone(value),same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const fail=message=>{throw new Error(message);};
 const plain=value=>value&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
+function hasAutomaticCanvasEntry(state,record){
+  const canvas=state.canvas,cards=canvas?.cards;
+  if(cards===undefined)return true;
+  if(!Array.isArray(cards))return false;
+  const matches=cards.filter(card=>card?.id===record.id);
+  if(!matches.length)return true;
+  if(matches.length!==1)return false;
+  // The canvas records customization globally. Later or unrecognized edits
+  // cannot establish that this entry is still untouched, so keep the block.
+  if(canvas.customized&&canvas.modifiedAt===undefined)return false;
+  if(canvas.modifiedAt!==undefined&&(typeof canvas.modifiedAt!=='string'||!Number.isFinite(Date.parse(canvas.modifiedAt))||Date.parse(canvas.modifiedAt)>=Date.parse(record.createdAt)))return false;
+  const card=matches[0],fields=['id','x','y','w','h','color'];
+  if(Object.keys(card).some(key=>!fields.includes(key)))return false;
+  // Reuse the actual allocator rather than duplicating positions or overlap
+  // rules. All normalization is isolated; unrelated stored cards stay intact.
+  const probe=clone({spaces:state.spaces??[],customBlocks:state.customBlocks,canvas});
+  probe.canvas.cards=probe.canvas.cards.filter(item=>item?.id!==record.id);
+  const expected=ensureCanvas(probe).cards.find(item=>item.id===record.id);
+  return expected!==undefined&&fields.every(key=>card[key]===expected[key]);
+}
 function normalizeData(data,operation){
   if(!plain(data))fail('自定义方块行动内容无效。');
   if(['archive','restore'].includes(operation)){if(Object.keys(data).length)fail('归档或恢复无需内容字段。');return {};}
@@ -30,7 +51,11 @@ const adapter={label:'自定义方块',operations:['create','update','archive','
   },
   undo(state,item){
     const current=getCustomBlocks(state),index=current.items.findIndex(record=>record.id===item.id);if(index<0||!same(current.items[index],item.after))return false;
-    if(item.before===null)current.items.splice(index,1);else current.items[index]=validateCustomBlock(item.before);
+    if(item.before===null){
+      if(!hasAutomaticCanvasEntry(state,current.items[index]))return false;
+      current.items.splice(index,1);
+      if(Array.isArray(state.canvas?.cards))state.canvas.cards=state.canvas.cards.filter(card=>card?.id!==item.id);
+    }else current.items[index]=validateCustomBlock(item.before);
     state.customBlocks=current;return true;
   },
 };
