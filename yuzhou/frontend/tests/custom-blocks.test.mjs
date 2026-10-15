@@ -127,6 +127,27 @@ test('undo of untouched new blocks removes their automatic canvas entries and pr
   ensureCanvas(reloaded);assert.ok(ids.every(id=>!reloaded.canvas.cards.some(card=>card.id===id)));
 });
 
+test('undo removes an untouched earlier block while retaining a later same-batch block with new private data',async()=>{
+  const target=state(),receipt=applyWorkspaceActions(target,'request',[proposal(input({kind:'note',title:'未修改便签',config:{text:'原文'}})),proposal()],options());
+  ensureCanvas(target);
+  const [earlier,later]=target.customBlocks.items.map(block=>block.id);updateCustomBlock(target,later,{data:{count:9}});
+  const reloaded=JSON.parse(JSON.stringify(target)),before=structuredClone(reloaded);
+  await assert.rejects(undoWorkspaceActions({state:reloaded,save:()=>{throw Error('synthetic save failed');}},receipt,'request'),/synthetic save failed/);
+  assert.deepEqual(reloaded,before);
+  assert.deepEqual(await undoWorkspaceActions({state:reloaded,save:()=>{}},receipt,'request'),{removed:1,retained:1});
+  assert.deepEqual(reloaded.customBlocks.items,[before.customBlocks.items[1]]);
+  assert.deepEqual(reloaded.canvas.cards,before.canvas.cards.filter(card=>card.id!==earlier));
+  assert.equal(reloaded.customBlocks.items[0].id,later);assert.equal(reloaded.customBlocks.items[0].data.count,9);
+});
+
+test('later cards outside the creation batch are not removed from the automatic-layout comparison',async()=>{
+  const target=state(),receipt=applyWorkspaceActions(target,'request',[proposal()],options());ensureCanvas(target);
+  createCustomBlock(target,input({title:'另一次独立创建'}),{id:'block:later-independent',now:'2026-10-09T10:00:00.000Z'});ensureCanvas(target);
+  const before=structuredClone(target);
+  assert.deepEqual(await undoWorkspaceActions({state:target,save:()=>{}},receipt,'request'),{removed:0,retained:1});
+  assert.deepEqual(target.customBlocks,before.customBlocks);assert.deepEqual(target.canvas,before.canvas);
+});
+
 test('later manual or unrecognized canvas placement preserves the new block and all its layout',async()=>{
   const edits=[
     (canvas,card)=>card.x+=40,(canvas,card)=>card.y+=40,(canvas,card)=>card.w+=20,(canvas,card)=>card.h+=20,

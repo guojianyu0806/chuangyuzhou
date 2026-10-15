@@ -3,7 +3,7 @@ import {ensureCanvas} from './canvas.js';
 const clone=value=>structuredClone(value),same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const fail=message=>{throw new Error(message);};
 const plain=value=>value&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
-function hasAutomaticCanvasEntry(state,record){
+function hasAutomaticCanvasEntry(state,record,ctx){
   const canvas=state.canvas,cards=canvas?.cards;
   if(cards===undefined)return true;
   if(!Array.isArray(cards))return false;
@@ -19,7 +19,16 @@ function hasAutomaticCanvasEntry(state,record){
   // Reuse the actual allocator rather than duplicating positions or overlap
   // rules. All normalization is isolated; unrelated stored cards stay intact.
   const probe=clone({spaces:state.spaces??[],customBlocks:state.customBlocks,canvas});
-  probe.canvas.cards=probe.canvas.cards.filter(item=>item?.id!==record.id);
+  const replay=new Set([record.id]);
+  if(record.sourceRequestId&&record.sourceRequestId===ctx.requestId){
+    const original=getCustomBlocks(ctx.undoSource||state).items,index=original.findIndex(item=>item.id===record.id);
+    // Batch creation appends blocks in order and stamps them with one request
+    // and creation time. A later retained sibling did not occupy canvas space
+    // when this card was allocated. Recreate only those known sibling entries
+    // in the probe; their actual cards and edited private data are untouched.
+    if(index>=0)for(const later of original.slice(index+1))if(later.sourceRequestId===record.sourceRequestId&&later.createdAt===record.createdAt)replay.add(later.id);
+  }
+  probe.canvas.cards=probe.canvas.cards.filter(item=>!replay.has(item?.id));
   const expected=ensureCanvas(probe).cards.find(item=>item.id===record.id);
   return expected!==undefined&&fields.every(key=>card[key]===expected[key]);
 }
@@ -49,10 +58,10 @@ const adapter={label:'自定义方块',operations:['create','update','archive','
     }
     return {entity:'customBlock',operation:action.operation,id:after.id,containerId:'',before,after:clone(after)};
   },
-  undo(state,item){
+  undo(state,item,ctx={}){
     const current=getCustomBlocks(state),index=current.items.findIndex(record=>record.id===item.id);if(index<0||!same(current.items[index],item.after))return false;
     if(item.before===null){
-      if(!hasAutomaticCanvasEntry(state,current.items[index]))return false;
+      if(!hasAutomaticCanvasEntry(state,current.items[index],ctx))return false;
       current.items.splice(index,1);
       if(Array.isArray(state.canvas?.cards))state.canvas.cards=state.canvas.cards.filter(card=>card?.id!==item.id);
     }else current.items[index]=validateCustomBlock(item.before);

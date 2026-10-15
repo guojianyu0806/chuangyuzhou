@@ -1,0 +1,144 @@
+TAP version 13
+# Subtest: custom-block previews and descriptions use all seven Chinese kind names without changing calendar terminology
+ok 1 - custom-block previews and descriptions use all seven Chinese kind names without changing calendar terminology
+  ---
+  duration_ms: 10.8828
+  type: 'test'
+  ...
+# Subtest: review configuration text retains every checklist, link, progress, date, table and note value
+ok 2 - review configuration text retains every checklist, link, progress, date, table and note value
+  ---
+  duration_ms: 3.5852
+  type: 'test'
+  ...
+# Subtest: long miniapp code is fully reviewable with original line breaks in create, update and fallback descriptions
+ok 3 - long miniapp code is fully reviewable with original line breaks in create, update and fallback descriptions
+  ---
+  duration_ms: 1.3467
+  type: 'test'
+  ...
+# Subtest: legacy reads and type metadata are isolated; all seven valid block kinds round-trip
+ok 4 - legacy reads and type metadata are isolated; all seven valid block kinds round-trip
+  ---
+  duration_ms: 1.0168
+  type: 'test'
+  ...
+# Subtest: config edits preserve private data, kind cannot change and invalid edits are atomic
+ok 5 - config edits preserve private data, kind cannot change and invalid edits are atomic
+  ---
+  duration_ms: 0.7801
+  type: 'test'
+  ...
+# Subtest: strict configurations reject unsafe links, invalid dates, duplicate rows and excessive collections
+ok 6 - strict configurations reject unsafe links, invalid dates, duplicate rows and excessive collections
+  ---
+  duration_ms: 1.1371
+  type: 'test'
+  ...
+# Subtest: JSON data enforces byte, nesting and finite-value boundaries without executing or retaining input references
+ok 7 - JSON data enforces byte, nesting and finite-value boundaries without executing or retaining input references
+  ---
+  duration_ms: 0.5164
+  type: 'test'
+  ...
+# Subtest: block count, reserved ID namespace and duplicate IDs fail before changing the state
+ok 8 - block count, reserved ID namespace and duplicate IDs fail before changing the state
+  ---
+  duration_ms: 15.4325
+  type: 'test'
+  ...
+# Subtest: AI review is read-only, confirmed actions commit the new domain, and later private-data edits prevent destructive undo
+ok 9 - AI review is read-only, confirmed actions commit the new domain, and later private-data edits prevent destructive undo
+  ---
+  duration_ms: 1.9213
+  type: 'test'
+  ...
+# Subtest: undo of untouched new blocks removes their automatic canvas entries and preserves every other card
+ok 10 - undo of untouched new blocks removes their automatic canvas entries and preserves every other card
+  ---
+  duration_ms: 2.3638
+  type: 'test'
+  ...
+# Subtest: undo removes an untouched earlier block while retaining a later same-batch block with new private data
+not ok 11 - undo removes an untouched earlier block while retaining a later same-batch block with new private data
+  ---
+  duration_ms: 3.3213
+  type: 'test'
+  location: 'E:\\传智杯\\传智杯AI创新应用挑战赛\\yuzhou\\frontend\\tests\\custom-blocks.test.mjs:130:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      {
+    +   removed: 0,
+    +   retained: 2
+    -   removed: 1,
+    -   retained: 1
+      }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    removed: 1
+    retained: 1
+  actual:
+    removed: 0
+    retained: 2
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/tests/custom-blocks.test.mjs:137:10)
+    async Test.run (node:internal/test_runner/test:1127:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:789:7)
+  ...
+# Subtest: later cards outside the creation batch are not removed from the automatic-layout comparison
+ok 12 - later cards outside the creation batch are not removed from the automatic-layout comparison
+  ---
+  duration_ms: 1.3664
+  type: 'test'
+  ...
+# Subtest: later manual or unrecognized canvas placement preserves the new block and all its layout
+ok 13 - later manual or unrecognized canvas placement preserves the new block and all its layout
+  ---
+  duration_ms: 8.0755
+  type: 'test'
+  ...
+# Subtest: new block data edited after creation protects both the record and its automatic canvas entry
+ok 14 - new block data edited after creation protects both the record and its automatic canvas entry
+  ---
+  duration_ms: 1.1355
+  type: 'test'
+  ...
+# Subtest: undo before any canvas visit removes the new block without constructing a canvas
+ok 15 - undo before any canvas visit removes the new block without constructing a canvas
+  ---
+  duration_ms: 0.6285
+  type: 'test'
+  ...
+# Subtest: AI archive, restore and same-kind config updates preserve data and invalid batches never partially commit
+ok 16 - AI archive, restore and same-kind config updates preserve data and invalid batches never partially commit
+  ---
+  duration_ms: 1.3748
+  type: 'test'
+  ...
+# Subtest: failed undo persistence restores both the new domain and timestamp
+ok 17 - failed undo persistence restores both the new domain and timestamp
+  ---
+  duration_ms: 0.8206
+  type: 'test'
+  ...
+# Subtest: backups preserve code and private data, merge new IDs, and never overwrite current block contents
+ok 18 - backups preserve code and private data, merge new IDs, and never overwrite current block contents
+  ---
+  duration_ms: 1.926
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 17
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 240.6028
