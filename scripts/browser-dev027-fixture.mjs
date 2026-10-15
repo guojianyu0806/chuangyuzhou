@@ -3,7 +3,7 @@
 import {mkdirSync,mkdtempSync,writeFileSync,renameSync} from 'node:fs';
 import {join,resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {randomUUID} from 'node:crypto';
+import {randomUUID,createHash} from 'node:crypto';
 import {createInterface} from 'node:readline';
 import {createWorkbenchServer} from '../yuzhou/backend/server.mjs';
 import {createHermesService} from '../yuzhou/backend/hermes.mjs';
@@ -26,6 +26,51 @@ export const FIXTURE=Object.freeze({
 const stamp=()=>new Date().toISOString();
 const safeErrors=new Set(['MODEL_NOT_CONFIGURED','INVALID_PROPOSAL','MODEL_AUTH_FAILED','MODEL_RATE_LIMIT',
   'MODEL_UNAVAILABLE','AI_INTERRUPTED','AI_TIMEOUT','MODEL_OUTPUT_TRUNCATED','MODEL_INCOMPLETE']);
+const staticValidationIssues=new Set([
+  '模型回复不是完整的 JSON 对象。','模型回复须为 JSON 对象。','模型未返回可识别的整理建议。',
+  '查询与执行行动单须分开返回。','每轮查询须为1至6项。','不支持这个工作台查询。','查询包含不支持的字段。',
+  '查询文字格式无效。','查询的记录类型不存在。','读取详情需要记录类型和真实编号。','请选择已有资料的文件编号。',
+  '查询日期无效。','查询起始日期不能晚于结束日期。','查询范围超出限制。','归档筛选无效。','完成状态筛选无效。',
+  '日历查询需要开始和结束日期。','日历类型无效。','日历来源无效。','记账统计范围无效。','记账分组方式无效。',
+  '行动单目标工作区不存在。','模型返回了不存在或未经选择的工作区，请重试。',
+  'AI 整理结果格式不正确。','AI 整理结果包含无效文字。','AI 返回了无效的工作区。',
+  '通用行动单不能混入旧版整理条目。','这个目标需要使用明确的行动单。','AI 整理条目数量无效。',
+  '一次行动须为1至50项。','行动对象格式无效。','行动结构包含不支持字段。','此工作台操作暂不支持。',
+  '新记录编号由系统生成，不能自行指定。','新建记录引用名无效或重复。','只能引用本批次前面已经新建的记录。',
+  '引用的记录类型与行动不匹配。','行动内容的文字无效。','行动日期无效。','行动选项无效。',
+  '工作台设置格式无效。','工作台配置只支持修改。','请指定需要修改的配置。','只能操作物品库中的现有板块。',
+  '顶级板块不能指定所属位置。','板块显示状态无效。','板块位置超出范围。',
+  '自定义方块行动包含不支持的字段。','新建方块需要 kind、title 和 config。',
+  ...['对话回复','目标工作区','标题','摘要','归类理由','笔记标题','笔记内容','待办标题','待办说明','日期']
+    .map(field=>`模型返回的 ${field} 格式不正确。`),
+]);
+const identifier=value=>typeof value==='string'&&/^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(value)&&!/^sk[-_]/i.test(value)?value:'redacted-or-invalid';
+const valueType=value=>value===undefined?'missing':value===null?'null':Array.isArray(value)?'array':typeof value;
+const identifierKeys=value=>value&&typeof value==='object'&&!Array.isArray(value)?Object.keys(value).slice(0,64).map(identifier):[];
+
+/** Structure only: no IDs, titles, query text, action values, or reply content. */
+export function modelOutputShape(content){
+  if(typeof content!=='string')return {jsonParsed:false,contentType:valueType(content)};
+  let parsed;try{parsed=JSON.parse(content);}catch{return {jsonParsed:false,contentType:'string',contentChars:content.length};}
+  const queries=parsed?.queries,proposal=parsed?.proposal,actions=proposal?.actions;
+  return {jsonParsed:true,topLevelType:valueType(parsed),topLevelKeys:identifierKeys(parsed),replyType:valueType(parsed?.reply),
+    proposalType:valueType(proposal),proposalKeys:identifierKeys(proposal),queriesType:valueType(queries),
+    queryCount:Array.isArray(queries)?queries.length:0,
+    queries:Array.isArray(queries)?queries.slice(0,6).map(query=>({kind:identifier(query?.kind),entity:identifier(query?.entity),fields:identifierKeys(query)})):[],
+    actionsType:valueType(actions),actionCount:Array.isArray(actions)?actions.length:0,
+    actions:Array.isArray(actions)?actions.slice(0,50).map(action=>({entity:identifier(action?.entity),operation:identifier(action?.operation),
+      fields:identifierKeys(action),dataFields:identifierKeys(action?.data)})):[]};
+}
+
+export function correctionMetadata(user){
+  let parsed;try{parsed=JSON.parse(user);}catch{return {correctionPresent:false};}
+  const correction=parsed?.formatCorrection;
+  if(!correction||typeof correction!=='object')return {correctionPresent:false};
+  const issue=typeof correction.issue==='string'?correction.issue:'';
+  return {correctionPresent:true,correctiveCode:identifier(correction.code),
+    ...(staticValidationIssues.has(issue)?{correctiveIssue:issue}:{correctiveIssue:'unlisted-static-or-private-message',
+      correctiveIssueChars:issue.length,correctiveIssueHash:createHash('sha256').update(issue).digest('hex')})};
+}
 
 export function createSyntheticState(now=stamp()){
   const workbench=createWorkbench('blank');
@@ -67,6 +112,7 @@ function responseMetadata(bytes){
   return {metadataParsed:true,
     returnedModel:typeof data?.model==='string'&&/^deepseek-[a-z0-9.-]{1,60}$/.test(data.model)?data.model:'unexpected-or-missing',
     finishReason:['stop','length','content_filter','tool_calls','insufficient_system_resource','aborted'].includes(finish)?finish:'unexpected-or-missing',
+    outputShape:modelOutputShape(data?.choices?.[0]?.message?.content),
     usage:Object.fromEntries(['prompt_tokens','completion_tokens','total_tokens','prompt_cache_hit_tokens','prompt_cache_miss_tokens']
       .filter(key=>Number.isSafeInteger(usage[key])&&usage[key]>=0).map(key=>[key,usage[key]]))};
 }
@@ -93,7 +139,7 @@ export function createRecordedModelRunner(apiKey,{fetchImpl=globalThis.fetch,per
     const runner=createDeepSeekRunner({fetch:async(url,options)=>{
       if(call||url!==ENDPOINT||options.redirect!=='error')throw Error('Unexpected transport.');
       // The production body, complete system prompt, max_tokens, and thinking settings pass unchanged.
-      call={index:report.calls.length+1,startedAt:stamp(),configuredModel:MODEL,transportOk:false};
+      call={index:report.calls.length+1,startedAt:stamp(),configuredModel:MODEL,transportOk:false,...correctionMetadata(input.user)};
       report.calls.push(call);publish();
       const response=await fetchImpl(url,options);
       call.httpStatus=response.status;

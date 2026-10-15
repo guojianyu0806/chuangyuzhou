@@ -1,0 +1,53 @@
+{
+  "development": "DEV-027",
+  "scope": "Synthetic localhost UI; unchanged production prompts; no formal workspace reads",
+  "model": "deepseek-v4-pro",
+  "createdAt": "2026-10-15T11:43:51.947Z",
+  "calls": [
+    {
+      "index": 1,
+      "startedAt": "2026-10-15T11:45:16.650Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "httpStatus": 200,
+      "responseBytes": 1310,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "usage": {
+        "prompt_tokens": 8655,
+        "completion_tokens": 211,
+        "total_tokens": 8866,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 8655
+      },
+      "completedAt": "2026-10-15T11:45:19.669Z",
+      "elapsedMs": 3020
+    },
+    {
+      "index": 2,
+      "startedAt": "2026-10-15T11:45:19.677Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "httpStatus": 200,
+      "responseBytes": 1310,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "usage": {
+        "prompt_tokens": 8990,
+        "completion_tokens": 211,
+        "total_tokens": 9201,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 8990
+      },
+      "completedAt": "2026-10-15T11:45:22.682Z",
+      "elapsedMs": 3005
+    }
+  ],
+  "requestCount": 2,
+  "actualTokensReported": 18067,
+  "missingUsageCount": 0,
+  "closed": true,
+  "closedAt": "2026-10-15T11:50:07.096Z"
+}

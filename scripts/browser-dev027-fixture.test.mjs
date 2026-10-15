@@ -1,7 +1,7 @@
 // Offline contract checks. Never starts a listener and never reaches a provider.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {FIXTURE,MAX_PROVIDER_RESPONSE_BYTES,createSyntheticState,readBoundedProviderResponse,createRecordedModelRunner,restrictFixtureConfig} from './browser-dev027-fixture.mjs';
+import {FIXTURE,MAX_PROVIDER_RESPONSE_BYTES,createSyntheticState,readBoundedProviderResponse,createRecordedModelRunner,restrictFixtureConfig,modelOutputShape,correctionMetadata} from './browser-dev027-fixture.mjs';
 import {validateWorkspace} from '../yuzhou/backend/store.mjs';
 
 const key='synthetic-private-marker-for-offline-checks';
@@ -74,4 +74,24 @@ test('normal config API accepts only placeholder without forwarding an accidenta
   const context={url:new URL('/api/model/config',FIXTURE.origin),readJson:async()=>({provider:'deepseek',model:'deepseek-v4-pro',apiKey:key}),json:(_res,status,body)=>returned={status,body}};
   assert.equal(await service.handle({method:'PUT'},{},context),true);assert.equal(delegated,0);assert.equal(returned.status,400);assert.equal(JSON.stringify(returned).includes(key),false);
   await service.handle({method:'PUT'},{},{...context,readJson:async()=>({provider:'deepseek',model:'deepseek-v4-pro',apiKey:FIXTURE.placeholderKey})});assert.equal(delegated,1);
+});
+
+test('shape diagnostics retain bounded identifiers while excluding query/action/reply values',()=>{
+  const privateValue='PRIVATE_RESPONSE_AND_QUERY_VALUE';
+  const shape=modelOutputShape(JSON.stringify({reply:privateValue,queries:Array.from({length:7},()=>({kind:'search',entity:'capture',text:privateValue})),
+    proposal:{title:privateValue,actions:Array.from({length:51},()=>({entity:'task',operation:'create',data:{title:privateValue,date:'2026-10-26'}}))}}));
+  assert.equal(shape.queryCount,7);assert.equal(shape.queries.length,6);assert.equal(shape.actionCount,51);assert.equal(shape.actions.length,50);
+  assert.deepEqual(shape.topLevelKeys,['reply','queries','proposal']);assert.deepEqual(shape.actions[0].dataFields,['title','date']);
+  assert.equal(shape.queries[0].kind,'search');assert.equal(JSON.stringify(shape).includes(privateValue),false);
+  assert.equal(JSON.stringify(shape).includes('2026-10-26'),false);
+  const invalid=modelOutputShape(JSON.stringify({'中文字段':privateValue,queries:[{kind:'x'.repeat(65),entity:'sk-secret-marker'}]}));
+  assert.equal(JSON.stringify(invalid).includes('中文字段'),false);assert.equal(JSON.stringify(invalid).includes('sk-secret-marker'),false);
+});
+
+test('correction diagnostics expose exact static whitelist messages but hash all other issue text',()=>{
+  const known=correctionMetadata(JSON.stringify({formatCorrection:{code:'INVALID_PROPOSAL',issue:'查询包含不支持的字段。',previousOutput:key}}));
+  assert.equal(known.correctiveIssue,'查询包含不支持的字段。');assert.equal(JSON.stringify(known).includes(key),false);
+  const unknown=correctionMetadata(JSON.stringify({formatCorrection:{code:'INVALID_PROPOSAL',issue:'private '+key,previousOutput:key}}));
+  assert.equal(unknown.correctiveIssue,'unlisted-static-or-private-message');assert.match(unknown.correctiveIssueHash,/^[a-f0-9]{64}$/);
+  assert.equal(JSON.stringify(unknown).includes(key),false);
 });
