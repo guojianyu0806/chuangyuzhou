@@ -1,0 +1,189 @@
+{
+  "development": "DEV-027",
+  "scope": "Synthetic localhost UI; unchanged production prompts; no formal workspace reads",
+  "model": "deepseek-v4-pro",
+  "createdAt": "2026-10-15T11:50:49.663Z",
+  "calls": [
+    {
+      "index": 1,
+      "startedAt": "2026-10-15T11:51:45.559Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": false,
+      "httpStatus": 200,
+      "responseBytes": 1270,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "reply",
+          "proposal",
+          "queries"
+        ],
+        "replyType": "string",
+        "proposalType": "null",
+        "proposalKeys": [],
+        "queriesType": "array",
+        "queryCount": 5,
+        "queries": [
+          {
+            "kind": "search",
+            "entity": "capture",
+            "fields": [
+              "kind",
+              "entity",
+              "text",
+              "containerId"
+            ]
+          },
+          {
+            "kind": "search",
+            "entity": "space",
+            "fields": [
+              "kind",
+              "entity",
+              "text",
+              "all"
+            ]
+          },
+          {
+            "kind": "search",
+            "entity": "task",
+            "fields": [
+              "kind",
+              "entity",
+              "text",
+              "all"
+            ]
+          },
+          {
+            "kind": "get",
+            "entity": "workbenchModule",
+            "fields": [
+              "kind",
+              "entity",
+              "id"
+            ]
+          },
+          {
+            "kind": "get",
+            "entity": "workbenchModule",
+            "fields": [
+              "kind",
+              "entity",
+              "id"
+            ]
+          }
+        ],
+        "actionsType": "missing",
+        "actionCount": 0,
+        "actions": []
+      },
+      "usage": {
+        "prompt_tokens": 8655,
+        "completion_tokens": 202,
+        "total_tokens": 8857,
+        "prompt_cache_hit_tokens": 8576,
+        "prompt_cache_miss_tokens": 79
+      },
+      "completedAt": "2026-10-15T11:51:48.110Z",
+      "elapsedMs": 2552
+    },
+    {
+      "index": 2,
+      "startedAt": "2026-10-15T11:51:48.119Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": true,
+      "correctiveCode": "INVALID_PROPOSAL",
+      "correctiveIssue": "查询包含不支持的字段。",
+      "httpStatus": 200,
+      "responseBytes": 1274,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "reply",
+          "proposal",
+          "queries"
+        ],
+        "replyType": "string",
+        "proposalType": "null",
+        "proposalKeys": [],
+        "queriesType": "array",
+        "queryCount": 5,
+        "queries": [
+          {
+            "kind": "search",
+            "entity": "capture",
+            "fields": [
+              "kind",
+              "entity",
+              "text",
+              "containerId"
+            ]
+          },
+          {
+            "kind": "search",
+            "entity": "space",
+            "fields": [
+              "kind",
+              "entity",
+              "text"
+            ]
+          },
+          {
+            "kind": "search",
+            "entity": "task",
+            "fields": [
+              "kind",
+              "entity",
+              "text"
+            ]
+          },
+          {
+            "kind": "search",
+            "entity": "workbenchModule",
+            "fields": [
+              "kind",
+              "entity",
+              "text"
+            ]
+          },
+          {
+            "kind": "search",
+            "entity": "calendarEvent",
+            "fields": [
+              "kind",
+              "entity",
+              "text"
+            ]
+          }
+        ],
+        "actionsType": "missing",
+        "actionCount": 0,
+        "actions": []
+      },
+      "usage": {
+        "prompt_tokens": 8984,
+        "completion_tokens": 197,
+        "total_tokens": 9181,
+        "prompt_cache_hit_tokens": 1920,
+        "prompt_cache_miss_tokens": 7064
+      },
+      "completedAt": "2026-10-15T11:51:50.959Z",
+      "elapsedMs": 2840
+    }
+  ],
+  "requestCount": 2,
+  "actualTokensReported": 18038,
+  "missingUsageCount": 0,
+  "closed": true,
+  "closedAt": "2026-10-15T11:56:41.959Z"
+}

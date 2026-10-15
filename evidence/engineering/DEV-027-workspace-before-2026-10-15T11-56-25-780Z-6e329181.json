@@ -1,0 +1,55 @@
+{
+  "development": "DEV-027",
+  "kind": "read-only-synthetic-workspace-check",
+  "stage": "before",
+  "observedAt": "2026-10-15T11:56:25.780Z",
+  "origin": "http://localhost:4398",
+  "passed": true,
+  "assertions": {
+    "schemaValid": true,
+    "onlySyntheticIdentity": true,
+    "protectedTaskPresent": true,
+    "protectedCapturePresent": true,
+    "protectedTaskContent": true,
+    "protectedCaptureContent": true,
+    "protectedTaskUnfinished": true,
+    "oneSourceCapture": true,
+    "nativeCalendarEventsZero": true,
+    "coursesStillEmpty": true,
+    "customBlocksStillEmpty": true,
+    "noCreatedSpaces": true,
+    "noCreatedTasks": true,
+    "blankModulesRestored": true,
+    "noLinkedCalendarItems": true
+  },
+  "protection": {
+    "task": {
+      "id": "dev027-protected-task",
+      "sha256": "b1570272352323acb119cc0cec46e5a06ca679cdc88a320fddc9db0100229aef"
+    },
+    "capture": {
+      "id": "dev027-source-capture",
+      "sha256": "6ffce6c6d047a21cf68349b4e50820d01fee12cb23d213841ffd876ed593be21"
+    },
+    "workbench": {
+      "sha256": "ab6bee243dd3264c6a474074d5c37504083d8cd6325d6929ab421410aabf437f",
+      "enabledModuleIds": [
+        "ai"
+      ]
+    }
+  },
+  "summary": {
+    "captureCount": 1,
+    "taskCount": 1,
+    "spaceCount": 0,
+    "nativeCalendarEventCount": 0,
+    "enabledModuleIds": [
+      "ai"
+    ],
+    "spaces": [],
+    "newTasks": [],
+    "linkedCalendarItems": []
+  },
+  "instanceId": "bb49035fa8bdd0b1744e7267e988b72da2846fed383f3ecfa783327aef5d3072",
+  "workspaceRevision": 3
+}
