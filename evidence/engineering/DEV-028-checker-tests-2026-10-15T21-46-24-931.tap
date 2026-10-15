@@ -1,0 +1,13 @@
+✔ production create, data edits, update undo and used-block retention satisfy independent stage evidence (16.8855ms)
+✔ created and used stages reject premature checks, broken code, changed IDs and changes to protected baseline (14.4008ms)
+✔ updated and reverted stages require preserved checklist history and private data while retained requires full records (12.2449ms)
+✔ comparison reports require successful correct stages and matching instance and protection lineage (4.0272ms)
+✔ read-only snapshot uses fixed synthetic login/CSRF routes and logs out even when identity is rejected (5.2374ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 242.6091

@@ -1,0 +1,482 @@
+{
+  "development": "DEV-028",
+  "scope": "Synthetic localhost UI; unchanged production prompts; no formal workspace reads",
+  "model": "deepseek-v4-pro",
+  "sessionMode": "resume",
+  "createdAt": "2026-10-15T13:51:43.733Z",
+  "calls": [
+    {
+      "index": 1,
+      "startedAt": "2026-10-15T13:52:04.366Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": false,
+      "httpStatus": 200,
+      "responseBytes": 628,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "queries"
+        ],
+        "replyType": "missing",
+        "proposalType": "missing",
+        "proposalKeys": [],
+        "queriesType": "array",
+        "queryCount": 1,
+        "queries": [
+          {
+            "kind": "get",
+            "entity": "customBlock",
+            "fields": [
+              "kind",
+              "entity",
+              "id"
+            ]
+          }
+        ],
+        "actionsType": "missing",
+        "actionCount": 0,
+        "actions": []
+      },
+      "usage": {
+        "prompt_tokens": 10871,
+        "completion_tokens": 59,
+        "total_tokens": 10930,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 10871
+      },
+      "completedAt": "2026-10-15T13:52:05.910Z",
+      "elapsedMs": 1545
+    },
+    {
+      "index": 2,
+      "startedAt": "2026-10-15T13:52:05.925Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": false,
+      "httpStatus": 200,
+      "responseBytes": 4445,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "reply",
+          "proposal"
+        ],
+        "replyType": "string",
+        "proposalType": "object",
+        "proposalKeys": [
+          "title",
+          "summary",
+          "destinationId",
+          "reason",
+          "warnings",
+          "actions"
+        ],
+        "queriesType": "missing",
+        "queryCount": 0,
+        "queries": [],
+        "actionsType": "array",
+        "actionCount": 1,
+        "actions": [
+          {
+            "entity": "customBlock",
+            "operation": "update",
+            "fields": [
+              "entity",
+              "operation",
+              "id",
+              "data"
+            ],
+            "dataFields": [
+              "config"
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 12136,
+        "completion_tokens": 1117,
+        "total_tokens": 13253,
+        "prompt_cache_hit_tokens": 10752,
+        "prompt_cache_miss_tokens": 1384
+      },
+      "completedAt": "2026-10-15T13:52:16.612Z",
+      "elapsedMs": 10687
+    },
+    {
+      "index": 3,
+      "startedAt": "2026-10-15T13:52:59.247Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": false,
+      "httpStatus": 200,
+      "responseBytes": 634,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "queries"
+        ],
+        "replyType": "missing",
+        "proposalType": "missing",
+        "proposalKeys": [],
+        "queriesType": "array",
+        "queryCount": 1,
+        "queries": [
+          {
+            "kind": "get",
+            "entity": "customBlock",
+            "fields": [
+              "kind",
+              "entity",
+              "id"
+            ]
+          }
+        ],
+        "actionsType": "missing",
+        "actionCount": 0,
+        "actions": []
+      },
+      "usage": {
+        "prompt_tokens": 12157,
+        "completion_tokens": 59,
+        "total_tokens": 12216,
+        "prompt_cache_hit_tokens": 1408,
+        "prompt_cache_miss_tokens": 10749
+      },
+      "completedAt": "2026-10-15T13:53:01.140Z",
+      "elapsedMs": 1894
+    },
+    {
+      "index": 4,
+      "startedAt": "2026-10-15T13:53:01.153Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": false,
+      "httpStatus": 200,
+      "responseBytes": 5258,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "reply",
+          "proposal"
+        ],
+        "replyType": "string",
+        "proposalType": "object",
+        "proposalKeys": [
+          "title",
+          "summary",
+          "destinationId",
+          "reason",
+          "warnings",
+          "actions"
+        ],
+        "queriesType": "missing",
+        "queryCount": 0,
+        "queries": [],
+        "actionsType": "array",
+        "actionCount": 1,
+        "actions": [
+          {
+            "entity": "customBlock",
+            "operation": "update",
+            "fields": [
+              "entity",
+              "operation",
+              "id",
+              "data"
+            ],
+            "dataFields": [
+              "config"
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 13422,
+        "completion_tokens": 1334,
+        "total_tokens": 14756,
+        "prompt_cache_hit_tokens": 12032,
+        "prompt_cache_miss_tokens": 1390
+      },
+      "completedAt": "2026-10-15T13:53:13.028Z",
+      "elapsedMs": 11875
+    },
+    {
+      "index": 5,
+      "startedAt": "2026-10-15T13:55:28.890Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": false,
+      "httpStatus": 200,
+      "responseBytes": 772,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "queries"
+        ],
+        "replyType": "missing",
+        "proposalType": "missing",
+        "proposalKeys": [],
+        "queriesType": "array",
+        "queryCount": 2,
+        "queries": [
+          {
+            "kind": "get",
+            "entity": "customBlock",
+            "fields": [
+              "kind",
+              "entity",
+              "id"
+            ]
+          },
+          {
+            "kind": "get",
+            "entity": "customBlock",
+            "fields": [
+              "kind",
+              "entity",
+              "id"
+            ]
+          }
+        ],
+        "actionsType": "missing",
+        "actionCount": 0,
+        "actions": []
+      },
+      "usage": {
+        "prompt_tokens": 10883,
+        "completion_tokens": 110,
+        "total_tokens": 10993,
+        "prompt_cache_hit_tokens": 512,
+        "prompt_cache_miss_tokens": 10371
+      },
+      "completedAt": "2026-10-15T13:55:31.135Z",
+      "elapsedMs": 2245
+    },
+    {
+      "index": 6,
+      "startedAt": "2026-10-15T13:55:31.148Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": false,
+      "httpStatus": 200,
+      "responseBytes": 5762,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "reply",
+          "proposal"
+        ],
+        "replyType": "string",
+        "proposalType": "object",
+        "proposalKeys": [
+          "title",
+          "summary",
+          "destinationId",
+          "reason",
+          "warnings",
+          "actions"
+        ],
+        "queriesType": "missing",
+        "queryCount": 0,
+        "queries": [],
+        "actionsType": "array",
+        "actionCount": 2,
+        "actions": [
+          {
+            "entity": "customBlock",
+            "operation": "update",
+            "fields": [
+              "entity",
+              "operation",
+              "id",
+              "data"
+            ],
+            "dataFields": [
+              "config"
+            ]
+          },
+          {
+            "entity": "customBlock",
+            "operation": "update",
+            "fields": [
+              "entity",
+              "operation",
+              "id",
+              "data"
+            ],
+            "dataFields": [
+              "config"
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 12420,
+        "completion_tokens": 1489,
+        "total_tokens": 13909,
+        "prompt_cache_hit_tokens": 2944,
+        "prompt_cache_miss_tokens": 9476
+      },
+      "completedAt": "2026-10-15T13:55:43.281Z",
+      "elapsedMs": 12133
+    },
+    {
+      "index": 7,
+      "startedAt": "2026-10-15T13:56:27.569Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": false,
+      "httpStatus": 200,
+      "responseBytes": 773,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "queries"
+        ],
+        "replyType": "missing",
+        "proposalType": "missing",
+        "proposalKeys": [],
+        "queriesType": "array",
+        "queryCount": 2,
+        "queries": [
+          {
+            "kind": "get",
+            "entity": "customBlock",
+            "fields": [
+              "kind",
+              "entity",
+              "id"
+            ]
+          },
+          {
+            "kind": "get",
+            "entity": "customBlock",
+            "fields": [
+              "kind",
+              "entity",
+              "id"
+            ]
+          }
+        ],
+        "actionsType": "missing",
+        "actionCount": 0,
+        "actions": []
+      },
+      "usage": {
+        "prompt_tokens": 12583,
+        "completion_tokens": 110,
+        "total_tokens": 12693,
+        "prompt_cache_hit_tokens": 2944,
+        "prompt_cache_miss_tokens": 9639
+      },
+      "completedAt": "2026-10-15T13:56:30.430Z",
+      "elapsedMs": 2862
+    },
+    {
+      "index": 8,
+      "startedAt": "2026-10-15T13:56:30.443Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": false,
+      "httpStatus": 200,
+      "responseBytes": 6576,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "reply",
+          "proposal"
+        ],
+        "replyType": "string",
+        "proposalType": "object",
+        "proposalKeys": [
+          "title",
+          "summary",
+          "destinationId",
+          "reason",
+          "warnings",
+          "actions"
+        ],
+        "queriesType": "missing",
+        "queryCount": 0,
+        "queries": [],
+        "actionsType": "array",
+        "actionCount": 2,
+        "actions": [
+          {
+            "entity": "customBlock",
+            "operation": "update",
+            "fields": [
+              "entity",
+              "operation",
+              "id",
+              "data"
+            ],
+            "dataFields": [
+              "config"
+            ]
+          },
+          {
+            "entity": "customBlock",
+            "operation": "update",
+            "fields": [
+              "entity",
+              "operation",
+              "id",
+              "data"
+            ],
+            "dataFields": [
+              "config"
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 14120,
+        "completion_tokens": 1649,
+        "total_tokens": 15769,
+        "prompt_cache_hit_tokens": 12544,
+        "prompt_cache_miss_tokens": 1576
+      },
+      "completedAt": "2026-10-15T13:56:43.852Z",
+      "elapsedMs": 13409
+    }
+  ],
+  "requestCount": 8,
+  "actualTokensReported": 104519,
+  "missingUsageCount": 0,
+  "closed": true,
+  "closedAt": "2026-10-15T14:00:23.704Z"
+}

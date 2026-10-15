@@ -1,0 +1,106 @@
+TAP version 13
+# Subtest: DEV-028 seed has only protected note, task and synthetic source on a blank workbench
+ok 1 - DEV-028 seed has only protected note, task and synthetic source on a blank workbench
+  ---
+  duration_ms: 4.6478
+  type: 'test'
+  ...
+# Subtest: production request body is unchanged, construction is offline, and report excludes secrets/content
+ok 2 - production request body is unchanged, construction is offline, and report excludes secrets/content
+  ---
+  duration_ms: 6.9649
+  type: 'test'
+  ...
+# Subtest: declared and chunked oversized response bodies are cancelled at one MiB
+ok 3 - declared and chunked oversized response bodies are cancelled at one MiB
+  ---
+  duration_ms: 2.9934
+  type: 'test'
+  ...
+# Subtest: 402 stays distinguishable in safe metadata and provider diagnostics are not retained
+ok 4 - 402 stays distinguishable in safe metadata and provider diagnostics are not retained
+  ---
+  duration_ms: 0.5968
+  type: 'test'
+  ...
+# Subtest: close aborts an active provider request and invalid fixture config never sends
+ok 5 - close aborts an active provider request and invalid fixture config never sends
+  ---
+  duration_ms: 0.7389
+  type: 'test'
+  ...
+# Subtest: normal config API accepts only placeholder without forwarding an accidental real key
+ok 6 - normal config API accepts only placeholder without forwarding an accidental real key
+  ---
+  duration_ms: 0.4816
+  type: 'test'
+  ...
+# Subtest: shape diagnostics retain bounded identifiers while excluding query/action/reply values
+ok 7 - shape diagnostics retain bounded identifiers while excluding query/action/reply values
+  ---
+  duration_ms: 0.8344
+  type: 'test'
+  ...
+# Subtest: correction diagnostics expose exact static whitelist messages but hash all other issue text
+ok 8 - correction diagnostics expose exact static whitelist messages but hash all other issue text
+  ---
+  duration_ms: 0.6854
+  type: 'test'
+  ...
+# Subtest: stdin resume contract preserves plain keys and rejects unsupported fields without echoing secrets
+ok 9 - stdin resume contract preserves plain keys and rejects unsupported fields without echoing secrets
+  ---
+  duration_ms: 0.8258
+  type: 'test'
+  ...
+# Subtest: resume path accepts only existing ordinary DEV-028 directories directly inside this project runtime
+ok 10 - resume path accepts only existing ordinary DEV-028 directories directly inside this project runtime
+  ---
+  duration_ms: 14.9724
+  type: 'test'
+  ...
+# Subtest: resume authenticates synthetic identity through read-only normal APIs and never setup/seeds existing state
+ok 11 - resume authenticates synthetic identity through read-only normal APIs and never setup/seeds existing state
+  ---
+  duration_ms: 6.4213
+  type: 'test'
+  ...
+# Subtest: production create, data edits, update undo and used-block retention satisfy independent stage evidence
+ok 12 - production create, data edits, update undo and used-block retention satisfy independent stage evidence
+  ---
+  duration_ms: 23.2449
+  type: 'test'
+  ...
+# Subtest: created and used stages reject premature checks, broken code, changed IDs and changes to protected baseline
+ok 13 - created and used stages reject premature checks, broken code, changed IDs and changes to protected baseline
+  ---
+  duration_ms: 15.5044
+  type: 'test'
+  ...
+# Subtest: updated and reverted stages require preserved checklist history and private data while retained requires full records
+ok 14 - updated and reverted stages require preserved checklist history and private data while retained requires full records
+  ---
+  duration_ms: 14.3521
+  type: 'test'
+  ...
+# Subtest: comparison reports require successful correct stages and matching instance and protection lineage
+ok 15 - comparison reports require successful correct stages and matching instance and protection lineage
+  ---
+  duration_ms: 4.9417
+  type: 'test'
+  ...
+# Subtest: read-only snapshot uses fixed synthetic login/CSRF routes and logs out even when identity is rejected
+ok 16 - read-only snapshot uses fixed synthetic login/CSRF routes and logs out even when identity is rejected
+  ---
+  duration_ms: 5.75
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 336.3566

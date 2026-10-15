@@ -1,0 +1,164 @@
+{
+  "development": "DEV-028",
+  "kind": "read-only-synthetic-custom-block-check",
+  "stage": "reverted",
+  "observedAt": "2026-10-15T13:59:44.715Z",
+  "origin": "http://localhost:4398",
+  "instanceId": "cba53da55614df39f7307139d9c6838e8ca2ac3646fe64e16d27dc8476a678a6",
+  "baselineFingerprint": "08e0b7ef9a8cf828b1c96e791f02910ade0fa8eb2dd989161292231efbc3c37b",
+  "passed": true,
+  "assertions": {
+    "schemaValid": true,
+    "onlySyntheticIdentity": true,
+    "protectedTaskPresent": true,
+    "protectedCapturePresent": true,
+    "protectedBlockPresent": true,
+    "protectedTaskContent": true,
+    "protectedCaptureContent": true,
+    "protectedBlockContent": true,
+    "onlyProtectedTask": true,
+    "onlySourceCapture": true,
+    "onlyAiModuleEnabled": true,
+    "coursesStillEmpty": true,
+    "spacesStillEmpty": true,
+    "nativeCalendarEventsZero": true,
+    "ledgerStillEmpty": true,
+    "protectedTaskExactHash": true,
+    "protectedCaptureExactHash": true,
+    "protectedBlockExactHash": true,
+    "modulesExactHash": true,
+    "workbenchExactHash": true,
+    "exactlyTwoCreatedBlocks": true,
+    "oneChecklistAndOneMiniapp": true,
+    "createdBlocksNotArchived": true,
+    "miniappCodeSyntaxOnly": true,
+    "sameCreatedBlockIdsAndKinds": true,
+    "blockConfigsRestored": true,
+    "blockDataPreserved": true
+  },
+  "protection": {
+    "task": {
+      "id": "dev028-protected-task",
+      "sha256": "d2c3bc778fdae4d9e7944332383b838992d28b54b208e93371bfa17035adb638"
+    },
+    "capture": {
+      "id": "dev028-source-capture",
+      "sha256": "a812e9e41b9fafafed5728022faf64b2beb02693b415bc9e89fe0fc29c80dbf6"
+    },
+    "block": {
+      "id": "block:dev028-protected-block",
+      "sha256": "bb201c24e5d44ab8af44ae556abad8e414212b7ae7086ff15f92125e7ba22efb"
+    },
+    "workbench": {
+      "sha256": "383922ce8139adeed9ab72c9a4798294a3b388389b8c3c883f4f72c75f7f5e99",
+      "modulesHash": "4427fc35f9dc0577b06e162886c1fcd9e792eb4e31228df526539b09994b50a6",
+      "enabledModuleIds": [
+        "ai"
+      ]
+    }
+  },
+  "blocks": [
+    {
+      "id": "block:dev028-protected-block",
+      "kind": "note",
+      "title": "保留原有便签（合成）",
+      "archived": false,
+      "configHash": "3c0d293840306f01a40b6ea050350e0124675143255e7319c6924b86559589ce",
+      "dataHash": "85440c9ff4ac8226fb568cc775a5866354a130f00de1427c66b5a045a4aabffc",
+      "recordHash": "bb201c24e5d44ab8af44ae556abad8e414212b7ae7086ff15f92125e7ba22efb"
+    },
+    {
+      "id": "block:95e10e77-f681-4e0c-aa14-92a0f6e73431",
+      "kind": "checklist",
+      "title": "活动准备清单",
+      "archived": false,
+      "configHash": "05552b0c22abdb5aa4e529b24833784e508d4ce38849cf7441bd19554d1864bd",
+      "dataHash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "recordHash": "89e3c90dcdb0231d79ad04dff18dd991faf6b117b2e9230c249a08a5fae7bac6",
+      "items": [
+        {
+          "id": "item-venue",
+          "label": "确认场地",
+          "done": true
+        },
+        {
+          "id": "item-script",
+          "label": "整理讲稿",
+          "done": false
+        },
+        {
+          "id": "item-projector",
+          "label": "检查投影",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "block:e96a6e5e-5e93-4262-b1fd-106a19531750",
+      "kind": "miniapp",
+      "title": "活动预算计算器",
+      "archived": false,
+      "configHash": "31ff4922bc5b5e361cd960c13122cd21e0342f6cb58ea6f4dd82d84cf0cb1fa1",
+      "dataHash": "c953df46107f4f36333009678965ab2d1bda3cc5c2aad4452e07fb8c694e3d36",
+      "recordHash": "5c02731e0ea3d74843c427c4dd40cdd53d207cb999f64d7a8e9b9d444da64c53",
+      "codeHash": "c22179b0b20ccfe684859f90bb39f6b7ce16e0f44e305ac332b281ad49dbc319",
+      "codeSyntaxValid": true,
+      "dataNonEmpty": true
+    }
+  ],
+  "limitations": [
+    "Workspace snapshots do not prove UI interaction or miniapp execution.",
+    "Miniapp code is syntax-compiled only and never executed by this checker."
+  ],
+  "summary": {
+    "captureCount": 1,
+    "taskCount": 1,
+    "spaceCount": 0,
+    "blockCount": 3,
+    "enabledModuleIds": [
+      "ai"
+    ],
+    "checklistItemCount": 3,
+    "checklistDoneCount": 1,
+    "miniappDataNonEmpty": true,
+    "conversationCount": 3,
+    "conversations": [
+      {
+        "id": "c03af87a-8657-4b18-b770-35c37ada6375",
+        "status": "waiting_model",
+        "messageCount": 4,
+        "userMessageCount": 2,
+        "assistantMessageCount": 2,
+        "hasReceipt": false,
+        "hasPendingJob": false,
+        "hasConfirmedJob": false,
+        "hasProposal": false
+      },
+      {
+        "id": "497e5198-e2ae-4088-a31b-a57c26d3c679",
+        "status": "filed",
+        "messageCount": 4,
+        "userMessageCount": 2,
+        "assistantMessageCount": 2,
+        "hasReceipt": true,
+        "hasPendingJob": false,
+        "hasConfirmedJob": true,
+        "hasProposal": false
+      },
+      {
+        "id": "96f27631-0b68-4d7c-b6d8-09327696b918",
+        "status": "filed",
+        "messageCount": 2,
+        "userMessageCount": 1,
+        "assistantMessageCount": 1,
+        "hasReceipt": true,
+        "hasPendingJob": false,
+        "hasConfirmedJob": true,
+        "hasProposal": false
+      }
+    ]
+  },
+  "workspaceRevision": 17,
+  "baselineReport": "DEV-028-workspace-baseline-2026-10-15T13-41-48-085Z-1e7a326b.json",
+  "referenceReport": "DEV-028-workspace-used-2026-10-15T13-55-15-214Z-720fdf16.json"
+}

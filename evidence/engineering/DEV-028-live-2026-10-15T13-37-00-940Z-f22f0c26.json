@@ -1,0 +1,89 @@
+{
+  "development": "DEV-028",
+  "scope": "Synthetic localhost UI; unchanged production prompts; no formal workspace reads",
+  "model": "deepseek-v4-pro",
+  "createdAt": "2026-10-15T13:37:00.942Z",
+  "calls": [
+    {
+      "index": 1,
+      "startedAt": "2026-10-15T13:42:15.346Z",
+      "configuredModel": "deepseek-v4-pro",
+      "transportOk": true,
+      "correctionPresent": false,
+      "httpStatus": 200,
+      "responseBytes": 6736,
+      "metadataParsed": true,
+      "returnedModel": "deepseek-v4-pro",
+      "finishReason": "stop",
+      "outputShape": {
+        "jsonParsed": true,
+        "topLevelType": "object",
+        "topLevelKeys": [
+          "reply",
+          "proposal"
+        ],
+        "replyType": "string",
+        "proposalType": "object",
+        "proposalKeys": [
+          "title",
+          "summary",
+          "destinationId",
+          "reason",
+          "warnings",
+          "actions"
+        ],
+        "queriesType": "missing",
+        "queryCount": 0,
+        "queries": [],
+        "actionsType": "array",
+        "actionCount": 2,
+        "actions": [
+          {
+            "entity": "customBlock",
+            "operation": "create",
+            "fields": [
+              "entity",
+              "operation",
+              "data"
+            ],
+            "dataFields": [
+              "kind",
+              "title",
+              "config",
+              "data"
+            ]
+          },
+          {
+            "entity": "customBlock",
+            "operation": "create",
+            "fields": [
+              "entity",
+              "operation",
+              "data"
+            ],
+            "dataFields": [
+              "kind",
+              "title",
+              "config",
+              "data"
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 10438,
+        "completion_tokens": 1627,
+        "total_tokens": 12065,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 10438
+      },
+      "completedAt": "2026-10-15T13:42:31.900Z",
+      "elapsedMs": 16555
+    }
+  ],
+  "requestCount": 1,
+  "actualTokensReported": 12065,
+  "missingUsageCount": 0,
+  "closed": true,
+  "closedAt": "2026-10-15T13:51:31.948Z"
+}

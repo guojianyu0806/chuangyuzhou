@@ -1,0 +1,15 @@
+{
+  "development": "DEV-028",
+  "checkedAt": "2026-10-15T14:02:17.990Z",
+  "origin": "http://127.0.0.1:4397",
+  "processId": 35660,
+  "application": "czb-yuzhou",
+  "instanceId": "d4a577b3ca294e5fe34a62cc14d8bb8db5e543dfeb5f2a8798c4afd8e8ebe73e",
+  "expectedInstanceMatched": true,
+  "httpStatus": 200,
+  "healthOk": true,
+  "passed": true,
+  "formalBusinessAccessed": false,
+  "formalCredentialsRead": false,
+  "syntheticProcessStopped": true
+}

@@ -1,0 +1,79 @@
+{
+  "development": "DEV-028",
+  "kind": "read-only-synthetic-custom-block-check",
+  "stage": "baseline",
+  "observedAt": "2026-10-15T13:41:48.085Z",
+  "origin": "http://localhost:4398",
+  "instanceId": "cba53da55614df39f7307139d9c6838e8ca2ac3646fe64e16d27dc8476a678a6",
+  "baselineFingerprint": "08e0b7ef9a8cf828b1c96e791f02910ade0fa8eb2dd989161292231efbc3c37b",
+  "passed": true,
+  "assertions": {
+    "schemaValid": true,
+    "onlySyntheticIdentity": true,
+    "protectedTaskPresent": true,
+    "protectedCapturePresent": true,
+    "protectedBlockPresent": true,
+    "protectedTaskContent": true,
+    "protectedCaptureContent": true,
+    "protectedBlockContent": true,
+    "onlyProtectedTask": true,
+    "onlySourceCapture": true,
+    "onlyAiModuleEnabled": true,
+    "coursesStillEmpty": true,
+    "spacesStillEmpty": true,
+    "nativeCalendarEventsZero": true,
+    "ledgerStillEmpty": true,
+    "onlyProtectedBlock": true
+  },
+  "protection": {
+    "task": {
+      "id": "dev028-protected-task",
+      "sha256": "d2c3bc778fdae4d9e7944332383b838992d28b54b208e93371bfa17035adb638"
+    },
+    "capture": {
+      "id": "dev028-source-capture",
+      "sha256": "a812e9e41b9fafafed5728022faf64b2beb02693b415bc9e89fe0fc29c80dbf6"
+    },
+    "block": {
+      "id": "block:dev028-protected-block",
+      "sha256": "bb201c24e5d44ab8af44ae556abad8e414212b7ae7086ff15f92125e7ba22efb"
+    },
+    "workbench": {
+      "sha256": "383922ce8139adeed9ab72c9a4798294a3b388389b8c3c883f4f72c75f7f5e99",
+      "modulesHash": "4427fc35f9dc0577b06e162886c1fcd9e792eb4e31228df526539b09994b50a6",
+      "enabledModuleIds": [
+        "ai"
+      ]
+    }
+  },
+  "blocks": [
+    {
+      "id": "block:dev028-protected-block",
+      "kind": "note",
+      "title": "保留原有便签（合成）",
+      "archived": false,
+      "configHash": "3c0d293840306f01a40b6ea050350e0124675143255e7319c6924b86559589ce",
+      "dataHash": "85440c9ff4ac8226fb568cc775a5866354a130f00de1427c66b5a045a4aabffc",
+      "recordHash": "bb201c24e5d44ab8af44ae556abad8e414212b7ae7086ff15f92125e7ba22efb"
+    }
+  ],
+  "limitations": [
+    "Workspace snapshots do not prove UI interaction or miniapp execution.",
+    "Miniapp code is syntax-compiled only and never executed by this checker."
+  ],
+  "summary": {
+    "captureCount": 1,
+    "taskCount": 1,
+    "spaceCount": 0,
+    "blockCount": 1,
+    "enabledModuleIds": [
+      "ai"
+    ],
+    "checklistItemCount": 0,
+    "checklistDoneCount": 0,
+    "miniappDataNonEmpty": false,
+    "conversationCount": 0,
+    "conversations": []
+  },
+  "workspaceRevision": 1
+}
