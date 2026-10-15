@@ -94,4 +94,7 @@ test('correction diagnostics expose exact static whitelist messages but hash all
   const unknown=correctionMetadata(JSON.stringify({formatCorrection:{code:'INVALID_PROPOSAL',issue:'private '+key,previousOutput:key}}));
   assert.equal(unknown.correctiveIssue,'unlisted-static-or-private-message');assert.match(unknown.correctiveIssueHash,/^[a-f0-9]{64}$/);
   assert.equal(JSON.stringify(unknown).includes(key),false);
+  const structured=correctionMetadata(JSON.stringify({formatCorrection:{code:'INVALID_PROPOSAL',issue:'bounded detail',queryIssues:[{code:'INVALID_STRING',index:1,kind:'search',field:'text',value:key}]}}));
+  assert.deepEqual(structured.queryIssues,[{code:'INVALID_STRING',index:1,kind:'search',field:'text'}]);
+  assert.equal(JSON.stringify(structured).includes(key),false);
 });

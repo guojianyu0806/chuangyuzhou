@@ -135,7 +135,7 @@ export function buildPrompt({ text, sources, destinations, destinationId, kind =
 用户指定工作区是当前上下文，默认遵循；需要跨模块时在reply和行动单清楚展示所有实际目标。不清楚归属时先问。信息不足、普通讨论或能力介绍时proposal:null；可先查询再回答，不要把每次聊天都变成操作。已有记录查询结果与历史回执不可自动当作新建依据。
 ${kind === 'conversation' ? '每次顶层严格输出 {"reply":"自然中文回复","proposal":null或行动单,"queries":可选查询数组}。queries有内容时proposal必须null，程序返回查询结果后你继续回答；一次最多6个查询、最多3轮。' : '输出一份行动单，仅用于展示；执行必须进入对话并经确认。'}
 行动单结构：{"title":"目标","summary":"简述","destinationId":"目录中的id，跨模块用workspace","reason":"依据","warnings":[],"actions":[{"entity":"能力清单实体","operation":"create/update/archive/restore","id":"修改/归档/恢复所需真实id，新建省略","containerId":"需要时指定已有所属位置","ref":"可选新建别名","data":{}}]}。仅使用workspaceActionCapabilities中允许的实体、操作和字段。新记录id由程序生成，不提供id；同一单后续操作可用$别名引用前面的create，引用类型必须正确，最多50项。未指定颜色就省略color，由程序随机分配且不与上次重复。不得混入旧版notes/tasks/ledgerEntries。代码只允许在miniapp的config.code中作为隔离小程序保存；网址只允许在受支持收藏字段中保存。不得将脚本、任意URL或服务器路径当成外部执行行动。
-查询格式及参数由workspaceQueryCapabilities提供；search/get返回真实记录；查询错误应纠正条件或向用户解释，不编造查询结果。file.read只能使用真实blobId，读取已上传文字附件，不假装识别图片。响应必须一个完整JSON对象，不用代码围栏。文字需正确转义，reply最多12000字符，整个行动单最多90000字符；无法一次完整列出时先讨论分批。`;
+查询格式严格遵守workspaceQueryCapabilities每项的schema和examples；additionalProperties:false表示不能添加其他字段。可选字段无值时直接省略，不填空字符串、空白或null。列出某类记录时省略text，例如{"kind":"search","entity":"task"}；按关键词用{"kind":"search","entity":"capture","text":"研究"}。不存在all字段；包含归档记录须写archived:"all"，默认省略archived只查未归档。containerId不是页面路由，只可使用真实查询结果的containerId；普通灵感/待办/空间查询先省略，不能猜成inbox或tasks，也不能用空串。板块目录与真实id已在workspaceOverview.workbench.modules和catalog中，查询板块用{"kind":"get","entity":"workbenchModule","id":"tasks"}等真实id，不必靠空关键词搜索猜编号。search/get返回真实记录；有hasMore时用返回的offset和limit继续分页，不把一页当全量。查询错误会给queries[index].字段路径，逐项纠正全部错误或向用户解释，不编造查询结果。file.read只能使用真实blobId，读取已上传文字附件，不假装识别图片。响应必须一个完整JSON对象，不用代码围栏。文字需正确转义，reply最多12000字符，整个行动单最多90000字符；无法一次完整列出时先讨论分批。`;
   const user = JSON.stringify({currentDate:new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Shanghai'}),instruction:text,requestedDestination:destinationId,workspaceDirectory:destinations,workspaceActionCapabilities:WORKSPACE_ACTION_CAPABILITIES,workspaceQueryCapabilities:WORKSPACE_QUERY_CAPABILITIES,sources});
   return {system,user};
 }
@@ -399,7 +399,11 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
           reply=limitedString(parsed.reply,'对话回复',12000);
           if(parsed.queries!==undefined&&(!Array.isArray(parsed.queries)||parsed.queries.length)){
             if(parsed.proposal!==null)fail('INVALID_PROPOSAL','查询与执行行动单须分开返回。',502);
-            let queries;try{queries=validateWorkspaceQueries(parsed.queries);}catch(error){fail('INVALID_PROPOSAL',error.message,502);}
+            let queries;try{queries=validateWorkspaceQueries(parsed.queries);}catch(error){
+              const invalid=new ServiceError('INVALID_PROPOSAL',error.message,502);
+              if(error.queryIssues)invalid.queryIssues=error.queryIssues;
+              throw invalid;
+            }
             if(queryRounds>=3)return {reply:'本轮已查询了三次。请缩小查询范围，或告诉我优先处理哪部分，我再继续核对。',proposal:null,phase:'complete'};
             queryRounds++;Object.assign(job,{phase:'querying',queryRounds,updatedAt:now()});persist(job);
             const results=[];
@@ -437,7 +441,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
       }catch(error){
         if(!(error instanceof ServiceError)||!FORMAT_ERRORS.has(error.code))throw error;
         if(formatRepairs>=1)fail(error.code,'已自动校正 1 次，但回复仍未通过校验。本次没有执行操作，原文和附件已保留；可补充或重试。',502);
-        formatRepairs++;correction={attempt:2,code:error.code,issue:error.message,previousOutput:(typeof raw==='string'?raw:JSON.stringify(raw)||'').slice(0,100000)};
+        formatRepairs++;correction={attempt:2,code:error.code,issue:error.message,...(error.queryIssues?{queryIssues:error.queryIssues}:{}),previousOutput:(typeof raw==='string'?raw:JSON.stringify(raw)||'').slice(0,100000)};
       }
     }
     return {reply:'本轮处理达到上限，尚未生成可执行方案。请缩小范围后继续。',proposal:null,phase:'complete'};

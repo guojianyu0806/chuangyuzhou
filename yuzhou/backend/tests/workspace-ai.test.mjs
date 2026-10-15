@@ -124,6 +124,25 @@ test('arbitrary query paths and mixed query/action output fail after one bounded
   }
 });
 
+test('one bounded correction identifies bad query fields then permits real queries and a reviewed plan',async t=>{
+ let calls=0;
+ const f=await fixture(t,async({user})=>{
+  const input=JSON.parse(user);calls++;
+  if(calls===1)return {reply:'先查看已有内容。',proposal:null,queries:[{kind:'search',entity:'task',text:''},{kind:'search',entity:'space',all:true},{kind:'search',entity:'capture',containerId:null}]};
+  if(calls===2){
+   assert.match(input.formatCorrection.issue,/queries\[0\]\.text/);assert.match(input.formatCorrection.issue,/queries\[1\]\.all/);assert.match(input.formatCorrection.issue,/queries\[2\]\.containerId/);
+   assert.deepEqual(input.formatCorrection.queryIssues,[{code:'INVALID_STRING',index:0,kind:'search',field:'text'},{code:'UNKNOWN_FIELD',index:1,kind:'search',field:'all'},{code:'INVALID_STRING',index:2,kind:'search',field:'containerId'}]);
+   return {reply:'按协议省略空筛选后重新查询。',proposal:null,queries:[{kind:'search',entity:'task'},{kind:'search',entity:'capture',text:'研究'}]};
+  }
+  assert.equal(calls,3);assert.equal(input.workspaceQueryResults.length,2);assert.equal(input.workspaceQueryResults[0].result.total,0);
+  assert.equal(input.workspaceQueryResults[1].result.items[0].id,'source-capture');assert.equal(input.workspaceQueryResults[1].result.items[0].containerId,'workspace');
+  return {reply:'已核对资料，请审核。',proposal:plan([create('task',{title:'整理研究资料'})])};
+ });
+ const input=f.conversation('看看研究资料，再准备一条整理待办。',{mutate:state=>state.captures.push({id:'source-capture',text:'研究资料中的原始想法',category:'灵感',tags:'',createdAt:STAMP})});
+ const ready=await f.finish(await f.start(input));assert.equal(ready.status,'succeeded');assert.equal(ready.replySaved,true);assert.equal(ready.queryRounds,1);assert.equal(calls,3);
+ assert.equal(f.state().tasks.length,0);assert.equal((await f.confirm(ready)).status,200);assert.deepEqual(f.state().tasks.map(task=>task.title),['整理研究资料']);assert.equal(calls,3);
+});
+
 test('domain changes after review make confirmation stale without overwriting another device',async t=>{
   const f=await fixture(t,async()=>({reply:'请审核这条新日历。',proposal:plan([create('calendarEvent',{title:'会议',startDate:'2026-09-25'})])}));
   const ready=await f.finish(await f.start(f.conversation('2026-09-25添加会议')));assert.equal(ready.status,'succeeded');

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {runWorkspaceQuery,validateWorkspaceQueries,workspaceFingerprint,boundQueryResult} from '../workspace-queries.mjs';
+import {runWorkspaceQuery,validateWorkspaceQueries,workspaceFingerprint,boundQueryResult,WORKSPACE_QUERY_CAPABILITIES} from '../workspace-queries.mjs';
+import {buildPrompt} from '../hermes.mjs';
 const stamp='2026-09-21T00:00:00.000Z';
 function fixture(){return {spaces:[],courses:[],tasks:[],captures:[],english:{plan:{dailyMinutes:'20'},words:[{id:'w1',word:'test',status:'mastered'},{id:'w2',word:'old',status:'review',archived:true}],sessions:[{id:'s1',date:'2026-09-20',minutes:20},{id:'s2',date:'2026-09-21',minutes:30},{id:'s3',date:'2026-09-21',minutes:100,archived:true}],mistakes:[]},ledger:{projects:[{id:'trip',title:'国庆出游',includeInTotal:false},{id:'club',title:'学生会',includeInTotal:true}],entries:[['a','',1200,'expense'],['b','trip',2550,'expense'],['c','club',3300,'expense'],['d','trip',500,'income']].map(([id,projectId,amountCents,type])=>({id,projectId,amountCents,type,category:'餐饮',note:'真实记录',date:'2026-10-01',createdAt:stamp,updatedAt:stamp,archived:false}))},aiRequests:[]};}
 test('ledger query calculates all exact fen records and honors independent project accounting',async()=>{
@@ -35,4 +36,42 @@ test('file read is workspace allowlisted and responses carry truncation instead 
 test('query schema rejects arbitrary code/paths, malformed filters; fingerprint excludes conversations only',()=>{
  for(const q of [{kind:'shell',command:'whoami'},{kind:'file.read',path:'/etc/passwd'},{kind:'get',entity:'password',id:'1'},{kind:'ledger.summary',start:'2026-02-30'},{kind:'search',limit:51},{kind:'calendar.range',start:'2026-10-05',end:'2026-10-01'}])assert.throws(()=>validateWorkspaceQueries([q]));
  const state=fixture(),original=workspaceFingerprint(state);state.aiRequests.push({id:'r',text:'hello'});assert.equal(workspaceFingerprint(state),original);state.tasks.push({id:'t',title:'其他设备添加'});assert.notEqual(workspaceFingerprint(state),original);
+});
+
+test('published query schemas and examples describe only accepted fields and omit empty optional filters',()=>{
+ const prompt=buildPrompt({text:'看看工作台',sources:[],destinations:[],destinationId:'auto',kind:'conversation'});
+ const capabilities=JSON.parse(prompt.user).workspaceQueryCapabilities;
+ for(const capability of capabilities){
+  assert.equal(capability.schema.additionalProperties,false);
+  assert.equal(capability.schema.properties.kind.const,capability.kind);
+  assert.ok(capability.schema.required.includes('kind'));
+  for(const example of capability.examples||[])assert.deepEqual(validateWorkspaceQueries([example]),[example]);
+ }
+ const search=capabilities.find(row=>row.kind==='search');
+ assert.deepEqual(Object.keys(search.schema.properties),['kind','entity','text','containerId','archived','done','offset','limit']);
+ assert.deepEqual(search.schema.properties.archived.enum,[false,true,'all']);
+ assert.ok(search.examples.some(example=>example.entity==='task'&&!Object.hasOwn(example,'text')));
+ assert.ok(capabilities.find(row=>row.kind==='get').examples.some(example=>example.entity==='workbenchModule'&&example.id==='tasks'));
+ assert.match(prompt.system,/省略.*text/);assert.match(prompt.system,/containerId.*路由/);
+ assert.match(prompt.system,/workspaceOverview\.workbench\.modules/);
+ assert.deepEqual(capabilities,WORKSPACE_QUERY_CAPABILITIES);
+});
+
+test('query correction errors locate all affected queries without echoing values or unsafe field names',()=>{
+ assert.throws(()=>validateWorkspaceQueries([
+  {kind:'search',entity:'task',text:''},
+  {kind:'search',entity:'space',all:'private-field-value'},
+  {kind:'search',entity:'capture',containerId:null},
+ ]),error=>{
+  assert.match(error.message,/queries\[0\]\.text/);assert.match(error.message,/queries\[1\]\.all/);assert.match(error.message,/queries\[2\]\.containerId/);
+  assert.match(error.message,/省略/);assert.doesNotMatch(error.message,/private-field-value/);assert.ok(error.message.length<=1200);return true;
+ });
+ for(const key of ['authorization','apiKey','sk_private_credential','unsafe\nfield','x'.repeat(400)]){
+  assert.throws(()=>validateWorkspaceQueries([{kind:'search',[key]:'private-field-value'}]),error=>{
+   assert.match(error.message,/queries\[0\]/);assert.doesNotMatch(error.message,/private-field-value/);assert.ok(!error.message.includes(key));assert.ok(error.message.length<=1200);return true;
+  });
+ }
+ assert.throws(()=>validateWorkspaceQueries([{kind:'search',entity:'task',text:'   '}]),/queries\[0\]\.text/);
+ assert.throws(()=>validateWorkspaceQueries([{kind:'get',entity:'task',id:null}]),/queries\[0\]\.id/);
+ assert.deepEqual(validateWorkspaceQueries([{kind:'ledger.summary',scope:' daily ',groupBy:' category '}]),[{kind:'ledger.summary',scope:'daily',groupBy:'category'}]);
 });

@@ -8,8 +8,28 @@ import {projectCalendarLinks} from '../frontend/src/calendar-links.js';
 import {WORKBENCH_MODULES,WORKBENCH_TEMPLATES,createWorkbench,validateWorkbench} from '../frontend/src/workbench-model.js';
 import {CUSTOM_BLOCK_KINDS,getCustomBlocks} from '../frontend/src/custom-blocks-model.js';
 
+const queryString={type:'string',minLength:1,maxLength:256};
+const queryDate={type:'string',format:'date'};
+const queryArchived={enum:[false,true,'all']};
+const queryEntity={...queryString,enum:WORKSPACE_ACTION_CAPABILITIES.map(item=>item.entity)};
+const queryOffset={type:'integer',minimum:0,maximum:100000},queryLimit={type:'integer',minimum:1,maximum:50};
+const querySchema=(kind,properties,required=[])=>({type:'object',additionalProperties:false,required:['kind',...required],properties:{kind:{const:kind},...properties}});
+// The advertised schema is also the validator's allowlist and field contract.
+const QUERY_SCHEMAS={
+ search:querySchema('search',{entity:queryEntity,text:{...queryString,maxLength:300},containerId:queryString,archived:queryArchived,done:{type:'boolean'},offset:queryOffset,limit:queryLimit}),
+ get:querySchema('get',{entity:queryEntity,id:queryString,containerId:queryString},['entity','id']),
+ 'ledger.summary':querySchema('ledger.summary',{scope:{...queryString,enum:['total','daily','projects','all']},projectId:queryString,start:queryDate,end:queryDate,groupBy:{...queryString,enum:['category','project','date']},archived:queryArchived}),
+ 'calendar.range':querySchema('calendar.range',{start:queryDate,end:queryDate,kindFilter:{...queryString,enum:['plan','mark','note']},source:{...queryString,enum:['all','calendar','tasks','competitions','english']},done:{type:'boolean'},archived:queryArchived,offset:queryOffset,limit:queryLimit},['start','end']),
+ 'timetable.week':querySchema('timetable.week',{termId:queryString,week:{type:'integer',minimum:1,maximum:53},date:queryDate}),
+ 'english.status':querySchema('english.status',{start:queryDate,end:queryDate}),
+ 'fitness.summary':querySchema('fitness.summary',{spaceId:queryString,start:queryDate,end:queryDate,date:queryDate,period:{...queryString,enum:['day','week','month']},archived:queryArchived},['spaceId']),
+ 'competitions.summary':querySchema('competitions.summary',{competitionId:queryString}),
+ 'file.read':querySchema('file.read',{blobId:queryString},['blobId']),
+};
+const QUERY_EXAMPLES={search:[{kind:'search',entity:'capture',text:'研究'},{kind:'search',entity:'task'},{kind:'search',entity:'space',archived:'all'}],get:[{kind:'get',entity:'workbenchModule',id:'tasks'}]};
+
 export const WORKSPACE_QUERY_CAPABILITIES=[
- {kind:'search',label:'搜索工作台',description:'entity可省略；text关键词；可筛containerId、archived(false默认/true/all)、done；offset默认0，limit默认20最多50；返回真实编号和分页总数。'},
+ {kind:'search',label:'搜索工作台',description:'entity可省略；text是非空关键词，列出某类全部记录时省略text，不传空串或all字段。archived是筛选字段，值仅false（默认未归档）、true（仅归档）、"all"（两者）。done可选布尔；offset默认0，limit默认20最多50；返回真实编号和分页总数。containerId只沿用查询结果中的真实值，不猜UI路由；普通capture/task/space可省略containerId。'},
  {kind:'get',label:'读取记录详情',description:'必须entity、id；note/file/timetableEntry用containerId区分；返回完整内容（超长会注明截断）。englishDraft最多20000字符且完整结果最多36000字符；editable:true且contentComplete:true才可修改，超过上限仅可分段讨论，不得整稿替换。customBlock仅返回所选方块，miniapp代码完整提供或以truncated拒绝；data敏感字段会标redacted，遇到截断/脱敏不可替换代码或data。'},
  {kind:'ledger.summary',label:'计算收支',description:'scope:total默认(遵守项目总账设置)/daily/projects/all；projectId指定已有项目；start/end为YYYY-MM-DD；groupBy:category/project/date；程序计算精确到分，默认不含归档账目。'},
  {kind:'calendar.range',label:'查询日历与关联事项',description:'start和end为YYYY-MM-DD；默认汇总日历原安排、带日期的备忘待办、比赛节点与任务、英语考试日期。可source:all/calendar/tasks/competitions/english、kindFilter:plan/mark/note（筛全部来源：待办/比赛任务/英语为plan，比赛节点为mark）、done、archived(false默认/true/all)。归档只查询日历原安排，关联来源只显示未归档父子；不含学期课表、账单或运动学习日志。返回真实entity/id/containerId用于修改源记录；containerId为空时在后续查询/行动里省略该字段。display为只读日期展示，不可拿display.id当行动编号。'},
@@ -18,40 +38,49 @@ export const WORKSPACE_QUERY_CAPABILITIES=[
  {kind:'fitness.summary',label:'计算运动统计',description:'spaceId必填真实空间id，只计算该空间；start/end可选YYYY-MM-DD，或用date与period=day|week|month选择完整日/周/月（不能与start/end混用）；archived=false默认/true/all。程序汇总全部匹配记录的次数、分钟、已知公里/千卡及缺失计数，不估算热量，不把null当零，不把计划记作实际运动。'},
  {kind:'competitions.summary',label:'查询比赛进度与截止',description:'competitionId可选真实比赛id，否则统计所有进行中的比赛（排除归档/已结束比赛、归档子项）；程序依据查询时真实北京时间计算今天及未来7天临期、逾期节点和任务完成数。无具体时刻节点在北京时间次日零点才逾期。不可传today/date/asOf伪造当前时间。汇总覆盖所有符合条件的记录；明细过多时截断并注明。仅依据已保存信息，不保证官方安排最新。'},
  {kind:'file.read',label:'读取已有资料文字',description:'blobId必须来自已保存或本次对话附件；提取已上传资料文字，不能读取服务器路径或任意网址。'}
-];
+].map(item=>({...item,schema:QUERY_SCHEMAS[item.kind],...(QUERY_EXAMPLES[item.kind]?{examples:QUERY_EXAMPLES[item.kind]}:{})}));
 const fail=message=>{throw new Error(message);};
 const object=value=>value&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
-const entities=()=>new Set(WORKSPACE_ACTION_CAPABILITIES.map(c=>c.entity));
-function text(value,max,required=false){if(typeof value!=='string'||value.length>max||(required&&!value.trim()))fail('查询文字格式无效。');return value.trim();}
+const diagnosticFields=new Set(['all',...Object.values(QUERY_SCHEMAS).flatMap(schema=>Object.keys(schema.properties))]);
+function queryFailure(index,kind,field,code,message){
+ const safeKind=Object.hasOwn(QUERY_SCHEMAS,kind)?kind:'unknown',safeField=diagnosticFields.has(field)?field:'unknown';
+ const error=new Error(`queries[${index}]${field?'.'+safeField:''}: ${message}`);
+ error.queryIssues=[{code,index,kind:safeKind,field:safeField}];throw error;
+}
 export function validateWorkspaceQueries(value){
  if(!Array.isArray(value)||!value.length||value.length>6)fail('每轮查询须为1至6项。');
- return value.map(q=>{
-  if(!object(q)||!WORKSPACE_QUERY_CAPABILITIES.some(c=>c.kind===q.kind))fail('不支持这个工作台查询。');
-  const allowed={search:['entity','text','containerId','archived','done','offset','limit'],get:['entity','id','containerId'],'ledger.summary':['scope','projectId','start','end','groupBy','archived'],'calendar.range':['start','end','kindFilter','source','done','archived','offset','limit'],'timetable.week':['termId','week','date'],'english.status':['start','end'],'fitness.summary':['spaceId','start','end','date','period','archived'],'competitions.summary':['competitionId'],'file.read':['blobId']}[q.kind];
-  if(Object.keys(q).some(k=>k!=='kind'&&!allowed.includes(k)))fail('查询包含不支持的字段。');
-  const result={kind:q.kind};
-  for(const key of ['entity','text','containerId','id','projectId','spaceId','competitionId','termId','scope','groupBy','kindFilter','source','blobId','period'])if(q[key]!==undefined)result[key]=text(q[key],key==='text'?300:256,true);
-  if(result.entity&&!entities().has(result.entity))fail('查询的记录类型不存在。');
-  if(q.kind==='get'&&(!result.entity||!result.id))fail('读取详情需要记录类型和真实编号。');
-  if(q.kind==='file.read'&&!result.blobId)fail('请选择已有资料的文件编号。');
-  for(const key of ['start','end','date'])if(q[key]!==undefined){if(!isValidDate(q[key]))fail('查询日期无效。');result[key]=q[key];}
-  if(result.start&&result.end&&result.start>result.end)fail('查询起始日期不能晚于结束日期。');
-  for(const key of ['offset','limit','week'])if(q[key]!==undefined){if(!Number.isSafeInteger(q[key])||q[key]<(key==='offset'?0:1)||q[key]>(key==='offset'?100000:key==='limit'?50:53))fail('查询范围超出限制。');result[key]=q[key];}
-  if(q.archived!==undefined){if(![true,false,'all'].includes(q.archived))fail('归档筛选无效。');result.archived=q.archived;}
-  if(q.done!==undefined){if(typeof q.done!=='boolean')fail('完成状态筛选无效。');result.done=q.done;}
-  if(q.kind==='calendar.range'&&(!result.start||!result.end))fail('日历查询需要开始和结束日期。');
-  if(result.kindFilter&&!['plan','mark','note'].includes(result.kindFilter))fail('日历类型无效。');
-  if(result.source&&!['all','calendar','tasks','competitions','english'].includes(result.source))fail('日历来源无效。');
-  if(result.scope&&!['total','daily','projects','all'].includes(result.scope))fail('记账统计范围无效。');
-  if(result.groupBy&&!['category','project','date'].includes(result.groupBy))fail('记账分组方式无效。');
-  if(q.kind==='fitness.summary'){
-   if(!result.spaceId)fail('运动统计必须指定空间，避免混合不同空间的记录。');
-   if(result.period&&!['day','week','month'].includes(result.period))fail('运动统计周期无效。');
-   if(Boolean(result.date)!==Boolean(result.period))fail('请同时指定运动统计日期date和周期period。');
-   if(result.period&&(result.start||result.end))fail('日期周期与起止范围只能选择一种。');
-  }
-  return result;
+ const errors=[],issues=[];
+ const results=value.map((q,index)=>{
+  try{
+   if(!object(q))queryFailure(index,'unknown','', 'INVALID_QUERY','查询须为对象。');
+   if(typeof q.kind!=='string'||!Object.hasOwn(QUERY_SCHEMAS,q.kind))queryFailure(index,'unknown','kind','UNSUPPORTED_QUERY','不支持这个工作台查询；请使用能力清单中的kind。');
+   const schema=QUERY_SCHEMAS[q.kind],reject=(field,code,message)=>queryFailure(index,q.kind,field,code,message);
+   for(const key of Object.keys(q))if(!Object.hasOwn(schema.properties,key))reject(key,'UNKNOWN_FIELD',`不支持此字段；仅允许${Object.keys(schema.properties).join('、')}。请删除额外字段。`);
+   for(const key of schema.required)if(q[key]===undefined)reject(key,'MISSING_FIELD','缺少本查询的必填字段。');
+   const result={};
+   for(const [key,rule] of Object.entries(schema.properties)){
+    if(q[key]===undefined)continue;
+    let item=q[key];
+    if(rule.type==='string'){
+     if(typeof item!=='string'||(rule.minLength&&!item.trim())||(rule.maxLength&&item.length>rule.maxLength))reject(key,'INVALID_STRING','须为长度合规的非空字符串；可选字段没有值时请省略，不能传空串或null。');
+     if(rule.format==='date'){if(!isValidDate(item))reject(key,'INVALID_DATE','须为真实的YYYY-MM-DD日期；没有值的可选日期请省略。');}
+     else item=item.trim();
+    }
+    if(rule.enum&&!rule.enum.includes(item))reject(key,'INVALID_ENUM','取值不在该查询schema的枚举内；可选字段没有值时请省略。');
+    if(rule.type==='boolean'&&typeof item!=='boolean')reject(key,'INVALID_BOOLEAN','须为true或false布尔值；没有筛选时请省略。');
+    if(rule.type==='integer'&&(!Number.isSafeInteger(item)||item<rule.minimum||item>rule.maximum))reject(key,'INVALID_RANGE',`须为${rule.minimum}至${rule.maximum}的整数。`);
+    result[key]=item;
+   }
+   if(result.start&&result.end&&result.start>result.end)reject('end','INVALID_RANGE','查询结束日期不能早于开始日期。');
+   if(q.kind==='fitness.summary'){
+    if(Boolean(result.date)!==Boolean(result.period))reject(result.date?'period':'date','MISSING_FIELD','请同时指定运动统计日期date和周期period。');
+    if(result.period&&(result.start||result.end))reject('period','CONFLICTING_FIELDS','日期周期与起止范围只能选择一种。');
+   }
+   return result;
+  }catch(error){if(!error.queryIssues)throw error;errors.push(error.message);issues.push(...error.queryIssues);return null;}
  });
+ if(errors.length){const error=new Error(errors.join('\n').slice(0,1200));error.queryIssues=issues;throw error;}
+ return results;
 }
 
 // A proposal is bound to the actual domain data it read. Conversation messages,

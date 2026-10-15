@@ -68,6 +68,9 @@ export function correctionMetadata(user){
   if(!correction||typeof correction!=='object')return {correctionPresent:false};
   const issue=typeof correction.issue==='string'?correction.issue:'';
   return {correctionPresent:true,correctiveCode:identifier(correction.code),
+    ...(Array.isArray(correction.queryIssues)?{queryIssues:correction.queryIssues.slice(0,6).map(item=>({
+      code:identifier(item?.code),index:Number.isInteger(item?.index)&&item.index>=0&&item.index<6?item.index:null,
+      kind:identifier(item?.kind),field:identifier(item?.field)}))}:{}),
     ...(staticValidationIssues.has(issue)?{correctiveIssue:issue}:{correctiveIssue:'unlisted-static-or-private-message',
       correctiveIssueChars:issue.length,correctiveIssueHash:createHash('sha256').update(issue).digest('hex')})};
 }
