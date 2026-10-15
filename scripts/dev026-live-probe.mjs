@@ -8,11 +8,18 @@ import {createDeepSeekRunner} from '../yuzhou/backend/deepseek.mjs';
 const reportPath=resolve(fileURLToPath(new URL('../evidence/engineering/DEV-026-live-2026-10-15.json',import.meta.url)));
 const model='deepseek-v4-pro', endpoint='https://api.deepseek.com/chat/completions';
 
-export function createProbeSession(apiKey){
+export function createProbeSession(apiKey,{resumeLocalValidationFailure=false}={}){
   if(typeof apiKey!=='string'||!apiKey.trim())throw Error('A caller-provided key is required.');
   const report=existsSync(reportPath)?JSON.parse(readFileSync(reportPath,'utf8')):
     {scope:'synthetic short prompts through production transport; no formal workspace reads',model,maxCalls:3,maxTokens:10000,calls:[]};
-  let stopped=report.calls.some(call=>call.ok!==true),busy=false;
+  const last=report.calls.at(-1);
+  // One explicit continuation after the local REPL validator failed. Existing
+  // calls and usage stay counted; transport/provider errors cannot be resumed.
+  const resumable=resumeLocalValidationFailure&&report.calls.length===2&&report.calls[0].ok===true&&
+    last.transportOk===true&&last.httpStatus===200&&last.finishReason==='stop'&&
+    last.checks?.validStructuredResult===false&&!last.errorCode;
+  let stopped=report.calls.some(call=>call.ok!==true)&&!resumable,busy=false;
+  if(resumable)report.localValidationContinuation=true;
   const save=()=>writeFileSync(reportPath,JSON.stringify(report,null,2)+'\n');
   const reserved=()=>report.calls.reduce((sum,call)=>sum+call.reservedTokenUpperBound,0);
   const usageTotal=()=>report.calls.reduce((sum,call)=>sum+(call.usage?.total_tokens||0),0);
@@ -55,7 +62,11 @@ export function createProbeSession(apiKey){
         call.transportOk=result.ok;
         if(!result.ok){call.errorCode=result.code;stopped=true;}
         else{
-          try{call.checks=validate(JSON.parse(result.output));call.ok=Object.values(call.checks).every(value=>value===true);}
+          try{
+            const checks=validate(JSON.parse(result.output));
+            if(!checks||Array.isArray(checks)||!Object.keys(checks).length||Object.entries(checks).some(([key,value])=>!/^\w{1,80}$/.test(key)||typeof value!=='boolean'))throw Error('Invalid validation metadata.');
+            call.checks=Object.fromEntries(Object.entries(checks));call.ok=Object.values(call.checks).every(value=>value===true);
+          }
           catch{call.checks={validStructuredResult:false};}
           if(!call.ok)stopped=true;
         }
