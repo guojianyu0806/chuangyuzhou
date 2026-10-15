@@ -162,9 +162,7 @@ export function mountConversationPage(ctx,spaceId,helpers){
       }
       if(action==='undo'&&ctx.undoRoute){
         busy=true;render();const result=await ctx.undoRoute(request.receipt,request.id);
-        request.status='waiting_model';delete request.receipt;
-        if(request.conversation){delete request.conversation.confirmedJobId;delete request.conversation.pendingJobId;delete request.conversation.proposal;}
-        save(state);toast(result?.retained?'已撤销未修改的内容，编辑过的记录保留。':'归档已撤销，可以继续讨论。');
+        toast(result?.retained?'已撤销未修改的内容，编辑过的记录保留。':'归档已撤销，可以继续讨论。');
       }
     }catch(error){toast(error.message||'操作未完成，请重试。');}
     finally{busy=false;render();}

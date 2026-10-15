@@ -1,0 +1,226 @@
+TAP version 13
+# Subtest: ledger proposals validate exact yuan amounts, real dates, source evidence and separate action types
+ok 1 - ledger proposals validate exact yuan amounts, real dates, source evidence and separate action types
+  ---
+  duration_ms: 9.9794
+  type: 'test'
+  ...
+# Subtest: ledger preview matches committed fen and preserves independent project accounting and attachments
+ok 2 - ledger preview matches committed fen and preserves independent project accounting and attachments
+  ---
+  duration_ms: 4.9648
+  type: 'test'
+  ...
+# Subtest: daily ledger keeps project records separate; invalid or archived destinations and sources write nothing
+ok 3 - daily ledger keeps project records separate; invalid or archived destinations and sources write nothing
+  ---
+  duration_ms: 4.0283
+  type: 'test'
+  ...
+# Subtest: backup round-trip preserves ledger proposals and exact undo receipts; edited rows are retained
+ok 4 - backup round-trip preserves ledger proposals and exact undo receipts; edited rows are retained
+  ---
+  duration_ms: 5.5984
+  type: 'test'
+  ...
+# Subtest: AI notes, original files and tasks receive distinct consecutive colors before receipt snapshots
+ok 5 - AI notes, original files and tasks receive distinct consecutive colors before receipt snapshots
+  ---
+  duration_ms: 7.0893
+  type: 'test'
+  ...
+# Subtest: AI captures and tasks use the same cursor across destinations
+ok 6 - AI captures and tasks use the same cursor across destinations
+  ---
+  duration_ms: 0.8891
+  type: 'test'
+  ...
+# Subtest: invalid AI output, missing destination, and failed preparation leave colors and content untouched
+ok 7 - invalid AI output, missing destination, and failed preparation leave colors and content untouched
+  ---
+  duration_ms: 2.2047
+  type: 'test'
+  ...
+# Subtest: review lists fallback summary, original attachment and task with actual destinations without mutations
+ok 8 - review lists fallback summary, original attachment and task with actual destinations without mutations
+  ---
+  duration_ms: 8.407
+  type: 'test'
+  ...
+# Subtest: workspace review includes full note content and keeps tasks in task module
+ok 9 - workspace review includes full note content and keeps tasks in task module
+  ---
+  duration_ms: 2.1051
+  type: 'test'
+  ...
+# Subtest: own confirmation flushes the reviewed state and immediately adopts its receipt without other-device status
+ok 10 - own confirmation flushes the reviewed state and immediately adopts its receipt without other-device status
+  ---
+  duration_ms: 3.7569
+  type: 'test'
+  ...
+# Subtest: edits made during confirmation cannot upload an old snapshot or be discarded by result loading
+ok 11 - edits made during confirmation cannot upload an old snapshot or be discarded by result loading
+  ---
+  duration_ms: 9.6786
+  type: 'test'
+  ...
+# Subtest: an unsaved editor blocks result adoption even when no workspace save has been enqueued
+ok 12 - an unsaved editor blocks result adoption even when no workspace save has been enqueued
+  ---
+  duration_ms: 0.5646
+  type: 'test'
+  ...
+# Subtest: a stale poll response arriving after confirmation cannot report an older revision as another device update
+ok 13 - a stale poll response arriving after confirmation cannot report an older revision as another device update
+  ---
+  duration_ms: 0.7178
+  type: 'test'
+  ...
+# Subtest: failed confirmation releases its lock and keeps the workspace revision unchanged
+ok 14 - failed confirmation releases its lock and keeps the workspace revision unchanged
+  ---
+  duration_ms: 1.817
+  type: 'test'
+  ...
+# Subtest: actions create linked containers and move real notes/files without touching the source request
+ok 15 - actions create linked containers and move real notes/files without touching the source request
+  ---
+  duration_ms: 11.1725
+  type: 'test'
+  ...
+# Subtest: money updates use integer fen and project inclusion remains explicit
+ok 16 - money updates use integer fen and project inclusion remains explicit
+  ---
+  duration_ms: 2.7002
+  type: 'test'
+  ...
+# Subtest: failed later action leaves all domains, colour cursor and original references unchanged
+ok 17 - failed later action leaves all domains, colour cursor and original references unchanged
+  ---
+  duration_ms: 1.4209
+  type: 'test'
+  ...
+# Subtest: validation rejects arbitrary properties, fabricated ids, forward and mismatched references
+ok 18 - validation rejects arbitrary properties, fabricated ids, forward and mismatched references
+  ---
+  duration_ms: 0.7676
+  type: 'test'
+  ...
+# Subtest: archive/restore is reversible and course prompt edits retain file and note content
+ok 19 - archive/restore is reversible and course prompt edits retain file and note content
+  ---
+  duration_ms: 4.4824
+  type: 'test'
+  ...
+# Subtest: undo keeps edited child and its parent, and rolls all changes back if persistence fails
+ok 20 - undo keeps edited child and its parent, and rolls all changes back if persistence fails
+  ---
+  duration_ms: 2.436
+  type: 'test'
+  ...
+# Subtest: ledger project undo retains project when another entry depends on it
+ok 21 - ledger project undo retains project when another entry depends on it
+  ---
+  duration_ms: 1.283
+  type: 'test'
+  ...
+# Subtest: undo keeps a parent space with a later customized internal canvas
+ok 22 - undo keeps a parent space with a later customized internal canvas
+  ---
+  duration_ms: 1.1751
+  type: 'test'
+  ...
+# Subtest: preview is read-only and shows changed amounts, project settings and moves as human-readable fields
+ok 23 - preview is read-only and shows changed amounts, project settings and moves as human-readable fields
+  ---
+  duration_ms: 5.291
+  type: 'test'
+  ...
+# Subtest: backup export/import permits reverse undo of repeated core record changes and nested moves
+ok 24 - backup export/import permits reverse undo of repeated core record changes and nested moves
+  ---
+  duration_ms: 9.1763
+  type: 'test'
+  ...
+# Subtest: backup normalization keeps original sparse before snapshots and does not block valid undo
+ok 25 - backup normalization keeps original sparse before snapshots and does not block valid undo
+  ---
+  duration_ms: 2.5322
+  type: 'test'
+  ...
+# Subtest: edited note/file and parent dependencies remain protected after backup import
+ok 26 - edited note/file and parent dependencies remain protected after backup import
+  ---
+  duration_ms: 2.4537
+  type: 'test'
+  ...
+# Subtest: all study/settings adapters run through the actual transaction engine and backup roundtrip undo
+ok 27 - all study/settings adapters run through the actual transaction engine and backup roundtrip undo
+  ---
+  duration_ms: 9.2223
+  type: 'test'
+  ...
+# Subtest: initializing old and synced workspaces preserves independent card layouts and pointer positions
+ok 28 - initializing old and synced workspaces preserves independent card layouts and pointer positions
+  ---
+  duration_ms: 4.4687
+  type: 'test'
+  ...
+# Subtest: routing persists destination and receipt together; a retry never duplicates content
+ok 29 - routing persists destination and receipt together; a retry never duplicates content
+  ---
+  duration_ms: 3.6767
+  type: 'test'
+  ...
+# Subtest: storage failures leave no phantom routed records or modified receipt
+ok 30 - storage failures leave no phantom routed records or modified receipt
+  ---
+  duration_ms: 0.8552
+  type: 'test'
+  ...
+# Subtest: manual routing colors every new record before snapshotting and restores the cursor on failed save
+ok 31 - manual routing colors every new record before snapshotting and restores the cursor on failed save
+  ---
+  duration_ms: 1.6894
+  type: 'test'
+  ...
+# Subtest: failed undo restores records; successful undo protects edited content and original request
+ok 32 - failed undo restores records; successful undo protects edited content and original request
+  ---
+  duration_ms: 1.2218
+  type: 'test'
+  ...
+# Subtest: undo refuses a workspace that changed while its action module was loading
+ok 33 - undo refuses a workspace that changed while its action module was loading
+  ---
+  duration_ms: 6.8826
+  type: 'test'
+  ...
+# Subtest: action undo persists business changes and cleared execution metadata in one snapshot
+ok 34 - action undo persists business changes and cleared execution metadata in one snapshot
+  ---
+  duration_ms: 3.209
+  type: 'test'
+  ...
+# Subtest: failed action undo restores both domain records and the complete conversation receipt
+ok 35 - failed action undo restores both domain records and the complete conversation receipt
+  ---
+  duration_ms: 4.1317
+  type: 'test'
+  ...
+# Subtest: manual undo also clears execution metadata atomically and rolls back asynchronous save failure
+ok 36 - manual undo also clears execution metadata atomically and rolls back asynchronous save failure
+  ---
+  duration_ms: 4.9141
+  type: 'test'
+  ...
+1..36
+# tests 36
+# suites 0
+# pass 36
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 495.151

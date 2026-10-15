@@ -1,0 +1,60 @@
+✖ undo refuses a workspace that changed while its action module was loading (6.9836ms)
+✖ action undo persists business changes and cleared execution metadata in one snapshot (2.077ms)
+✔ failed action undo restores both domain records and the complete conversation receipt (1.6469ms)
+✖ manual undo also clears execution metadata atomically and rolls back asynchronous save failure (1.764ms)
+ℹ Error: Test "manual undo also clears execution metadata atomically and rolls back asynchronous save failure" at yuzhou\frontend\tests\workspace-undo-lifecycle.test.mjs:46:1 generated asynchronous activity after the test ended. This activity created the error "Error: synthetic manual persistence failure" and would have caused the test to fail, but instead triggered an unhandledRejection event.
+ℹ tests 4
+ℹ suites 0
+ℹ pass 1
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 173.853
+
+✖ failing tests:
+
+test at yuzhou\frontend\tests\workspace-undo-lifecycle.test.mjs:17:1
+✖ undo refuses a workspace that changed while its action module was loading (6.9836ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/tests/workspace-undo-lifecycle.test.mjs:21:3)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /工作台已更新/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at yuzhou\frontend\tests\workspace-undo-lifecycle.test.mjs:26:1
+✖ action undo persists business changes and cleared execution metadata in one snapshot (2.077ms)
+  AssertionError [ERR_ASSERTION]: confirmedJobId
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/tests/workspace-undo-lifecycle.test.mjs:34:72)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at yuzhou\frontend\tests\workspace-undo-lifecycle.test.mjs:46:1
+✖ manual undo also clears execution metadata atomically and rolls back asynchronous save failure (1.764ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///E:/%E4%BC%A0%E6%99%BA%E6%9D%AF/%E4%BC%A0%E6%99%BA%E6%9D%AFAI%E5%88%9B%E6%96%B0%E5%BA%94%E7%94%A8%E6%8C%91%E6%88%98%E8%B5%9B/yuzhou/frontend/tests/workspace-undo-lifecycle.test.mjs:52:3)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /synthetic manual persistence failure/,
+    operator: 'rejects',
+    diff: 'simple'
+  }

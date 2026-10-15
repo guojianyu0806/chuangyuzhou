@@ -87,13 +87,29 @@ export async function routeContent(ctx, {text='',files=[],targetId,requestId}) {
   return receipt;
 }
 
+function requireCurrentUndoWorkspace(ctx) {
+  if(ctx.isCurrent&&!ctx.isCurrent())throw new Error('工作台已更新，请在当前对话中重新检查后撤销。');
+}
+function clearUndoReceipt(request) {
+  if(!request)return;
+  request.status='waiting_model';delete request.receipt;request.updatedAt=new Date().toISOString();
+  if(request.conversation){delete request.conversation.confirmedJobId;delete request.conversation.pendingJobId;delete request.conversation.proposal;}
+}
+function restoreUndoRequest(request,previous) {
+  for(const key of Object.keys(request))delete request[key];
+  Object.assign(request,previous);
+}
+
 export async function undoRoute(ctx, receipt, requestId) {
+  requireCurrentUndoWorkspace(ctx);
   if(receipt.items?.some(item=>item.collection==='actions')){
     const {undoWorkspaceActions}=await import('./workspace-actions.js');
+    // A cloud update can replace the view while this module is loading.
+    requireCurrentUndoWorkspace(ctx);
     const request=ctx.state.aiRequests.find(r=>r.id===requestId),previous=request?structuredClone(request):null;
     return undoWorkspaceActions({...ctx,save:async()=>{
-      if(request){request.status='waiting_model';delete request.receipt;request.updatedAt=new Date().toISOString();}
-      try{await ctx.save();}catch(error){if(request){for(const key of Object.keys(request))delete request[key];Object.assign(request,previous);}throw error;}
+      clearUndoReceipt(request);
+      try{await ctx.save();}catch(error){if(request)restoreUndoRequest(request,previous);throw error;}
     }},receipt,requestId);
   }
   let removed=0,retained=0;
@@ -116,7 +132,7 @@ export async function undoRoute(ctx, receipt, requestId) {
     const [entry]=list.splice(index,1);changes.push(()=>list.splice(index,0,entry));removed++;
   }
   const request=ctx.state.aiRequests.find(r=>r.id===requestId);
-  if(request){const previous={...request};changes.push(()=>Object.assign(request,previous));request.status='waiting_model';request.receipt=undefined;request.updatedAt=new Date().toISOString();}
-  try{ctx.save();}catch(error){changes.reverse().forEach(rollback=>rollback());throw error;}
+  if(request){const previous=structuredClone(request);changes.push(()=>restoreUndoRequest(request,previous));clearUndoReceipt(request);}
+  try{await ctx.save();}catch(error){changes.reverse().forEach(rollback=>rollback());throw error;}
   return {removed,retained};
 }
