@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: miniapp prompt identifies the injected app API and forbids substituting this or redeclaring it
+ok 1 - miniapp prompt identifies the injected app API and forbids substituting this or redeclaring it
+  ---
+  duration_ms: 1.8317
+  type: 'test'
+  ...
+# Subtest: owned prompt example starts without writes and ignores non-save events
+ok 2 - owned prompt example starts without writes and ignores non-save events
+  ---
+  duration_ms: 2.8059
+  type: 'test'
+  ...
+# Subtest: owned prompt example renders invalid-input feedback without saving or changing stored data
+ok 3 - owned prompt example renders invalid-input feedback without saving or changing stored data
+  ---
+  duration_ms: 1.6904
+  type: 'test'
+  ...
+# Subtest: owned prompt example converts values and shows success only after explicit save acknowledgement
+ok 4 - owned prompt example converts values and shows success only after explicit save acknowledgement
+  ---
+  duration_ms: 1.3813
+  type: 'test'
+  ...
+# Subtest: owned prompt example keeps saved state on persistence failure and permits retry
+ok 5 - owned prompt example keeps saved state on persistence failure and permits retry
+  ---
+  duration_ms: 1.2188
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 202.8733
