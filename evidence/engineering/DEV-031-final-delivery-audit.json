@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "checkedAtUtc": "2026-10-16T13:09:57.978150+00:00",
+  "archiveSha256": "6400a6f3a20ba2c4bc9f14bca9b4dc094794d783fb845eed5b1afe0fb965e2eb",
+  "payloadHashesChecked": 275,
+  "readmeMatchesTemplate": true,
+  "localLinksChecked": 12,
+  "privateRuntimeIncluded": false,
+  "priorSourceAndReadmeChanges": [],
+  "newFilesOnlyRelativeToUserTaskStart": true,
+  "realModelCalls": 0
+}

@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "firstCommit": "2790a44521e872d08301731a9a7efe3a889b8a4e",
+  "finalCommit": "a96689c79bc34dd2bce300538b89a3506465b060",
+  "identicalApplicationFiles": 261,
+  "changedPayloadPaths": [
+    "README.md"
+  ],
+  "note": "Node22 full suite applies to identical 261 application files; final package differs only in README overwrite guard."
+}

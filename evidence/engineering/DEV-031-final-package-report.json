@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "createdAtUtc": "2026-10-16T13:06:02.148145+00:00",
+  "sourceCommit": "a96689c79bc34dd2bce300538b89a3506465b060",
+  "archive": "releases/yuzhou-dev031-a96689c79bc3/yuzhou-dev031-a96689c79bc3.zip",
+  "sha256": "6400a6f3a20ba2c4bc9f14bca9b4dc094794d783fb845eed5b1afe0fb965e2eb",
+  "bytes": 992718,
+  "payloadFiles": 275,
+  "applicationFiles": 261,
+  "runtimeFiles": 0,
+  "secretPatternMatches": 0,
+  "zipRoundtrip": true,
+  "limitations": "Current committed allowlist and known secret patterns only; not a full historical security audit."
+}
