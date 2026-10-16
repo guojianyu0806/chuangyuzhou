@@ -1,0 +1,10 @@
+{
+  "scope": "New PDF only; explicit binary attributes; Git blob and Windows checkout filter bytes compared",
+  "worktreeSha256": "d928598a7c14d93879259ec71d2d4adb1ae9355cf2e2bf00cc866157e4e35fff",
+  "gitBlobSha256": "d928598a7c14d93879259ec71d2d4adb1ae9355cf2e2bf00cc866157e4e35fff",
+  "windowsCheckoutSha256": "d928598a7c14d93879259ec71d2d4adb1ae9355cf2e2bf00cc866157e4e35fff",
+  "allBytesEqual": true,
+  "filteredPdfPages": 13,
+  "oldFileChanges": "",
+  "passed": true
+}

@@ -31,4 +31,6 @@ PDF使用嵌入中文字体、统一页眉页脚与编号、四幅矢量结构�
 
 本轮新增路径：`delivery/DEV-032/`、`output/pdf/DEV-032/`、`evidence/dev/DEV-032.md`、`evidence/engineering/DEV-032-material-verification-2026-10-16.json`；中间渲染位于`.local/dev032/`。原README、旧交付包、旧PDF/文档、原始会话与工程证据均没有覆盖。未访问正式数据库或凭据，未修改原宇宙、旧app或本比赛应用源码，未调用模型、启动服务、push或上传赛事。
 
-阶段1：`0a60dce`固定编制与证据范围；阶段2：`84c3158`提交正文与视频脚本；阶段3：PDF、生成校验脚本和本交付索引，哈希以实际Git为准。完整过程见[DEV-032记录](../../evidence/dev/DEV-032.md)。
+阶段1：`0a60dce`固定编制与证据范围；阶段2：`84c3158`提交正文与视频脚本；阶段3：`00a8416`交付PDF、生成校验脚本和本交付索引；阶段4补充新PDF目录的Git二进制属性及传输验证，哈希以实际Git为准。完整过程见[DEV-032记录](../../evidence/dev/DEV-032.md)。
+
+Git收尾检查发现根目录采用文本自动识别，故只在新PDF目录加入`*.pdf binary`，避免Windows检出时转换换行。工作文件、Git对象及启用Windows换行配置后的检出过滤结果SHA-256完全一致，均可读为13页；见[字节一致性报告](../../evidence/engineering/DEV-032-git-transport-verification-2026-10-16.json)。原PDF内容未变，根配置未改。
