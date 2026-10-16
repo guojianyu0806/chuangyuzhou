@@ -1,0 +1,150 @@
+{
+  "schema": 1,
+  "prepared_date": "2026-10-16",
+  "source_basename": "rollout-2026-10-08T19-16-44-01a11b3a-db07-7f61-8309-5436b1b2b971.jsonl",
+  "thread_id": "01a11b3a-db07-7f61-8309-5436b1b2b971",
+  "source_prefix_last_line": 15652,
+  "source_prefix_sha256": "c1a5ac15d520994d57c6655664735549ddf93b6be5dfdd01eb7734c334967c3f",
+  "scope": "All public textual user/assistant messages and public clarification questions within the listed thematic spans; not the whole session or internal reasoning. Source remains untouched.",
+  "chains": {
+    "01": {
+      "title": "从个人工作台到可视化搭建平台",
+      "ranges": [
+        [
+          2413,
+          4226
+        ],
+        [
+          6019,
+          6521
+        ],
+        [
+          9494,
+          9837
+        ]
+      ],
+      "public_records": 50,
+      "user_messages": 7,
+      "assistant_messages": 42,
+      "public_questions": 1,
+      "redactions": 0,
+      "excluded_record_types": {
+        "non_dialogue_item_completed": 710,
+        "non_dialogue_reasoning": 250,
+        "non_dialogue_token_usage_record": 343,
+        "non_dialogue_token_count": 383,
+        "non_dialogue_task_complete": 6,
+        "non_dialogue_thread_settings_applied": 12,
+        "non_dialogue_task_started": 8,
+        "non_dialogue_turn_context": 12,
+        "non_dialogue_custom_tool_call": 149,
+        "non_dialogue_custom_tool_call_output": 149,
+        "non_dialogue_function_call": 184,
+        "non_dialogue_function_call_output": 185,
+        "non_dialogue_world_state": 16,
+        "non_dialogue_inter_agent_communication_metadata": 96,
+        "non_dialogue_agent_message": 96,
+        "non_dialogue_compacted": 4,
+        "client_context_not_dialogue": 4,
+        "non_dialogue_message": 4
+      }
+    },
+    "02": {
+      "title": "AI 查询、修订、确认与撤销闭环",
+      "ranges": [
+        [
+          12921,
+          14712
+        ]
+      ],
+      "public_records": 27,
+      "user_messages": 3,
+      "assistant_messages": 23,
+      "public_questions": 1,
+      "redactions": 0,
+      "excluded_record_types": {
+        "non_dialogue_item_completed": 485,
+        "non_dialogue_custom_tool_call": 110,
+        "non_dialogue_token_usage_record": 241,
+        "non_dialogue_custom_tool_call_output": 110,
+        "non_dialogue_token_count": 264,
+        "non_dialogue_reasoning": 170,
+        "non_dialogue_function_call": 125,
+        "non_dialogue_function_call_output": 126,
+        "non_dialogue_world_state": 5,
+        "non_dialogue_inter_agent_communication_metadata": 57,
+        "non_dialogue_agent_message": 57,
+        "non_dialogue_task_complete": 2,
+        "non_dialogue_thread_settings_applied": 4,
+        "non_dialogue_task_started": 2,
+        "non_dialogue_turn_context": 4,
+        "non_dialogue_compacted": 2,
+        "non_dialogue_message": 1
+      }
+    },
+    "03": {
+      "title": "自定义方块与受控小程序创建",
+      "ranges": [
+        [
+          4828,
+          5618
+        ],
+        [
+          14715,
+          15652
+        ]
+      ],
+      "public_records": 27,
+      "user_messages": 3,
+      "assistant_messages": 23,
+      "public_questions": 1,
+      "redactions": 0,
+      "excluded_record_types": {
+        "non_dialogue_item_completed": 445,
+        "non_dialogue_reasoning": 154,
+        "non_dialogue_token_usage_record": 230,
+        "non_dialogue_function_call_output": 120,
+        "non_dialogue_token_count": 255,
+        "non_dialogue_custom_tool_call": 106,
+        "non_dialogue_custom_tool_call_output": 106,
+        "non_dialogue_function_call": 119,
+        "non_dialogue_inter_agent_communication_metadata": 74,
+        "non_dialogue_agent_message": 74,
+        "non_dialogue_compacted": 2,
+        "non_dialogue_world_state": 3,
+        "non_dialogue_turn_context": 4,
+        "non_dialogue_thread_settings_applied": 4,
+        "non_dialogue_task_complete": 2,
+        "non_dialogue_task_started": 2,
+        "client_context_not_dialogue": 1,
+        "non_dialogue_message": 1
+      }
+    }
+  },
+  "files": {
+    "raw/chain-01.jsonl": {
+      "sha256": "39932a90f4b10a0ffbdaf6ef69030f411ffd81d90388f6202630a41289eeecd1",
+      "bytes": 45030
+    },
+    "raw/chain-01.md": {
+      "sha256": "1a5eec46f981f2a6aae62f597c150f400248dac94877e0f5a5954ff00198f698",
+      "bytes": 26248
+    },
+    "raw/chain-02.jsonl": {
+      "sha256": "abcf0bc41ca8602c5e3645c140c47cc02569b2405a7b0be2d4bfc9995aab8754",
+      "bytes": 26373
+    },
+    "raw/chain-02.md": {
+      "sha256": "43f687da9a9174e7c40fb9ac9efa29831ff4b90c3d6c6a9b46d66bf67978ad58",
+      "bytes": 16439
+    },
+    "raw/chain-03.jsonl": {
+      "sha256": "3de4c604a3eae361278f4df238c566adba1728b445a0d6c60c40053597e44203",
+      "bytes": 22812
+    },
+    "raw/chain-03.md": {
+      "sha256": "ec6e6ce2cd44147ca405f01f9321adf11efeb249a246b6aebfff8885eb951ecd",
+      "bytes": 12920
+    }
+  }
+}
