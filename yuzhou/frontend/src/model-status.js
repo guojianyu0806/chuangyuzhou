@@ -17,8 +17,8 @@ export function modelStatusLabel(status) {
 export function modelEngineDescription(status) {
   if (status?.engine === 'deepseek-direct') {
     return engineAvailable(status)
-      ? '本比赛实例使用独立 DeepSeek 直连，无需安装 Hermes。只有发送 AI 请求才会调用模型；保存密钥与提取文档正文不会调用模型。'
-      : '本比赛实例的 DeepSeek 直连暂不可用，请检查本副本服务；密钥保存不代表连接测试成功。';
+      ? '本机工作台使用独立 DeepSeek 直连，无需安装 Hermes。只有发送 AI 请求才会调用模型；保存密钥与提取文档正文不会调用模型。'
+      : '本机工作台的 DeepSeek 直连暂不可用，请检查工作台服务；密钥保存不代表连接测试成功。';
   }
   return engineAvailable(status)
     ? '独立 AI 引擎已配置，真实调用效果仍待验证。'

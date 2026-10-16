@@ -135,7 +135,7 @@ export function mountAIComposer(ctx, host, settings={}) {
     <div class="ai-drop-target"><span>${icon('upload', 18)} 拖入文件、截图或课件</span><button type="button" class="ai-attach-button" data-ai="attach">选择附件 ${icon('plus', 15)}</button><input type="file" multiple hidden data-ai-files><small>每个文件最多 40 MB · 仅保存到当前浏览器</small></div>
     <div class="ai-attachment-chips" aria-live="polite"></div>
     <div class="ai-compose-footer"><label class="ai-destination"><span>放到</span><select name="destination" aria-label="内容归属">${options(ctx, owner.aiDraft.targetId)}</select></label><button class="btn ai-send" type="submit">${icon('sparkles', 17)}${followRequest?'发送补充':'发送'} ${icon('arrow-right', 16)}</button></div>
-    <div class="ai-compose-note">${icon('shield', 13)} 先收好原文与附件，本比赛实例独立配置 AI 引擎与模型后才能自动整理。</div>
+    <div class="ai-compose-note">${icon('shield', 13)} 先收好原文与附件，本机工作台独立配置 AI 引擎与模型后才能自动整理。</div>
     <div class="ai-compose-live" role="status" aria-live="polite"></div>
   </form>`;
   const form = host.querySelector('form');

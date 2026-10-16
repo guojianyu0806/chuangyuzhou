@@ -4,7 +4,7 @@ const FORMATS = new Set(['txt', 'md', 'csv', 'docx', 'pptx', 'pdf']);
 export const supportsFileText = file => FORMATS.has(String(file?.name || '').split('.').pop().toLowerCase());
 
 export async function requestFileText(ctx, file) {
-  if (!ctx.cloud?.enabled || ctx.state.mode !== 'personal') throw new Error('请在本比赛实例的个人空间中提取正文，示例资料不会上传。');
+  if (!ctx.cloud?.enabled || ctx.state.mode !== 'personal') throw new Error('请在本机工作台的个人空间中提取正文，请先登录后操作。');
   if (!supportsFileText(file)) throw new Error('此格式暂不支持正文提取，原件仍可下载。');
   if (!file.blobId) throw new Error('没有找到文件记录，请重新添加原件。');
   // Reuse the attachment sync queue so a newly selected file is available.
@@ -29,7 +29,7 @@ export function mountFileText(ctx, host, file) {
   if (!host?.isConnected || !supportsFileText(file)) return;
   const panel = document.createElement('section');
   panel.className = 'file-text-panel';
-  panel.innerHTML = '<div class="file-text-heading"><strong>资料正文</strong><button type="button" class="btn" data-file-text>提取正文</button></div><p class="small muted">在本比赛实例解析文件，不调用模型；原件和现有预览保留。</p><div data-file-text-result aria-live="polite"></div>';
+  panel.innerHTML = '<div class="file-text-heading"><strong>资料正文</strong><button type="button" class="btn" data-file-text>提取正文</button></div><p class="small muted">在本机工作台解析文件，不调用模型；原件和现有预览保留。</p><div data-file-text-result aria-live="polite"></div>';
   host.append(panel);
   const button = panel.querySelector('[data-file-text]');
   const resultHost = panel.querySelector('[data-file-text-result]');

@@ -22,7 +22,7 @@ test('extraction waits for existing attachment sync and uses the encoded blob ID
 
 test('example mode and unsupported files are rejected without uploading or calling APIs',async()=>{
   const {ctx,calls}=fixture();ctx.state.mode='demo';
-  await assert.rejects(requestFileText(ctx,file),/示例资料不会上传/);
+  await assert.rejects(requestFileText(ctx,file),/请先登录后操作/);
   ctx.state.mode='personal';
   await assert.rejects(requestFileText(ctx,{...file,name:'旧课件.ppt'}),/暂不支持/);
   assert.deepEqual(calls,[]);

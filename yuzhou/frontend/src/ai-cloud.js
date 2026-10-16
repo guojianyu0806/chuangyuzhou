@@ -8,7 +8,7 @@ export const cloudAIEnabled = ctx => !!ctx.cloud?.enabled && ctx.state.mode === 
 export const jobWorking = job => !!job && ['queued','running'].includes(job.status);
 
 export async function startAIJob(ctx, request) {
-  if (!cloudAIEnabled(ctx)) throw new Error(ctx.cloud?.enabled ? '请先进入“我的工作台”，再提交真实资料。' : '请在本比赛实例独立配置 AI 引擎与模型后使用自动整理。');
+  if (!cloudAIEnabled(ctx)) throw new Error(ctx.cloud?.enabled ? '请先进入“我的工作台”，再提交真实资料。' : '请在本机工作台独立配置 AI 引擎与模型后使用自动整理。');
   const cache = entry(ctx.state);
   if (jobWorking(cache.jobs.get(request.id)) || cache.jobs.get(request.id)?.starting) return;
   cache.jobs.set(request.id, {requestId:request.id,status:'checking',starting:true}); emit(ctx.state);
