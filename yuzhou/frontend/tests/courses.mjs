@@ -20,7 +20,7 @@ try {
   await page.locator('.course-source-callout').waitFor();
   await check(page.locator('.course-source-callout').isVisible(), 'Source note should be visible');
   assert.match(await page.locator('.course-source-callout').innerText(), /内置示例.*未引用你的课件/);
-  assert.equal(await page.locator('.course-note-overline .badge').innerText(), '示例笔记');
+  assert.equal(await page.locator('.course-note-overline .badge').innerText(), '参考笔记');
 
   for (const width of [1440, 1024, 768, 390]) {
     await page.setViewportSize({ width, height: 1000 });
@@ -99,7 +99,7 @@ try {
   assert.equal(await page.locator('.course-library-card').count(), 1);
   await page.getByRole('button', { name: '我创建的', exact: true }).click();
   assert.equal(await page.locator('.course-library-card').count(), 1);
-  await page.getByRole('button', { name: '示例课程', exact: true }).click();
+  await page.getByRole('button', { name: '参考课程', exact: true }).click();
   assert.equal(await page.locator('.course-library-card').count(), 0);
   assert.deepEqual(errors, [], 'No uncaught browser errors');
   console.log('PASS: example provenance, responsive reading layout, new course, new note, HTML escaping, note revision, Markdown export, TXT IndexedDB persistence, assistant preferences, unavailable-AI truthfulness, search and filters.');
