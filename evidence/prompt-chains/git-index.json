@@ -1,0 +1,514 @@
+{
+  "schema": 1,
+  "note": "Selected historical commits; diffs compare the real first parent to each commit and include only listed paths. No dates or histories rewritten.",
+  "chains": {
+    "01": [
+      {
+        "short": "0fcb7cf",
+        "commit": "0fcb7cfbcb7abe4f6064d516dfe6dbf5928642ee",
+        "parents": [
+          "3d888f937786a1ab2f0b3947ddab0de3babc8477"
+        ],
+        "committed_at": "2026-10-09T14:41:07+08:00",
+        "subject": "docs(platform): 明确AI伙伴驱动的工作台搭建目标"
+      },
+      {
+        "short": "646429d",
+        "commit": "646429df94e3b1536e12f93249359eb20bec700f",
+        "parents": [
+          "0fcb7cfbcb7abe4f6064d516dfe6dbf5928642ee"
+        ],
+        "committed_at": "2026-10-09T14:46:58+08:00",
+        "subject": "feat(workbench): 建立模块模板配置并兼容完整宇宙布局"
+      },
+      {
+        "short": "847f38c",
+        "commit": "847f38c3555f041ac62aada8a5bd101679b18675",
+        "parents": [
+          "646429df94e3b1536e12f93249359eb20bec700f"
+        ],
+        "committed_at": "2026-10-09T14:48:05+08:00",
+        "subject": "feat(ai): 支持工作台搭建行动及配置恢复保护"
+      },
+      {
+        "short": "b7a7f02",
+        "commit": "b7a7f022061bdd7b150861ce460969bc2948167e",
+        "parents": [
+          "847f38c3555f041ac62aada8a5bd101679b18675"
+        ],
+        "committed_at": "2026-10-09T15:02:35+08:00",
+        "subject": "feat(builder): 接入模块搭建台和常驻AI伙伴"
+      },
+      {
+        "short": "0cf9c2c",
+        "commit": "0cf9c2c95e8acfc2e388566679ade747738d8cc0",
+        "parents": [
+          "b7a7f022061bdd7b150861ce460969bc2948167e"
+        ],
+        "committed_at": "2026-10-09T15:03:02+08:00",
+        "subject": "test(evidence): 保留平台回归与偶发失败诊断"
+      },
+      {
+        "short": "f4297f3",
+        "commit": "f4297f3c3c4ded28d9c98122da2744aacffcfd05",
+        "parents": [
+          "f2fd4ac565a4d3549c2980bb100cb02313e3bdd9"
+        ],
+        "committed_at": "2026-10-09T15:21:46+08:00",
+        "subject": "docs(placement): 明确可视化方块摆放需求"
+      },
+      {
+        "short": "68c569d",
+        "commit": "68c569da7d286b833cc38041d8cbb7ab17f56d92",
+        "parents": [
+          "f4297f3c3c4ded28d9c98122da2744aacffcfd05"
+        ],
+        "committed_at": "2026-10-09T15:26:18+08:00",
+        "subject": "feat(placement): 复用真实画布坐标并保护摆放撤销"
+      },
+      {
+        "short": "e34b7af",
+        "commit": "e34b7af5e106a3218d6dcdb21d99cde38bb3e73c",
+        "parents": [
+          "68c569da7d286b833cc38041d8cbb7ab17f56d92"
+        ],
+        "committed_at": "2026-10-09T15:34:54+08:00",
+        "subject": "feat(builder): 支持方块拖放预览与可撤销布局"
+      },
+      {
+        "short": "a484fa9",
+        "commit": "a484fa90731acb0a0281828829ed3464ae66d8c8",
+        "parents": [
+          "b5fdee30f2dc6f735ba870458d4ade5c8989f607"
+        ],
+        "committed_at": "2026-10-09T15:58:19+08:00",
+        "subject": "docs(canvas): 记录搭建画布缩放和平移需求"
+      },
+      {
+        "short": "5ebe9da",
+        "commit": "5ebe9dab64c8c4339ff3ad08dea9c39625d77612",
+        "parents": [
+          "a484fa90731acb0a0281828829ed3464ae66d8c8"
+        ],
+        "committed_at": "2026-10-09T16:01:16+08:00",
+        "subject": "feat(canvas): 增加保持锚点的视野变换"
+      },
+      {
+        "short": "27dd733",
+        "commit": "27dd733d2f004656e84eacc2f91217d8c9d87a34",
+        "parents": [
+          "5ebe9dab64c8c4339ff3ad08dea9c39625d77612"
+        ],
+        "committed_at": "2026-10-09T16:07:09+08:00",
+        "subject": "feat(builder): 支持画布缩放平移与视野复位"
+      },
+      {
+        "short": "154e54e",
+        "commit": "154e54e8f069437b56080b709c9b8261f43af15f",
+        "parents": [
+          "0332d1adf09d9cc32609a02109ad9fc0979f7bf1"
+        ],
+        "committed_at": "2026-10-09T19:55:28+08:00",
+        "subject": "feat(builder): 恢复拖入摆放并支持双击打开方块"
+      },
+      {
+        "short": "85317a5",
+        "commit": "85317a58914f412b9035dfec9473423a01236eb1",
+        "parents": [
+          "f131c8d89195b74a32f641f7c404e1acd38ec1dc"
+        ],
+        "committed_at": "2026-10-13T18:54:39+08:00",
+        "subject": "docs(canvas): 记录卡片内容随尺寸适配需求"
+      },
+      {
+        "short": "964a7c3",
+        "commit": "964a7c31d6ed061c968735bd5ddf8b9088ace230",
+        "parents": [
+          "85317a58914f412b9035dfec9473423a01236eb1"
+        ],
+        "committed_at": "2026-10-13T19:04:44+08:00",
+        "subject": "fix(canvas): 让首页卡片图文随宽高自适应"
+      },
+      {
+        "short": "8e1ae7b",
+        "commit": "8e1ae7b5969d8a0b0f675f573433ee5747b643cd",
+        "parents": [
+          "964a7c31d6ed061c968735bd5ddf8b9088ace230"
+        ],
+        "committed_at": "2026-10-13T19:07:41+08:00",
+        "subject": "docs(canvas): 归档卡片自适应验收与使用说明"
+      }
+    ],
+    "02": [
+      {
+        "short": "b620b9d",
+        "commit": "b620b9d5520514bd31a9bce48c9faddd48178faf",
+        "parents": [
+          "e08339d3eb70471e4d345138dc7d2be47b1d8b5d"
+        ],
+        "committed_at": "2026-10-15T19:39:59+08:00",
+        "subject": "docs(ai): 明确完整流程验收范围和持续试测授权"
+      },
+      {
+        "short": "6fe0529",
+        "commit": "6fe052950130f1890b8c959f78b976ca474d4105",
+        "parents": [
+          "b620b9d5520514bd31a9bce48c9faddd48178faf"
+        ],
+        "committed_at": "2026-10-15T19:42:12+08:00",
+        "subject": "fix(ai): 允许未保存的过期回复按最新状态重试"
+      },
+      {
+        "short": "7ed458f",
+        "commit": "7ed458ffc26a036c64402eee021ebc48bb279403",
+        "parents": [
+          "6fe052950130f1890b8c959f78b976ca474d4105"
+        ],
+        "committed_at": "2026-10-15T19:43:51+08:00",
+        "subject": "test(ai): 增加隔离的真实模型界面验收实例"
+      },
+      {
+        "short": "6380a5b",
+        "commit": "6380a5b79baaa5209183f3afbf315bfc4eda21e7",
+        "parents": [
+          "7ed458ffc26a036c64402eee021ebc48bb279403"
+        ],
+        "committed_at": "2026-10-15T19:50:39+08:00",
+        "subject": "fix(ai): 统一撤销状态保存并阻止过期视图写回"
+      },
+      {
+        "short": "8b64e1c",
+        "commit": "8b64e1c45c61c834e68e6eb803a5cfef4b41292c",
+        "parents": [
+          "6380a5b79baaa5209183f3afbf315bfc4eda21e7"
+        ],
+        "committed_at": "2026-10-15T19:50:40+08:00",
+        "subject": "test(ai): 留存真实失败并增加脱敏结构诊断"
+      },
+      {
+        "short": "c151a54",
+        "commit": "c151a549fc2a1699b9dc2ec11da1590ccc5e48ed",
+        "parents": [
+          "8b64e1c45c61c834e68e6eb803a5cfef4b41292c"
+        ],
+        "committed_at": "2026-10-15T19:56:42+08:00",
+        "subject": "test(ai): 增加业务不变量核验并保留查询失败证据"
+      },
+      {
+        "short": "9b88757",
+        "commit": "9b8875711a67ab006289ac23f7836bd5ad8896ad",
+        "parents": [
+          "c151a549fc2a1699b9dc2ec11da1590ccc5e48ed"
+        ],
+        "committed_at": "2026-10-15T19:59:15+08:00",
+        "subject": "fix(ai): 明确查询协议并提供可定位的格式修正反馈"
+      },
+      {
+        "short": "86e650b",
+        "commit": "86e650b13a9f465fd03ea4966af65f6fc081cc4a",
+        "parents": [
+          "9b8875711a67ab006289ac23f7836bd5ad8896ad"
+        ],
+        "committed_at": "2026-10-15T20:01:33+08:00",
+        "subject": "test(ai): 记录查询通过后的空查询兼容失败与回归结果"
+      },
+      {
+        "short": "02dad36",
+        "commit": "02dad36120d5d138445baca810027b35a56f8281",
+        "parents": [
+          "86e650b13a9f465fd03ea4966af65f6fc081cc4a"
+        ],
+        "committed_at": "2026-10-15T20:02:28+08:00",
+        "subject": "fix(ai): 将空查询视为无查询并保留查询执行互斥"
+      },
+      {
+        "short": "a5edfeb",
+        "commit": "a5edfebc3c133218e9a4c9a9f4a97312b189dbf6",
+        "parents": [
+          "02dad36120d5d138445baca810027b35a56f8281"
+        ],
+        "committed_at": "2026-10-15T20:09:13+08:00",
+        "subject": "test(ai): 留存跨轮执行结果与浏览后撤销残留问题"
+      },
+      {
+        "short": "b5b7e84",
+        "commit": "b5b7e84d56c8154368de433c602059cb615c9890",
+        "parents": [
+          "a5edfebc3c133218e9a4c9a9f4a97312b189dbf6"
+        ],
+        "committed_at": "2026-10-15T20:10:36+08:00",
+        "subject": "fix(ai): 保留跨轮笔记段落并说明单层JSON转义"
+      },
+      {
+        "short": "c67496d",
+        "commit": "c67496db8afa2e1802977a149b16dd50deb00411",
+        "parents": [
+          "b5b7e84d56c8154368de433c602059cb615c9890"
+        ],
+        "committed_at": "2026-10-15T20:20:59+08:00",
+        "subject": "fix(ai): 撤销自动画布并保留用户后续布局修改"
+      },
+      {
+        "short": "efe9436",
+        "commit": "efe94363c2256d7c5b73038b1a4821a372ab0f34",
+        "parents": [
+          "c67496db8afa2e1802977a149b16dd50deb00411"
+        ],
+        "committed_at": "2026-10-15T20:26:41+08:00",
+        "subject": "fix(ai): 兼容纯查询回复并拒绝混入顶层行动"
+      },
+      {
+        "short": "d5b79d4",
+        "commit": "d5b79d44120c240f493f9a3ec9e0c360e62c9e57",
+        "parents": [
+          "efe94363c2256d7c5b73038b1a4821a372ab0f34"
+        ],
+        "committed_at": "2026-10-15T20:32:56+08:00",
+        "subject": "test(ai): 完成真实跨轮流程验收并归档失败与用量"
+      }
+    ],
+    "03": [
+      {
+        "short": "d858a7c",
+        "commit": "d858a7cbe3b0c1d8b7762be80891101b2073d94f",
+        "parents": [
+          "2f362dbac0111acccaa584ae48effc75eb2e9d16"
+        ],
+        "committed_at": "2026-10-09T17:20:24+08:00",
+        "subject": "docs(blocks): 记录通用方块与AI小工具双层需求"
+      },
+      {
+        "short": "2655406",
+        "commit": "2655406993505a7cc6b9e746a25132ecbd97a3a5",
+        "parents": [
+          "d858a7cbe3b0c1d8b7762be80891101b2073d94f"
+        ],
+        "committed_at": "2026-10-09T17:25:38+08:00",
+        "subject": "feat(blocks): 增加通用场景预设与可交互工具示例"
+      },
+      {
+        "short": "909c221",
+        "commit": "909c22112d96c76eacd46f26a044956fd68b1fd5",
+        "parents": [
+          "2655406993505a7cc6b9e746a25132ecbd97a3a5"
+        ],
+        "committed_at": "2026-10-09T17:30:22+08:00",
+        "subject": "feat(blocks): 接入自定义方块数据与AI确认行动"
+      },
+      {
+        "short": "9f5f572",
+        "commit": "9f5f572daee1164178938104bf5ba01d7496cebc",
+        "parents": [
+          "909c22112d96c76eacd46f26a044956fd68b1fd5"
+        ],
+        "committed_at": "2026-10-09T17:35:59+08:00",
+        "subject": "feat(miniapp): 提供隔离运行与受控组件交互"
+      },
+      {
+        "short": "c1a6f15",
+        "commit": "c1a6f152222e1d941563cdaaffa8e69ac7b47df5",
+        "parents": [
+          "9f5f572daee1164178938104bf5ba01d7496cebc"
+        ],
+        "committed_at": "2026-10-09T17:41:16+08:00",
+        "subject": "feat(builder): 接入场景方块编辑与AI工具创建入口"
+      },
+      {
+        "short": "7040b79",
+        "commit": "7040b793857e5f74b959c714773f83defd2a6dee",
+        "parents": [
+          "d5b79d44120c240f493f9a3ec9e0c360e62c9e57"
+        ],
+        "committed_at": "2026-10-15T21:34:55+08:00",
+        "subject": "docs(ai): 明确自定义方块与小程序完整验收范围"
+      },
+      {
+        "short": "7df647a",
+        "commit": "7df647a1918f84864b1b524d0d3f6968b612b156",
+        "parents": [
+          "7040b793857e5f74b959c714773f83defd2a6dee"
+        ],
+        "committed_at": "2026-10-15T21:37:00+08:00",
+        "subject": "test(ai): 建立方块生成的独立真实模型验收实例"
+      },
+      {
+        "short": "7e9970e",
+        "commit": "7e9970e8964c7cda3c1c1eb5546e512bda4b1a6f",
+        "parents": [
+          "7df647a1918f84864b1b524d0d3f6968b612b156"
+        ],
+        "committed_at": "2026-10-15T21:42:33+08:00",
+        "subject": "fix(blocks): 撤销未改方块时同步清理自动画布入口"
+      },
+      {
+        "short": "282a536",
+        "commit": "282a536ce38132c6a661418f651584a640766211",
+        "parents": [
+          "7e9970e8964c7cda3c1c1eb5546e512bda4b1a6f"
+        ],
+        "committed_at": "2026-10-15T21:45:02+08:00",
+        "subject": "fix(miniapp): 停止与运行失败后恢复启动入口"
+      },
+      {
+        "short": "0d50627",
+        "commit": "0d50627bc08770af73ac0dd153d63b53a7a1638c",
+        "parents": [
+          "282a536ce38132c6a661418f651584a640766211"
+        ],
+        "committed_at": "2026-10-15T21:45:48+08:00",
+        "subject": "docs(ai): 保留首轮小程序运行失败与修复依据"
+      },
+      {
+        "short": "aa67264",
+        "commit": "aa67264fef8d72d1f411d32620d8c6d8e6d6b684",
+        "parents": [
+          "0d50627bc08770af73ac0dd153d63b53a7a1638c"
+        ],
+        "committed_at": "2026-10-15T21:46:25+08:00",
+        "subject": "test(ai): 核对方块使用修订与撤销阶段数据"
+      },
+      {
+        "short": "3903106",
+        "commit": "39031068879fa92bf2dfdca06aef16d3bf3fc3a8",
+        "parents": [
+          "aa67264fef8d72d1f411d32620d8c6d8e6d6b684"
+        ],
+        "committed_at": "2026-10-15T21:48:16+08:00",
+        "subject": "fix(sync): 区分方块私有数据与宿主附件引用"
+      },
+      {
+        "short": "f35b87f",
+        "commit": "f35b87f52ffe476375a6daf918e52ea3b6509334",
+        "parents": [
+          "39031068879fa92bf2dfdca06aef16d3bf3fc3a8"
+        ],
+        "committed_at": "2026-10-15T21:48:27+08:00",
+        "subject": "fix(ai): 明确小程序注入接口与合法输入保存规则"
+      },
+      {
+        "short": "5debb70",
+        "commit": "5debb70bac6c1670d0c57a12c6003e227a6743f0",
+        "parents": [
+          "f35b87f52ffe476375a6daf918e52ea3b6509334"
+        ],
+        "committed_at": "2026-10-15T21:52:13+08:00",
+        "subject": "test(ai): 安全恢复本轮合成实例以验证修订"
+      },
+      {
+        "short": "86c03fe",
+        "commit": "86c03febd2b8338b5f9601743c2f46d9822339e1",
+        "parents": [
+          "5debb70bac6c1670d0c57a12c6003e227a6743f0"
+        ],
+        "committed_at": "2026-10-15T21:57:04+08:00",
+        "subject": "fix(blocks): 部分撤销时保留已用方块并清理未改同批入口"
+      },
+      {
+        "short": "b64305a",
+        "commit": "b64305aa45243f18279def0cd48f32706bf0f612",
+        "parents": [
+          "86c03febd2b8338b5f9601743c2f46d9822339e1"
+        ],
+        "committed_at": "2026-10-15T22:05:19+08:00",
+        "subject": "test(ai): 归档方块创建运行修订撤销的真实验证证据"
+      },
+      {
+        "short": "a17e3a8",
+        "commit": "a17e3a804f8d757938d2bab849fe234bd67a8a2b",
+        "parents": [
+          "b64305aa45243f18279def0cd48f32706bf0f612"
+        ],
+        "committed_at": "2026-10-15T22:06:01+08:00",
+        "subject": "docs(ai): 更新方块生成完整流程与验收边界"
+      }
+    ]
+  },
+  "diffs": {
+    "154e54e": {
+      "path": "diffs/154e54e.patch",
+      "path_filters": [
+        "yuzhou/frontend/src/placement.js",
+        "yuzhou/frontend/src/placement.css"
+      ],
+      "sha256": "196fec93d27a40882e4786b349b85970facd354b1d6025791ad73f34d0b6de33",
+      "bytes": 35892
+    },
+    "964a7c3": {
+      "path": "diffs/964a7c3.patch",
+      "path_filters": [
+        "yuzhou/frontend/src"
+      ],
+      "sha256": "40ae3fc9431249b6db754d9fd5938df08b4c7e43605bdcf57fdd3da1b3cf7a42",
+      "bytes": 8364
+    },
+    "9b88757": {
+      "path": "diffs/9b88757.patch",
+      "path_filters": [
+        "yuzhou/backend/hermes.mjs",
+        "yuzhou/backend/workspace-queries.mjs"
+      ],
+      "sha256": "12a057440b2d6d83e4abf74ac5588ffbeec066188ffb3b0bbcea9c06e65886b0",
+      "bytes": 19501
+    },
+    "02dad36": {
+      "path": "diffs/02dad36.patch",
+      "path_filters": [
+        "yuzhou/backend"
+      ],
+      "sha256": "efa3879f0165ac1b2a97dcf1558a80319397e97480fbeb5000bf227e0880b666",
+      "bytes": 9493
+    },
+    "c67496d": {
+      "path": "diffs/c67496d.patch",
+      "path_filters": [
+        "yuzhou/frontend/src/workspace-actions-core.js",
+        "yuzhou/frontend/src/workspace-actions.js"
+      ],
+      "sha256": "d9fa399747c22e4858378bc6d3222771e8e5b90cd8cdd6a7c0efda3af40c12a6",
+      "bytes": 9180
+    },
+    "efe9436": {
+      "path": "diffs/efe9436.patch",
+      "path_filters": [
+        "yuzhou/backend"
+      ],
+      "sha256": "956fe8d1461c703439a1f287a356fe95065e1f2a44844510adccaec972e5729c",
+      "bytes": 19616
+    },
+    "282a536": {
+      "path": "diffs/282a536.patch",
+      "path_filters": [
+        "yuzhou/frontend/src/custom-blocks.js",
+        "yuzhou/frontend/src/miniapp-runtime.js"
+      ],
+      "sha256": "16d3154bebb8c9ca0e0fcd0ff0f82f5753070d00676195e37d88c4694bc1e23e",
+      "bytes": 6055
+    },
+    "3903106": {
+      "path": "diffs/3903106.patch",
+      "path_filters": [
+        "yuzhou"
+      ],
+      "sha256": "e5722f6c78642d588863a47002d4fa08a2db41545a5114b676c38bba61dddcaf",
+      "bytes": 8619
+    },
+    "f35b87f": {
+      "path": "diffs/f35b87f.patch",
+      "path_filters": [
+        "yuzhou/backend/hermes.mjs",
+        "yuzhou/backend/tests/miniapp-prompt.test.mjs"
+      ],
+      "sha256": "44187c89f7803fb69e8dc3b4fb900f80b2fad1d7a8edc236a0323409e816ce00",
+      "bytes": 11184
+    },
+    "86c03fe": {
+      "path": "diffs/86c03fe.patch",
+      "path_filters": [
+        "yuzhou/frontend/src/workspace-actions-custom-blocks.js",
+        "yuzhou/frontend/tests/custom-blocks.test.mjs"
+      ],
+      "sha256": "5ffd23337c1b7d403366ae585175161d0a30cc14ee457f55272bc137dcd506fd",
+      "bytes": 5528
+    }
+  }
+}

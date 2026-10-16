@@ -1,0 +1,340 @@
+diff --git a/yuzhou/frontend/src/placement.css b/yuzhou/frontend/src/placement.css
+index a9685ce..e9f6ead 100644
+--- a/yuzhou/frontend/src/placement.css
++++ b/yuzhou/frontend/src/placement.css
+@@ -41,10 +41,12 @@
+   white-space: normal;
+   transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+ }
+-.wb-palette-item:hover { background: #f7f3ff; border-color: #b99ddd; }
+-.wb-palette-item[aria-pressed="true"] { background: #f0e8ff; border-color: var(--place-purple); box-shadow: 0 0 0 1px var(--place-purple); }
++.wb-palette-item:hover { background: #fafcfc; border-color: #c4d5d1; }
++.wb-palette-item[aria-pressed="true"] { background: #edf6f3; border-color: #9bbcb1; box-shadow: inset 3px 0 0 #659486; }
+ .wb-palette-item.is-placed { background: #f7faf9; border-color: #dde9e5; }
+-.wb-palette-item.is-placed[aria-pressed="true"] { background: #f0e8ff; border-color: var(--place-purple); }
++.wb-palette-item.is-placed[aria-pressed="true"] { background: #edf6f3; border-color: #9bbcb1; }
++.wb-palette-item:focus-visible { outline: 2px dashed #354a46; outline-offset: -5px; }
++.wb-palette-item:focus:not(:focus-visible) { outline: none; }
+ .wb-block-icon {
+   width: 34px;
+   height: 34px;
+@@ -113,7 +115,7 @@
+   touch-action: none;
+   cursor: grab;
+ }
+-.wb-placement-stage:focus-visible { outline: 3px solid #a78ad8; outline-offset: -3px; }
++.wb-placement-stage:focus-visible { outline: 2px dashed #596760; outline-offset: -5px; }
+ .wb-placement-stage.is-placing { cursor: crosshair; background-color: #f2f8f7; background-image: radial-gradient(circle, #b1d7d1 1px, transparent 1px); }
+ .wb-placement-stage.is-dragging, .wb-placement-stage.is-dragging .wb-placed-block { cursor: grabbing; }
+ .wb-placement-stage.can-pan,.wb-placement-stage.can-pan .wb-placed-block{cursor:grab}
+@@ -121,6 +123,10 @@
+ .wb-placement-navigation,.wb-placement-layout-actions{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+ .wb-placement-navigation [data-place-action="zoom-reset"]{min-width:60px;font-variant-numeric:tabular-nums}
+ .wb-placed-block {
++  /* The block's own pigment defines its edge and depth at every zoom level. */
++  --block-edge: color-mix(in srgb, var(--block-color, #d7c8f8) 70%, #7b887f);
++  --block-base: color-mix(in srgb, var(--block-color, #d7c8f8) 74%, #a9b3a7);
++  --block-ink: color-mix(in srgb, var(--block-color, #d7c8f8) 22%, #303b36);
+   position: absolute;
+   display: flex;
+   flex-direction: column;
+@@ -128,30 +134,44 @@
+   justify-content: flex-start;
+   gap: 7px;
+   padding: 13px;
+-  border: 1px solid color-mix(in srgb, var(--block-color, #d7c8f8) 72%, #9380ac);
++  border: 1px solid var(--block-edge);
+   border-radius: 12px;
+-  background: color-mix(in srgb, var(--block-color, #d7c8f8) 46%, white);
+-  box-shadow: 0 3px 0 color-mix(in srgb, var(--block-color, #d7c8f8) 64%, #d1c5df), 0 7px 15px #4731570a;
+-  color: #382c49;
++  background: linear-gradient(155deg, #ffffff8c, #ffffff08 48%), color-mix(in srgb, var(--block-color, #d7c8f8) 68%, white);
++  box-shadow: inset 0 1px 0 #ffffffd9, inset 0 -2px 0 #ffffff40, 0 3px 0 var(--block-base), 0 8px 13px -5px #34403924;
++  color: var(--block-ink);
+   text-align: left;
+   white-space: normal;
+   overflow: hidden;
+   cursor: grab;
+   touch-action: none;
+-  transition: border-color .12s, box-shadow .12s;
++  outline: none;
++  transition: transform 260ms cubic-bezier(.2,.8,.25,1.18), box-shadow 180ms ease, border-color 180ms ease;
+   container-type: inline-size;
+ }
+-.wb-placed-block > .wb-block-icon { width: 30px; height: 30px; border-radius: 8px; background: #ffffff91; }
++.wb-placed-block > .wb-block-icon { width: 30px; height: 30px; border-radius: 8px; background: #ffffff91; border-color: #ffffffb3; color: var(--block-ink); box-shadow: 0 1px 2px #34403912; }
+ .wb-placed-block > .wb-block-icon svg { width: 17px; height: 17px; }
+ .wb-placed-block > strong { display: block; width: 100%; min-width: 0; font-size: 13px; font-weight: 730; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+-.wb-placed-block > small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: #766384; font-size: 10px; line-height: 1.5; }
+-.wb-placed-block > .wb-block-mini { width: 63%; margin-top: auto; gap: 5px; }
+-.wb-placed-block > .wb-block-mini i { height: 4px; background: #937ca6; }
+-.wb-placed-block:hover { border-color: #9a6bcd; box-shadow: 0 3px 0 #c1a8dc, 0 7px 18px #56326e18; }
+-.wb-placed-block[aria-pressed="true"] { z-index: 2; border-color: var(--place-purple); outline: 2px solid var(--place-purple); outline-offset: 2px; box-shadow: 0 3px 0 #bfa5eb, 0 8px 20px #7950f220; }
+-.wb-placed-block:active { transform: none; }
+-.wb-placed-block:focus-visible { outline: 3px solid #5735a7; outline-offset: 3px; }
+-.wb-block-badge { position: absolute; right: 7px; top: 7px; padding: 2px 5px; border-radius: 5px; background: #fff9; color: #674097; font-size: 9px; line-height: 1.6; }
++.wb-placed-block > small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: color-mix(in srgb, var(--block-ink) 75%, white); font-size: 10px; line-height: 1.5; }
++.wb-placed-block > .wb-block-mini { width: 63%; min-height: 12px; margin-top: auto; gap: 4px; opacity: .42; flex-shrink: 0; }
++.wb-placed-block > .wb-block-mini i { height: 3px; background: var(--block-ink); }
++.wb-placed-block[aria-pressed="true"] { z-index: 2; border-color: var(--block-edge); outline: none; box-shadow: inset 0 1px 0 #ffffffed, inset 0 -2px 0 #ffffff60, 0 3px 0 var(--block-base), 0 9px 16px -4px #34403930; }
++.wb-placed-block[aria-pressed="true"] > strong { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--block-ink) 46%, transparent); text-underline-offset: 3px; text-decoration-thickness: 1px; }
++.wb-placed-block:focus-visible { outline: 2px dashed var(--block-ink); outline-offset: -5px; }
++.wb-placed-block:focus:not(:focus-visible) { outline: none; }
++.wb-block-badge { position: absolute; right: 7px; top: 7px; max-width: calc(100% - 53px); padding: 2px 5px; border-radius: 5px; background: #ffffffa6; color: var(--block-ink); font-size: 9px; line-height: 1.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
++@media (hover:hover) and (pointer:fine) {
++  .wb-placed-block:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 #ffffffed, inset 0 -2px 0 #ffffff60, 0 4px 0 var(--block-base), 0 11px 18px -5px #34403930; }
++}
++.wb-placement-stage.is-dragging .wb-placed-block,
++.wb-placement-stage.is-panning .wb-placed-block,
++.wb-placement-stage.can-pan .wb-placed-block { transform: none; animation: none; transition: box-shadow 120ms ease; }
++.wb-placed-block.is-landing { animation: wb-block-settle 320ms cubic-bezier(.2,.7,.25,1); }
++@keyframes wb-block-settle {
++  0% { transform: translateY(-5px); }
++  56% { transform: translateY(1px); }
++  80% { transform: translateY(-.5px); }
++  100% { transform: translateY(0); }
++}
+ .wb-placement-ghost {
+   position: absolute;
+   z-index: 3;
+@@ -194,9 +214,12 @@
+ .wb-placement-inspector > span { font-size: 11px; color: #7a6b89; }
+ .wb-placement-inspector button[data-place-action="cancel"] { margin-left: auto; }
+ @container (max-width: 105px) {
+-  .wb-placed-block > small, .wb-placed-block > .wb-block-mini { display: none; }
++  .wb-placed-block > small { display: none; }
++  .wb-placed-block > .wb-block-mini { width: 67%; gap: 3px; min-height: 9px; }
++  .wb-placed-block > .wb-block-mini i { height: 2px; }
+   .wb-placed-block > strong { font-size: 11px; }
+   .wb-placed-block > .wb-block-icon { width: 25px; height: 25px; }
++  .wb-placed-block > .wb-block-badge { font-size: 8px; }
+ }
+ @media (max-width: 1100px) {
+   .wb-placement-workspace { grid-template-columns: 188px minmax(0, 1fr); }
+@@ -229,20 +252,31 @@
+   .wb-stage-empty { width: calc(100% - 32px); padding: 19px 16px; font-size: 12px; }
+ }
+ @media (prefers-reduced-motion: reduce) {
+-  .wb-palette-item, .wb-placed-block, .wb-placement-toolbar button, .wb-placement-inspector button { transition: none; }
++  .wb-palette-item, .wb-placement-toolbar button, .wb-placement-inspector button,
++  .wb-placement .wb-placement-stage .wb-placed-block { transition: none; animation: none; transform: none; }
+ }
+ .wb-placement-ghost[hidden],.wb-stage-empty[hidden]{display:none}
+ .wb-palette-list{max-height:610px;overflow-y:auto;scrollbar-width:thin}
+ .wb-placement-heading{display:flex;justify-content:space-between;align-items:center;gap:16px}
+ .wb-placement-inspector>div{display:flex;gap:5px;flex-wrap:wrap}
+-.wb-placed-block.is-small{padding:8px;gap:4px}.wb-placed-block.is-small small,.wb-placed-block.is-small .wb-block-mini,.wb-placed-block.is-small .wb-block-badge{display:none}
++.wb-placed-block.is-small{padding:6px;gap:4px}.wb-placed-block.is-small>small{display:none}
+ .wb-advanced{border-top:1px solid #ded8eb;padding-top:16px}.wb-advanced>summary{font-size:15px;font-weight:650;cursor:pointer;min-height:48px;line-height:1.8}.wb-advanced>summary>span{font-size:11px;font-weight:400;color:#777087;margin-left:12px}.wb-advanced .wb-columns{padding-top:16px}
+ .wb-palette-item{touch-action:none}
+ .wb-placed-block>strong{flex-shrink:0}
+ .wb-placed-block.is-compact>small{display:none}
+-.wb-placed-block.is-small{padding:6px}
+ .wb-placed-block.is-small>.wb-block-icon{width:20px;height:20px;border-radius:6px}
++.wb-placed-block.is-small>.wb-block-icon svg{width:13px;height:13px}
+ .wb-placed-block.is-small>strong{font-size:10px;line-height:1.3}
++.wb-placed-block.is-small>.wb-block-mini{display:grid;width:65%;min-height:8px;gap:3px;opacity:.4}
++.wb-placed-block.is-small>.wb-block-mini i{height:2px}
++.wb-placed-block.is-small>.wb-block-mini i:nth-child(3){display:none}
++.wb-placed-block.is-small>.wb-block-badge{max-width:calc(100% - 36px);padding:1px 4px;font-size:7px}
++@container (max-width:75px){
++  .wb-placed-block>.wb-block-badge,.wb-placed-block.is-small>.wb-block-badge{width:10px;height:13px;padding:0;font-size:0;background:radial-gradient(circle,#5e6c6073 1px,transparent 1.5px) 0 0/5px 5px;}
++  .wb-placed-block>.wb-block-icon,.wb-placed-block.is-small>.wb-block-icon{width:17px;height:17px;border-radius:5px}
++  .wb-placed-block>.wb-block-icon svg,.wb-placed-block.is-small>.wb-block-icon svg{width:11px;height:11px}
++  .wb-placed-block>strong,.wb-placed-block.is-small>strong{font-size:9px;line-height:1.25}
++}
+ @media(max-width:760px){.wb-palette-list{max-height:none;overflow-y:hidden}.wb-palette-item{touch-action:pan-x}.wb-placement-stage{height:420px}.wb-placement-heading{align-items:flex-start}.wb-advanced>summary>span{display:block;margin-left:0}.wb-placement-toolbar>div{display:flex;flex-wrap:wrap;gap:4px}}
+ 
+ /* Keep the actual placement surface above the fold, with one set of instructions. */
+diff --git a/yuzhou/frontend/src/placement.js b/yuzhou/frontend/src/placement.js
+index be22bb0..83b26b2 100644
+--- a/yuzhou/frontend/src/placement.js
++++ b/yuzhou/frontend/src/placement.js
+@@ -9,24 +9,25 @@ import {CUSTOM_BLOCK_PRESETS} from './custom-block-presets.js';
+ 
+ const mini='<span class="wb-block-mini" aria-hidden="true"><i></i><i></i><i></i></span>';
+ const glyph=(item)=>`<span class="wb-block-icon" style="--block-color:${canvasCardFill(item.color)}">${icon(item.icon||'folder',20)}</span>`;
++const presetCard=id=>{const preset=CUSTOM_BLOCK_PRESETS.find(item=>item.id===id);return preset?{...preset,id:`preset:${id}`,x:0,y:0,w:340,h:280}:null;};
+ export function placementHTML(state){
+   const config=getWorkbench(state),visible=placementCards(state);
+   return `<section class="wb-placement" aria-labelledby="wb-placement-title">
+     <div class="wb-placement-heading"><div><h2 id="wb-placement-title">像摆积木一样，搭好你的工作台</h2><p>选一块，放到右边。这里的位置，会直接成为你的工作台布局。</p></div><span class="wb-placement-count">${visible.length} 块已放置</span></div>
+-    <div class="wb-placement-workspace"><aside class="wb-palette" aria-label="方块库"><header><h3>方块库</h3><p>从常用场景创建，再自由摆放</p><button type="button" class="wb-palette-create" data-wb-action="create-block">${icon('plus',15)} 自定义方块</button><button type="button" class="wb-palette-ai" data-wb-action="ask-miniapp">${icon('sparkles',15)} 让 AI 造小工具</button></header>
++    <div class="wb-placement-workspace"><aside class="wb-palette" aria-label="方块库"><header><h3>方块库</h3><p>直接拖到右边，也可点选后放下</p><button type="button" class="wb-palette-create" data-wb-action="create-block">${icon('plus',15)} 自定义方块</button><button type="button" class="wb-palette-ai" data-wb-action="ask-miniapp">${icon('sparkles',15)} 让 AI 造小工具</button></header>
+     <label class="wb-palette-search"><span class="sr-only">搜索方块</span><input type="search" data-palette-search placeholder="搜索用途或名称" aria-label="搜索方块"></label>
+-    <div class="wb-palette-tabs" role="group" aria-label="方块分类"><button type="button" data-palette-tab="scene" aria-pressed="true">场景</button><button type="button" data-palette-tab="mine" aria-pressed="false">我的</button><button type="button" data-palette-tab="builtin" aria-pressed="false">原有</button></div>
+-    <div class="wb-palette-list">${CUSTOM_BLOCK_PRESETS.map(item=>`<button type="button" class="wb-palette-item" data-palette-group="scene" data-palette-search-text="${esc(item.title+' '+item.description+' '+item.category)}" data-wb-action="create-preset" data-id="${esc(item.id)}" aria-label="创建${esc(item.title)}方块" title="${esc(item.description)}">${glyph(item)}<span class="wb-palette-copy"><strong>${esc(item.title)}</strong><small>${esc(item.category)} · 点击创建</small></span>${icon('plus',16)}</button>`).join('')}
++    <div class="wb-palette-tabs" role="group" aria-label="方块分类"><button type="button" data-palette-tab="builtin" aria-pressed="true">模块</button><button type="button" data-palette-tab="scene" aria-pressed="false">场景</button><button type="button" data-palette-tab="mine" aria-pressed="false">自建</button></div>
++    <div class="wb-palette-list">${CUSTOM_BLOCK_PRESETS.map(item=>`<button type="button" hidden class="wb-palette-item" data-palette-group="scene" data-palette-search-text="${esc(item.title+' '+item.description+' '+item.category)}" data-place-preset="${esc(item.id)}" aria-label="创建${esc(item.title)}方块" title="${esc(item.description)}；可拖入画布创建">${glyph(item)}<span class="wb-palette-copy"><strong>${esc(item.title)}</strong><small>${esc(item.category)} · 拖入或点击创建</small></span>${mini}</button>`).join('')}
+     ${getCustomBlocks(state).items.filter(item=>!item.archived).map(item=>{const type=CUSTOM_BLOCK_KINDS.find(type=>type.kind===item.kind||type.id===item.kind);return `<button type="button" hidden class="wb-palette-item is-placed" data-palette-group="mine" data-palette-search-text="${esc(item.title+' '+item.description)}" data-place-source="${esc(item.id)}" aria-label="选择${esc(item.title)}方块" aria-pressed="false" title="${esc(item.description)}">${glyph({...item,icon:type?.icon||'layers'})}<span class="wb-palette-copy"><strong>${esc(item.title)}</strong><small>${esc(type?.title||'自定义')} · 可以挪动</small></span>${mini}</button>`;}).join('')}
+     ${WORKBENCH_MODULES.map(item=>{
+       const module=config.modules.find(row=>row.id===item.id);
+-      return `<button type="button" hidden class="wb-palette-item ${module.enabled?'is-placed':''}" data-palette-group="builtin" data-palette-search-text="${esc(module.title+' '+item.description)}" data-place-source="${esc(item.id)}" aria-label="选择${esc(module.title)}方块" aria-pressed="false" title="${esc(item.description)}">${glyph(item)}<span class="wb-palette-copy"><strong>${esc(module.title)}</strong><small>${module.enabled?'已放置 · 可以挪动':'选择位置后放入'}</small></span>${mini}</button>`;
++      return `<button type="button" class="wb-palette-item ${module.enabled?'is-placed':''}" data-palette-group="builtin" data-palette-search-text="${esc(module.title+' '+item.description)}" data-place-source="${esc(item.id)}" aria-label="选择${esc(module.title)}方块" aria-pressed="false" title="${esc(item.description)}">${glyph(item)}<span class="wb-palette-copy"><strong>${esc(module.title)}</strong><small>${module.enabled?'已放置 · 可以挪动':'拖到右侧放入'}</small></span>${mini}</button>`;
+     }).join('')}</div><p class="wb-palette-empty" data-palette-empty hidden>这里还没有匹配的方块。试试其他分类或创建一个。</p></aside>
+     <section class="wb-placement-board" aria-label="摆放工作台方块"><div class="wb-placement-toolbar"><strong>你的工作台</strong><div class="wb-placement-navigation" role="group" aria-label="搭建画布视野"><button type="button" data-place-action="zoom-out" aria-label="缩小搭建画布">−</button><button type="button" data-place-action="zoom-reset" aria-label="恢复搭建画布为100%" title="恢复100%大小">100%</button><button type="button" data-place-action="zoom-in" aria-label="放大搭建画布">+</button><button type="button" class="btn" data-place-action="fit">看全画布</button></div><div class="wb-placement-layout-actions"><button type="button" class="btn" data-place-action="arrange">整齐排列</button><button type="button" class="btn" data-place-action="undo" disabled>撤销上次摆放</button></div></div>
+-    <p class="wb-placement-hint" role="status" aria-live="polite">先在左边选一个方块，再点击画布放下。</p>
++    <p class="wb-placement-hint" role="status" aria-live="polite">从左边拖入方块；双击右边已有方块，进入对应内容。</p>
+     <div class="wb-placement-stage" tabindex="0" aria-label="方块摆放画布；选择方块后点击位置，方向键微调，回车放下，Escape取消" aria-describedby="wb-placement-help"><div class="wb-placement-ghost" hidden aria-hidden="true"></div><p class="wb-stage-empty" hidden>从左边拿一个方块，放在这里。</p></div>
+     <div class="wb-placement-inspector"><span data-place-selection>直接拖动画布里的方块，就能移动它。</span><div><button type="button" data-place-action="left" aria-label="所选方块向左移动" disabled>←</button><button type="button" data-place-action="up" aria-label="所选方块向上移动" disabled>↑</button><button type="button" data-place-action="down" aria-label="所选方块向下移动" disabled>↓</button><button type="button" data-place-action="right" aria-label="所选方块向右移动" disabled>→</button><button type="button" data-place-action="cancel" disabled>取消选择</button></div></div>
+-    <footer class="wb-placement-footer" id="wb-placement-help"><span>拖动空白处平移 · Ctrl / ⌘ + 滚轮缩放 · 空格拖动或中键也可平移</span><span>放下即保存；点选后可用方向键和回车放置，Esc取消。</span></footer></section></div></section>`;
++    <footer class="wb-placement-footer" id="wb-placement-help"><span>拖动空白处平移 · Ctrl / ⌘ + 滚轮缩放 · 空格拖动或中键也可平移</span><span>双击或回车打开已有方块；待放方块用回车放下，Esc取消。</span></footer></section></div></section>`;
+ }
+ 
+ /** Screen-only transform: opening or resizing the builder does not edit state. */
+@@ -47,10 +48,10 @@ export function mountPlacement(ctx,session={}){
+   let active=true,gesture=null,view=null,point=null,lastSize='',spaceHeld=false;
+   session.placingId=null;
+   const ghost=stage.querySelector('.wb-placement-ghost'),hint=root.querySelector('.wb-placement-hint');
+-  const selected=()=>placementLayout(state).cards.find(card=>card.id===(session.placingId||session.selectedId));
+-  const titleFor=id=>getWorkbench(state).modules.find(item=>item.id===id)?.title||getCustomBlocks(state).items.find(item=>item.id===id)?.title||(state.spaces||[]).find(item=>item.id===id)?.title||'方块';
++  const selected=()=>{const id=session.placingId||session.selectedId;return id?.startsWith('preset:')?presetCard(id.slice(7)):placementLayout(state).cards.find(card=>card.id===id);};
++  const titleFor=id=>id?.startsWith('preset:')?presetCard(id.slice(7))?.title||'方块':getWorkbench(state).modules.find(item=>item.id===id)?.title||getCustomBlocks(state).items.find(item=>item.id===id)?.title||(state.spaces||[]).find(item=>item.id===id)?.title||'方块';
+   function filterPalette(){
+-    const group=session.paletteGroup||'scene',search=String(session.paletteSearch||'').trim().toLowerCase();let count=0;
++    const group=session.paletteGroup||'builtin',search=String(session.paletteSearch||'').trim().toLowerCase();let count=0;
+     root.querySelectorAll('[data-palette-group]').forEach(button=>{button.hidden=button.dataset.paletteGroup!==group||!String(button.dataset.paletteSearchText||'').toLowerCase().includes(search);if(!button.hidden)count++;});
+     root.querySelectorAll('[data-palette-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.paletteTab===group)));
+     const empty=root.querySelector('[data-palette-empty]');if(empty)empty.hidden=count>0;
+@@ -83,7 +84,7 @@ export function mountPlacement(ctx,session={}){
+   }
+   function refreshSelection(){
+     const id=session.placingId||session.selectedId;
+-    root.querySelectorAll('[data-place-source],[data-place-card]').forEach(button=>button.setAttribute('aria-pressed',String((button.dataset.placeSource||button.dataset.placeCard)===id)));
++    root.querySelectorAll('[data-place-source],[data-place-card],[data-place-preset]').forEach(button=>button.setAttribute('aria-pressed',String((button.dataset.placeSource||button.dataset.placeCard||(button.dataset.placePreset?`preset:${button.dataset.placePreset}`:null))===id)));
+     root.querySelector('[data-place-selection]').textContent=id?`已选择「${titleFor(id)}」${session.placingId?' · 在画布上选位置':' · 可拖动或用箭头移动'}`:'直接拖动画布里的方块，就能移动它。';
+     root.querySelectorAll('[data-place-action]').forEach(button=>{const action=button.dataset.placeAction;if(['left','right','up','down','cancel'].includes(action))button.disabled=!id;if(action==='undo')button.disabled=!session.undo;});
+     stage.classList.toggle('is-placing',!!session.placingId);
+@@ -98,11 +99,12 @@ export function mountPlacement(ctx,session={}){
+     stage.querySelectorAll('[data-place-card]').forEach(element=>element.remove());
+     cards.forEach(card=>{
+       const button=document.createElement('button');button.type='button';button.className='wb-placed-block';button.dataset.placeCard=card.id;
+-      button.setAttribute('aria-label',`移动${card.title}方块`);button.style.setProperty('--block-color',canvasCardFill(card.color));
+-      button.innerHTML=`${glyph(card)}<strong>${esc(card.title)}</strong><small>${esc(card.description||'文件、笔记和待办')}</small>${mini}<span class="wb-block-badge">拖动摆放</span>`;
++      button.setAttribute('aria-label',`移动${card.title}方块`);button.setAttribute('title','双击或按回车打开内容，拖动调整位置');button.style.setProperty('--block-color',canvasCardFill(card.color));
++      button.innerHTML=`${glyph(card)}<strong>${esc(card.title)}</strong><small>${esc(card.description||'文件、笔记和待办')}</small>${mini}<span class="wb-block-badge">双击打开</span>`;
++      if(session.landingId===card.id)button.classList.add('is-landing');
+       geometry(button,card);stage.insertBefore(button,ghost);
+     });
+-    paintCamera();
++    delete session.landingId;paintCamera();
+     stage.querySelector('.wb-stage-empty').hidden=cards.length>0;
+     root.querySelector('.wb-placement-count').textContent=`${cards.length} 块已放置`;
+     refreshSelection();
+@@ -113,34 +115,54 @@ export function mountPlacement(ctx,session={}){
+     point=next;geometry(ghost,{...card,...next});ghost.style.setProperty('--block-color',canvasCardFill(card.color));ghost.textContent=titleFor(card.id);ghost.hidden=false;
+   }
+   function pick(id){
+-    session.placingId=id;session.selectedId=id;const card=selected();
++    session.placingId=id;session.selectedId=id;const card=selected();if(!card){cancel('这个方块已不存在，请重新选择。');return;}
+     const rect=stage.getBoundingClientRect();point=placementPoint(view,rect,rect.left+rect.width/2,rect.top+rect.height/2,{x:card.w/2,y:card.h/2});
+     showGhost(point);refreshSelection();status(`「${titleFor(id)}」已拿起：点击画布放下，或用方向键调整后按回车。`);
+   }
+   function redraw(){if(ctx.onPlacementSaved)ctx.onPlacementSaved();else{draw();ghost.hidden=true;}}
+   function commit(id,next){
++    if(id?.startsWith('preset:')){createPreset(id.slice(7),next);return;}
+     try{
+-      session.undo=savePlacement(ctx,workspace=>placeBlock(workspace,id,next));session.undoViewport=session.viewport;session.placingId=null;session.selectedId=id;session.focusId=id;session.message=`「${titleFor(id)}」已放好，位置已保存。`;
++      session.undo=savePlacement(ctx,workspace=>placeBlock(workspace,id,next));session.undoViewport=session.viewport;session.placingId=null;session.selectedId=id;session.focusId=id;session.landingId=id;session.message=`「${titleFor(id)}」已放好，位置已保存。`;
+       redraw();toast(session.message);
+     }catch(error){ghost.hidden=true;gesture=null;session.placingId=null;refreshSelection();status(error.message||'保存失败，已恢复原位置。');toast(error.message||'保存失败，已恢复原位置。');}
+   }
+   function cancel(message='已取消，没有改变位置。'){
+     const current=gesture;gesture=null;if(current?.element.hasPointerCapture?.(current.pointerId))current.element.releasePointerCapture(current.pointerId);
+     if(current?.kind==='pan')paintCamera(current.view);
++    if(current?.moved||current?.forced){session.suppressClickUntil=Date.now()+350;session.suppressOpenUntil=Date.now()+600;session.suppressPanClick=current.kind==='pan';}
+     spaceHeld=false;session.placingId=null;session.selectedId=null;point=null;ghost.hidden=true;stage.classList.remove('is-dragging','is-panning','can-pan');refreshSelection();status(message);
+   }
++  function createPreset(id,next){
++    try{
++      if(!presetCard(id)||typeof ctx.createPresetAt!=='function')throw new Error('暂时无法创建这个场景方块，请重新打开搭建台。');
++      cancel('请完善方块内容；确认后会保留所选位置，取消不会新增方块。');
++      ctx.createPresetAt(id,next?{x:next.x,y:next.y}:undefined);
++    }catch(error){cancel(error.message);toast(error.message);}
++  }
++  function openCard(id){
++    const card=placementCards(state).find(item=>item.id===id);if(!card||typeof ctx.go!=='function')return;
++    if(card.kind==='block')ctx.go('block',id);
++    else if(card.kind==='space')ctx.go('space',id);
++    else ctx.go(id);
++  }
++  function doubleClick(event){
++    if(!active||gesture||session.placingId||spaceHeld||event.button!==0||event.ctrlKey||event.metaKey||event.altKey||Date.now()<(session.suppressOpenUntil||0))return;
++    const button=event.target.closest('[data-place-card]');if(!button||!stage.contains(button))return;
++    event.preventDefault();openCard(button.dataset.placeCard);
++  }
+   function inside(event){const rect=stage.getBoundingClientRect();return event.clientX>=rect.left&&event.clientX<=rect.right&&event.clientY>=rect.top&&event.clientY<=rect.bottom;}
+   function begin(event){
+     if(!active)return;
+     if(gesture&&gesture.pointerId!==event.pointerId)return;
+-    const button=event.target.closest('[data-place-source],[data-place-card]');
++    const button=event.target.closest('[data-place-source],[data-place-card],[data-place-preset]');
+     if(stage.contains(event.target)&&(event.button===1||(event.button===0&&(spaceHeld||!button)))){
+       gesture={kind:'pan',pointerId:event.pointerId,element:stage,startX:event.clientX,startY:event.clientY,moved:false,view,forced:spaceHeld||event.button===1};
+       stage.setPointerCapture?.(event.pointerId);stage.focus({preventScroll:true});event.preventDefault();return;
+     }
+     if(!active||!button||event.button!==0||!root.contains(button))return;
+-    const source=!!button.dataset.placeSource,id=button.dataset.placeSource||button.dataset.placeCard;
+-    const card=placementLayout(state).cards.find(item=>item.id===id);if(!card)return;
++    const preset=button.dataset.placePreset,source=!!button.dataset.placeSource||!!preset,id=preset?`preset:${preset}`:button.dataset.placeSource||button.dataset.placeCard;
++    const card=preset?presetCard(preset):placementLayout(state).cards.find(item=>item.id===id);if(!card)return;
+     const rect=stage.getBoundingClientRect();
+     gesture={pointerId:event.pointerId,id,source,element:button,startX:event.clientX,startY:event.clientY,moved:false,offset:source?{x:card.w/2,y:card.h/2}:{x:(event.clientX-rect.left-view.left)/view.scale+view.x-card.x,y:(event.clientY-rect.top-view.top)/view.scale+view.y-card.y}};
+     button.setPointerCapture?.(event.pointerId);
+@@ -169,13 +191,13 @@ export function mountPlacement(ctx,session={}){
+     stage.classList.remove('is-dragging','is-panning');
+     if(current.kind==='pan'){
+       if(event.type==='pointercancel')paintCamera(current.view);
+-      if(current.moved||current.forced||event.type==='pointercancel'){session.suppressClickUntil=Date.now()+350;session.suppressPanClick=true;}
++      if(current.moved||current.forced||event.type==='pointercancel'){session.suppressClickUntil=Date.now()+350;session.suppressOpenUntil=Date.now()+600;session.suppressPanClick=true;}
+       if(current.moved)status(session.placingId?`画布已移动；「${titleFor(session.placingId)}」仍待放下。`:'画布视野已移动，方块位置没有改变。');
+       return;
+     }
+-    if(event.type==='pointercancel'){cancel();session.suppressClickUntil=Date.now()+250;session.suppressPanClick=false;return;}
++    if(event.type==='pointercancel'){cancel();session.suppressClickUntil=Date.now()+250;session.suppressOpenUntil=Date.now()+600;session.suppressPanClick=false;return;}
+     if(!current.moved)return;
+-    session.suppressClickUntil=Date.now()+350;session.suppressPanClick=false;
++    session.suppressClickUntil=Date.now()+350;session.suppressOpenUntil=Date.now()+600;session.suppressPanClick=false;
+     if(inside(event))commit(current.id,placementPoint(view,stage.getBoundingClientRect(),event.clientX,event.clientY,current.offset));else cancel('未放入画布，原来的位置保持不变。');
+   }
+   function click(event){
+@@ -185,6 +207,7 @@ export function mountPlacement(ctx,session={}){
+       session.suppressClickUntil=0;
+     }
+     const source=event.target.closest('[data-place-source]');if(source){pick(source.dataset.placeSource);return;}
++    const preset=event.target.closest('[data-place-preset]');if(preset){createPreset(preset.dataset.placePreset);return;}
+     const action=event.target.closest('[data-place-action]')?.dataset.placeAction;
+     if(action){
+       try{
+@@ -202,7 +225,7 @@ export function mountPlacement(ctx,session={}){
+       if(event.detail===0&&event.target.closest('[data-place-card]')){showGhost(selected());stage.focus();return;}
+       const card=selected();commit(card.id,placementPoint(view,stage.getBoundingClientRect(),event.clientX,event.clientY,{x:card.w/2,y:card.h/2}));return;
+     }
+-    const card=event.target.closest('[data-place-card]');if(card){session.selectedId=card.dataset.placeCard;refreshSelection();status(`已选择「${titleFor(session.selectedId)}」：拖动或用方向键移动。`);}
++    const card=event.target.closest('[data-place-card]');if(card){session.selectedId=card.dataset.placeCard;refreshSelection();status(`已选择「${titleFor(session.selectedId)}」：双击或回车打开，拖动或用方向键移动。`);}
+   }
+   function keydown(event){
+     if(event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
+@@ -221,6 +244,7 @@ export function mountPlacement(ctx,session={}){
+     const direction={ArrowLeft:[-40,0],ArrowRight:[40,0],ArrowUp:[0,-40],ArrowDown:[0,40]}[event.key];
+     if(direction){event.preventDefault();const base=session.placingId?point:card,next={x:base.x+direction[0],y:base.y+direction[1]};if(session.placingId)showGhost(next);else commit(card.id,next);}
+     if(event.key==='Enter'&&session.placingId){event.preventDefault();commit(card.id,point);}
++    else if(event.key==='Enter'&&focusedCard&&!gesture&&!event.repeat&&!event.ctrlKey&&!event.metaKey&&!event.altKey){event.preventDefault();openCard(card.id);}
+   }
+   function wheel(event){
+     event.preventDefault();if(gesture)return;
+@@ -229,12 +253,12 @@ export function mountPlacement(ctx,session={}){
+     else{paintCamera(panPlacementView(view,-(event.shiftKey?event.deltaY:event.deltaX)*unit,-(event.shiftKey?event.deltaX:event.deltaY)*unit));status(session.placingId?`画布已移动；「${titleFor(session.placingId)}」仍待放下。`:'画布视野已移动，方块位置没有改变。');}
+   }
+   const resize=new ResizeObserver(()=>{const rect=stage.getBoundingClientRect();if(!gesture&&`${rect.width},${rect.height}`!==lastSize)draw();});resize.observe(stage);
+-  root.addEventListener('click',click);root.addEventListener('pointerdown',begin);root.addEventListener('pointermove',move);root.addEventListener('pointerup',finish);root.addEventListener('pointercancel',finish);root.addEventListener('keydown',keydown);
++  root.addEventListener('click',click);root.addEventListener('dblclick',doubleClick);root.addEventListener('pointerdown',begin);root.addEventListener('pointermove',move);root.addEventListener('pointerup',finish);root.addEventListener('pointercancel',finish);root.addEventListener('keydown',keydown);
+   root.addEventListener('input',searchPalette);
+   stage.addEventListener('wheel',wheel,{passive:false});
+   const keyup=event=>{if(event.code==='Space'||event.key===' '){if(spaceHeld&&stage.contains(event.target))event.preventDefault();spaceHeld=false;stage.classList.remove('can-pan');}};window.addEventListener('keyup',keyup);
+   const blur=()=>{spaceHeld=false;stage.classList.remove('can-pan');if(gesture)cancel();};window.addEventListener('blur',blur);
+   const lost=event=>{if(gesture?.pointerId===event.pointerId)cancel();};root.addEventListener('lostpointercapture',lost);
+   draw();filterPalette();const search=root.querySelector('[data-palette-search]');if(search)search.value=session.paletteSearch||'';if(session.message)status(session.message);
+-  return ()=>{active=false;const current=gesture;gesture=null;if(current?.element.hasPointerCapture?.(current.pointerId))current.element.releasePointerCapture(current.pointerId);resize.disconnect();window.removeEventListener('blur',blur);window.removeEventListener('keyup',keyup);stage.removeEventListener('wheel',wheel);for(const [name,listener] of [['click',click],['input',searchPalette],['pointerdown',begin],['pointermove',move],['pointerup',finish],['pointercancel',finish],['lostpointercapture',lost],['keydown',keydown]])root.removeEventListener(name,listener);};
++  return ()=>{active=false;const current=gesture;gesture=null;if(current?.element.hasPointerCapture?.(current.pointerId))current.element.releasePointerCapture(current.pointerId);resize.disconnect();window.removeEventListener('blur',blur);window.removeEventListener('keyup',keyup);stage.removeEventListener('wheel',wheel);for(const [name,listener] of [['click',click],['dblclick',doubleClick],['input',searchPalette],['pointerdown',begin],['pointermove',move],['pointerup',finish],['pointercancel',finish],['lostpointercapture',lost],['keydown',keydown]])root.removeEventListener(name,listener);};
+ }

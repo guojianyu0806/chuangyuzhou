@@ -1,0 +1,4 @@
+# Evidence hashes must survive Windows checkout unchanged.
+raw/** -text
+diffs/** -text
+*.py text eol=lf

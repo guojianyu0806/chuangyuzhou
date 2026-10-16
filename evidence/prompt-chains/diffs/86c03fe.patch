@@ -1,0 +1,76 @@
+diff --git a/yuzhou/frontend/src/workspace-actions-custom-blocks.js b/yuzhou/frontend/src/workspace-actions-custom-blocks.js
+index e553a99..6b06b7f 100644
+--- a/yuzhou/frontend/src/workspace-actions-custom-blocks.js
++++ b/yuzhou/frontend/src/workspace-actions-custom-blocks.js
+@@ -3,7 +3,7 @@ import {ensureCanvas} from './canvas.js';
+ const clone=value=>structuredClone(value),same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+ const fail=message=>{throw new Error(message);};
+ const plain=value=>value&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
+-function hasAutomaticCanvasEntry(state,record){
++function hasAutomaticCanvasEntry(state,record,ctx){
+   const canvas=state.canvas,cards=canvas?.cards;
+   if(cards===undefined)return true;
+   if(!Array.isArray(cards))return false;
+@@ -19,7 +19,16 @@ function hasAutomaticCanvasEntry(state,record){
+   // Reuse the actual allocator rather than duplicating positions or overlap
+   // rules. All normalization is isolated; unrelated stored cards stay intact.
+   const probe=clone({spaces:state.spaces??[],customBlocks:state.customBlocks,canvas});
+-  probe.canvas.cards=probe.canvas.cards.filter(item=>item?.id!==record.id);
++  const replay=new Set([record.id]);
++  if(record.sourceRequestId&&record.sourceRequestId===ctx.requestId){
++    const original=getCustomBlocks(ctx.undoSource||state).items,index=original.findIndex(item=>item.id===record.id);
++    // Batch creation appends blocks in order and stamps them with one request
++    // and creation time. A later retained sibling did not occupy canvas space
++    // when this card was allocated. Recreate only those known sibling entries
++    // in the probe; their actual cards and edited private data are untouched.
++    if(index>=0)for(const later of original.slice(index+1))if(later.sourceRequestId===record.sourceRequestId&&later.createdAt===record.createdAt)replay.add(later.id);
++  }
++  probe.canvas.cards=probe.canvas.cards.filter(item=>!replay.has(item?.id));
+   const expected=ensureCanvas(probe).cards.find(item=>item.id===record.id);
+   return expected!==undefined&&fields.every(key=>card[key]===expected[key]);
+ }
+@@ -49,10 +58,10 @@ const adapter={label:'自定义方块',operations:['create','update','archive','
+     }
+     return {entity:'customBlock',operation:action.operation,id:after.id,containerId:'',before,after:clone(after)};
+   },
+-  undo(state,item){
++  undo(state,item,ctx={}){
+     const current=getCustomBlocks(state),index=current.items.findIndex(record=>record.id===item.id);if(index<0||!same(current.items[index],item.after))return false;
+     if(item.before===null){
+-      if(!hasAutomaticCanvasEntry(state,current.items[index]))return false;
++      if(!hasAutomaticCanvasEntry(state,current.items[index],ctx))return false;
+       current.items.splice(index,1);
+       if(Array.isArray(state.canvas?.cards))state.canvas.cards=state.canvas.cards.filter(card=>card?.id!==item.id);
+     }else current.items[index]=validateCustomBlock(item.before);
+diff --git a/yuzhou/frontend/tests/custom-blocks.test.mjs b/yuzhou/frontend/tests/custom-blocks.test.mjs
+index 8bcd7d0..ecfec25 100644
+--- a/yuzhou/frontend/tests/custom-blocks.test.mjs
++++ b/yuzhou/frontend/tests/custom-blocks.test.mjs
+@@ -127,6 +127,27 @@ test('undo of untouched new blocks removes their automatic canvas entries and pr
+   ensureCanvas(reloaded);assert.ok(ids.every(id=>!reloaded.canvas.cards.some(card=>card.id===id)));
+ });
+ 
++test('undo removes an untouched earlier block while retaining a later same-batch block with new private data',async()=>{
++  const target=state(),receipt=applyWorkspaceActions(target,'request',[proposal(input({kind:'note',title:'未修改便签',config:{text:'原文'}})),proposal()],options());
++  ensureCanvas(target);
++  const [earlier,later]=target.customBlocks.items.map(block=>block.id);updateCustomBlock(target,later,{data:{count:9}});
++  const reloaded=JSON.parse(JSON.stringify(target)),before=structuredClone(reloaded);
++  await assert.rejects(undoWorkspaceActions({state:reloaded,save:()=>{throw Error('synthetic save failed');}},receipt,'request'),/synthetic save failed/);
++  assert.deepEqual(reloaded,before);
++  assert.deepEqual(await undoWorkspaceActions({state:reloaded,save:()=>{}},receipt,'request'),{removed:1,retained:1});
++  assert.deepEqual(reloaded.customBlocks.items,[before.customBlocks.items[1]]);
++  assert.deepEqual(reloaded.canvas.cards,before.canvas.cards.filter(card=>card.id!==earlier));
++  assert.equal(reloaded.customBlocks.items[0].id,later);assert.equal(reloaded.customBlocks.items[0].data.count,9);
++});
++
++test('later cards outside the creation batch are not removed from the automatic-layout comparison',async()=>{
++  const target=state(),receipt=applyWorkspaceActions(target,'request',[proposal()],options());ensureCanvas(target);
++  createCustomBlock(target,input({title:'另一次独立创建'}),{id:'block:later-independent',now:'2026-10-09T10:00:00.000Z'});ensureCanvas(target);
++  const before=structuredClone(target);
++  assert.deepEqual(await undoWorkspaceActions({state:target,save:()=>{}},receipt,'request'),{removed:0,retained:1});
++  assert.deepEqual(target.customBlocks,before.customBlocks);assert.deepEqual(target.canvas,before.canvas);
++});
++
+ test('later manual or unrecognized canvas placement preserves the new block and all its layout',async()=>{
+   const edits=[
+     (canvas,card)=>card.x+=40,(canvas,card)=>card.y+=40,(canvas,card)=>card.w+=20,(canvas,card)=>card.h+=20,

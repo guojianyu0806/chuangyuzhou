@@ -1,0 +1,108 @@
+diff --git a/yuzhou/frontend/src/canvas-responsive.css b/yuzhou/frontend/src/canvas-responsive.css
+new file mode 100644
+index 0000000..efd3690
+--- /dev/null
++++ b/yuzhou/frontend/src/canvas-responsive.css
+@@ -0,0 +1,89 @@
++/* The saved card size, not the window or camera zoom, controls its contents.
++   Named size containment is only enabled on the home free canvas. */
++.cv-home .cv-viewport:not(.is-list):not(.is-stack) .cv-card {
++  container: home-card / size;
++}
++@container home-card (min-width: 0px) {
++  .cv-card-head { gap: clamp(6px, 1.8cqw, 16px); }
++  .cv-space-symbol { width: clamp(29px, 9cqw, 48px); height: clamp(29px, 9cqw, 48px); flex-shrink: 0; }
++  .cv-space-symbol > svg { width: 62%; height: 62%; }
++  .cv-card-top-label { font-size: clamp(9px, 2.8cqw, 15px); }
++  .cv-card-body {
++    --cv-art-unit: clamp(.65px, min(.31cqw, .42cqh), 3.1px);
++    margin-top: clamp(5px, 3cqh, 24px);
++  }
++  .cv-home .cv-card .cv-card-body h2 { font-size: clamp(24px, min(8.5cqw, 11cqh), 64px); letter-spacing: -.025em; }
++  .cv-card .cv-card-kicker { font-size: clamp(7px, min(2.5cqw, 3.3cqh), 13px); letter-spacing: .16em; margin-bottom: clamp(5px, 2cqh, 14px); }
++  .cv-card .cv-card-copy > p { max-width: 100%; font-size: clamp(10px, min(3.6cqw, 4.8cqh), 20px); margin-top: clamp(5px, 2.5cqh, 18px); line-height: 1.6; }
++  .cv-card-detail { gap: clamp(6px, 2cqw, 16px); }
++  .cv-card .cv-card-detail strong { font-size: clamp(26px, min(10cqw, 14cqh), 84px); }
++  .cv-card .cv-card-detail > span { font-size: clamp(9px, min(3.3cqw, 4.4cqh), 18px); max-width: none; }
++  .cv-card .cv-space-counts { font-size: clamp(9px, min(3.3cqw, 4.4cqh), 18px); gap: 5px 1em; }
++  .cv-card-foot { margin-top: clamp(8px, 3cqh, 24px); }
++  .cv-card-foot > span { font-size: clamp(8px, 2.6cqw, 13px); }
++  .cv-card-foot > button { font-size: clamp(10px, 3cqw, 16px); }
++
++  /* Art uses one length unit in both directions, retaining its proportions. */
++  .cv-review-art { font-size: var(--cv-art-unit); width: 71em; height: 73em; gap: 4em; right: 4px; bottom: 5px; pointer-events: none; }
++  .cv-review-art > span { width: 11em; height: 22em; flex: none; border-radius: 5em 5em 3em 3em; }
++  .cv-review-art > span:nth-child(2) { height: 35em; }
++  .cv-review-art > span:nth-child(3) { height: 31em; }
++  .cv-review-art > span:nth-child(4) { height: 51em; }
++  .cv-review-art > span:nth-child(5) { height: 65em; }
++  .cv-review-art > svg { width: 25em; height: 25em; right: 17em; top: -1em; }
++  .cv-home .cv-card .cv-course-art { font-size: var(--cv-art-unit); width: 90em; height: 82em; transform: none; }
++  .cv-course-art > span { width: 53em; height: 66em; bottom: 1em; border-radius: 10em; box-shadow: 0 4em 10em #623a9316; }
++  .cv-course-art > span:nth-child(2) { left: 19em; bottom: 9em; }
++  .cv-course-art > span:nth-child(3) { left: 39em; bottom: 1em; }
++  .cv-course-art > span > svg { width: 29em; height: 29em; }
++  .cv-sticker-art { font-size: var(--cv-art-unit); width: 74em; height: 74em; border-radius: 20em; box-shadow: 0 5em 0 #d66ca546; right: 8px; bottom: 10px; pointer-events: none; }
++  .cv-sticker-art > svg { width: 54em; height: 54em; }
++  .cv-custom-art { font-size: var(--cv-art-unit); right: 8px; bottom: 8px; }
++  .cv-custom-art > svg { width: 72em; height: 72em; }
++  .cv-card:is(.cv-card-review,.cv-card-courses,.cv-card-inbox) .cv-card-copy,
++  .cv-card:is(.cv-card-review,.cv-card-courses,.cv-card-inbox) .cv-card-detail {
++    max-width: calc(100% - 100 * var(--cv-art-unit));
++  }
++  .cv-card-custom .cv-card-body:has(.cv-custom-art) .cv-card-copy,
++  .cv-card-custom .cv-card-body:has(.cv-custom-art) .cv-space-counts { max-width: calc(100% - 90 * var(--cv-art-unit)); }
++  .cv-card .cv-card-detail { flex-wrap: wrap; }
++  .cv-home .cv-card .cv-english-word { display: block; font-size: clamp(28px, min(14cqw, 15cqh), 110px); margin-top: clamp(8px, 4cqh, 28px); letter-spacing: -.045em; padding: .14em 0; }
++  .cv-home .cv-card .cv-english-word > b { font-size: 1.12em; right: -1.08em; top: .06em; }
++  .cv-english-actions { flex-wrap: wrap; }
++  .cv-english-actions > button { font-size: clamp(10px, min(3.5cqw, 4.6cqh), 17px); }
++  .cv-task-lines { gap: clamp(7px, 2cqh, 18px); }
++  .cv-task-lines > div { font-size: clamp(10px, min(3.6cqw, 4.8cqh), 19px); }
++  .cv-card .cv-ledger-total > strong { font-size: clamp(21px, min(9cqw, 12cqh), 72px); }
++  .cv-ledger-total > span { font-size: clamp(10px, min(3.4cqw, 4.5cqh), 18px); }
++  .cv-card-body > p { font-size: clamp(10px, min(3.5cqw, 4.6cqh), 19px); line-height: 1.5; overflow-wrap: anywhere; }
++  .cv-card-custom .cb-card-preview > p { white-space: pre-line; -webkit-line-clamp: 6; }
++  /* The composer reflows normally and never inherits a transform/zoom. */
++  .cv-ai-title { gap: clamp(10px, 3cqw, 24px); }
++  .cv-ai-title > div { min-width: 0; }
++  .cv-ai-orbit { width: clamp(43px, min(12cqw, 16cqh), 84px); height: clamp(43px, min(12cqw, 16cqh), 84px); flex-shrink: 0; }
++  .cv-ai-orbit > svg { width: 56%; height: 56%; }
++  .cv-ai-title p { font-size: clamp(11px, 3cqw, 17px); }
++  .cv-home .cv-card-ai .cv-ai-title h2 { font-size: clamp(24px, min(7cqw, 8cqh), 50px) !important; }
++}
++@container home-card (max-height: 300px) {
++  .cv-home .cv-card .cv-english-word { position: absolute; right: 24px; top: 1px; font-size: clamp(18px, 7cqw, 32px); margin-top: 0; }
++  .cv-card-english .cv-card-copy { padding-right: clamp(88px, 28cqw, 160px); }
++}
++@container home-card (max-height: 230px) {
++  .cv-card .cv-space-symbol { width: 29px; height: 29px; }
++  .cv-card .cv-card-top-label { font-size: 9px; }
++  .cv-home .cv-card .cv-card-body h2 { font-size: 24px; -webkit-line-clamp: 1; }
++  .cv-card .cv-card-kicker { display: none; }
++  .cv-card .cv-card-body { margin-top: 5px; }
++  .cv-card .cv-card-copy > p { margin-top: 5px; font-size: 10px; -webkit-line-clamp: 1; }
++  .cv-card .cv-card-detail { padding-top: 4px; }
++  .cv-card .cv-card-detail strong { font-size: 26px; }
++  .cv-card .cv-card-detail > span,.cv-card .cv-space-counts { font-size: 9px; }
++  .cv-card .cv-english-actions { padding-top: 4px; gap: 5px; }
++  .cv-card .cv-english-actions > button { min-height: 30px; font-size: 10px; padding: 0 7px; }
++  .cv-card .cv-card-foot { margin-top: 8px; }
++  .cv-card .cv-card-foot > span { display: none; }
++  .cv-card .cv-card-foot > button { margin-left: auto; font-size: 10px; }
++  .cv-card:is(.cv-card-timetable,.cv-card-calendar,.cv-card-competitions) .cv-card-copy > p { display: none; }
++  .cv-card .cv-space-counts { padding-top: 4px; }
++}
+diff --git a/yuzhou/frontend/src/canvas.js b/yuzhou/frontend/src/canvas.js
+index b6fff89..f941761 100644
+--- a/yuzhou/frontend/src/canvas.js
++++ b/yuzhou/frontend/src/canvas.js
+@@ -125,7 +125,7 @@ export function mountCanvas(ctx, collection) {
+   const fitIcon='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg>';
+   const gridIcon='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>';
+ 
+-  root.innerHTML=`<section class="space-desktop ${collection?.hideHeader?'cv-nested':''}" aria-labelledby="canvas-title">
++  root.innerHTML=`<section class="space-desktop ${collection?'':'cv-home'} ${collection?.hideHeader?'cv-nested':''}" aria-labelledby="canvas-title">
+     <header class="cv-pagehead cv-compact-header"><div class="cv-heading"><h1 id="canvas-title">${esc(collection?.title||getWorkbench(state).title)}<span class="cv-title-dot">.</span></h1></div><div class="cv-head-actions"><button class="cv-button cv-arrange-toggle" type="button" data-cv="arrange" aria-label="选择卡片排列方式" aria-haspopup="dialog">${gridIcon}<span>排列</span>${icon('chevron-down',13)}</button><button class="cv-button cv-create" type="button" data-cv="create" ${collection?.createLabel===false?'hidden':''}>${icon('plus',19)}<span>${esc(collection?.createLabel||(!collection&&ctx.openBuilder?'搭建工作台':'新建空间'))}</span></button></div></header>
+     ${collection?.toolbar||''}
+ 

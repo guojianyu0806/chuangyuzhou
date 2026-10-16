@@ -1,0 +1,91 @@
+diff --git a/yuzhou/frontend/src/workspace-actions-core.js b/yuzhou/frontend/src/workspace-actions-core.js
+index 233b56d..d4c141a 100644
+--- a/yuzhou/frontend/src/workspace-actions-core.js
++++ b/yuzhou/frontend/src/workspace-actions-core.js
+@@ -148,27 +148,66 @@ function apply(state,entity,action,ctx){
+   const finalContainer=d.nested?containerId:entity==='ledgerEntry'?(after.projectId?'ledger:'+after.projectId:'ledger'):'workspace';
+   return {entity,operation:action.operation,id:after.id,containerId:finalContainer,...(d.nested&&before&&oldContainerId!==containerId?{beforeContainerId:oldContainerId}:{}),before,after:clone(after)};
+ }
+-function dependent(state,entity,record){
+-  const boardDependency=['space','course'].includes(entity)&&Object.entries(state.boards||{}).some(([key,board])=>key.startsWith(`${entity}:${record.id}:`)&&(board.customized||board.cards?.length));
++function containerBoards(state,entity,record,source=state){
++  if(!['space','course'].includes(entity))return [];
++  const prefix=`${entity}:${record.id}:`,parents=source[definitions[entity].collection]||[];
++  // IDs may contain colons. A similarly named, distinct container owns its own boards.
++  return Object.entries(state.boards||{}).filter(([key])=>key.startsWith(prefix)&&!parents.some(parent=>parent.id!==record.id&&parent.id.startsWith(record.id+':')&&key.startsWith(`${entity}:${parent.id}:`)));
++}
++function automaticBoard(key,board,entity,record,source){
++  const section=key.slice(`${entity}:${record.id}:`.length),sections=entity==='space'?['overview','notes','files','tasks']:['notes','files'];
++  if(!sections.includes(section)||!object(board))return false;
++  // Browsing initializes geometry without marking customization. A missing flag
++  // alone is insufficient: preserve legacy/unrecognized layouts conservatively.
++  if(Object.keys(board).some(key=>!['cards','snap','initialized','view','stackPointer','customized'].includes(key))||board.customized||board.snap===false)return false;
++  if(board.stackPointer!==undefined&&board.stackPointer!==.5)return false;
++  if(board.view!==undefined){
++    const view=board.view,close=(a,b)=>Number.isFinite(a)&&Math.abs(a-b)<1e-7;
++    if(!object(view)||Object.keys(view).some(key=>!['x','y','zoom'].includes(key)))return false;
++    const initial=Number.isFinite(view.zoom)&&view.zoom>=.55&&view.zoom<=1&&close(view.x,28-36*view.zoom)&&close(view.y,30-40*view.zoom);
++    if(!initial&&!(!board.initialized&&close(view.x,0)&&close(view.y,0)&&view.zoom===1))return false;
++  }
++  const cards=board.cards??[];if(!Array.isArray(cards))return false;
++  if(!cards.length)return true;
++  const parent=source[definitions[entity].collection]?.find(parent=>parent.id===record.id);
++  const summaries=[{id:'notes',color:'#AE88FF'},{id:'files',color:'#63E6DC'},{id:'tasks',color:'#D8F649'},{id:'assistant',color:'#FF9CCE'}];
++  const items=section==='overview'?summaries:section==='tasks'?(source.tasks||[]).filter(task=>task.spaceId===record.id):parent?.[section]||[];
++  if(section==='overview'&&cards.length!==summaries.length)return false;
++  const palette=[entity==='course'?'#B3A0FF':'#AE88FF','#63E6DC','#FF9CCE','#D8F649','#9DC5FF','#FFBC7C'];
++  return cards.every((card,index)=>{
++    if(!object(card)||Object.keys(card).some(key=>!['id','x','y','w','h','color'].includes(key)))return false;
++    const item=items.find(item=>item.id===card.id);
++    if(!item||section==='overview'&&summaries[index].id!==card.id)return false;
++    const expectedColor=item.color||palette[index%palette.length];
++    // These are mountCanvas's untouched collection presets, before user edits.
++    return card.x===36+(index%3)*380&&card.y===40+Math.floor(index/3)*366&&card.w===340&&card.h===330&&typeof card.color==='string'&&card.color.toUpperCase()===expectedColor.toUpperCase();
++  });
++}
++function dependent(state,entity,record,source=state){
++  const boardDependency=containerBoards(state,entity,record,source).some(([key,board])=>!automaticBoard(key,board,entity,record,source));
+   if(entity==='space')return !!(record.notes?.length||record.files?.length||(state.tasks||[]).some(row=>row.spaceId===record.id)||(state.fitness?.entries||[]).some(row=>row.spaceId===record.id)||boardDependency);
+   if(entity==='course')return !!(record.notes?.length||record.files?.length||boardDependency);
+   if(entity==='ledgerProject')return !!state.ledger?.entries?.some(row=>row.projectId===record.id);
+   return false;
+ }
+-function undo(state,entity,snapshot){
++function undo(state,entity,snapshot,ctx={}){
+   let row;try{row=locate(state,entity,snapshot.id,snapshot.containerId);}catch{return false;}
+   if(!sameRecord(entity,row.record,snapshot.after))return false;
+-  if(snapshot.before===null&&dependent(state,entity,row.record))return false;
++  const source=ctx.undoSource||state;
++  if(snapshot.before===null&&dependent(state,entity,row.record,source))return false;
+   const restoreContainer=snapshot.beforeContainerId||snapshot.containerId;
+   if(snapshot.before&&definitions[entity].nested){try{owner(state,restoreContainer,true);}catch{return false;}}
+   if(snapshot.before&&entity==='ledgerEntry'&&snapshot.before.projectId&&!state.ledger?.projects?.some(p=>p.id===snapshot.before.projectId))return false;
+   const from=collection(state,entity,snapshot.containerId,false,true),index=from.findIndex(record=>record.id===snapshot.id);
+-  if(snapshot.before){const target=collection(state,entity,restoreContainer,true,true);if(target!==from&&target.some(r=>r.id===snapshot.id))return false;from.splice(index,1);target.unshift(clone(snapshot.before));}else from.splice(index,1);
++  if(snapshot.before){const target=collection(state,entity,restoreContainer,true,true);if(target!==from&&target.some(r=>r.id===snapshot.id))return false;from.splice(index,1);target.unshift(clone(snapshot.before));}else{
++    from.splice(index,1);
++    for(const [key] of containerBoards(state,entity,row.record,source))delete state.boards[key];
++  }
+   if(definitions[entity].ledger)state.ledger=validateLedger(state.ledger);return true;
+ }
+ export const CORE_ACTION_ADAPTERS=Object.fromEntries(Object.entries(definitions).map(([entity,d])=>[entity,{
+   label:d.label,operations:['create','update','archive','restore'],
+   capability:`可create新建、update修改、archive归档、restore恢复${d.label}；不永久删除。create不带id（系统生成），update/archive/restore必须带查询到的真实id，archive/restore的data为{}；update只传要改的字段。${schemaDescriptions[entity]}${entity==='ledgerEntry'?'': 'color可选#RRGGBB字符串，仅用户明确指定颜色时填写；省略由系统随机选择且不重复上一次颜色。'}`,
+   normalizeData(data,operation){if(!object(data))fail('行动data必须是对象。');if(Object.keys(data).some(key=>!Object.hasOwn(d.fields,key)))fail(`${d.label}行动包含不支持字段。`);if(['archive','restore'].includes(operation)&&Object.keys(data).length)fail('归档／恢复无需data字段。');const result=Object.fromEntries(Object.entries(data).map(([key,value])=>[key,d.fields[key](value)]));if(operation==='create'&&d.required.some(key=>result[key]===undefined))fail(`${d.label}新建缺少${d.required.join('、')}。`);if(operation==='create'&&result.targetContainerId)fail('新建请使用containerId指定位置。');if(operation==='update'&&!Object.keys(result).length)fail('修改行动需要至少一个字段。');return result;},
+-  list:state=>list(state,entity),apply:(state,action,ctx)=>apply(state,entity,action,ctx),undo:(state,snapshot)=>undo(state,entity,snapshot),validateRecord:record=>validateCoreRecord(entity,record),
++  list:state=>list(state,entity),apply:(state,action,ctx)=>apply(state,entity,action,ctx),undo:(state,snapshot,ctx)=>undo(state,entity,snapshot,ctx),validateRecord:record=>validateCoreRecord(entity,record),
+ }]));
+diff --git a/yuzhou/frontend/src/workspace-actions.js b/yuzhou/frontend/src/workspace-actions.js
+index 832e668..ba9d0d2 100644
+--- a/yuzhou/frontend/src/workspace-actions.js
++++ b/yuzhou/frontend/src/workspace-actions.js
+@@ -160,6 +160,9 @@ export function describeWorkspaceAction(action){
+ export async function undoWorkspaceActions(ctx,receipt,requestId){
+   if(!receipt||receipt.destinationId!=='workspace'||!Array.isArray(receipt.items)||receipt.items.length>50)fail('行动回执无效。');
+   const copy=structuredClone(ctx.state),{ctx:actionCtx}=actionContext(copy,requestId,{uid:ctx.uid}),snapshots=receipt.items.map(item=>{if(item.collection!=='actions')fail('不能混合撤回不同格式的操作。');identifier(item.id,'回执条目编号');return validateWorkspaceActionSnapshot(JSON.parse(item.snapshot));});
++  // Read-only until commit: child records supply the colours of auto-created
++  // inner-board cards even after reverse undo has removed those children.
++  actionCtx.undoSource=ctx.state;
+   let removed=0,retained=0;
+   for(const snapshot of snapshots.reverse()){if(ADAPTERS[snapshot.entity].undo(copy,snapshot,actionCtx))removed++;else retained++;}
+   const previous={};for(const key of DOMAIN_KEYS)if(Object.hasOwn(ctx.state,key))previous[key]=ctx.state[key];const updatedAt=ctx.state.updatedAt;
