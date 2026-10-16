@@ -21,6 +21,7 @@ Node官方入口：<https://nodejs.org/en/download>。本轮将另存实际运�
 ```powershell
 node --version
 node tools/verify-source.mjs
+if (Test-Path -LiteralPath .env) { throw '已有 .env，请保留并跳过复制步骤' }
 Copy-Item -LiteralPath .env.example -Destination .env -ErrorAction Stop
 node tools/start.mjs --check
 node tools/start.mjs

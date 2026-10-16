@@ -62,6 +62,10 @@ def package(revision):
     destination = ROOT / "releases" / name
     if destination.exists():
         raise FileExistsError("Release already exists; choose a new committed version")
+    # Check ancestors before mkdir or any write, including a pre-existing releases junction.
+    for path in [destination, *destination.parents]:
+        if path.exists() and (path.is_symlink() or path.resolve() != path.absolute()):
+            raise ValueError("Linked release ancestor rejected")
     destination.mkdir(parents=True)
     if destination.resolve() != destination or destination.is_symlink():
         raise ValueError("Release directory must be an ordinary project path")

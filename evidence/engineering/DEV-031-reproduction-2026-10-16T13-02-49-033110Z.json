@@ -1,0 +1,53 @@
+{
+  "startedAtUtc": "2026-10-16T13:02:49.036278+00:00",
+  "status": "passed",
+  "scope": "Same Windows host; fresh extracted directory, portable Node, empty account and sanitized child environment; not a fresh OS or independent human trial",
+  "archive": "releases/yuzhou-dev031-2790a44521e8/yuzhou-dev031-2790a44521e8.zip",
+  "archiveSha256": "e13dade4b5c1fe293defd0292106b479bad97f6748f693b68257f7d08d055dea",
+  "directory": ".local/dev031-clean-2026-10-16T13-02-49-033110Z",
+  "modelRequests": 0,
+  "syntheticSetup": "New random setup token prepared by harness, normal setup/login APIs; production credentials never read",
+  "steps": [
+    {
+      "name": "fresh_archive_extracted",
+      "elapsedSeconds": 1.023,
+      "files": 276,
+      "existingRuntime": false
+    },
+    {
+      "name": "source_configuration_and_environment_checks_passed",
+      "elapsedSeconds": 3.446,
+      "negativeConfigurations": 4
+    },
+    {
+      "name": "entry_health_identity_and_initialization_page_ready",
+      "elapsedSeconds": 5.134
+    },
+    {
+      "name": "normal_account_login_save_and_readback_passed",
+      "elapsedSeconds": 5.368
+    },
+    {
+      "name": "restart_persistence_passed",
+      "elapsedSeconds": 7.391,
+      "withinTenMinutes": true
+    },
+    {
+      "name": "native_text_extraction_passed",
+      "elapsedSeconds": 7.439
+    },
+    {
+      "name": "optional_fresh_python_and_pinned_pdf_dependency_configured",
+      "elapsedSeconds": 31.746
+    }
+  ],
+  "nodeVersion": "v22.23.3",
+  "modelConfigured": false,
+  "coreElapsedSeconds": 7.391,
+  "coreWithinTenMinutes": true,
+  "extractorVersions": "{\"python\": \"3.13.15\", \"pypdf\": \"6.21.0\"}",
+  "optionalSetupSeconds": 23.939,
+  "totalElapsedSeconds": 31.746,
+  "finishedAtUtc": "2026-10-16T13:03:20.783922+00:00",
+  "ownedServerStopped": true
+}
