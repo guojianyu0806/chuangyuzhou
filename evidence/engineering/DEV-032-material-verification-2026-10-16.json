@@ -1,0 +1,586 @@
+{
+  "createdAtUtc": "2026-10-16T15:26:46.849472+00:00",
+  "status": "passed",
+  "baseline": "677e6ceefbb90db7397faf090b7ae564e37424b9",
+  "checks": [
+    {
+      "name": "pdf_page_limit",
+      "passed": true,
+      "detail": 13
+    },
+    {
+      "name": "pdf_no_replacement_characters",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "all_section_titles_extract",
+      "passed": true,
+      "detail": 13
+    },
+    {
+      "name": "chinese_fonts_embedded",
+      "passed": true,
+      "detail": 78
+    },
+    {
+      "name": "source_and_render_hash_match",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "continuous_video_timeline",
+      "passed": true,
+      "detail": [
+        {
+          "segment": 1,
+          "title": "问题与作品定位",
+          "startSeconds": 0,
+          "endSeconds": 25,
+          "durationSeconds": 25,
+          "narrationCharacters": 101,
+          "charactersPerMinuteIncludingPunctuation": 242.4
+        },
+        {
+          "segment": 2,
+          "title": "直接搭建自己的工作空间",
+          "startSeconds": 25,
+          "endSeconds": 60,
+          "durationSeconds": 35,
+          "narrationCharacters": 114,
+          "charactersPerMinuteIncludingPunctuation": 195.4
+        },
+        {
+          "segment": 3,
+          "title": "AI建议如何变成真实业务",
+          "startSeconds": 60,
+          "endSeconds": 100,
+          "durationSeconds": 40,
+          "narrationCharacters": 117,
+          "charactersPerMinuteIncludingPunctuation": 175.5
+        },
+        {
+          "segment": 4,
+          "title": "AI创建方块与小程序",
+          "startSeconds": 100,
+          "endSeconds": 135,
+          "durationSeconds": 35,
+          "narrationCharacters": 111,
+          "charactersPerMinuteIncludingPunctuation": 190.3
+        },
+        {
+          "segment": 5,
+          "title": "开发过程一：人工纠正交互回退",
+          "startSeconds": 135,
+          "endSeconds": 175,
+          "durationSeconds": 40,
+          "narrationCharacters": 127,
+          "charactersPerMinuteIncludingPunctuation": 190.5
+        },
+        {
+          "segment": 6,
+          "title": "开发过程二：从模糊描述到可测量目标",
+          "startSeconds": 175,
+          "endSeconds": 215,
+          "durationSeconds": 40,
+          "narrationCharacters": 121,
+          "charactersPerMinuteIncludingPunctuation": 181.5
+        },
+        {
+          "segment": 7,
+          "title": "开发过程三：协议与撤销共同迭代",
+          "startSeconds": 215,
+          "endSeconds": 260,
+          "durationSeconds": 45,
+          "narrationCharacters": 147,
+          "charactersPerMinuteIncludingPunctuation": 196.0
+        },
+        {
+          "segment": 8,
+          "title": "开发过程四：保留模型首次失败",
+          "startSeconds": 260,
+          "endSeconds": 295,
+          "durationSeconds": 35,
+          "narrationCharacters": 130,
+          "charactersPerMinuteIncludingPunctuation": 222.9
+        },
+        {
+          "segment": 9,
+          "title": "体验与受控扩展",
+          "startSeconds": 295,
+          "endSeconds": 335,
+          "durationSeconds": 40,
+          "narrationCharacters": 125,
+          "charactersPerMinuteIncludingPunctuation": 187.5
+        },
+        {
+          "segment": 10,
+          "title": "交付与复现",
+          "startSeconds": 335,
+          "endSeconds": 380,
+          "durationSeconds": 45,
+          "narrationCharacters": 150,
+          "charactersPerMinuteIncludingPunctuation": 200.0
+        },
+        {
+          "segment": 11,
+          "title": "结果与来源",
+          "startSeconds": 380,
+          "endSeconds": 415,
+          "durationSeconds": 35,
+          "narrationCharacters": 133,
+          "charactersPerMinuteIncludingPunctuation": 228.0
+        },
+        {
+          "segment": 12,
+          "title": "结束与后续方向",
+          "startSeconds": 415,
+          "endSeconds": 440,
+          "durationSeconds": 25,
+          "narrationCharacters": 101,
+          "charactersPerMinuteIncludingPunctuation": 242.4
+        }
+      ]
+    },
+    {
+      "name": "development_process_at_least_two_minutes",
+      "passed": true,
+      "detail": 160
+    },
+    {
+      "name": "narration_pacing_plausible",
+      "passed": true,
+      "detail": "Character-based planning only; no spoken duration or finished video measured"
+    },
+    {
+      "name": "all_indexed_sources_exist",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "raw_chain_01_anchors",
+      "passed": true,
+      "detail": [
+        2413,
+        3331,
+        6019,
+        6043,
+        9494
+      ]
+    },
+    {
+      "name": "raw_chain_02_anchors",
+      "passed": true,
+      "detail": [
+        13020,
+        13764,
+        13969
+      ]
+    },
+    {
+      "name": "raw_chain_03_anchors",
+      "passed": true,
+      "detail": [
+        14715
+      ]
+    },
+    {
+      "name": "referenced_commits_exist",
+      "passed": true,
+      "detail": {
+        "ac73158": "ac7315842342698e0e81f5813aaa27faacbb4baf",
+        "a96689c79bc3": "a96689c79bc34dd2bce300538b89a3506465b060",
+        "677e6ce": "677e6ceefbb90db7397faf090b7ae564e37424b9",
+        "68c569d": "68c569da7d286b833cc38041d8cbb7ab17f56d92",
+        "e34b7af": "e34b7af5e106a3218d6dcdb21d99cde38bb3e73c",
+        "5ebe9da": "5ebe9dab64c8c4339ff3ad08dea9c39625d77612",
+        "27dd733": "27dd733d2f004656e84eacc2f91217d8c9d87a34",
+        "154e54e": "154e54e8f069437b56080b709c9b8261f43af15f",
+        "964a7c3": "964a7c31d6ed061c968735bd5ddf8b9088ace230",
+        "6fe0529": "6fe052950130f1890b8c959f78b976ca474d4105",
+        "9b88757": "9b8875711a67ab006289ac23f7836bd5ad8896ad",
+        "02dad36": "02dad36120d5d138445baca810027b35a56f8281",
+        "efe9436": "efe94363c2256d7c5b73038b1a4821a372ab0f34",
+        "c67496d": "c67496db8afa2e1802977a149b16dd50deb00411",
+        "86c03fe": "86c03febd2b8338b5f9601743c2f46d9822339e1",
+        "f35b87f": "f35b87f52ffe476375a6daf918e52ea3b6509334",
+        "282a536": "282a536ce38132c6a661418f651584a640766211"
+      }
+    },
+    {
+      "name": "baseline_commit_count",
+      "passed": true,
+      "detail": "134"
+    },
+    {
+      "name": "DEV-027-tests-2026-10-15T12-26-41-538Z.tap_statistics",
+      "passed": true,
+      "detail": [
+        785,
+        784,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "DEV-028-tests-2026-10-15T13-57-04-322Z.tap_statistics",
+      "passed": true,
+      "detail": [
+        810,
+        809,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "DEV-031-clean-node22-tests-2026-10-16T13-04-23-562Z.tap_statistics",
+      "passed": true,
+      "detail": [
+        811,
+        810,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "reproduction_timing",
+      "passed": true,
+      "detail": {
+        "core": 7.514,
+        "optionalCumulative": 28.638
+      }
+    },
+    {
+      "name": "model_usage_supported",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "previous_tracked_files_unchanged",
+      "passed": true,
+      "detail": [
+        "A\tdelivery/DEV-032/技术文档-v1.md",
+        "A\tdelivery/DEV-032/编制与证据计划.md",
+        "A\tdelivery/DEV-032/视频脚本-v1.md"
+      ]
+    },
+    {
+      "name": "技术文档-v1.md_no_known_secret_pattern",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "视频脚本-v1.md_no_known_secret_pattern",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "pdf_no_known_secret_pattern",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "evidenceFiles": [
+    {
+      "path": "delivery/DEV-031/README.md",
+      "sha256": "e2a743b8e17756a7d84b2d8c2dad440409fdf3bc25eef80ca8fd298fab244923"
+    },
+    {
+      "path": "delivery/DEV-031/template/README.md",
+      "sha256": "ab855446d1fb1805da850e4ee62339d920b010c4d94408fb7a93da6aab332516"
+    },
+    {
+      "path": "docs/参赛提交核查-2026-10-16.md",
+      "sha256": "b2a8bdeeb01710ce3f07b91938415526c031451e9e327cd1432cdfb9124be056"
+    },
+    {
+      "path": "evidence/dev/DEV-004.md",
+      "sha256": "54e48fd2bc3c1a76cbd636ceea71590c0a2e86dcd99d2973a59e207f27829713"
+    },
+    {
+      "path": "evidence/dev/DEV-005.md",
+      "sha256": "da36e40e628a9810ccb96017b56fda58ef153b10188aec93a90f97c734054d5f"
+    },
+    {
+      "path": "evidence/dev/DEV-006.md",
+      "sha256": "194d165d3d00e09a953714383493e4a5876be9dfdee05f324970bba304c42095"
+    },
+    {
+      "path": "evidence/dev/DEV-009.md",
+      "sha256": "af9488de8ca8d1bb0d4c4688b75168eaf71db044f2e60e57515651060749eecc"
+    },
+    {
+      "path": "evidence/dev/DEV-013.md",
+      "sha256": "1081642ac58ad95cd1e721bdc9ffc2a3e2bf541c04f1e907bf6b8640a9408b26"
+    },
+    {
+      "path": "evidence/dev/DEV-017.md",
+      "sha256": "c96d274c10ed1b4d8059344688b215be860b23970b73ddc38bf4312eb3ae10eb"
+    },
+    {
+      "path": "evidence/dev/DEV-018.md",
+      "sha256": "8bd771f9b3d8bbbae13021619e567a780495d1fa5d6473afdbb47f184a03e2e0"
+    },
+    {
+      "path": "evidence/dev/DEV-020.md",
+      "sha256": "362804ce768ba9f9378721a63ac6380432d44942d64f92859d6d50c77c38b030"
+    },
+    {
+      "path": "evidence/dev/DEV-021.md",
+      "sha256": "573c040e321c7d4a6b1fb22cb5fbaabffa69cc94f1c25337aef579d53be4d6b9"
+    },
+    {
+      "path": "evidence/dev/DEV-024.md",
+      "sha256": "2fa505cf2a6a3cd73dd702bbc97559798ad7063663521ec285290075e51b2981"
+    },
+    {
+      "path": "evidence/dev/DEV-025.md",
+      "sha256": "68ba5b579a5c9a8e18c1c45e49af05aea4287f540abe9843e3bb9c50c9f60e97"
+    },
+    {
+      "path": "evidence/dev/DEV-027.md",
+      "sha256": "e37cd9c00b9034756c5fd445c6c23a605fa96b5277e37b57a2b54490eba0ec6f"
+    },
+    {
+      "path": "evidence/dev/DEV-028.md",
+      "sha256": "6b329cc738976b4f135e8f8ffa77efd2f4c8bc3dcef18ec8566ffaff7105544c"
+    },
+    {
+      "path": "evidence/dev/DEV-031.md",
+      "sha256": "038b5a06181d9dda1d89b1da6cfd0d3ce9281f8e594c4069be2b88dc983cdeb5"
+    },
+    {
+      "path": "evidence/engineering/DEV-013-builder-preview.png",
+      "sha256": "afe84b164cedc67f2a4e05954ab8bdf1710e42cfa7e02d0975fad233523e9e9f"
+    },
+    {
+      "path": "evidence/engineering/DEV-020-browser-metrics.json",
+      "sha256": "bc0d0ce690026caf4af708b932b43488fb8b0c40f8b4d8c3835dfbd6a7cebd27"
+    },
+    {
+      "path": "evidence/engineering/DEV-020-responsive-review.png",
+      "sha256": "3f3ac55321236d034878cb88ed2ee06f9a8c060ab2d0062453644d76eb78cb5a"
+    },
+    {
+      "path": "evidence/engineering/DEV-027-board-undo-first-failure-2026-10-15.tap",
+      "sha256": "57cfb6dd2d542115c3fe8eff8fd6662fb0bf85d24548292a8c4b9d822b96c667"
+    },
+    {
+      "path": "evidence/engineering/DEV-027-board-undo-targeted-2026-10-15.tap",
+      "sha256": "4d96a7321468e3543c7b601a06f77c905e0680e9a227aadce84e259181e8b63d"
+    },
+    {
+      "path": "evidence/engineering/DEV-027-final-calendar.png",
+      "sha256": "fa22aa61504e9eb891e5b24b84caae92b56e9545fb3ec110d7458b3487fbef52"
+    },
+    {
+      "path": "evidence/engineering/DEV-027-final-executed.png",
+      "sha256": "a384d9a32db5eeb72086d57123ab8d375d3f847dde69f39705e99d10553b9838"
+    },
+    {
+      "path": "evidence/engineering/DEV-027-final-initial-review.png",
+      "sha256": "88628e2d01540373a70dfb6b45b11ba099b7a48feea4ed88b9e70509be71976c"
+    },
+    {
+      "path": "evidence/engineering/DEV-027-final-revised-review.png",
+      "sha256": "d7951a97abbf4dae650ea307de7b4926604b21f9f051c528294c0a89c4c52ee3"
+    },
+    {
+      "path": "evidence/engineering/DEV-027-final-undone.png",
+      "sha256": "62d26d1d0d9caa8d3be43330c67388294a44150ea31b7bbfcae8ebad68ae370c"
+    },
+    {
+      "path": "evidence/engineering/DEV-027-tests-2026-10-15T12-26-41-538Z.tap",
+      "sha256": "16c22a0602e517b7019ac43a8bfd10d2f40f6c42f09250f59caf9f63ce3a63bc"
+    },
+    {
+      "path": "evidence/engineering/DEV-028-miniapp-calculated.png",
+      "sha256": "782dc6834c6c1292561ed046b0ae88cf53b827003d96f8cbda18c1237e9675fa"
+    },
+    {
+      "path": "evidence/engineering/DEV-028-miniapp-enhanced.png",
+      "sha256": "6ba2ed8522089bc8b93ce0742f4495124b801c1344d1543603d1ffa609dac63c"
+    },
+    {
+      "path": "evidence/engineering/DEV-028-miniapp-first-live-error.png",
+      "sha256": "ebea4add45f2ab5d1df2ab531a6a075019190129f60c173898bb8480dc611b60"
+    },
+    {
+      "path": "evidence/engineering/DEV-028-tests-2026-10-15T13-57-04-322Z.tap",
+      "sha256": "58a978ed9fae22d7180a0f0736b74bc908b58b1445e7a4a751ed19c1c31584b8"
+    },
+    {
+      "path": "evidence/engineering/DEV-031-clean-node22-tests-2026-10-16T13-04-23-562Z.tap",
+      "sha256": "045fb08b8ac6733dc250b5f25c7de3abba6c59eaa6625a25765f39de23bf96af"
+    },
+    {
+      "path": "evidence/engineering/DEV-031-final-package-report.json",
+      "sha256": "765b02a34000bee631fd7c2c443a7d37b9509b2ec38eb853c474146953a5337e"
+    },
+    {
+      "path": "evidence/engineering/DEV-031-reproduction-2026-10-16T13-06-17-100246Z.json",
+      "sha256": "3700ffebff707114935b592fd8af0b35834211271ac2aa8d6962e8d24e1b4761"
+    },
+    {
+      "path": "evidence/prompt-chains/01-可视化搭建平台.md",
+      "sha256": "a717561c9fd6365b24e4ca33cacf6b505e52213d750de8e1f66669ec6b2b55e4"
+    },
+    {
+      "path": "evidence/prompt-chains/02-AI业务闭环.md",
+      "sha256": "01e52f1fa38f7c1be9ad5ca173a1889e26ae21c4e9f25173795d6b3e9c7b9872"
+    },
+    {
+      "path": "evidence/prompt-chains/03-自定义方块与小程序.md",
+      "sha256": "5f15c91d2f42c11d5061f63e222d7d19af2447ecf744d62bb4719da3ae9b170d"
+    },
+    {
+      "path": "evidence/prompt-chains/README.md",
+      "sha256": "2ad61f2d1915a1bd24e0f4d69954e1b675ce449dac5c46ce79d2e32a30440056"
+    },
+    {
+      "path": "evidence/prompt-chains/diffs/02dad36.patch",
+      "sha256": "efa3879f0165ac1b2a97dcf1558a80319397e97480fbeb5000bf227e0880b666"
+    },
+    {
+      "path": "evidence/prompt-chains/diffs/154e54e.patch",
+      "sha256": "196fec93d27a40882e4786b349b85970facd354b1d6025791ad73f34d0b6de33"
+    },
+    {
+      "path": "evidence/prompt-chains/diffs/282a536.patch",
+      "sha256": "16d3154bebb8c9ca0e0fcd0ff0f82f5753070d00676195e37d88c4694bc1e23e"
+    },
+    {
+      "path": "evidence/prompt-chains/diffs/964a7c3.patch",
+      "sha256": "40ae3fc9431249b6db754d9fd5938df08b4c7e43605bdcf57fdd3da1b3cf7a42"
+    },
+    {
+      "path": "evidence/prompt-chains/diffs/c67496d.patch",
+      "sha256": "d9fa399747c22e4858378bc6d3222771e8e5b90cd8cdd6a7c0efda3af40c12a6"
+    },
+    {
+      "path": "evidence/prompt-chains/diffs/f35b87f.patch",
+      "sha256": "44187c89f7803fb69e8dc3b4fb900f80b2fad1d7a8edc236a0323409e816ce00"
+    },
+    {
+      "path": "evidence/prompt-chains/git-index.json",
+      "sha256": "80b9ccedcc9d3012e3e5cb56ca5469738ca0a15c66af8e99425e634c78ddcf7b"
+    },
+    {
+      "path": "evidence/prompt-chains/manifest.json",
+      "sha256": "eb9451ba36fc6c28afba9f873668f9bb9226ec46f3dc3e1c71664419157b7fe5"
+    },
+    {
+      "path": "evidence/prompt-chains/raw/chain-01.md",
+      "sha256": "1a5eec46f981f2a6aae62f597c150f400248dac94877e0f5a5954ff00198f698"
+    },
+    {
+      "path": "evidence/prompt-chains/raw/chain-02.md",
+      "sha256": "43f687da9a9174e7c40fb9ac9efa29831ff4b90c3d6c6a9b46d66bf67978ad58"
+    },
+    {
+      "path": "evidence/prompt-chains/raw/chain-03.md",
+      "sha256": "ec6e6ce2cd44147ca405f01f9321adf11efeb249a246b6aebfff8885eb951ecd"
+    },
+    {
+      "path": "evidence/prompt-chains/verification-2026-10-16.json",
+      "sha256": "77ece7b07316fd25eb1a03bdaf58327a6ebc8fc252b1f5cc624e2dea787c4e94"
+    },
+    {
+      "path": "evidence/provenance/yuzhou-0.15.0-import.json",
+      "sha256": "c0a563eae91dabfcfd61bb95af5ca983c7a91269414cdd4cccf677c89e2f9f35"
+    },
+    {
+      "path": "yuzhou/backend/deepseek.mjs",
+      "sha256": "f4472a7ea7012d5477608011cf3a6fe32c7023f14b1a82db8ef016ce78ec7b6e"
+    },
+    {
+      "path": "yuzhou/backend/extract.py",
+      "sha256": "0964e35bf27c0fff9b0ab9172c1af9c7cf679d8fa5c9191792ff8a179fffda4a"
+    },
+    {
+      "path": "yuzhou/backend/extractor.mjs",
+      "sha256": "b616db8b8afce0987d483183275e4a664f17c7aed295277491a8ac81b6da2d83"
+    },
+    {
+      "path": "yuzhou/backend/hermes.mjs",
+      "sha256": "cf2dd03bfe5311b222b5a7166f23356ae36557e5836d598a22f53858e4c01c91"
+    },
+    {
+      "path": "yuzhou/backend/server.mjs",
+      "sha256": "1bc056c09407438893e3fdbf5fb3c93966b70fc195d4ceeae8213b76016e3fc8"
+    },
+    {
+      "path": "yuzhou/backend/store.mjs",
+      "sha256": "2e1adba2e66e4881991884a13439fbfe9b54102398cdb8eeef3eb57f198f15ea"
+    },
+    {
+      "path": "yuzhou/backend/workspace-queries.mjs",
+      "sha256": "ceb67b1f207f269f2bfea3200efdd43a3bb2e0b7e03cf111b66d0a119dd29968"
+    },
+    {
+      "path": "yuzhou/frontend/src/builder.js",
+      "sha256": "fd54a713c07b514a740ebb247117dd8eec6f149c350f748ebf0392adda381b8a"
+    },
+    {
+      "path": "yuzhou/frontend/src/canvas.js",
+      "sha256": "0959490fc9ee6c1a79000874b26823d29bf0e86048937c1fa24e3099a1635624"
+    },
+    {
+      "path": "yuzhou/frontend/src/miniapp-frame.js",
+      "sha256": "9182ed4203d09a900362efa2cf1b702dbf42cb8b958d09bf90460ed16a34a8b4"
+    },
+    {
+      "path": "yuzhou/frontend/src/miniapp-runtime.js",
+      "sha256": "83933556718f9617b5ba00b6164f7e19f744b09e420b335a790563ad12c71578"
+    },
+    {
+      "path": "yuzhou/frontend/src/workbench-model.js",
+      "sha256": "392ab07e823cbb672bd84e9d09fadda215fe064a96954a7795729604b2b42bcf"
+    },
+    {
+      "path": "yuzhou/frontend/src/workspace-actions.js",
+      "sha256": "d10d6219b562554cf31abc43dd7d4d78394a341db627c72889dc6d56301365f1"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "delivery/DEV-032/技术文档-v1.md",
+      "bytes": 25203,
+      "sha256": "db012421800d944168388e689f52c4c1702a87d021387ebd446857826554d447"
+    },
+    {
+      "path": "delivery/DEV-032/视频脚本-v1.md",
+      "bytes": 14832,
+      "sha256": "7488320f7d31cf33ab3456eca03c874337b4c9d661227443c4429d4ea753544e"
+    },
+    {
+      "path": "output/pdf/DEV-032/宇宙工作台-技术文档-v1.pdf",
+      "bytes": 825900,
+      "sha256": "d928598a7c14d93879259ec71d2d4adb1ae9355cf2e2bf00cc866157e4e35fff"
+    }
+  ],
+  "visualReview": {
+    "method": "Agent inspected all 13 rendered pages at 1.4 scale",
+    "pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ],
+    "result": "No clipped text, overlapping tables, missing glyphs or page spills observed; historical figures retain captions and provenance"
+  },
+  "limits": [
+    "No new application tests or model requests in this documentation task",
+    "No completed video; timeline and narration are a production plan",
+    "Pattern scan of new text is not a full Git history security audit"
+  ]
+}
