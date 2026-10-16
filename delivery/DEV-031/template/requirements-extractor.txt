@@ -1,0 +1,3 @@
+# Optional text-PDF parser only. DOCX/PPTX use Python's standard library.
+# PyPI release metadata checked 2026-10-16. Binary wheel SHA-256 pinned.
+pypdf==6.21.0 --hash=sha256:3aec619699dacb1b73f57e87d9adaa4424814517b2cc028de20adba5a37af4c4
