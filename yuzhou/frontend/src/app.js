@@ -34,6 +34,7 @@ const cloudClient=await bootstrapCloud();
 const workspaceStorage=cloudClient?.storage||globalThis.localStorage;
 const returnNavigation=createReturnNavigation({storage:globalThis.sessionStorage,key:`czb-yuzhou-return-navigation-${cloudClient?.account||'local'}`});
 const builderSessions=new Map();
+let lastNavigationEntry=null;
 
 const uid=()=>crypto.randomUUID();
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
@@ -136,7 +137,7 @@ function makeContext(){
   local.openCustomBlockEditor=(input,options)=>customBlockEditor(local,input,options);
   local.openBuilder=()=>go('builder',local.spaceId||'');
   local.askAssistant=prompt=>openAIConversation(local,{text:prompt,targetId:local.spaceId?`space:${local.spaceId}`:'workspace'});
-  local.askSpaceAI=()=>openAIConversation(local,{targetId:`space:${local.spaceId}`,text:`请结合「${viewState.spaces.find(space=>space.id===local.spaceId)?.title||'当前空间'}」的用途整理内容，先给出方案，确认后再执行。`});
+  local.askSpaceAI=kind=>openAIConversation(local,{targetId:`space:${local.spaceId}`,text:kind==='miniapp'?`请为「${viewState.spaces.find(space=>space.id===local.spaceId)?.title||'当前空间'}」设计一个交互小工具。先明确用途、输入、输出及需要保留的数据，给出可审核方案；确认后创建，并把新方块放入当前空间。`:`请结合「${viewState.spaces.find(space=>space.id===local.spaceId)?.title||'当前空间'}」的用途整理内容，先给出方案，确认后再执行。`});
   local.createChildSpace=()=>openSpaceDialog({...local,parentSpaceId:local.spaceId});
   local.createSpace=()=>openSpaceDialog(local);
   local.editSpace=id=>openSpaceDialog(local,viewState.spaces.find(s=>s.id===id));
@@ -451,7 +452,12 @@ function renderReturnNavigation(){
   const target=returnNavigation.target(state,location.hash);if(target===location.hash)return;
   const navigation=document.createElement('nav');navigation.className='workspace-return';navigation.dataset.returnNavigation='';navigation.setAttribute('aria-label','返回与当前位置');
   navigation.innerHTML=`<button class="btn" type="button" data-return-source>${icon('arrow-left',17)} 返回${esc(routeLabel(state,target))}</button><span>${esc(routeLabel(state,location.hash))}</span>`;
-  navigation.querySelector('button').onclick=()=>{const next=returnNavigation.back(state,location.hash);if(next===location.hash)render();else location.hash=next;};ctx.root.before(navigation);
+  navigation.querySelector('button').onclick=()=>{
+    const entry=history.state?.czbWorkspaceEntry,targetEntry=returnNavigation.targetEntry(state,location.hash),next=returnNavigation.back(state,location.hash);
+    if(next===location.hash){render();return;}
+    if(entry?.fromId&&entry.fromId===targetEntry?.entryId&&entry.fromHash===next)history.back();
+    else{history.replaceState({...history.state,czbWorkspaceEntry:{hash:next,id:crypto.randomUUID()}},'',next);render();window.scrollTo({top:0,behavior:'instant'});}
+  };ctx.root.before(navigation);
 }
 function render(){
   if(!ctx.root)return;
@@ -465,7 +471,12 @@ function render(){
   subroute=id||'';
   ctx.root.onclick=null;ctx.root.onchange=null;ctx.root.oninput=null;ctx.root.ondragover=null;ctx.root.ondragleave=null;ctx.root.ondrop=null;
   if(route==='home'&&!getWorkbench(state).onboardingComplete){route='builder';history.replaceState(null,'','#/builder');}
-  returnNavigation.visit(location.hash);
+  let navigationEntry=history.state?.czbWorkspaceEntry;
+  if(navigationEntry?.hash!==location.hash||typeof navigationEntry?.id!=='string'){
+    navigationEntry={hash:location.hash,id:crypto.randomUUID(),...(lastNavigationEntry?{fromId:lastNavigationEntry.id,fromHash:lastNavigationEntry.hash}:{})};history.replaceState({...history.state,czbWorkspaceEntry:navigationEntry},'',location.hash);
+  }
+  returnNavigation.visit(location.hash,navigationEntry.id);
+  lastNavigationEntry=navigationEntry;
   const label=route==='space'?(state.spaces.find(s=>s.id===subroute)?.title||'工作区'):route==='block'?(getCustomBlocks(state).items.find(block=>block.id===subroute)?.title||'自定义方块'):navigationLabel(route);
   document.title=label+' · 宇宙';document.querySelector('#current-page').textContent=label;
   document.body.classList.toggle('on-canvas',route==='home');document.body.classList.toggle('on-ai',route==='ai');document.body.classList.toggle('on-welcome',route==='welcome');

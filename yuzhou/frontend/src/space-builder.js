@@ -15,6 +15,7 @@ export function mountSpaceBuilder(ctx,spaceId){
     dispose=mountPlacement({...scoped,root:root.querySelector('[data-space-placement]'),onPlacementSaved:render},placementSession);
   }
   const click=event=>{const button=event.target.closest('[data-sb-action],[data-wb-action]');if(!button)return;const action=button.dataset.sbAction||button.dataset.wbAction;
-    try{if(action==='enter')ctx.go('space',spaceId);if(action==='ai'||action==='ask-ai'||action==='ask-miniapp')ctx.askSpaceAI?.();if(action==='child')ctx.createChildSpace?.();if(action==='create-block')ctx.openCustomBlockEditor();if(action==='edit')ctx.openCustomBlockEditor(button.dataset.id);if(action==='hide'){saveSpacePlacement(ctx,spaceId,state=>hideSpaceBlock(state,spaceId,button.dataset.id));render();toast('入口已收起，内容保留。');}}catch(error){toast(error.message);}};
-  root.addEventListener('click',click);render();return ()=>{active=false;dispose?.();root.removeEventListener('click',click);};
+    try{if(action==='enter')ctx.go('space',spaceId);if(action==='ai'||action==='ask-ai'||action==='ask-miniapp')ctx.askSpaceAI?.(action==='ask-miniapp'?'miniapp':undefined);if(action==='child')ctx.createChildSpace?.();if(action==='create-block')ctx.openCustomBlockEditor();if(action==='edit')ctx.openCustomBlockEditor(button.dataset.id);if(action==='hide'){saveSpacePlacement(ctx,spaceId,state=>hideSpaceBlock(state,spaceId,button.dataset.id));render();toast('入口已收起，内容保留。');}}catch(error){toast(error.message);}};
+  root.addEventListener('click',click);render();if(session.scroll&&globalThis.requestAnimationFrame)requestAnimationFrame(()=>{if(active)globalThis.scrollTo?.(session.scroll);});
+  return ()=>{session.scroll={left:globalThis.scrollX||0,top:globalThis.scrollY||0,behavior:'instant'};active=false;dispose?.();root.removeEventListener('click',click);};
 }

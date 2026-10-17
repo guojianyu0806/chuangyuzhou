@@ -54,7 +54,7 @@ export function openSpaceDialog(ctx, space) {
   let manualFitnessChoice=space?.fitnessEnabled!==undefined;
   const initial = {title:space?.title || '',description:space?.description || '',type:space?.type || 'blank',color:space ? spaceColor(space) : colorDraft.color,icon:space?.icon || 'folder'};
   modal({title:space ? '调整我的工作区' : '创建一个属于你的空间',submitLabel:space ? '保存设置' : '创建工作区',body:`
-    <div class="sp-form-intro"><span>${icon(space?.icon || 'folder',26)}</span><p>给一件重要的事留个位置。<br><small>主页会出现对应卡片，可自由移动、缩放。</small></p></div>
+    <div class="sp-form-intro"><span>${icon(space?.icon || 'folder',26)}</span><p>给一件重要的事留个位置。<br><small>${ctx.parentSpaceId?'当前空间画布会出现对应卡片，可自由移动、缩放。':'主页会出现对应卡片，可自由移动、缩放。'}</small></p></div>
     <label class="field">空间名称<input name="title" required maxlength="60" value="${esc(initial.title)}" placeholder="例如：学生会宣传部、我的毕业项目"></label>
     <label class="field">这个空间用来做什么？<textarea name="description" maxlength="600" rows="3" placeholder="例如：存放学生会宣传部的会议、活动策划和我的执行任务。">${esc(initial.description)}</textarea><span class="small muted">接入 AI 后，这段说明会帮助它判断内容该放在哪里。</span></label>
     <fieldset class="sp-form-fieldset"><legend>空间模板</legend><div class="sp-template-options">${TEMPLATES.map(([type,label,hint,glyph])=>`<label><input type="radio" name="type" value="${type}" ${initial.type===type?'checked':''}><span>${icon(glyph,21)}<strong>${label}</strong><small>${hint}</small></span></label>`).join('')}</div></fieldset>
@@ -90,7 +90,7 @@ export function openSpaceDialog(ctx, space) {
         state.spaces.push(created);
         try { ctx.save(); } catch(error) { state.spaces.splice(state.spaces.indexOf(created),1);state.updatedAt=previousUpdatedAt;if(previousColor===undefined)delete state.ui.lastCreatedColor;else state.ui.lastCreatedColor=previousColor;throw error; }
       }
-      toast(space?'空间设置已保存':'工作区已创建，主页卡片已就位'); ctx.refresh?.();
+      toast(space?'空间设置已保存':ctx.parentSpaceId?'下级空间已创建，已放入当前空间画布':'工作区已创建，主页卡片已就位'); ctx.refresh?.();
     }});
   const form=document.querySelector('#modal form');
   colorDraft?.bind(form);
@@ -252,7 +252,7 @@ export function mountSpace(ctx, id) {
   }
   async function upload(files) {
     if(uploading||!files.length)return;uploading=true;toast('正在把文件保存到这个空间…');
-    try {const result=await saveSpaceFiles(ctx,space,files);if(result.saved){tab='files';selectedFile=fileList()[0]?.id||'';localRefresh();}toast(`已保存 ${result.saved} 份文件${result.rejected?`，${result.rejected} 份未保存，请检查 40 MB 大小限制和存储空间`:''}`);}
+    try {const result=await saveSpaceFiles(ctx,space,files);if(result.saved){go('space',space.id,'files',fileList()[0]?.id||'');}toast(`已保存 ${result.saved} 份文件${result.rejected?`，${result.rejected} 份未保存，请检查 40 MB 大小限制和存储空间`:''}`);}
     catch(error){toast(error.message||'保存未完成，请重试');}finally{uploading=false;}
   }
   async function onClick(event) {
@@ -278,7 +278,7 @@ export function mountSpace(ctx, id) {
       if(action==='edit-task'&&task)taskDialog(task);
       if(action==='toggle-task'&&task){commit(()=>{task.done=!task.done;task.completedAt=task.done?stamp():null;});render();}
       if(action==='restore-task'&&task){commit(()=>{task.archived=false;});render();toast('事项已恢复');}
-      if(action==='archive-space')modal({title:space.archived?'把这个空间放回主页':'归档这个空间',submitLabel:space.archived?'恢复到主页':'归档空间',body:`<p>「${esc(space.title)}」${space.archived?'会重新出现在主页画布上。':'会从主页画布收起，可从已归档空间中恢复。'}</p><p class="muted">笔记、文件和关联待办都会完整保留。</p>`,onSubmit(){const archived=!space.archived;commit(()=>{space.archived=archived;});toast(archived?'空间已归档，资料已保留':'空间已恢复到主页');if(archived)go('home');else localRefresh();}});
+      if(action==='archive-space')modal({title:space.archived?'把这个空间放回主页':'归档这个空间',submitLabel:space.archived?'恢复到主页':'归档空间',body:`<p>「${esc(space.title)}」${space.archived?'会重新出现在主页画布上。':'会从主页画布收起，可从已归档空间中恢复。'}</p><p class="muted">笔记、文件和关联待办都会完整保留。</p>`,onSubmit(){const archived=!space.archived;commit(()=>{space.archived=archived;});toast(archived?'空间已归档，资料已保留':'空间已恢复到主页');if(archived)space.parentId?go('space',space.parentId):go('home');else localRefresh();}});
     }catch(error){toast(error.message||'操作暂未完成，请重试');}
   }
   function onChange(event){if(event.target.matches('[data-sp-file-input]')){const files=[...event.target.files];event.target.value='';upload(files);}if(event.target.matches('[data-sp-notes-archive]')){archivedNotes=event.target.checked;render();}if(event.target.matches('[data-sp-tasks-archive]')){archivedTasks=event.target.checked;render();}}

@@ -150,7 +150,9 @@
  .english-page .english-hero-art{min-height:0}
  .cb-note,.course-reader-card .course-note-body{font-size:15px}
 }
-.workspace-return{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px clamp(16px,3vw,40px) 0;color:var(--muted,#756a8b);font-size:13px}
+.workspace-return{position:sticky;top:68px;z-index:18;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0;padding:10px clamp(16px,3vw,40px);background:#f9f7ffef;border-bottom:1px solid #e7e0f2;color:var(--muted,#756a8b);font-size:13px;backdrop-filter:blur(12px)}
+.on-canvas .workspace-return{top:52px}
+@media(max-width:760px){.workspace-return{top:62px;gap:6px;padding:8px 14px}.on-canvas .workspace-return{top:56px}.workspace-return>span{font-size:12px}}
 .workspace-return .btn{min-height:38px;white-space:normal;text-align:left}
 .workspace-return>span{overflow-wrap:anywhere}
 .on-welcome .workspace-return{display:none}

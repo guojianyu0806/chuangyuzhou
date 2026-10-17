@@ -145,5 +145,6 @@ export function mountBuilder(ctx) {
   }
   root.addEventListener('click',onClick);
   render();
-  return ()=>{active=false;disposePlacement?.();disposeNavigation?.();root.removeEventListener('click',onClick);};
+  if(session.scroll&&globalThis.requestAnimationFrame)requestAnimationFrame(()=>{if(active)globalThis.scrollTo?.(session.scroll);});
+  return ()=>{session.scroll={left:globalThis.scrollX||0,top:globalThis.scrollY||0,behavior:'instant'};active=false;disposePlacement?.();disposeNavigation?.();root.removeEventListener('click',onClick);};
 }

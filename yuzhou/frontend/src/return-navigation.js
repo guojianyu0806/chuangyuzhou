@@ -22,8 +22,9 @@ export function routeLabel(state,hash){
 }
 export function parentWorkspaceRoute(state,hash){
   const route=parseWorkspaceRoute(hash);if(!route)return '#/home';
-  if(route.page==='builder'&&route.id)return workspaceRoute('space',route.id);
+  if(route.page==='builder'&&route.id)return state.spaces?.some(space=>space.id===route.id)?workspaceRoute('space',route.id):'#/home';
   if(route.page==='space'){
+    if(!state.spaces?.some(space=>space.id===route.id))return '#/home';
     if(route.detail)return workspaceRoute('space',route.id);
     const space=state.spaces?.find(space=>space.id===route.id);return space?.parentId&&state.spaces.some(item=>item.id===space.parentId)?workspaceRoute('space',space.parentId):'#/home';
   }
@@ -32,11 +33,21 @@ export function parentWorkspaceRoute(state,hash){
 }
 export function createReturnNavigation({storage,key='czb-yuzhou-return-navigation-v1'}={}){
   let trail=[],returning=null;
-  try{const cached=JSON.parse(storage?.getItem(key)||'null');if(Array.isArray(cached))trail=cached.filter(hash=>parseWorkspaceRoute(hash)).slice(-30);}catch{}
+  try{const cached=JSON.parse(storage?.getItem(key)||'null');if(Array.isArray(cached))trail=cached.map(value=>typeof value==='string'?{hash:value}:value).filter(value=>value&&parseWorkspaceRoute(value.hash)).slice(-30);}catch{}
   const persist=()=>{try{storage?.setItem(key,JSON.stringify(trail));}catch{/* Navigation must not prevent business rendering. */}};
   return {
-    visit(hash){if(!parseWorkspaceRoute(hash))return;if(returning===hash){returning=null;persist();return;}returning=null;const existing=trail.lastIndexOf(hash);if(existing>=0)trail=trail.slice(0,existing+1);else trail=[...trail,hash].slice(-30);persist();},
-    target(state,current){const index=trail.lastIndexOf(current);for(let n=index-1;n>=0;n--)if(trail[n]!==current&&routeAvailable(state,trail[n]))return trail[n];return parentWorkspaceRoute(state,current);},
-    back(state,current){const target=this.target(state,current),index=trail.lastIndexOf(target);trail=index>=0?trail.slice(0,index+1):[target];returning=target;persist();return target;}
+    visit(hash,entryId){
+      if(!parseWorkspaceRoute(hash))return;
+      if(returning===hash){returning=null;if(trail.at(-1)?.hash===hash)trail[trail.length-1]={hash,entryId};persist();return;}
+      returning=null;
+      const existing=entryId?trail.findLastIndex(entry=>entry.entryId===entryId&&entry.hash===hash):-1;
+      if(existing>=0)trail=trail.slice(0,existing+1);
+      else if(trail.at(-1)?.hash===hash)trail[trail.length-1]={hash,entryId};
+      else trail=[...trail,{hash,entryId}].slice(-30);
+      persist();
+    },
+    target(state,current){const index=trail.findLastIndex(entry=>entry.hash===current);for(let n=index-1;n>=0;n--)if(trail[n].hash!==current&&routeAvailable(state,trail[n].hash))return trail[n].hash;return parentWorkspaceRoute(state,current);},
+    targetEntry(state,current){const hash=this.target(state,current);return trail.findLast(entry=>entry.hash===hash);},
+    back(state,current){const target=this.target(state,current),index=trail.findLastIndex(entry=>entry.hash===target);trail=index>=0?trail.slice(0,index+1):[{hash:target}];returning=target;persist();return target;}
   };
 }

@@ -68,7 +68,12 @@ test('nested readers and direct links return to their real parent, rather than a
 test('invalid or disappeared sources cannot lead the return button outside this workspace',()=>{
   const state=fixture(),nav=createReturnNavigation();nav.visit('https://evil.example');nav.visit('#/space/missing');nav.visit('#/tasks');assert.equal(nav.target(state,'#/tasks'),'#/home');assert.equal(parseWorkspaceRoute('#/space/%zz'),null);assert.equal(routeAvailable(state,'#/builder/missing'),false);
   state.spaces[0].archived=true;assert.equal(routeAvailable(state,'#/builder/a'),false);assert.equal(routeAvailable(state,'#/space/a'),true);
+  assert.equal(parentWorkspaceRoute(state,'#/builder/missing'),'#/home');assert.equal(parentWorkspaceRoute(state,'#/space/missing/notes'),'#/home');
 });
 test('encoded identifiers and reader details round trip without splitting Chinese titles or punctuation',()=>{
   const id='研究 / A?#%',hash=workspaceRoute('space',id,'notes','笔记 / 1');assert.deepEqual(parseWorkspaceRoute(hash),{page:'space',id,detail:'notes',item:'笔记 / 1',hash});
+});
+test('revisiting a URL creates a new origin while actual browser history restores the matching visit',()=>{
+  const state=fixture(),nav=createReturnNavigation();nav.visit('#/builder','root-visit');nav.visit('#/builder/a','space-visit');nav.visit('#/builder','new-root-visit');assert.equal(nav.target(state,'#/builder'),'#/builder/a');
+  nav.visit('#/builder/a','space-visit');assert.equal(nav.target(state,'#/builder/a'),'#/builder');nav.visit('#/english','module-visit');assert.equal(nav.target(state,'#/english'),'#/builder/a');
 });
