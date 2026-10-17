@@ -1,0 +1,11 @@
+{
+  "stateEqual": true,
+  "filesEqual": true,
+  "stateHashBefore": "4b0eb52ba054a0f4ac59a227b689da6c3383d8bdbe843b1a4e5499b12e16c4c1",
+  "stateHashAfter": "4b0eb52ba054a0f4ac59a227b689da6c3383d8bdbe843b1a4e5499b12e16c4c1",
+  "filesHashBefore": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "filesHashAfter": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "verifiedAt": "2026-10-17T08:56:51.138Z",
+  "scope": "Normal UI complete exports, before opening the new space canvas. No private contents included.",
+  "backendRestartVerified": false
+}

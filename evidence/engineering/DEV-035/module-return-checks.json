@@ -1,0 +1,52 @@
+[
+  {
+    "route": "ai",
+    "entered": true,
+    "returned": true
+  },
+  {
+    "route": "courses",
+    "entered": true,
+    "returned": true
+  },
+  {
+    "route": "english",
+    "entered": true,
+    "returned": true
+  },
+  {
+    "route": "inbox",
+    "entered": true,
+    "returned": true
+  },
+  {
+    "route": "tasks",
+    "entered": true,
+    "returned": true
+  },
+  {
+    "route": "review",
+    "entered": true,
+    "returned": true
+  },
+  {
+    "route": "ledger",
+    "entered": true,
+    "returned": true
+  },
+  {
+    "route": "calendar",
+    "entered": true,
+    "returned": true
+  },
+  {
+    "route": "timetable",
+    "entered": true,
+    "returned": true
+  },
+  {
+    "route": "competitions",
+    "entered": true,
+    "returned": true
+  }
+]

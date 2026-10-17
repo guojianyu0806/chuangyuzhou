@@ -1,0 +1,78 @@
+{
+  "syntheticOrigin": "http://localhost:4398",
+  "mainModuleRoundTrips": [
+    {
+      "route": "ai",
+      "entered": true,
+      "returned": true
+    },
+    {
+      "route": "courses",
+      "entered": true,
+      "returned": true
+    },
+    {
+      "route": "english",
+      "entered": true,
+      "returned": true
+    },
+    {
+      "route": "inbox",
+      "entered": true,
+      "returned": true
+    },
+    {
+      "route": "tasks",
+      "entered": true,
+      "returned": true
+    },
+    {
+      "route": "review",
+      "entered": true,
+      "returned": true
+    },
+    {
+      "route": "ledger",
+      "entered": true,
+      "returned": true
+    },
+    {
+      "route": "calendar",
+      "entered": true,
+      "returned": true
+    },
+    {
+      "route": "timetable",
+      "entered": true,
+      "returned": true
+    },
+    {
+      "route": "competitions",
+      "entered": true,
+      "returned": true
+    }
+  ],
+  "dragFromPaletteSaved": true,
+  "scopedModuleBackToBuilder": true,
+  "builderCameraRetained": true,
+  "browserNativeBackForward": true,
+  "ownedBlockAbsentFromRoot": true,
+  "ownedTextEditSurvivesReload": true,
+  "ownedWidthBefore": 340,
+  "ownedWidthAfterAndReload": 348,
+  "childCreationAndParentReturn": true,
+  "spaceFileUploadPreviewAndBack": true,
+  "spaceTaskSharedWithGlobalAndCalendar": true,
+  "aiDraftTarget": "current space",
+  "noModelRequestSent": true,
+  "invalidSourceReturnsHome": true,
+  "directBlockReturnsOwner": true,
+  "mobileViewport": {
+    "width": 390,
+    "height": 844,
+    "clientWidth": 375,
+    "scrollWidth": 375,
+    "stageWidth": 339
+  },
+  "browserErrors": []
+}
