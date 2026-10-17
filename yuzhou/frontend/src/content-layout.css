@@ -14,6 +14,7 @@
 .cv-preview-table th,.cv-preview-table td{padding:7px 6px;border-bottom:1px solid #43345622;vertical-align:top;overflow-wrap:anywhere}
 .cv-preview-table th{background:#ffffff38;font-weight:700}
 .cv-preview-table td{line-height:1.5}
+.cv-preview-table :is(th,td)>span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .cv-preview-number{display:block;font-size:clamp(32px,13cqw,78px);line-height:1.15;font-variant-numeric:tabular-nums;letter-spacing:-.04em;margin:4px 0 8px}
 .cv-preview-number small{font-size:.35em;margin-left:5px;letter-spacing:0}
 .cv-preview-metric progress{display:block;width:100%;height:12px;accent-color:#56416f;margin:10px 0}
@@ -100,6 +101,9 @@
 .course-canvas-page .cv-card-copy>p{font-size:14px;line-height:1.65;max-width:100%}
 .interior-card-excerpt{font-size:14px;line-height:1.65}
 .sp-card-meta,.course-detail-card-meta{font-size:12px}
+.sp-overview-preview{position:relative;z-index:1;list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px;min-height:0;overflow:hidden;font-size:14px;line-height:1.6;color:#40334e}
+.sp-overview-preview li{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;padding-left:10px;border-left:2px solid #ffffff88}
+.sp-overview-preview+.sp-board-summary{padding-top:8px}
 .cv-card-collection .cv-card-copy{min-height:0;overflow:hidden}
 @container collection-card (min-height:340px){
  .sp-collection .cv-card .sp-card-excerpt,
@@ -107,6 +111,7 @@
  .interior-card-excerpt{-webkit-line-clamp:6}
 }
 @container collection-card (max-height:260px){
+ .sp-overview-preview{display:none}
  .cv-card-kicker{display:none}
  .sp-collection .cv-card .sp-card-excerpt,
  .course-board-workspace .cv-card .course-detail-card-copy .cv-card-copy>p{-webkit-line-clamp:2;font-size:13px}
@@ -115,6 +120,10 @@
 .cb-note{font-size:16px;line-height:1.8;max-width:76ch}
 .cb-page .cb-page-head p{font-size:14px;line-height:1.7;max-width:76ch}
 .course-reader-card .course-note-body{font-size:16px;line-height:1.85;max-width:80ch}
+.course-reader-card .course-reading-head{padding-bottom:16px}
+.course-reader-card .course-reading-head>h2{margin:10px 0}
+.course-reader-card .course-note-actions{margin-top:12px}
+.course-reader-card .course-source-callout{margin:16px 0}
 .cb-links{grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
 .review-hero{padding:22px 26px;margin-top:18px}
 .review-hero h2{margin:8px 0;font-size:26px}

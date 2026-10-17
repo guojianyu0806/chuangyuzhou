@@ -12,7 +12,7 @@ export function blockCardPreview(block,{today=new Date()}={}){
   }
   if(block.kind==='table'){
     const cols=(c.columns||[]).slice(0,3),rows=(c.rows||[]).slice(0,4);
-    return wrap(cols.length?`<table aria-label="表格内容预览"><thead><tr>${cols.map(col=>`<th scope="col">${text(col.label,70)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${cols.map((_,i)=>`<td>${text(row.cells?.[i],140)}</td>`).join('')}</tr>`).join('')}</tbody></table>${!rows.length?'<p>还没有数据行</p>':''}${(c.columns?.length>3||c.rows?.length>4)?'<small>部分内容 · 打开查看完整表格</small>':''}`:'<p>打开方块设置表格列。</p>','cv-preview-table');
+    return wrap(cols.length?`<table aria-label="表格内容预览"><thead><tr>${cols.map(col=>`<th scope="col"><span>${text(col.label,70)}</span></th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${cols.map((_,i)=>`<td><span>${text(row.cells?.[i],140)}</span></td>`).join('')}</tr>`).join('')}</tbody></table>${!rows.length?'<p>还没有数据行</p>':''}${(c.columns?.length>3||c.rows?.length>4)?'<small>部分内容 · 打开查看完整表格</small>':''}`:'<p>打开方块设置表格列。</p>','cv-preview-table');
   }
   if(block.kind==='progress'){
     const ratio=Math.max(0,Math.min(100,(Number(c.value)||0)/(Number(c.target)||1)*100));
