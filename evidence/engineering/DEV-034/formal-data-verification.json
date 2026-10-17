@@ -1,0 +1,9 @@
+{
+  "stateEqual": true,
+  "filesEqual": true,
+  "beforeStateSHA256": "90f48cb3a490cf08a5aa96cefcb6a71c283f82cd5657bc783f09a5dd8de68f63",
+  "afterStateSHA256": "90f48cb3a490cf08a5aa96cefcb6a71c283f82cd5657bc783f09a5dd8de68f63",
+  "activeCaptures": 17,
+  "archivedCaptures": 7,
+  "method": "Normal authenticated UI exports before and after cache migration; no private database or credential inspection."
+}

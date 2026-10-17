@@ -1,0 +1,16 @@
+{
+  "origin": "http://localhost:4398",
+  "syntheticOnly": true,
+  "quotaReproduced": true,
+  "legacyKeysRemaining": 0,
+  "draftRetained": true,
+  "accountSentinelsUnchanged": true,
+  "pendingSurvivesReload": true,
+  "differentContentNotAutoUploaded": true,
+  "explicitLoadPreservesRecovery": true,
+  "exportedRecoveryIncludesOldPendingTask": true,
+  "twoWindowNewTasksSurviveRefresh": true,
+  "finalTaskCount": 7,
+  "modelCalls": 0,
+  "physicalDiskExhaustionTested": false
+}
