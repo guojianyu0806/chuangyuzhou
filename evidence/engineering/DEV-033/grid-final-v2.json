@@ -1,0 +1,50 @@
+[
+  {
+    "body": 110,
+    "bodyBottom": 351.078125,
+    "footerTop": 359.078125,
+    "height": 256,
+    "id": "ai",
+    "rows": 0
+  },
+  {
+    "body": 110,
+    "bodyBottom": 351.078125,
+    "footerTop": 359.078125,
+    "height": 256,
+    "id": "courses",
+    "rows": 0
+  },
+  {
+    "body": 132,
+    "bodyBottom": 925.140625,
+    "footerTop": 933.140625,
+    "height": 278,
+    "id": "tasks",
+    "rows": 0
+  },
+  {
+    "body": 118,
+    "bodyBottom": 1209.109375,
+    "footerTop": 1217.109375,
+    "height": 264,
+    "id": "calendar",
+    "rows": 0
+  },
+  {
+    "body": 194,
+    "bodyBottom": 1873.1875,
+    "footerTop": 1881.1875,
+    "height": 340,
+    "id": "block:showcase-dev012-observations",
+    "rows": 1
+  },
+  {
+    "body": 194,
+    "bodyBottom": 2953.1875,
+    "footerTop": 2961.1875,
+    "height": 340,
+    "id": "block:showcase-dev019-table",
+    "rows": 1
+  }
+]

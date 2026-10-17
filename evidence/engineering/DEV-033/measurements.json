@@ -1,0 +1,58 @@
+{
+  "scope": "synthetic 4398 only",
+  "aiBefore": {
+    "composer": 238,
+    "height": 476,
+    "thread": 126,
+    "viewport": 720
+  },
+  "aiAfter": {
+    "viewport": [
+      1280,
+      720
+    ],
+    "composer": 155,
+    "thread": 238
+  },
+  "mobile": {
+    "viewport": [
+      390,
+      844
+    ],
+    "clientWidth": 390,
+    "scrollWidth": 390,
+    "composer": 116,
+    "thread": 421
+  },
+  "finalPreviewMetrics": [
+    {
+      "previewHeight": 131,
+      "rows": 1,
+      "size": [
+        320,
+        360
+      ],
+      "title": "预演观察表 · 示例"
+    },
+    {
+      "previewHeight": 131,
+      "rows": 1,
+      "size": [
+        320,
+        360
+      ],
+      "title": "阅读与表达清单 · 示例"
+    }
+  ],
+  "expandedMetrics": {
+    "footerTop": 614,
+    "previewHeight": 256,
+    "rows": 3,
+    "size": [
+      320,
+      500
+    ],
+    "tableBottom": 585.53125
+  },
+  "modelRequests": 0
+}
