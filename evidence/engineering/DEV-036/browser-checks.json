@@ -1,0 +1,33 @@
+{
+  "origin": "http://localhost:4398",
+  "mainToNestedScope": true,
+  "nestedPlacementSurvivesReload": true,
+  "actualPointerMove": {
+    "before": {
+      "left": "54.5979px",
+      "top": "54.5979px"
+    },
+    "after": {
+      "left": "594.969px",
+      "top": "16px"
+    },
+    "afterReload": {
+      "left": "594.969px",
+      "top": "16px"
+    }
+  },
+  "parentSharedEnglishCount": 0,
+  "mainCardCountBefore": 23,
+  "mainCardCountAfter": 23,
+  "sidebarScopeRetained": true,
+  "mobileBottomScopeRetained": true,
+  "mobile": {
+    "width": 390,
+    "height": 844,
+    "clientWidth": 375,
+    "scrollWidth": 375,
+    "selectWidth": 311
+  },
+  "realModelCalls": 0,
+  "browserErrors": []
+}

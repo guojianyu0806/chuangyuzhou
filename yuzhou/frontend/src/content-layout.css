@@ -161,9 +161,9 @@
 .space-block-controls strong{overflow-wrap:anywhere}
 .sp-hero-actions{flex-wrap:wrap}
 .wb-builder .wb-assistant-invite{flex-wrap:wrap}
-.wb-scope-switcher{display:flex;align-items:center;gap:20px;padding:16px 20px;margin:0 0 18px;border:1px solid var(--line,#e4ddf3);border-radius:18px;background:linear-gradient(115deg,#fff,#f5f0ff);box-shadow:0 4px 16px #39266506}
-.wb-scope-switcher label{display:grid;gap:7px;flex:0 1 330px;min-width:0;font-size:12px;font-weight:700;color:#655b7c}
+.wb-scope-switcher{display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px;padding:16px 20px;margin:0 0 18px;border:1px solid var(--line,#e4ddf3);border-radius:18px;background:linear-gradient(115deg,#fff,#f5f0ff);box-shadow:0 4px 16px #39266506}
+.wb-scope-switcher label{display:grid;gap:7px;flex:1 1 280px;min-width:0;font-size:12px;font-weight:700;color:#655b7c}
 .wb-scope-switcher select{width:100%;min-width:0;min-height:42px;padding:9px 34px 9px 12px;border:1px solid #cfc0ee;border-radius:11px;background:#fff;color:#33224f;font:inherit;font-size:14px;cursor:pointer}
 .wb-scope-switcher select:focus-visible{outline:2px solid #8758ef;outline-offset:3px}
-.wb-scope-switcher>div{min-width:0;flex:1;overflow-wrap:anywhere}.wb-scope-switcher strong{font-size:14px}.wb-scope-switcher p{margin:5px 0 0;color:#76698a;font-size:12px;line-height:1.6}
-@media(max-width:700px){.wb-scope-switcher{align-items:stretch;flex-direction:column;gap:10px;padding:13px 14px}.wb-scope-switcher label{flex-basis:auto}.wb-scope-switcher p{margin-top:3px}}
+.wb-scope-switcher>div{min-width:0;flex:1 1 240px;overflow-wrap:anywhere}.wb-scope-switcher strong{font-size:14px}.wb-scope-switcher p{margin:5px 0 0;color:#76698a;font-size:12px;line-height:1.6}
+@media(max-width:700px){.wb-scope-switcher{align-items:stretch;flex-direction:column;gap:10px;padding:13px 14px}.wb-scope-switcher label,.wb-scope-switcher>div{flex-basis:auto}.wb-scope-switcher p{margin-top:3px}}
