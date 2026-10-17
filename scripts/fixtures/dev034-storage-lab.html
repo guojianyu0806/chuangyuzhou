@@ -1,0 +1,40 @@
+<!doctype html><meta charset="utf-8"><title>DEV-034 合成存储验收</title>
+<style>body{font:16px/1.7 system-ui;padding:32px;max-width:1000px;background:#f7f5ff;color:#262139}button,a{display:inline-block;padding:10px 18px;margin:8px;border:1px solid #8974c8;border-radius:10px;background:white;color:inherit}pre{white-space:pre-wrap;background:white;padding:20px;border-radius:12px}</style>
+<h1>DEV-034 · 合成存储验收</h1><p>仅在独立 4398 合成实例使用，不连接模型，不接触正式账号。原项目存储哨兵只使用合成字符串。</p>
+<button id="prepare">准备接近上限的旧缓存</button><button id="inspect">核对迁移结果</button><button id="failure">验证持久化失败与重试</button>
+<a href="/#/tasks">进入合成工作台</a><pre id="result">待操作</pre>
+<script type="module">
+import {createWorkspaceStorage,openSnapshotBackend} from '/src/workspace-storage.js';
+const output=document.querySelector('#result'),account='platform-test',prefix=`czb-yuzhou-cloud-v1-${account}-`,recovery=`czb-yuzhou-cloud-recovery-${account}-`,tab='00000000-0000-4000-8000-000000000034';
+if(location.hostname!=='localhost'||location.port!=='4398')throw Error('Synthetic instance only');
+const run=fn=>async()=>{try{output.textContent=JSON.stringify(await fn(),null,2);}catch(error){output.textContent=error.name+': '+error.message;}};
+document.querySelector('#prepare').onclick=run(async()=>{
+  // Only retire placeholders made by the first iteration of this synthetic lab.
+  for(const key of Object.keys(localStorage))if(key.startsWith(recovery)&&/^synthetic-[0-9]+$/.test(key.slice(recovery.length)))localStorage.removeItem(key);
+  const state=await (await fetch('/__dev034-state')).json();
+  state.tasks.unshift({id:'dev034-unsynced',title:'迁移前未同步的完整待办',done:false,priority:'normal',due:'',createdAt:new Date().toISOString()});
+  localStorage.setItem('lumi-cloud-v1-synthetic-original','original synthetic sentinel');
+  localStorage.setItem('czb-yuzhou-cloud-v1-other-synthetic-account-sentinel','other account sentinel');
+  localStorage.setItem(`${prefix}${tab}-workspace-personal`,JSON.stringify(state));
+  localStorage.setItem(`${prefix}${tab}-sync`,JSON.stringify({revision:0,pending:{id:tab,state,createdAt:new Date().toISOString()},conflict:true}));
+  localStorage.setItem(`${prefix}${tab}-draft-synthetic`,JSON.stringify({text:'迁移前的草稿原文'}));
+  sessionStorage.setItem(`czb-yuzhou-cloud-tab-${account}`,tab);
+  const big=structuredClone(state);big.captures=Array.from({length:40},(_,i)=>({id:`large-${i}`,text:'旧内容完整保留。'.repeat(800),category:'学习灵感',createdAt:new Date().toISOString()}));
+  let copies=0,quota=false;for(let i=0;i<100;i++){try{localStorage.setItem(`${recovery}${crypto.randomUUID()}`,JSON.stringify(big));copies++;}catch(error){if(error.name!=='QuotaExceededError')throw error;quota=true;break;}}
+  return {quotaReproduced:quota,largeRecoveryCopies:copies,unsyncedTaskPrepared:true,draftPrepared:true};
+});
+document.querySelector('#inspect').onclick=run(async()=>{
+  const backend=await openSnapshotBackend(),entries=[...(await backend.entries(prefix)),...(await backend.entries(recovery))];
+  const remaining=Object.keys(localStorage).filter(key=>key.startsWith(prefix)||key.startsWith(recovery));
+  return {legacyKeysRemaining:remaining.length,durableEntries:entries.length,originalSentinelUnchanged:localStorage.getItem('lumi-cloud-v1-synthetic-original')==='original synthetic sentinel',otherAccountUnchanged:localStorage.getItem('czb-yuzhou-cloud-v1-other-synthetic-account-sentinel')==='other account sentinel',draftRetained:entries.some(([key,value])=>key.endsWith('-draft-synthetic')&&JSON.parse(value).text==='迁移前的草稿原文'),recoveryEntries:entries.filter(([key])=>key.startsWith(recovery)).length};
+});
+document.querySelector('#failure').onclick=run(async()=>{
+  const actual=await openSnapshotBackend();let fail=true;
+  const backend={entries:prefix=>actual.entries(prefix),write:entries=>fail?Promise.reject(new DOMException('synthetic disk full','QuotaExceededError')):actual.write(entries)};
+  const store=await createWorkspaceStorage('failure-fixture',{legacy:localStorage,backend});
+  const key=`czb-yuzhou-cloud-v1-failure-fixture-${tab}-workspace-personal`;store.setItem(key,'必须保留的合成改动');let blocked=false;
+  try{await store.settled();}catch{blocked=true;}
+  const inMemory=store.getItem(key);fail=false;await store.retry();
+  return {failureSurfaced:blocked,inMemoryRetained:inMemory==='必须保留的合成改动',retryDurable:(await actual.entries(key))[0][1]===inMemory};
+});
+</script>

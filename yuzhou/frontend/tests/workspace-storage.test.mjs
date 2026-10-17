@@ -4,7 +4,7 @@ import {createWorkspaceStorage,sameWorkspaceContent} from '../src/workspace-stor
 import {CloudClient} from '../src/cloud.js';
 
 const account='storage-fixture',prefix=`czb-yuzhou-cloud-v1-${account}-`,recovery=`czb-yuzhou-cloud-recovery-${account}-`;
-const workspace=`${prefix}tab-workspace-personal`,sync=`${prefix}tab-sync`;
+const tab='00000000-0000-4000-8000-000000000034',workspace=`${prefix}${tab}-workspace-personal`,sync=`${prefix}${tab}-sync`;
 function legacy(initial={}){
   const values={...initial};Object.defineProperties(values,{
     getItem:{value:key=>values[key]??null},setItem:{writable:true,value:(key,value)=>{values[key]=value;}},removeItem:{value:key=>{delete values[key];}}
@@ -23,10 +23,11 @@ function clientWith(storage){
 }
 
 test('migration durably verifies full snapshots and drafts before releasing only this account legacy cache',async()=>{
-  const content='文'.repeat(3*1024*1024),source=legacy({[workspace]:content,[sync]:'{"pending":null}',[`${prefix}tab-draft-note`]:'draft',unrelated:'keep', 'lumi-cloud-v1-private':'untouched'}),disk=backend();
+  const sibling=`${prefix}another-${tab}-workspace-personal`,content='文'.repeat(3*1024*1024),source=legacy({[workspace]:content,[sync]:'{"pending":null}',[`${prefix}${tab}-draft-note`]:'draft',[sibling]:'sibling account',unrelated:'keep', 'lumi-cloud-v1-private':'untouched'}),disk=backend();
   const store=await createWorkspaceStorage(account,{legacy:source,backend:disk});
   assert.equal(store.getItem(workspace),content);assert.equal(disk.values.get(workspace),content);assert.equal(source.getItem(workspace),null);
-  assert.equal(source.unrelated,'keep');assert.equal(source['lumi-cloud-v1-private'],'untouched');assert.equal(disk.values.has('unrelated'),false);
+  assert.equal(source.unrelated,'keep');assert.equal(source['lumi-cloud-v1-private'],'untouched');assert.equal(source[sibling],'sibling account');assert.equal(disk.values.has(sibling),false);assert.equal(disk.values.has('unrelated'),false);
+  assert.throws(()=>store.setItem(sibling,'denied'),/账号范围/);
   source.setItem=()=>{throw Error('localStorage exhausted');};store.setItem(workspace,content+'more');await store.settled();assert.equal(disk.values.get(workspace),content+'more');
 });
 
@@ -63,7 +64,7 @@ test('a newer edit arriving during a transaction is committed after the older ed
 
 test('the same conflicted pending snapshot is preserved once even after repeated notifications',async()=>{
   const disk=backend(),store=await createWorkspaceStorage(account,{legacy:legacy(),backend:disk}),client=clientWith(store);
-  client.pending={id:'pending-1',state:sample('local')};client.conflict();client.conflict();client.preserve();await store.settled();
+  client.pending={id:tab,state:sample('local')};client.conflict();client.conflict();client.preserve();await store.settled();
   assert.equal(store.keys().filter(key=>key.startsWith(recovery)).length,1);assert.equal(client.recoveryCopies().length,1);
 });
 
@@ -76,7 +77,7 @@ test('a stale revision with identical content clears its outbox without another 
 
 test('a lost response followed by 409 acknowledges equal content, but retains genuine differences',async()=>{
   for(const equal of [true,false]){
-    const disk=backend(),store=await createWorkspaceStorage(account,{legacy:legacy(),backend:disk}),client=clientWith(store),state=sample('local');client.pending={id:'p',state};client.persist();
+    const disk=backend(),store=await createWorkspaceStorage(account,{legacy:legacy(),backend:disk}),client=clientWith(store),state=sample('local');client.pending={id:tab,state};client.persist();
     client.request=async(path,options)=>{if(options?.method==='PUT'){const error=Error('conflict');error.status=409;error.code='revision_conflict';throw error;}return {revision:7,state:equal?{...state,updatedAt:'later'}:sample('remote')};};
     if(equal){await client.flush();assert.equal(client.pending,null);assert.equal(client.status,'saved');assert.equal(client.revision,7);}
     else{await assert.rejects(client.flush());await store.settled();assert.equal(client.pending.state.tasks[0].title,'local');assert.equal(client.incoming.state.tasks[0].title,'remote');assert.equal(client.status,'conflict');assert.equal(client.recoveryCopies().length,1);}
@@ -90,8 +91,15 @@ test('local durability gates every network write and an actual disk failure leav
   disk.reject=false;await client.flush();assert.equal(writes,1);assert.equal(client.pending,null);assert.equal(client.status,'saved');
 });
 
+test('startup disk failure still exposes downloaded content with an actionable storage status',async()=>{
+  const disk=backend(),store=await createWorkspaceStorage(account,{legacy:legacy(),backend:disk}),client=clientWith(store),state=sample('readable content');
+  disk.reject=true;client.request=async()=>({revision:8,state});
+  assert.deepEqual(await client.initialize({}),state);assert.equal(client.status,'storage');assert.match(client.error,/保留此页面/);assert.equal(store.dirty,true);
+  disk.reject=false;await store.retry();assert.equal(JSON.parse(disk.values.get(sync)).revision,8);
+});
+
 test('explicit remote loading waits for a durable recovery copy and protects edits made during that wait',async()=>{
-  const disk=backend(),store=await createWorkspaceStorage(account,{legacy:legacy(),backend:disk}),client=clientWith(store);client.pending={id:'old',state:sample('local')};
+  const disk=backend(),store=await createWorkspaceStorage(account,{legacy:legacy(),backend:disk}),client=clientWith(store);client.pending={id:tab,state:sample('local')};
   client.request=async()=>({revision:3,state:sample('remote')});let release;disk.hold=new Promise(done=>release=done);
   const accepting=client.acceptRemote();await new Promise(done=>setImmediate(done));client.pending={id:'new',state:sample('typed during preservation')};release();await assert.rejects(accepting,/新的编辑/);
   assert.equal(client.pending.id,'new');assert.equal(client.revision,2);assert.equal(client.recoveryCopies()[0].state.tasks[0].title,'local');
@@ -101,4 +109,12 @@ test('content comparison ignores only the root save timestamp, preserving nested
   const a=sample('one');assert.ok(sameWorkspaceContent(a,{...a,updatedAt:'later'}));assert.equal(sameWorkspaceContent(a,sample('two')),false);
   assert.equal(sameWorkspaceContent({tasks:[{updatedAt:'a'}]},{tasks:[{updatedAt:'b'}]}),false);
   assert.equal(sameWorkspaceContent({tasks:[1,2]},{tasks:[2,1]}),false);
+});
+
+test('edits arriving during the final mutation persistence cannot be overwritten by server result adoption',async()=>{
+  const disk=backend(),store=await createWorkspaceStorage(account,{legacy:legacy(),backend:disk}),client=clientWith(store);let release,started;
+  const operationStarted=new Promise(done=>started=done);client.request=async()=>({revision:3,state:sample('server result')});let applied=false;
+  const mutation=client.runWorkspaceMutation(async()=>{disk.hold=new Promise(done=>release=done);started();return {confirmed:true};},{apply:()=>{applied=true;}});
+  await operationStarted;await new Promise(done=>setImmediate(done));client.enqueue(sample('typed during final disk transaction'));release();
+  const result=await mutation;clearTimeout(client.timer);assert.equal(result.applied,false);assert.equal(applied,false);assert.equal(client.pending.state.tasks[0].title,'typed during final disk transaction');assert.equal(client.status,'result');
 });

@@ -57,6 +57,13 @@ export class CloudClient {
     await this.waitForStorage();
   }
   async waitForStorage(){await this.storage?.settled();}
+  async finishInitialization(state,status){
+    try{await this.waitForStorage();if(status)this.setStatus(status);}
+    catch(error){this.setStatus('storage',error.message);}
+    // An unavailable disk must not turn successfully read business data into a
+    // blank page. Keep this document open and expose retry/export controls.
+    return state;
+  }
   key(mode) {return `${this.prefix}-workspace-${mode}`;}
   draftKey(value) {return `${this.prefix}-draft-${value}`;}
   recoveryCopies() {
@@ -110,17 +117,15 @@ export class CloudClient {
     }
     if(this.pending){
       if(remote.state&&sameWorkspaceContent(this.pending.state,remote.state)){
-        this.pending=null;this.revision=remote.revision;this.incoming=null;this.persist();await this.waitForStorage();this.setStatus('saved');return remote.state;
+        this.pending=null;this.revision=remote.revision;this.incoming=null;this.persist();return this.finishInitialization(remote.state,'saved');
       }
       if(cached.conflict||remote.revision!==this.revision){this.incoming=remote;this.conflict();}
       else{this.setStatus('pending');setTimeout(()=>this.flush().catch(()=>{}),500);}
-      await this.waitForStorage();return this.pending.state;
+      return this.finishInitialization(this.pending.state);
     }
     this.revision=remote.revision;
     this.persist();
-    await this.waitForStorage();
-    this.setStatus(remote.state?'saved':'ready');
-    return remote.state||empty;
+    return this.finishInitialization(remote.state||empty,remote.state?'saved':'ready');
   }
   enqueue(state) {
     if(state.mode!=='personal')return;

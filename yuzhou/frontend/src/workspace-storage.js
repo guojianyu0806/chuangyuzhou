@@ -35,10 +35,16 @@ export async function openSnapshotBackend(factory=globalThis.indexedDB){
 export async function createWorkspaceStorage(account,{legacy=globalThis.localStorage,backend}={}){
   backend||=await openSnapshotBackend();
   const prefix=`czb-yuzhou-cloud-v1-${account}-`,recovery=`czb-yuzhou-cloud-recovery-${account}-`;
-  const allowed=key=>typeof key==='string'&&(key.startsWith(prefix)||key.startsWith(recovery));
-  const values=new Map([...(await backend.entries(prefix)),...(await backend.entries(recovery))]);
+  const uuid='[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+  const workspaceSuffix=new RegExp(`^${uuid}-(?:sync$|workspace-(?:personal|demo)(?::sidebar-width)?$|draft-)`,'i');
+  const recoverySuffix=new RegExp(`^(?:[0-9]+-|migration-)?${uuid}$`,'i');
+  // Usernames may themselves contain '-'. A plain startsWith(account) would
+  // accidentally include a second account whose name extends the first one.
+  const belongs=key=>key.startsWith(prefix)?workspaceSuffix.test(key.slice(prefix.length)):key.startsWith(recovery)&&recoverySuffix.test(key.slice(recovery.length));
+  const allowed=key=>typeof key==='string'&&belongs(key);
+  const values=new Map([...(await backend.entries(prefix)),...(await backend.entries(recovery))].filter(([key])=>belongs(key)));
   const old=[];
-  for(const key of Object.keys(legacy))if(allowed(key)){const value=legacy.getItem(key);if(value!==null)old.push([key,value]);}
+  for(const key of Object.keys(legacy))if(belongs(key)){const value=legacy.getItem(key);if(value!==null)old.push([key,value]);}
   const migration=[];
   for(const [key,value] of old){
     if(values.has(key)&&values.get(key)!==value){
