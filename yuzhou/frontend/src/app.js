@@ -18,6 +18,7 @@ import {bootstrapCloud,mountModelSettings} from './cloud.js';
 import {WORKBENCH_MODULES,createWorkbench,getVisibleModules,getWorkbench,configureWorkbench} from './workbench-model.js';
 import {mountBuilder} from './builder.js';
 import {mountSpaceBuilder} from './space-builder.js';
+import {builderScopeId} from './builder-scope.js';
 import {createReturnNavigation,parseWorkspaceRoute,workspaceRoute,routeLabel} from './return-navigation.js';
 import {getSpaceWorkbench} from './space-workbench-config.js';
 import {mountWelcome} from './welcome.js';
@@ -235,7 +236,10 @@ function shell(){
   if(cloudClient)updateCloudShell();
 }
 function updateModuleNavigation(){
-  renderSidebarNavigation(document.querySelector('.rail-navigation'),getNavigationItems(state),{route,subroute});
+  const scopeId=builderScopeId(state,{route,subroute}),builderHref=workspaceRoute('builder',scopeId);
+  const items=getNavigationItems(state).map(item=>item.id==='builder'?{...item,href:builderHref}:item);
+  renderSidebarNavigation(document.querySelector('.rail-navigation'),items,{route,subroute});
+  document.querySelectorAll('.bottom-nav [data-nav="builder"]').forEach(link=>link.setAttribute('href',builderHref));
   const title=document.querySelector('[data-workbench-title]');
   if(title)title.textContent=getWorkbench(state).title;
   document.querySelectorAll('[data-nav]').forEach(a=>{a.classList.toggle('active',a.dataset.nav===route);if(a.dataset.nav===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});

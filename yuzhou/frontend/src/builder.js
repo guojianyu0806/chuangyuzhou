@@ -6,6 +6,7 @@ import {placementHTML,mountPlacement} from './placement.js';
 import {navigationEditorHTML,mountNavigationEditor} from './navigation-editor.js';
 import {getCustomBlocks,CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
 import {createPresetInput} from './custom-block-presets.js';
+import {builderScopeHTML,mountBuilderScope} from './builder-scope.js';
 
 const byId=id=>WORKBENCH_MODULES.find(module=>module.id===id);
 const moduleTitle=(config,id)=>config.modules.find(module=>module.id===id)?.title||byId(id)?.title||id;
@@ -39,6 +40,7 @@ export function builderHTML(state,{navigationSession={}}={}) {
   const catalog=WORKBENCH_MODULES.filter(module=>module.id!=='ai');
   return `<section class="wb-builder" aria-labelledby="wb-heading">
     <header class="wb-heading"><div><p class="wb-kicker">搭建台</p><div class="wb-title-row"><h1 id="wb-heading">${esc(config.title)}</h1><button type="button" class="wb-icon-button" data-wb-action="rename-workbench" aria-label="修改工作台名称" title="修改工作台名称">${icon('edit',18)}</button></div><p class="wb-intro">选择需要的模块，把这里搭成适合自己的样子。</p></div><button class="btn primary" type="button" data-wb-action="home">进入我的画布 ${icon('arrow-right',17)}</button></header>
+    ${builderScopeHTML(state)}
     <div class="wb-assistant-invite"><span class="wb-assistant-mark" aria-hidden="true">${icon('sparkles',26)}</span><div><strong>也可以和 AI 一起搭建</strong><p>告诉它你的场景，先看方案，再决定如何调整。</p></div><button type="button" class="btn" data-wb-action="ask-ai">${icon('message',17)} 让 AI 帮我搭建</button></div>
     <div data-wb-navigation-host>${navigationEditorHTML(state,navigationSession)}</div>
 
@@ -144,7 +146,8 @@ export function mountBuilder(ctx) {
     }catch(error){toast(error.message||'未能保存这次调整，请重试。');}
   }
   root.addEventListener('click',onClick);
+  const disposeScope=mountBuilderScope(ctx);
   render();
   if(session.scroll&&globalThis.requestAnimationFrame)requestAnimationFrame(()=>{if(active)globalThis.scrollTo?.(session.scroll);});
-  return ()=>{session.scroll={left:globalThis.scrollX||0,top:globalThis.scrollY||0,behavior:'instant'};active=false;disposePlacement?.();disposeNavigation?.();root.removeEventListener('click',onClick);};
+  return ()=>{session.scroll={left:globalThis.scrollX||0,top:globalThis.scrollY||0,behavior:'instant'};active=false;disposePlacement?.();disposeNavigation?.();disposeScope();root.removeEventListener('click',onClick);};
 }

@@ -1,7 +1,7 @@
 import {escapeHTML as esc} from './services.js';
 import {icon} from './icons.js';
 
-const currentHref=({route,subroute=''})=>route==='space'?`#/space/${encodeURIComponent(subroute)}`:`#/${route}`;
+const currentHref=({route,subroute=''})=>['space','builder'].includes(route)&&subroute?`#/${route}/${encodeURIComponent(subroute)}`:`#/${route}`;
 export function sidebarNavigationHTML(items,{route,subroute='',moreOpen=false}={}) {
   const current=currentHref({route,subroute});
   const link=item=>{
