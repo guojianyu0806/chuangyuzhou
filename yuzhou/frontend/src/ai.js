@@ -126,15 +126,14 @@ export function mountAIComposer(ctx, host, settings={}) {
   const localSave = () => { try { saveDraft(); return true; } catch (error) { toast(error.message || '草稿保存失败，请先复制内容。'); return false; } };
   host.classList.add('ai-composer-host');
   host.toggleAttribute('data-local-ai-draft',!!followRequest);
-  host.innerHTML = `<form class="ai-composer" aria-label="AI 收件台">
+  host.innerHTML = `<form class="ai-composer ai-composer-compact" aria-label="AI 收件台">
     <span class="ai-card-label ai-compose-card-label">01 / 内容入口</span><div class="ai-compose-intro"><span class="ai-orb">${icon('sparkles', 23)}</span><div><span class="ai-eyebrow">YOUR PERSONAL ORGANIZER</span><h2>${followRequest?'继续聊这件事':'开始一段新对话'}</h2></div><span class="ai-local-status"><i></i>待连接</span></div>
     <p class="ai-compose-hint">课件、会议记录、突然冒出的想法，都可以放在这里。</p>
     <label class="ai-input-label" for="ai-instruction">消息</label>
     <textarea id="ai-instruction" name="instruction" maxlength="30000" placeholder="例如：这是迎新活动的会议记录，放进学生会，帮我整理分工和待办…" rows="4">${esc(owner.aiDraft.text)}</textarea>
     <div class="ai-match-hints" aria-live="polite"></div>
-    <div class="ai-drop-target"><span>${icon('upload', 18)} 拖入文件、截图或课件</span><button type="button" class="ai-attach-button" data-ai="attach">选择附件 ${icon('plus', 15)}</button><input type="file" multiple hidden data-ai-files><small>每个文件最多 40 MB · 仅保存到当前浏览器</small></div>
     <div class="ai-attachment-chips" aria-live="polite"></div>
-    <div class="ai-compose-footer"><label class="ai-destination"><span>放到</span><select name="destination" aria-label="内容归属">${options(ctx, owner.aiDraft.targetId)}</select></label><button class="btn ai-send" type="submit">${icon('sparkles', 17)}${followRequest?'发送补充':'发送'} ${icon('arrow-right', 16)}</button></div>
+    <div class="ai-compose-footer"><label class="ai-destination"><span>放到</span><select name="destination" aria-label="内容归属">${options(ctx, owner.aiDraft.targetId)}</select></label><div class="ai-drop-target"><button type="button" class="ai-attach-button" data-ai="attach" aria-label="选择附件" title="添加附件，也可直接拖入输入区">${icon('upload',18)}</button><input type="file" multiple hidden data-ai-files><small class="sr-only">每个文件最多 40 MB · 仅保存到当前浏览器</small></div><button class="btn ai-send" type="submit">${icon('sparkles', 17)}${followRequest?'发送补充':'发送'} ${icon('arrow-right', 16)}</button></div>
     <div class="ai-compose-note">${icon('shield', 13)} 先收好原文与附件，本机工作台独立配置 AI 引擎与模型后才能自动整理。</div>
     <div class="ai-compose-live" role="status" aria-live="polite"></div>
   </form>`;

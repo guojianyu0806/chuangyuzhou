@@ -137,7 +137,7 @@ export function mountCourses(ctx, courseId) {
 
   function detailCard(card, item) {
     const isNote = activeTab === 'notes';
-    const excerpt = isNote ? String(item.content || '').replace(/^#{1,6}\s*/gm, '').replace(/\n+/g, ' ').slice(0, 180) : `${readableSize(item.size)} · 原件完整保存在本机`;
+    const excerpt = isNote ? String(item.content || '').replace(/^#{1,6}\s*/gm, '').replace(/\n+/g, ' ').slice(0, 800) : `${readableSize(item.size)} · 原件完整保存在本机`;
     return `<div class="course-detail-card-copy"><div class="cv-card-copy"><span class="cv-card-kicker">${isNote ? esc(item.chapter || '学习笔记') : esc(item.name?.split('.').pop().toUpperCase() || 'FILE')}</span><h2><button class="course-title-link" data-card-open data-course-action="${isNote ? 'select-note' : 'select-file'}" data-id="${esc(item.id)}">${esc(item.title)}</button></h2><p>${esc(excerpt)}</p></div><div class="course-detail-card-mark" aria-hidden="true">${glyph(isNote ? 'book' : 'file', 64)}</div><div class="course-detail-card-meta"><span>${isNote ? item.example ? '参考资料' : '我的笔记' : '原始资料'}</span><span>${isNote ? `版本 ${(item.revisions?.length || 0) + 1}` : dateLabel(item.createdAt)}</span></div></div>`;
   }
 

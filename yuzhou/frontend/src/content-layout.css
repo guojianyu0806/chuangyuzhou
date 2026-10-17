@@ -1,0 +1,135 @@
+/* Content density follows the surface; saved geometry and camera remain untouched. */
+.cv-content-preview{position:relative;z-index:1;flex:1;min-height:0;overflow:hidden;margin-top:12px;padding:12px 14px;border:1px solid #ffffff60;border-radius:12px;background:#ffffff2e;color:#302a42;font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+.cv-content-preview .cv-preview-prose{white-space:pre-wrap;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:8;overflow:hidden;margin:0}
+.cv-card .cv-content-preview .cv-preview-prose{-webkit-line-clamp:var(--cv-preview-lines,8)}
+.cv-content-preview>small,.cv-preview-label{display:block;font-size:11px;line-height:1.5;color:#51415f;margin-top:6px}
+.cv-content-preview>.cv-preview-label{margin:0 0 5px}
+.cv-content-preview>strong:not(.cv-preview-number){display:block;font-size:15px;line-height:1.45;margin-bottom:6px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cv-preview-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.cv-preview-list>li{display:flex;gap:9px;align-items:baseline;min-width:0}
+.cv-preview-list>li>span:last-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cv-preview-list>li>span:first-child{flex:none}
+.cv-preview-list>.is-done{opacity:.7;text-decoration:line-through}
+.cv-preview-table table{border-collapse:collapse;width:100%;table-layout:fixed;font-size:inherit;text-align:left}
+.cv-preview-table th,.cv-preview-table td{padding:7px 6px;border-bottom:1px solid #43345622;vertical-align:top;overflow-wrap:anywhere}
+.cv-preview-table th{background:#ffffff38;font-weight:700}
+.cv-preview-table td{line-height:1.5}
+.cv-preview-number{display:block;font-size:clamp(32px,13cqw,78px);line-height:1.15;font-variant-numeric:tabular-nums;letter-spacing:-.04em;margin:4px 0 8px}
+.cv-preview-number small{font-size:.35em;margin-left:5px;letter-spacing:0}
+.cv-preview-metric progress{display:block;width:100%;height:12px;accent-color:#56416f;margin:10px 0}
+.cv-preview-metric p{margin:0}
+.cv-preview-app-mark{display:block;font-size:32px;line-height:1;margin-bottom:12px}
+.cv-card-body:has(>.cv-content-preview)>.cv-card-copy{flex:none}
+.cv-card-body:has(.cv-preview-space)>.cv-custom-art{opacity:.18;right:4px;bottom:0}
+.cv-card-body:has(.cv-preview-space)>.cv-space-counts{position:relative;z-index:1;flex:none;margin-top:8px;padding-top:0;max-width:100%}
+.cv-home .cv-card-body:has(.cv-preview-space)>.cv-card-copy{max-width:100%}
+.cv-home .cv-card-body:has(.cv-preview-space)>.cv-card-copy>p{-webkit-line-clamp:2}
+.cv-home .cv-card .cv-preview-summary{margin-top:5px;font-size:12px}
+.cv-home .cv-viewport.is-list:not(.is-stack) .cv-card:has(.cv-content-preview){min-height:300px}
+.cv-home .cv-viewport.is-stack .cv-content-preview{flex:0 1 auto;max-height:130px}
+@container home-card (min-width:0px){
+ .cv-home .cv-card .cv-card-copy>p{font-size:clamp(13px,min(4.5cqw,5cqh),20px);line-height:1.65}
+ .cv-content-preview{font-size:clamp(14px,min(4.8cqw,5cqh),22px);padding:clamp(9px,3cqw,20px);margin-top:clamp(8px,3cqh,18px)}
+ .cv-content-preview>strong:not(.cv-preview-number){font-size:clamp(15px,5cqw,23px)}
+ .cv-card .cv-card-kicker{font-size:clamp(10px,2.8cqw,13px);letter-spacing:.1em}
+ .cv-card .cv-card-top-label{font-size:clamp(11px,3cqw,15px)}
+ .cv-card .cv-space-counts{font-size:clamp(12px,3.8cqw,18px)}
+ .cv-card-foot>button{font-size:clamp(12px,3.5cqw,16px)}
+}
+@container home-card (min-height:450px){.cv-content-preview .cv-preview-prose{-webkit-line-clamp:14}.cv-preview-list{gap:12px}.cv-preview-table th,.cv-preview-table td{padding:10px 8px}}
+@container home-card (max-height:300px){
+ .cv-card-body:has(>.cv-content-preview) .cv-card-kicker{display:none}
+ .cv-home .cv-card .cb-card-preview h2{font-size:clamp(21px,7cqw,30px);-webkit-line-clamp:1}
+ .cv-content-preview{margin-top:7px;padding:7px 9px;font-size:13px}
+ .cv-preview-list{gap:4px}.cv-preview-list>li>span:last-child{-webkit-line-clamp:1}
+ .cv-preview-table th,.cv-preview-table td{padding:4px}
+ .cv-preview-number{font-size:32px;margin:0}
+ .cv-content-preview>small{display:none}
+ .cv-preview-space .cv-preview-prose{-webkit-line-clamp:2}
+}
+@container home-card (max-height:230px){
+ .cv-content-preview{font-size:12px;padding:5px 8px;margin-top:5px}
+ .cv-content-preview .cv-preview-prose{-webkit-line-clamp:2}
+ .cv-preview-table tbody tr:nth-child(n+2),.cv-preview-list>li:nth-child(n+3){display:none}
+ .cv-preview-space,.cv-preview-app-mark,.cv-preview-metric>span,.cv-preview-metric progress{display:none}
+ .cv-preview-metric{display:flex;align-items:center;gap:12px}
+ .cv-preview-number{font-size:26px;margin:0}
+}
+
+/* One compact composer everywhere; attachment selection stays next to send. */
+.ai-composer.ai-composer-compact .ai-compose-footer,
+.ai-chat-page .ai-chat-main .ai-composer.ai-composer-compact .ai-compose-footer{display:flex;grid-column:1/-1;flex-wrap:nowrap;gap:8px;margin:8px 0 0;padding:0;border:0;min-width:0}
+.ai-composer.ai-composer-compact .ai-drop-target,
+.ai-chat-page .ai-chat-main .ai-composer.ai-composer-compact .ai-drop-target{display:block;flex:0 0 40px;width:40px;min-width:40px;min-height:40px;height:40px;margin:0;padding:0;border:0;background:transparent}
+.ai-composer.ai-composer-compact .ai-attach-button{display:flex;align-items:center;justify-content:center;width:40px;height:40px;min-height:40px;padding:0;gap:0;border-radius:10px;border:1px solid #c7b2df;background:#ffffffb8;color:#65408e}
+.ai-composer.ai-composer-compact .ai-attach-button svg{width:18px;height:18px}
+.ai-composer.ai-composer-compact .ai-attach-button:focus-visible{outline:2px solid #7141e9;outline-offset:2px}
+.ai-composer.ai-composer-compact .ai-drop-target small{display:none}
+.ai-composer.ai-composer-compact .ai-destination,
+.ai-chat-page .ai-chat-main .ai-composer.ai-composer-compact .ai-destination{flex:1 1 0;min-width:0;max-width:none}
+.ai-composer.ai-composer-compact .ai-destination select{height:40px;min-height:40px}
+.ai-composer.ai-composer-compact .ai-send.btn{flex:none;width:auto;min-height:40px;height:40px}
+.ai-composer.ai-composer-compact :is(.ai-attachment-chips,.ai-match-hints,.ai-compose-live):empty{display:none}
+.ai-composer.ai-composer-compact .ai-attachment-chips{max-height:78px;overflow:auto}
+.ai-composer.ai-composer-compact.is-dragging{outline:2px dashed #00818b;outline-offset:2px}
+.ai-chat-page{height:var(--ai-chat-height,calc(100dvh - 145px));min-height:0}
+.ai-chat-heading{margin-bottom:12px}
+.ai-chat-heading p{margin-top:5px}
+.ai-chat-page .ai-chat-main{padding:14px;overflow:hidden}
+.ai-chat-page .ai-chat-main .ai-composer.ai-composer-compact{display:block;padding:10px;margin-top:10px}
+.ai-chat-page .ai-chat-main .ai-composer.ai-composer-compact textarea{min-height:56px;height:64px;max-height:140px;padding:9px 12px;font-size:14px;line-height:1.6}
+.ai-chat-page .ai-chat-main .ai-compose-note{margin-top:6px;font-size:11px;line-height:1.5}
+.ai-chat-page .ai-chat-main [data-chat-thread]{min-height:80px}
+.ai-chat-welcome{padding:16px 12px}
+.ai-chat-welcome p{max-width:52ch;margin:0 auto;font-size:14px;line-height:1.7}
+@media(max-width:760px){
+ .ai-chat-page .ai-chat-main{padding:8px}
+ .ai-chat-page .ai-chat-main .ai-composer.ai-composer-compact{padding:7px;margin-top:6px}
+ .ai-chat-page .ai-chat-main .ai-composer.ai-composer-compact textarea{min-height:48px;height:54px;max-height:100px}
+ .ai-composer.ai-composer-compact .ai-destination>span{display:none}
+ .ai-composer.ai-composer-compact .ai-send.btn{padding:6px 9px}
+ .ai-chat-page .ai-chat-main .ai-composer.ai-composer-compact .ai-attachment-chips{margin-top:6px;max-height:58px}
+}
+
+/* Reading cards reuse their available height instead of suppressing excerpts
+   solely because their original saved size was marked "short". */
+.cv-viewport:not(.is-list):not(.is-stack) .cv-card-collection{container:collection-card / size}
+.sp-collection .cv-card .sp-card-excerpt,
+.course-board-workspace .cv-card .course-detail-card-copy .cv-card-copy>p{display:-webkit-box;-webkit-line-clamp:4;font-size:14px;line-height:1.65;margin-top:8px;max-width:100%}
+.course-canvas-page .course-canvas-chapters{font-size:13px;line-height:1.6;max-width:100%}
+.course-canvas-page .cv-card-copy>p{font-size:14px;line-height:1.65;max-width:100%}
+.interior-card-excerpt{font-size:14px;line-height:1.65}
+.sp-card-meta,.course-detail-card-meta{font-size:12px}
+.cv-card-collection .cv-card-copy{min-height:0;overflow:hidden}
+@container collection-card (min-height:340px){
+ .sp-collection .cv-card .sp-card-excerpt,
+ .course-board-workspace .cv-card .course-detail-card-copy .cv-card-copy>p{-webkit-line-clamp:7;font-size:clamp(14px,4.4cqw,18px)}
+ .interior-card-excerpt{-webkit-line-clamp:6}
+}
+@container collection-card (max-height:260px){
+ .cv-card-kicker{display:none}
+ .sp-collection .cv-card .sp-card-excerpt,
+ .course-board-workspace .cv-card .course-detail-card-copy .cv-card-copy>p{-webkit-line-clamp:2;font-size:13px}
+ .interior-card-excerpt{-webkit-line-clamp:2;font-size:13px}
+}
+.cb-note{font-size:16px;line-height:1.8;max-width:76ch}
+.cb-page .cb-page-head p{font-size:14px;line-height:1.7;max-width:76ch}
+.course-reader-card .course-note-body{font-size:16px;line-height:1.85;max-width:80ch}
+.cb-links{grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
+.review-hero{padding:22px 26px;margin-top:18px}
+.review-hero h2{margin:8px 0;font-size:26px}
+.review-hero p{font-size:14px;line-height:1.7}
+.english-page .english-hero{min-height:230px;padding:22px 28px}
+.english-page .english-hero h2{margin-top:10px;font-size:30px;line-height:1.4}
+.english-page .english-hero p{font-size:14px;line-height:1.7}
+.english-page .english-hero-art{min-height:180px}
+.english-page .english-goals{margin-top:14px}
+@media(max-width:760px){
+ .review-hero{padding:20px;gap:12px}
+ .review-hero h2{font-size:23px}
+ .english-page .english-hero{padding:20px;min-height:240px}
+ .english-page .english-hero h2{font-size:25px}
+ .english-page .english-hero p{font-size:13px}
+ .english-page .english-hero-art{min-height:0}
+ .cb-note,.course-reader-card .course-note-body{font-size:15px}
+}

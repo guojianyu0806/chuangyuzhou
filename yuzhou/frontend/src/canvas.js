@@ -9,6 +9,7 @@ import {mountSurfaceFullscreen} from './fullscreen.js';
 import {WORKBENCH_MODULES,getWorkbench} from './workbench-model.js';
 import {getCustomBlocks,updateCustomBlock,CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
 import {customBlockSummary,customBlockType} from './custom-blocks.js';
+import {blockCardPreview,spaceCardPreview,mountCardPreviewFit} from './card-previews.js';
 const POSITIONS = {
   ai:      { x:36, y:40, w:540, h:380, label:'把零散，变有序。' },
   courses: { x:612, y:40, w:310, h:272, label:'让知识，连成线。' },
@@ -102,7 +103,7 @@ export function mountCanvas(ctx, collection) {
   }
   const canvas=collection?ensureCanvas({canvas:collection.layout,spaces:[]},presets):ensureCanvas(state);
   const collectionText=(key,item,fallback)=>typeof collection?.[key]==='function'?collection[key](item):collection?.[key]??fallback;
-  let alive=true,editing=false,spaceHeld=false,interaction=null,suppressClickUntil=0,saveTimer=0,composerCleanup=null,raf=0,dragDepth=new Map();
+  let alive=true,editing=false,spaceHeld=false,interaction=null,suppressClickUntil=0,saveTimer=0,composerCleanup=null,previewCleanup=null,raf=0,dragDepth=new Map();
   const pointers=new Map(),cardElements=new Map();
   let presentation=normalizePresentation(canvas.presentation,matchMedia('(max-width:680px)').matches?'list':'canvas');
   let stackRaf=0,stackReady=false,stackFocus=0,stackDrag=null,lastStackPointer=0;
@@ -180,7 +181,7 @@ export function mountCanvas(ctx, collection) {
   function cardContent(card) {
     if(collection?.renderCard)return collection.renderCard(card,dataFor(card));
     const d=dataFor(card),courseCount=(state.courses||[]).filter(course=>!course.archived).length,taskCount=(state.tasks||[]).filter(t=>!t.done&&!t.archived).length,captureCount=(state.captures||[]).filter(c=>!c.archived).length;
-    if(card.id.startsWith('block:'))return `<div class="cv-card-copy cb-card-preview"><span class="cv-card-kicker">${esc(customBlockType(d.kind))}</span><h2>${esc(d.title)}</h2><p>${esc(customBlockSummary(d))}</p></div>`;
+    if(card.id.startsWith('block:'))return `<div class="cv-card-copy cb-card-preview"><span class="cv-card-kicker">${esc(customBlockType(d.kind))}</span><h2>${esc(d.title)}</h2>${['checklist','links','table'].includes(d.kind)?`<p class="cv-preview-summary">${esc(customBlockSummary(d))}</p>`:''}</div>${blockCardPreview(d)}`;
     if(card.id==='ai')return `<div class="cv-ai-title"><span class="cv-ai-orbit" aria-hidden="true">${icon('sparkles',29)}</span><div><h2>${esc(d.title)}</h2><p>先聊清楚，再归入你的空间。</p></div></div><div class="cv-ai-host" data-ai-host></div>`;
     if(card.id==='competitions'){
       const summary=summarizeCompetitions(state.competitions);
@@ -205,13 +206,13 @@ export function mountCanvas(ctx, collection) {
     if(card.id==='inbox')return `<div class="cv-card-copy"><span class="cv-card-kicker">CATCH YOUR IDEAS</span><h2>${esc(d.title)}</h2><p>不用整理，先记下来。</p></div><span class="cv-sticker-art" aria-hidden="true">${icon('bolt',54)}</span><div class="cv-card-detail"><strong>${captureCount}</strong><span>条待整理内容</span></div>`;
     if(card.id==='review')return `<div class="cv-card-copy"><span class="cv-card-kicker">YOUR LITTLE WINS</span><h2>${esc(d.title)}</h2><p>${esc(d.label)}</p></div><div class="cv-review-art" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span>${icon('arrow-right',25)}</div><div class="cv-card-detail"><strong>${(state.tasks||[]).filter(t=>t.done&&!t.archived).length}</strong><span>件已完成的事</span></div>`;
     const files=(d.files||[]).filter(file=>!file.archived).length,notes=(d.notes||[]).filter(note=>!note.archived).length,tasks=(state.tasks||[]).filter(t=>t.spaceId===card.id&&!t.done&&!t.archived).length;
-    return `<div class="cv-card-copy"><span class="cv-card-kicker">${d.type==='course'?'MY CLASSROOM':d.type==='project'?'MY PROJECT':'MY OWN SPACE'}</span><h2>${esc(d.title||'未命名空间')}</h2><p>${esc(d.description||'收藏资料、记录想法，安排属于你的事。')}</p></div><div class="cv-custom-art" aria-hidden="true">${safeIcon(d.icon,72)}</div><div class="cv-space-counts"><span>${files} 份文件</span><span>${notes} 篇笔记</span>${tasks?`<span>${tasks} 件待办</span>`:''}</div>`;
+    return `<div class="cv-card-copy"><span class="cv-card-kicker">${d.type==='course'?'MY CLASSROOM':d.type==='project'?'MY PROJECT':'MY OWN SPACE'}</span><h2>${esc(d.title||'未命名空间')}</h2><p>${esc(d.description||'收藏资料、记录想法，安排属于你的事。')}</p></div>${spaceCardPreview(d,state.tasks)}<div class="cv-custom-art" aria-hidden="true">${safeIcon(d.icon,72)}</div><div class="cv-space-counts"><span>${files} 份文件</span><span>${notes} 篇笔记</span>${tasks?`<span>${tasks} 件待办</span>`:''}</div>`;
   }
 
   function drawCards() {
     stackReady=false;
     itemById.clear();for(const item of collection?.items||homeItems())itemById.set(item.id,item);
-    composerCleanup?.();composerCleanup=null;
+    composerCleanup?.();composerCleanup=null;previewCleanup?.();previewCleanup=null;
     world.innerHTML=visibleCards().map((card,index)=>{
       const d=dataFor(card);
       return `<article class="cv-card cv-card-${collection?'collection':presets[card.id]?card.id:'custom'} ${card.h<260?'cv-compact':''} ${card.h<330?'cv-short':''}" data-card="${esc(card.id)}" style="--card-color:${color(d.color)};--card-fill:${canvasCardFill(d.color)};--card-order:${index};width:${card.w}px;height:${card.h}px;transform:translate(${card.x}px,${card.y}px)" tabindex="0" aria-label="${esc(d.title)}，按Enter打开">
@@ -230,6 +231,7 @@ export function mountCanvas(ctx, collection) {
       viewport.append(empty);
     }
     applyView();
+    previewCleanup=mountCardPreviewFit(world);
   }
 
   function applyView() {
@@ -576,7 +578,7 @@ export function mountCanvas(ctx, collection) {
     fullscreen.destroy();
     if(stackDrag)finishStackPointer({type:'pointercancel',pointerId:stackDrag.id});
     if(interaction)finish({type:'pointercancel',pointerId:interaction.id});
-    if(saveTimer){clearTimeout(saveTimer);persist();}alive=false;cancelAnimationFrame(raf);cancelAnimationFrame(stackRaf);clearTimeout(section._cvStatusTimer);resizeObserver.disconnect();composerCleanup?.();pointers.clear();
+    if(saveTimer){clearTimeout(saveTimer);persist();}alive=false;cancelAnimationFrame(raf);cancelAnimationFrame(stackRaf);clearTimeout(section._cvStatusTimer);resizeObserver.disconnect();composerCleanup?.();previewCleanup?.();pointers.clear();
     stackScroll.removeEventListener('scroll',requestStackPaint);section.removeEventListener('focusin',stackFocusIn);
     section.removeEventListener('click',onClick);viewport.removeEventListener('pointerdown',begin);viewport.removeEventListener('pointermove',move);viewport.removeEventListener('pointerup',finish);viewport.removeEventListener('pointercancel',finish);viewport.removeEventListener('wheel',wheel);section.removeEventListener('keydown',keydown);window.removeEventListener('keyup',keyup);window.removeEventListener('blur',blur);
     viewport.removeEventListener('dragenter',fileDrag);viewport.removeEventListener('dragover',fileDrag);viewport.removeEventListener('dragleave',fileDrag);viewport.removeEventListener('drop',drop);
