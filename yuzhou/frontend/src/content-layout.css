@@ -150,3 +150,12 @@
  .english-page .english-hero-art{min-height:0}
  .cb-note,.course-reader-card .course-note-body{font-size:15px}
 }
+.workspace-return{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px clamp(16px,3vw,40px) 0;color:var(--muted,#756a8b);font-size:13px}
+.workspace-return .btn{min-height:38px;white-space:normal;text-align:left}
+.workspace-return>span{overflow-wrap:anywhere}
+.on-welcome .workspace-return{display:none}
+.space-block-controls{display:flex;flex-wrap:wrap;gap:10px}
+.space-block-controls>span{display:flex;align-items:center;gap:10px;max-width:100%;padding:10px 14px;border:1px solid #ddd5ee;border-radius:12px;background:#faf8ff}
+.space-block-controls strong{overflow-wrap:anywhere}
+.sp-hero-actions{flex-wrap:wrap}
+.wb-builder .wb-assistant-invite{flex-wrap:wrap}

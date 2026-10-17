@@ -1,5 +1,6 @@
 import {parseAmount,isValidDate,validateLedger,validateLedgerEntry} from './ledger-model.js';
 import {isRecordColor} from './creation-colors.js';
+import {validateSpaceWorkbench} from './space-workbench-config.js';
 
 const fail=message=>{throw new Error(message);};
 const clone=value=>structuredClone(value);
@@ -32,7 +33,7 @@ const definitions={
   ledgerEntry:{label:'账目',collection:'entries',ledger:true,required:['type','amount','date','category'],fields:{type:v=>choice(v,['income','expense']),amount:v=>{const n=parseAmount(v);return (n/100).toFixed(2);},date:v=>{if(!isValidDate(v))fail('记账日期无效。');return v;},category:v=>text(v,80,true),note:v=>text(v,2000),projectId:v=>v===''?'':id(v)}},
 };
 const metadata=['id','createdAt','updatedAt','archived','example','color','sourceRequestId'];
-const recordExtra={space:['notes','files'],course:['notes','files'],note:['revisions'],file:['size','type'],task:['source','completedAt','captureId'],capture:['fileName','fileType','importedDraftKey'],ledgerProject:[],ledgerEntry:['amountCents']};
+const recordExtra={space:['notes','files','workbench','parentId'],course:['notes','files'],note:['revisions'],file:['size','type'],task:['source','completedAt','captureId'],capture:['fileName','fileType','importedDraftKey'],ledgerProject:[],ledgerEntry:['amountCents']};
 const schemaDescriptions={
   space:'title非空字符串≤180（新建必填）；description字符串≤5000默认空；type仅blank|course|affairs|project|fitness，默认blank；fitnessEnabled可选布尔，true开启该空间运动记录，false明确关闭，type为fitness新建默认开启；icon图标名称字符串≤64，默认folder。新建空间的notes/files由后续note/file行动写入，不能直接替换数组；真实已完成运动由fitnessEntry行动写入，计划由calendarEvent写入。',
   course:'title非空字符串≤180（新建必填）；subtitle课程简介字符串≤5000默认空；prompt助教偏好完整字符串≤30000默认空；icon图标名称字符串≤64默认book。notes/files仅由note/file行动修改。',
@@ -57,6 +58,7 @@ function validateCoreRecord(entity,record){
   if(record.completedAt!==undefined&&record.completedAt!==null)text(record.completedAt,160);
   for(const key of definition.required)if(key!=='blobId'&&record[key]===undefined)fail(`${definition.label}快照缺少必填字段。`);
   if(record.color!==undefined)color(record.color);
+  if(entity==='space'){if(record.parentId!==undefined)id(record.parentId);if(record.workbench!==undefined)validateSpaceWorkbench(record.workbench);}
   if(entity==='space'||entity==='course')for(const key of ['notes','files']){
     if(!Array.isArray(record[key])||record[key].length>100000)fail('空间资料格式无效。');
     const seen=new Set();for(const value of record[key]){validateCoreRecord(key==='notes'?'note':'file',value);if(seen.has(value.id))fail('空间资料编号重复。');seen.add(value.id);}
@@ -185,7 +187,7 @@ function automaticBoard(key,board,entity,record,source){
 }
 function dependent(state,entity,record,source=state){
   const boardDependency=containerBoards(state,entity,record,source).some(([key,board])=>!automaticBoard(key,board,entity,record,source));
-  if(entity==='space')return !!(record.notes?.length||record.files?.length||(state.tasks||[]).some(row=>row.spaceId===record.id)||(state.fitness?.entries||[]).some(row=>row.spaceId===record.id)||boardDependency);
+  if(entity==='space')return !!((state.spaces||[]).some(space=>space.parentId===record.id)||(state.customBlocks?.items||[]).some(block=>block.spaceId===record.id)||record.notes?.length||record.files?.length||(state.tasks||[]).some(row=>row.spaceId===record.id)||(state.fitness?.entries||[]).some(row=>row.spaceId===record.id)||boardDependency);
   if(entity==='course')return !!(record.notes?.length||record.files?.length||boardDependency);
   if(entity==='ledgerProject')return !!state.ledger?.entries?.some(row=>row.projectId===record.id);
   return false;

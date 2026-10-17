@@ -34,7 +34,7 @@ export function templateChanges(state,id) {
 }
 
 export function builderHTML(state,{navigationSession={}}={}) {
-  const config=getWorkbench(state),visible=getVisibleModules(state),spaces=(state.spaces||[]).filter(space=>!space.archived);
+  const config=getWorkbench(state),visible=getVisibleModules(state),spaces=(state.spaces||[]).filter(space=>!space.archived&&!space.parentId);
   const optionalCount=visible.filter(module=>module.id!=='ai').length;
   const catalog=WORKBENCH_MODULES.filter(module=>module.id!=='ai');
   return `<section class="wb-builder" aria-labelledby="wb-heading">
@@ -43,7 +43,7 @@ export function builderHTML(state,{navigationSession={}}={}) {
     <div data-wb-navigation-host>${navigationEditorHTML(state,navigationSession)}</div>
 
     <div data-wb-placement-host>${placementHTML(state)}</div>
-    <section class="wb-custom-list" aria-label="我的自定义方块"><div class="wb-section-head"><div><h2>我的自定义方块</h2><p>同一场景可以创建多份；编辑内容、让 AI 改造，或收起后保留记录。</p></div><button type="button" class="btn" data-wb-action="create-block">${icon('plus',16)} 创建方块</button></div>${getCustomBlocks(state).items.length?`<ul>${getCustomBlocks(state).items.map(block=>`<li><span><strong>${esc(block.title)}</strong><small>${esc(CUSTOM_BLOCK_KINDS.find(item=>item.kind===block.kind||item.id===block.kind)?.title||block.kind)}${block.archived?' · 已收起':''}</small></span><button type="button" class="btn" data-wb-action="open-block" data-id="${esc(block.id)}">打开</button><button type="button" class="btn" data-wb-action="edit-block" data-id="${esc(block.id)}">编辑</button></li>`).join('')}</ul>`:'<p class="muted">从左侧场景创建第一个方块，或告诉 AI 你需要什么。</p>'}</section>
+    <section class="wb-custom-list" aria-label="我的自定义方块"><div class="wb-section-head"><div><h2>我的自定义方块</h2><p>同一场景可以创建多份；编辑内容、让 AI 改造，或收起后保留记录。</p></div><button type="button" class="btn" data-wb-action="create-block">${icon('plus',16)} 创建方块</button></div>${getCustomBlocks(state).items.filter(block=>!block.spaceId).length?`<ul>${getCustomBlocks(state).items.filter(block=>!block.spaceId).map(block=>`<li><span><strong>${esc(block.title)}</strong><small>${esc(CUSTOM_BLOCK_KINDS.find(item=>item.kind===block.kind||item.id===block.kind)?.title||block.kind)}${block.archived?' · 已收起':''}</small></span><button type="button" class="btn" data-wb-action="open-block" data-id="${esc(block.id)}">打开</button><button type="button" class="btn" data-wb-action="edit-block" data-id="${esc(block.id)}">编辑</button></li>`).join('')}</ul>`:'<p class="muted">从左侧场景创建第一个方块，或告诉 AI 你需要什么。</p>'}</section>
     <details class="wb-advanced"><summary>模板与更多设置 <span>更换组合、修改名称、管理模块和空间</span></summary><section class="panel"><h3>起始资料整理</h3><p>把已有起始资料整理成日常计划与参考，收起未实际发生的占位历史。先预览，再保存。</p><button type="button" class="btn" data-wb-action="daily-review">预览整理</button><button type="button" class="btn" data-wb-action="daily-undo" hidden>撤销本次整理</button></section><div class="wb-columns"><div class="wb-materials">
       <section class="wb-library" aria-labelledby="wb-library-heading"><div class="wb-section-head"><div><h2 id="wb-library-heading">模块库</h2><p>按需加入；收起后，已有资料仍然保留。</p></div><span class="wb-section-caption">${catalog.length} 种可选模块</span></div>
         <div class="wb-library-list">${catalog.map(module=>{
@@ -64,7 +64,7 @@ export function builderHTML(state,{navigationSession={}}={}) {
 export function mountBuilder(ctx) {
   const {root,state,modal,toast}=ctx;
   let active=true,disposePlacement=null,disposeNavigation=null,undoDaily=null;
-  const placementSession={},navigationSession={};
+  const session=ctx.builderSession||{};const placementSession=session.placement||=( {} ),navigationSession=session.navigation||=( {} );
   const createPresetAt=(id,placement)=>ctx.openCustomBlockEditor?.(createPresetInput(id),placement?{placement,onCreated(record){
     if(!active){ctx.refresh?.();return;}
     placementSession.selectedId=record.id;placementSession.landingId=record.id;

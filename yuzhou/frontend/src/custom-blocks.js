@@ -3,6 +3,7 @@ import {escapeHTML as esc} from './services.js';
 import {mountMiniapp} from './miniapp-runtime.js';
 import {getWorkbench,configureWorkbench} from './workbench-model.js';
 import {placeBlock} from './placement-model.js';
+import {placeSpaceBlock,spaceWorkbenchLayout} from './space-workbench-model.js';
 
 const TYPES={note:'文本便签',checklist:'检查清单',links:'常用链接',progress:'目标进度',countdown:'日期倒计时',table:'数据表格',miniapp:'交互小程序'};
 const clone=value=>structuredClone(value);
@@ -40,17 +41,17 @@ export function customBlockSummary(block){
 
 /** A block mutation and its canvas geometry are saved together or both restored. */
 export function saveCustomBlockChange(ctx,mutation){
-  const keys=['customBlocks','canvas','workbench','updatedAt'],before=new Map(keys.map(key=>[key,{present:Object.hasOwn(ctx.state,key),value:clone(ctx.state[key]),reference:ctx.state[key]}]));
-  try{const result=mutation(ctx.state);ctx.ensureCustomBlockLayout?.();const card=ctx.state.canvas?.cards?.find(item=>item.id===result?.id);if(card&&result.color)card.color=result.color;ctx.save();return result;}
+  const keys=['customBlocks','canvas','workbench','boards','updatedAt'],before=new Map(keys.map(key=>[key,{present:Object.hasOwn(ctx.state,key),value:clone(ctx.state[key]),reference:ctx.state[key]}]));
+  try{const result=mutation(ctx.state);ctx.ensureCustomBlockLayout?.();const card=ctx.state.canvas?.cards?.find(item=>item.id===result?.id);if(card&&result.color)card.color=result.color;for(const board of Object.values(ctx.state.boards||{})){const scoped=board.cards?.find(item=>item.id===result?.id);if(scoped&&result.color)scoped.color=result.color;}ctx.save();return result;}
   catch(error){for(const [key,record] of before){if(!record.present){delete ctx.state[key];continue;}if(key==='canvas'&&record.reference&&typeof record.reference==='object'&&!Array.isArray(record.reference)){for(const field of Object.keys(record.reference))delete record.reference[field];Object.assign(record.reference,record.value);ctx.state[key]=record.reference;}else ctx.state[key]=record.value;}throw error;}
 }
 
 /** Creating a real block begins the workbench without changing its chosen template. */
 export function createCustomBlockOnWorkbench(ctx,input,{placement}={}){
   return saveCustomBlockChange(ctx,state=>{
-    const record=createCustomBlock(state,input);
-    configureWorkbench(state,{title:getWorkbench(state).title});
-    if(placement)placeBlock(state,record.id,placement);
+    const record=createCustomBlock(state,{...input,...(ctx.spaceId?{spaceId:ctx.spaceId}:{})});
+    if(ctx.spaceId){const initial=spaceWorkbenchLayout(state,ctx.spaceId).cards.find(card=>card.id===record.id);placeSpaceBlock(state,ctx.spaceId,record.id,placement||initial);}
+    else{configureWorkbench(state,{title:getWorkbench(state).title});if(placement)placeBlock(state,record.id,placement);}
     return record;
   });
 }
@@ -163,9 +164,10 @@ export function mountCustomBlockPage(ctx,id){
   }
   function onClick(event){
     const action=event.target.closest('[data-cb-action]')?.dataset.cbAction;if(!action||!active)return;
+    const block=get();
     try{
-      if(action==='home')ctx.go('home');
-      if(action==='builder')ctx.go('builder');
+      if(action==='home')block?.spaceId?ctx.go('space',block.spaceId):ctx.go('home');
+      if(action==='builder')ctx.go('builder',block?.spaceId||'');
       if(action==='edit'){stop();if(get()?.kind==='miniapp'){status('已停止，保存代码后可重新运行。');running(false);}customBlockEditor(ctx,id);}
       if(action==='archive'){stop();mutate({archived:!get().archived});render();}
       if(action==='stop'){stop();status('已停止，最近一次保存的运行数据保留。');running(false);}

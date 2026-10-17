@@ -17,6 +17,9 @@ import {initializeSpaces,routeContent,undoRoute,openDestination} from './workspa
 import {bootstrapCloud,mountModelSettings} from './cloud.js';
 import {WORKBENCH_MODULES,createWorkbench,getVisibleModules,getWorkbench,configureWorkbench} from './workbench-model.js';
 import {mountBuilder} from './builder.js';
+import {mountSpaceBuilder} from './space-builder.js';
+import {createReturnNavigation,parseWorkspaceRoute,workspaceRoute,routeLabel} from './return-navigation.js';
+import {getSpaceWorkbench} from './space-workbench-config.js';
 import {mountWelcome} from './welcome.js';
 import {createWelcomeEntryRoute} from './welcome-route.js';
 import {companionButton,openCompanion} from './companion.js';
@@ -29,6 +32,8 @@ import {customBlockEditor,mountCustomBlockPage} from './custom-blocks.js';
 
 const cloudClient=await bootstrapCloud();
 const workspaceStorage=cloudClient?.storage||globalThis.localStorage;
+const returnNavigation=createReturnNavigation({storage:globalThis.sessionStorage,key:`czb-yuzhou-return-navigation-${cloudClient?.account||'local'}`});
+const builderSessions=new Map();
 
 const uid=()=>crypto.randomUUID();
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
@@ -36,7 +41,7 @@ const dateLabel=value=>value?new Date(value+'T12:00:00').toLocaleDateString('zh-
 const key=mode=>cloudClient?cloudClient.key(mode):`czb-yuzhou-workspace-v1-${mode}`;
 // Keep the existing account/storage identity; retired example data stays untouched.
 const mode='personal';
-let route='home',subroute='',filter='all',captureQuery='';
+let route='home',subroute='',routeDetail='',routeItem='',filter='all',captureQuery='';
 let cleanupView=null;
 let sidebarResize=null;
 const resolveEntryHash=createWelcomeEntryRoute();
@@ -124,10 +129,15 @@ function makeContext(){
   const local={...ctx,state:viewState,root:viewRoot,save:()=>save(viewState),
     refresh:()=>{if(state===viewState){updateModuleNavigation();render();}}};
   local.isCurrent=()=>state===viewState;
-  local.ensureCustomBlockLayout=()=>ensureCanvas(viewState);
+  local.spaceId=route==='space'||route==='builder'&&subroute?subroute:route==='block'?getCustomBlocks(viewState).items.find(block=>block.id===subroute)?.spaceId:undefined;
+  local.routeDetail=routeDetail;local.routeItem=routeItem;
+  if(route==='builder'){const sessionId=local.spaceId||'root';if(!builderSessions.has(sessionId))builderSessions.set(sessionId,{});local.builderSession=builderSessions.get(sessionId);}
+  local.ensureCustomBlockLayout=()=>{if(!local.spaceId)ensureCanvas(viewState);};
   local.openCustomBlockEditor=(input,options)=>customBlockEditor(local,input,options);
-  local.openBuilder=()=>go('builder');
-  local.askAssistant=prompt=>openAIConversation(local,{text:prompt,targetId:'workspace'});
+  local.openBuilder=()=>go('builder',local.spaceId||'');
+  local.askAssistant=prompt=>openAIConversation(local,{text:prompt,targetId:local.spaceId?`space:${local.spaceId}`:'workspace'});
+  local.askSpaceAI=()=>openAIConversation(local,{targetId:`space:${local.spaceId}`,text:`请结合「${viewState.spaces.find(space=>space.id===local.spaceId)?.title||'当前空间'}」的用途整理内容，先给出方案，确认后再执行。`});
+  local.createChildSpace=()=>openSpaceDialog({...local,parentSpaceId:local.spaceId});
   local.createSpace=()=>openSpaceDialog(local);
   local.editSpace=id=>openSpaceDialog(local,viewState.spaces.find(s=>s.id===id));
   local.routeContent=payload=>routeContent(local,payload);
@@ -235,7 +245,7 @@ function updateShellCounts(){
     const el=document.querySelector(`[data-count="${id}"]`);if(el)el.textContent=count||'';
   }
 }
-function go(page,id=''){const hash=`#/${page}${id?'/'+encodeURIComponent(id):''}`;if(location.hash===hash)render();else location.hash=hash;}
+function go(page,id='',detail='',item=''){const hash=workspaceRoute(page,id,detail,item);if(location.hash===hash)render();else location.hash=hash;}
 function pageHead(title,description,action=''){return `<div class="page-head"><div><h1>${title}</h1><p>${description}</p></div>${action}</div>`;}
 function empty(title,description,action=''){return `<div class="empty-state"><span class="empty-symbol">${icon('layers',30)}</span><h3>${title}</h3><p>${description}</p>${action}</div>`;}
 const button=(label,action,i='plus',primary=false)=>`<button class="btn ${primary?'primary':''}" data-action="${action}">${icon(i,17)}${label}</button>`;
@@ -435,24 +445,37 @@ function closeAssistant(){document.querySelector('#ai-drawer').hidden=true;docum
 function assistant(){openCompanion(makeContext(),{pageLabel:route==='space'?state.spaces.find(s=>s.id===subroute)?.title||'自建空间':navigationLabel(route)});}
 function moreMenu(){modal({title:'我的空间',body:`<div class="more-menu">${[...visibleNavigation(),['settings','settings','偏好与连接']].map(([id,i,l])=>`<button data-go="${id}">${icon(i,23)}<span>${esc(l)}</span>${icon('chevron-right',18)}</button>`).join('')}</div>`});}
 function notifications(){modal({title:'通知与动态',body:`<div class="notification-item"><span class="summary-icon violet">${icon('sparkles',23)}</span><div><strong>欢迎来到宇宙</strong><p>${cloudClient?'个人空间已连接，当前仅供本机访问。':'完整界面已就绪，可以开始记录与整理。当前内容仅保存在本机；AI 需独立配置。'}</p><small>界面版本 ${VERSION}</small></div></div><div class="notification-item"><span class="summary-icon cyan">${icon('cloud',23)}</span><div><strong>${cloudClient?esc(cloudClient.label):'云端连接待完成'}</strong><p>${cloudClient?'在偏好与连接中管理 DeepSeek、查看同步状态与导出备份。':'服务器部署后，可启用跨设备同步、模型任务和版本更新通知。'}</p><button class="text-btn" data-go="settings">查看连接状态 ${icon('arrow-right',16)}</button></div></div>`});}
+function renderReturnNavigation(){
+  document.querySelector('[data-return-navigation]')?.remove();
+  if(route==='welcome')return;
+  const target=returnNavigation.target(state,location.hash);if(target===location.hash)return;
+  const navigation=document.createElement('nav');navigation.className='workspace-return';navigation.dataset.returnNavigation='';navigation.setAttribute('aria-label','返回与当前位置');
+  navigation.innerHTML=`<button class="btn" type="button" data-return-source>${icon('arrow-left',17)} 返回${esc(routeLabel(state,target))}</button><span>${esc(routeLabel(state,location.hash))}</span>`;
+  navigation.querySelector('button').onclick=()=>{const next=returnNavigation.back(state,location.hash);if(next===location.hash)render();else location.hash=next;};ctx.root.before(navigation);
+}
 function render(){
   if(!ctx.root)return;
   sidebarResize?.sync();
   cleanupView?.();cleanupView=null;
   const entryHash=resolveEntryHash(location.hash);
   if(entryHash!==location.hash)history.replaceState(history.state,'',entryHash);
-  const [page,id]=location.hash.replace(/^#\/?/,'').split('/');
+  const parsedRoute=parseWorkspaceRoute(location.hash)||{page:'home',id:'',detail:'',item:''};
+  const {page,id}=parsedRoute;routeDetail=parsedRoute.detail;routeItem=parsedRoute.item;
   route=nav.some(n=>n[0]===page)||['welcome','settings','space','block'].includes(page)?page:'home';
-  try{subroute=id?decodeURIComponent(id):'';}catch{subroute='';}
+  subroute=id||'';
   ctx.root.onclick=null;ctx.root.onchange=null;ctx.root.oninput=null;ctx.root.ondragover=null;ctx.root.ondragleave=null;ctx.root.ondrop=null;
   if(route==='home'&&!getWorkbench(state).onboardingComplete){route='builder';history.replaceState(null,'','#/builder');}
+  returnNavigation.visit(location.hash);
   const label=route==='space'?(state.spaces.find(s=>s.id===subroute)?.title||'工作区'):route==='block'?(getCustomBlocks(state).items.find(block=>block.id===subroute)?.title||'自定义方块'):navigationLabel(route);
   document.title=label+' · 宇宙';document.querySelector('#current-page').textContent=label;
   document.body.classList.toggle('on-canvas',route==='home');document.body.classList.toggle('on-ai',route==='ai');document.body.classList.toggle('on-welcome',route==='welcome');
   document.querySelectorAll('[data-nav]').forEach(a=>{a.classList.toggle('active',a.dataset.nav===route);if(a.dataset.nav===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   ctx.state=state;const view=makeContext();ctx.save=view.save;
+  renderReturnNavigation();
   updateModuleNavigation();
-  const hiddenModule=WORKBENCH_MODULES.find(item=>item.id===route)&&!getVisibleModules(state).some(item=>item.id===route);
+  const sourceRoute=parseWorkspaceRoute(returnNavigation.target(state,location.hash)),sourceSpace=sourceRoute&&['space','builder'].includes(sourceRoute.page)?state.spaces.find(space=>space.id===sourceRoute.id):null;
+  const sharedModule=sourceSpace&&getSpaceWorkbench(sourceSpace).modules.includes(route);
+  const hiddenModule=WORKBENCH_MODULES.find(item=>item.id===route)&&!getVisibleModules(state).some(item=>item.id===route)&&!sharedModule;
   if(hiddenModule){
     ctx.root.innerHTML=empty('这个模块已收起','已有资料完整保留。重新加入工作台后可继续使用。','<button class="btn primary" data-enable-hidden>重新加入工作台</button><button class="btn" data-go="builder">选择其他模块</button>');
     ctx.root.querySelector('[data-enable-hidden]').onclick=()=>{
@@ -461,7 +484,7 @@ function render(){
     cloudEditing=false;cloudDirtyFields.clear();if(cloudClient)updateCloudShell();return;
   }
   if(route==='welcome')cleanupView=mountWelcome(view);
-  if(route==='builder')cleanupView=mountBuilder(view);
+  if(route==='builder')cleanupView=subroute?mountSpaceBuilder(view,subroute):mountBuilder(view);
   if(route==='home'){ensureCanvas(state);cleanupView=mountCanvas({...view,fitOnMount:subroute==='layout'});if(subroute==='layout')history.replaceState(null,'','#/home');}
   if(route==='ai')cleanupView=mountAI(view,state.spaces.some(s=>s.id===subroute)?`space:${subroute}`:subroute);
   if(route==='space')cleanupView=mountSpace(view,subroute);

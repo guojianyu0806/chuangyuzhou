@@ -9,6 +9,7 @@ import {validateFitness, mergeFitness} from './fitness-model.js';
 import {validateCompetitions, mergeCompetitions} from './competitions-model.js';
 import {validateWorkbench} from './workbench-model.js';
 import {validateCustomBlocks,mergeCustomBlocks} from './custom-blocks-model.js';
+import {validateSpaceWorkbench,validateSpaceStructure} from './space-workbench-config.js';
 import {isRecordColor, assignRecordColor} from './creation-colors.js';
 import {validateEnglishPracticeState} from './english-practice-model.js';
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
@@ -138,14 +139,16 @@ function capture(value) {
   return optionalRecordColor(value, optionalFields(value, result, ['fileName', 'fileType', 'source', 'importedDraftKey','updatedAt'], ['example']));
 }
 function space(value) {
-  return optionalFields(value, {
+  const result=optionalFields(value, {
     id: identifier(value.id, '空间编号'), title: text(value.title, '空间名称', '', true),
     description: text(value.description, '空间用途'), type: choice(value.type, ['blank','course','affairs','project','fitness'], '空间模板', 'blank'),
     color: color(value.color), icon: text(value.icon, '空间图标', 'folder'),
     archived: boolean(value.archived, '空间归档状态'), example: boolean(value.example, '空间示例标记'),
     createdAt: text(value.createdAt, '空间创建时间'), updatedAt: text(value.updatedAt, '空间更新时间'),
     notes: records(value.notes, note, '空间笔记', true), files: records(value.files, courseFile, '空间资料', true),
-  }, ['sourceRequestId'], ['fitnessEnabled']);
+  }, ['sourceRequestId','parentId'], ['fitnessEnabled']);
+  if(value.workbench!==undefined)result.workbench=validateSpaceWorkbench(value.workbench);
+  return result;
 }
 function destination(value) {
   const result = identifier(value, '目标工作区');
@@ -337,6 +340,7 @@ function workspace(value) {
     }
   }
   if (value.workspaceVersion !== undefined) result.workspaceVersion = integer(value.workspaceVersion, '空间版本', 1, 2);
+  validateSpaceStructure(result);
   return result;
 }
 function attachment(value) {

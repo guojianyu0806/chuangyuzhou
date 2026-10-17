@@ -68,6 +68,7 @@ export function getWelcomeModel(input) {
   }));
   const extra=new Map(),seen=new Set(workbench.modules.map(module=>module.id));
   for(const space of active(state.spaces)){
+    if(space.parentId)continue;
     if(!spaceId(space.id)||seen.has(space.id))continue;
     seen.add(space.id);
     extra.set(space.id,{
@@ -76,7 +77,7 @@ export function getWelcomeModel(input) {
     });
   }
   for(const block of getCustomBlocks(state).items){
-    if(block.archived||seen.has(block.id))continue;
+    if(block.archived||block.spaceId||seen.has(block.id))continue;
     seen.add(block.id);
     const kind=blockKinds.get(block.kind);
     extra.set(block.id,{

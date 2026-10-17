@@ -14,7 +14,7 @@ function markLayout(canvas){canvas.presentation='canvas';canvas.initialized=true
 
 /** Read geometry without initializing or normalizing the user's saved workspace. */
 export function placementLayout(state) {
-  const copy={canvas:clone(state?.canvas),spaces:(state?.spaces||[]).map(space=>({id:space.id,color:space.color})),customBlocks:getCustomBlocks(state)};
+  const copy={canvas:clone(state?.canvas),spaces:(state?.spaces||[]).map(space=>({id:space.id,color:space.color,parentId:space.parentId})),customBlocks:getCustomBlocks(state)};
   return ensureCanvas(copy);
 }
 
@@ -40,6 +40,7 @@ function position(value){
 export function placeBlock(state,id,point) {
   const module=knownModules.get(id),space=(state?.spaces||[]).find(item=>item.id===id&&!item.archived);
   const block=getCustomBlocks(state).items.find(item=>item.id===id&&!item.archived);
+  if(block?.spaceId||space?.parentId)throw new Error('请在所属子空间搭建台摆放这个方块。');
   if(!module&&!space&&!block)throw new Error('这个方块已不存在或已归档。');
   if(!point||typeof point!=='object'||Array.isArray(point))throw new Error('请先选择画布上的位置。');
   const x=position(point.x),y=position(point.y),next={workbench:getWorkbench(state),canvas:placementLayout(state)};

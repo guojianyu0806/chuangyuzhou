@@ -11,6 +11,7 @@ import { validateFitness } from '../frontend/src/fitness-model.js';
 import { validateCompetitions } from '../frontend/src/competitions-model.js';
 import { validateWorkbench } from '../frontend/src/workbench-model.js';
 import { validateCustomBlocks } from '../frontend/src/custom-blocks-model.js';
+import {validateSpaceStructure} from '../frontend/src/space-workbench-config.js';
 import { validateEnglishPracticeState } from '../frontend/src/english-practice-model.js';
 import { prepareDataDirectory, assertRuntimePath } from '../runtime.mjs';
 
@@ -137,6 +138,7 @@ export function validateWorkspace(state) {
     const occupied=new Set([...(state.spaces||[]).map(item=>item.id),...(state.courses||[]).map(item=>item.id)]);
     if(state.customBlocks.items.some(item=>occupied.has(item.id)))throw new ApiError(400,'duplicate_custom_block_id');
   }
+  try{validateSpaceStructure(state);}catch{throw new ApiError(400,'invalid_space_workbench');}
   const serialized = JSON.stringify(state);
   if (Buffer.byteLength(serialized) > MAX_STATE_BYTES) throw new ApiError(413, 'workspace_too_large');
   return { serialized, blobs };
@@ -239,7 +241,11 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
           for (const space of previous.spaces || []) {
             const incoming = incomingSpaces.get(space.id);
             if (incoming && space.fitnessEnabled !== undefined && incoming.fitnessEnabled === undefined) throw new ApiError(409, 'workspace_update_required');
+            if(incoming&&((space.workbench!==undefined&&incoming.workbench===undefined)||(space.parentId!==undefined&&incoming.parentId===undefined)))throw new ApiError(409,'workspace_update_required');
           }
+          const incomingBlocks=new Map((state.customBlocks?.items||[]).map(block=>[block.id,block]));
+          for(const block of previous.customBlocks?.items||[])if(block.spaceId!==undefined&&incomingBlocks.has(block.id)&&incomingBlocks.get(block.id).spaceId!==block.spaceId)throw new ApiError(409,'workspace_update_required');
+          for(const key of Object.keys(previous.boards||{}))if(key.startsWith('space:')&&key.endsWith(':workbench')&&incomingSpaces.has(key.slice(6,-10))&&!Object.hasOwn(state.boards||{},key))throw new ApiError(409,'workspace_update_required');
         }
         if(current.state){
           const incoming=new Map((state.aiRequests||[]).map(r=>[r.id,r]));

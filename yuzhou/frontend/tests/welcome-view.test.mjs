@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
+import {workspaceRoute} from '../src/return-navigation.js';
 import {mountWelcome,selectWelcomeCards,welcomeHTML} from '../src/welcome.js';
 import {getWelcomeModel} from '../src/welcome-model.js';
 import {createWorkbench,configureWorkbench} from '../src/workbench-model.js';
@@ -158,10 +159,10 @@ test('native card activation routes modules, spaces and blocks using current cat
 test('space and block identities reach the actual app router once and are correctly URL encoded',t=>{
   const state=withBlock(workspace());state.spaces[0].id='研究 / A?#%';
   const source=readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
-  const router=source.match(/^function go\(page,id=''\)\{[^\n]+\}/m)?.[0];
+  const router=source.match(/^function go\(page,id=''[^\n]*\}\s*$/m)?.[0];
   assert.ok(router,'test must run the actual app route encoder');
   const location={hash:''},renders=[];
-  const go=runInNewContext(`${router};go`,{location,render:()=>renders.push('render')});
+  const go=runInNewContext(`${router};go`,{location,workspaceRoute,render:()=>renders.push('render')});
   const f=mounted(t,{state,go});
   f.click(f.card(state.spaces[0].id));
   assert.equal(location.hash,'#/space/%E7%A0%94%E7%A9%B6%20%2F%20A%3F%23%25');

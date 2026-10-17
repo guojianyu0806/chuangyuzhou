@@ -58,15 +58,16 @@ export function validateCustomBlockConfig(kind,value){
   fields(value,['code']);return {code:text(value.code,30000,true)};
 }
 export function validateCustomBlock(value){
-  fields(value,['id','kind','title','description','color','archived','config','data','createdAt','updatedAt','sourceRequestId'],['id','kind','title','description','color','archived','config','data','createdAt','updatedAt']);
+  fields(value,['id','kind','title','description','color','archived','config','data','createdAt','updatedAt','sourceRequestId','spaceId'],['id','kind','title','description','color','archived','config','data','createdAt','updatedAt']);
   if(!kinds.has(value.kind))fail('方块类型无效。');if(!isRecordColor(value.color))fail('方块颜色无效。');
-  return {id:blockId(value.id),kind:value.kind,title:text(value.title,80,true).trim(),description:text(value.description,2000),color:value.color,archived:bool(value.archived),config:validateCustomBlockConfig(value.kind,value.config),data:validateBlockData(value.data),createdAt:stamp(value.createdAt),updatedAt:stamp(value.updatedAt),...(value.sourceRequestId===undefined?{}:{sourceRequestId:id(value.sourceRequestId)})};
+  return {id:blockId(value.id),kind:value.kind,title:text(value.title,80,true).trim(),description:text(value.description,2000),color:value.color,archived:bool(value.archived),config:validateCustomBlockConfig(value.kind,value.config),data:validateBlockData(value.data),createdAt:stamp(value.createdAt),updatedAt:stamp(value.updatedAt),...(value.sourceRequestId===undefined?{}:{sourceRequestId:id(value.sourceRequestId)}),...(value.spaceId===undefined?{}:{spaceId:id(value.spaceId)})};
 }
 export function validateCustomBlocks(value){fields(value,['version','items']);if(value.version!==1)fail('自定义方块版本无效。');return {version:1,items:rows(value.items,50,validateCustomBlock)};}
 export function getCustomBlocks(state){return state?.customBlocks===undefined?{version:1,items:[]}:validateCustomBlocks(state.customBlocks);}
 export function createCustomBlock(state,input,{id:recordId=`block:${crypto.randomUUID()}`,now=new Date().toISOString()}={}){
-  fields(input,['kind','title','description','color','config','data','sourceRequestId'],['kind','title']);const current=getCustomBlocks(state),kind=kinds.get(input.kind);if(!kind)fail('方块类型无效。');
-  const record=validateCustomBlock({id:recordId,kind:input.kind,title:input.title,description:input.description??'',color:input.color??previewRecordColor(state),archived:false,config:input.config??structuredClone(kind.config),data:input.data??{},createdAt:now,updatedAt:now,...(input.sourceRequestId===undefined?{}:{sourceRequestId:input.sourceRequestId})});
+  fields(input,['kind','title','description','color','config','data','sourceRequestId','spaceId'],['kind','title']);const current=getCustomBlocks(state),kind=kinds.get(input.kind);if(!kind)fail('方块类型无效。');
+  if(input.spaceId!==undefined&&!state.spaces?.some(space=>space.id===input.spaceId&&!space.archived))fail('方块所属空间已不存在或已归档。');
+  const record=validateCustomBlock({id:recordId,kind:input.kind,title:input.title,description:input.description??'',color:input.color??previewRecordColor(state),archived:false,config:input.config??structuredClone(kind.config),data:input.data??{},createdAt:now,updatedAt:now,...(input.sourceRequestId===undefined?{}:{sourceRequestId:input.sourceRequestId}),...(input.spaceId===undefined?{}:{spaceId:input.spaceId})});
   const next=validateCustomBlocks({...current,items:[...current.items,record]});state.customBlocks=next;return structuredClone(record);
 }
 export function updateCustomBlock(state,recordId,patch){

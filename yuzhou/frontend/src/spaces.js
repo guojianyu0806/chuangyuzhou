@@ -4,6 +4,8 @@ import {mountFitness} from './fitness.js';
 import {isFitnessSpace} from './fitness-model.js';
 import {assignRecordColor, createColorDraft} from './creation-colors.js';
 import {mountFileText,supportsFileText} from './file-text.js';
+import {spaceWorkbenchCards,spaceWorkbenchLayout,spaceBoardKey} from './space-workbench-model.js';
+import {blockCardPreview} from './card-previews.js';
 
 export const SPACE_COLORS = ['#7950f2', '#009eab', '#ef3f92', '#78a500', '#f08025', '#4770f5'];
 export const SPACE_ICONS = ['folder', 'book', 'flag', 'code', 'coffee', 'star', 'globe', 'target'];
@@ -83,7 +85,8 @@ export function openSpaceDialog(ctx, space) {
         }
       } else {
         const previousColor = state.ui?.lastCreatedColor, previousUpdatedAt = state.updatedAt;
-        const created = {id:uid(),...values,color:colorDraft.commit(color),createdAt:stamp(),archived:false,notes:[],files:[]};
+        if(ctx.parentSpaceId&&!state.spaces.some(item=>item.id===ctx.parentSpaceId&&!item.archived))throw Error('上级空间已不存在或已归档。');
+        const created = {id:uid(),...values,...(ctx.parentSpaceId?{parentId:ctx.parentSpaceId}:{}),color:colorDraft.commit(color),createdAt:stamp(),archived:false,notes:[],files:[]};
         state.spaces.push(created);
         try { ctx.save(); } catch(error) { state.spaces.splice(state.spaces.indexOf(created),1);state.updatedAt=previousUpdatedAt;if(previousColor===undefined)delete state.ui.lastCreatedColor;else state.ui.lastCreatedColor=previousColor;throw error; }
       }
@@ -117,7 +120,7 @@ export function mountSpace(ctx, id) {
   const {root,state,esc,icon,toast,modal,go,uid,download,getFile} = ctx;
   const space = (state.spaces || []).find(item=>item.id===id);
   let hadFitness=isFitnessSpace(space,state);
-  let active = true, tab = hadFitness?'fitness':'overview', selectedNote = '', selectedFile = '', archivedNotes = false, archivedTasks = false;
+  let active = true, tab = ['workbench','overview','notes','files','tasks','fitness'].includes(ctx.routeDetail)?ctx.routeDetail:'workbench', selectedNote = tab==='notes'?ctx.routeItem||'':'', selectedFile = tab==='files'?ctx.routeItem||'':'', archivedNotes = false, archivedTasks = false;
   let objectUrl = '', previewRequest = 0, uploading = false, boardCleanup = null, fitnessCleanup = null;
   if(!space){root.innerHTML=`<div class="empty-state"><h2>暂时找不到这个空间</h2><p>回到主页选择一个空间，或创建新的工作区。</p><button class="btn primary" data-sp-action="home">回到空间主页</button></div>`;const back=()=>go('home');root.querySelector('button').addEventListener('click',back);return()=>{active=false;};}
   space.notes ||= []; space.files ||= []; state.tasks ||= [];
@@ -139,6 +142,15 @@ export function mountSpace(ctx, id) {
   const noteList = () => space.notes.filter(item=>archivedNotes||!item.archived);
   const fileList = () => space.files.filter(item=>!item.archived);
   const taskList = () => tasks().filter(item=>archivedTasks?item.archived:!item.archived);
+  function mountSpaceCanvas(){
+    const host=root.querySelector('[data-sp-board]');if(!host)return;
+    const items=spaceWorkbenchCards(state,space.id);state.boards||={};const key=spaceBoardKey(space.id);state.boards[key]||=spaceWorkbenchLayout(state,space.id);
+    const enter=itemId=>{const item=items.find(item=>item.id===itemId);if(!item)return;if(item.kind==='section'){if(item.id==='assistant')openSpaceAI();else go('space',space.id,item.id);}else if(item.kind==='module')go(item.id.slice(7));else go(item.kind==='block'?'block':'space',item.id);};
+    boardCleanup=mountCanvas({...ctx,root:host,enterCard:enter,createSpace:()=>go('builder',space.id),editSpace:undefined,mountAIComposer:undefined},{layout:state.boards[key],items,hideHeader:true,title:space.title,cardLabel:'空间方块',createLabel:false,canDrop:false,enterLabel:item=>item.kind==='module'?'打开共享模块':'进入内容',footLabel:'双击或点击进入 · 长按摆放',renderCard:(_card,item)=>{
+      const records=item.id==='notes'?noteList():item.id==='files'?fileList():item.id==='tasks'?taskList():[];
+      return `<div class="cv-card-copy sp-board-copy"><span class="cv-card-kicker">${item.kind==='module'?'共享模块入口':item.kind==='block'?'本空间自定义方块':item.kind==='space'?'下级空间':'本空间内容'}</span><h2>${esc(item.title)}</h2><p>${esc(item.description||'自由摆放，按自己的方式使用。')}</p></div>${item.kind==='block'?blockCardPreview({...item,kind:item.blockKind}):records.length?`<ul class="sp-overview-preview">${records.slice(0,3).map(record=>`<li>${esc(record.title||record.name)}</li>`).join('')}</ul>`:''}`;
+    }});
+  }
   function overview() {
     return `<div class="sp-section-tools"><p>每类内容都有自己的卡片，可以像主页一样长按摆放。</p><button class="btn sp-primary" data-sp-action="new-note">${icon('plus',17)} 写一篇笔记</button></div>${boardHost()}`;
   }
@@ -171,9 +183,9 @@ export function mountSpace(ctx, id) {
     const layout=state.boards[key] ||= {};
     const enter=(itemId)=>{
       if(!active)return;
-      if(currentTab==='overview'){if(itemId==='assistant')return openSpaceAI();tab=itemId;selectedNote='';selectedFile='';render();return;}
-      if(currentTab==='notes'){selectedNote=itemId;render();return;}
-      if(currentTab==='files'){selectedFile=itemId;render();return;}
+      if(currentTab==='overview'){if(itemId==='assistant')return openSpaceAI();go('space',space.id,itemId);return;}
+      if(currentTab==='notes'){go('space',space.id,'notes',itemId);return;}
+      if(currentTab==='files'){go('space',space.id,'files',itemId);return;}
       const task=tasks().find(item=>item.id===itemId);if(task)taskDialog(task);
     };
     const edit=currentTab==='notes'?itemId=>noteDialog(space.notes.find(item=>item.id===itemId)):currentTab==='tasks'?itemId=>taskDialog(tasks().find(item=>item.id===itemId)):undefined;
@@ -196,11 +208,11 @@ export function mountSpace(ctx, id) {
       }});
   }  function render() {
     if(!active)return;boardCleanup?.();boardCleanup=null;fitnessCleanup?.();fitnessCleanup=null;release();
-    const fitnessEnabled=isFitnessSpace(space,state);if(fitnessEnabled&&!hadFitness)tab='fitness';if(!fitnessEnabled&&tab==='fitness')tab='overview';hadFitness=fitnessEnabled;
+    const fitnessEnabled=isFitnessSpace(space,state);if(!fitnessEnabled&&tab==='fitness')tab='workbench';hadFitness=fitnessEnabled;
     const countNotes=space.notes.filter(item=>!item.archived).length;
-    root.innerHTML=`<section class="sp-page ${fitnessEnabled?'has-fitness':''}" style="--sp-color:${spaceColor(space)};--sp-on-color:${foreground(spaceColor(space))}"><div class="sp-back-row"><button class="sp-back" data-sp-action="home">${icon('arrow-left',17)} 回到空间主页</button><span>${icon('shield',14)} ${ctx.cloud?.enabled&&state.mode==='personal'?'连接工作台服务':'仅本机保存'}</span></div><header class="sp-hero"><div class="sp-hero-copy"><span class="sp-hero-icon">${icon(space.icon||'folder',34)}</span><div><span class="sp-hero-kicker">${esc(template()[1])} / MY SPACE</span><h1>${esc(space.title)}</h1><p>${esc(space.description||'笔记、资料和下一步行动，都有自己的位置。')}</p></div></div><div class="sp-hero-actions"><button class="btn" data-sp-action="settings">${icon('settings',17)} 空间设置</button><button class="btn sp-primary" data-sp-action="ai">${icon('sparkles',18)} 交给 AI</button></div><div class="sp-hero-bottom"><span>${countNotes} 篇笔记</span><span>${fileList().length} 份文件</span><span>${tasks().filter(item=>!item.done&&!item.archived).length} 件待办</span><button data-sp-action="archive-space">${icon(space.archived?'refresh':'archive',15)} ${space.archived?'恢复到主页':'归档空间'}</button></div></header>${space.archived?'<div class="sp-archived-banner">这个空间已归档，资料完整保留。点击「恢复到主页」可重新放回画布。</div>':''}<nav class="sp-tabs" aria-label="工作区内容">${[...(fitnessEnabled?[['fitness','运动统计','chart']]:[]),['overview','总览','layers'],['notes','笔记','book'],['files','文件','folder'],['tasks','待办','check-circle']].map(([key,label,glyph])=>`<button class="${tab===key?'active':''}" data-sp-action="tab" data-tab="${key}" aria-current="${tab===key?'page':'false'}">${icon(glyph,19)} ${label}</button>`).join('')}</nav><div class="sp-tab-content">${tab==='fitness'?'<div data-fitness-host></div>':tab==='overview'?overview():tab==='notes'?notesView():tab==='files'?filesView():tasksView()}</div><div class="sp-drop-overlay" aria-hidden="true">${icon('upload',46)}<strong>放入「${esc(space.title)}」</strong><span>文件会保存在这个工作区</span></div><input type="file" hidden multiple data-sp-file-input aria-label="添加工作区文件"></section>`;
+    root.innerHTML=`<section class="sp-page ${fitnessEnabled?'has-fitness':''}" style="--sp-color:${spaceColor(space)};--sp-on-color:${foreground(spaceColor(space))}"><div class="sp-back-row"><button class="sp-back" data-sp-action="home">${icon('arrow-left',17)} ${space.parentId?'回到上级空间':'回到主工作台'}</button><span>${icon('shield',14)} ${ctx.cloud?.enabled&&state.mode==='personal'?'连接工作台服务':'仅本机保存'}</span></div><header class="sp-hero"><div class="sp-hero-copy"><span class="sp-hero-icon">${icon(space.icon||'folder',34)}</span><div><span class="sp-hero-kicker">${esc(template()[1])} / MY SPACE</span><h1>${esc(space.title)}</h1><p>${esc(space.description||'笔记、资料和下一步行动，都有自己的位置。')}</p></div></div><div class="sp-hero-actions"><button class="btn sp-primary" data-sp-action="builder">${icon('layers',17)} 搭建这个空间</button><button class="btn" data-sp-action="settings">${icon('settings',17)} 空间设置</button><button class="btn sp-primary" data-sp-action="ai">${icon('sparkles',18)} 交给 AI</button></div><div class="sp-hero-bottom"><span>${countNotes} 篇笔记</span><span>${fileList().length} 份文件</span><span>${tasks().filter(item=>!item.done&&!item.archived).length} 件待办</span><button data-sp-action="archive-space">${icon(space.archived?'refresh':'archive',15)} ${space.archived?'恢复到主页':'归档空间'}</button></div></header>${space.archived?'<div class="sp-archived-banner">这个空间已归档，资料完整保留。点击「恢复到主页」可重新放回画布。</div>':''}<nav class="sp-tabs" aria-label="工作区内容">${[...(fitnessEnabled?[['fitness','运动统计','chart']]:[]),['workbench','空间画布','orbit'],['overview','内容总览','layers'],['notes','笔记','book'],['files','文件','folder'],['tasks','待办','check-circle']].map(([key,label,glyph])=>`<button class="${tab===key?'active':''}" data-sp-action="tab" data-tab="${key}" aria-current="${tab===key?'page':'false'}">${icon(glyph,19)} ${label}</button>`).join('')}</nav><div class="sp-tab-content">${tab==='fitness'?'<div data-fitness-host></div>':tab==='workbench'?'<div class="sp-section-tools"><p>从搭建台加入方块，在这里自由移动、缩放和使用。</p><button class="btn" data-sp-action="builder">添加或摆放方块</button></div>'+boardHost():tab==='overview'?overview():tab==='notes'?notesView():tab==='files'?filesView():tasksView()}</div><div class="sp-drop-overlay" aria-hidden="true">${icon('upload',46)}<strong>放入「${esc(space.title)}」</strong><span>文件会保存在这个工作区</span></div><input type="file" hidden multiple data-sp-file-input aria-label="添加工作区文件"></section>`;
     root.querySelector('.sp-page').style.setProperty('--sp-fill',canvasCardFill(spaceColor(space)));
-    if(tab==='fitness')fitnessCleanup=mountFitness({...ctx,root:root.querySelector('[data-fitness-host]')},space);else mountBoard();
+    if(tab==='fitness')fitnessCleanup=mountFitness({...ctx,root:root.querySelector('[data-fitness-host]')},space);else if(tab==='workbench')mountSpaceCanvas();else mountBoard();
     if(tab==='files'&&selectedFile){const file=fileList().find(item=>item.id===selectedFile);if(file)preview(file);}
   }
   async function preview(file) {
@@ -227,7 +239,7 @@ export function mountSpace(ctx, id) {
       const values={title,content,source:String(data.get('source')||'').trim(),updatedAt:stamp()};
       const noteId=note?.id||uid();
       commit(()=>{if(note){const current=space.notes.find(item=>item.id===note.id);if(!current)throw new Error('这篇笔记已不可用');current.revisions||=[];current.revisions.push({title:current.title,content:current.content,source:current.source,updatedAt:current.updatedAt,savedAt:stamp()});Object.assign(current,values);}else space.notes.unshift({id:noteId,...values,color:assignRecordColor(state),revisions:[],archived:false});});
-      selectedNote=noteId;tab='notes';localRefresh();toast('笔记已保存，原有修订已保留');
+      go('space',space.id,'notes',noteId);toast('笔记已保存，原有修订已保留');
     }});
   }
   function taskDialog(task) {
@@ -235,7 +247,7 @@ export function mountSpace(ctx, id) {
       const title=String(data.get('title')||'').trim();if(!title){toast('请写下要做的事');return false;}
       const values={title,date:String(data.get('date')||''),priority:data.get('priority')==='high'?'high':'normal',description:String(data.get('description')||'').trim(),archived:data.get('archived')==='on'};
       commit(()=>{if(task)Object.assign(state.tasks.find(item=>item.id===task.id),values);else state.tasks.unshift({id:uid(),...values,color:assignRecordColor(state),spaceId:space.id,category:'个人',done:false,source:`工作区 · ${space.title}`,createdAt:stamp()});});
-      tab='tasks';localRefresh();toast('事项已保存到这个空间');
+      go('space',space.id,'tasks');toast('事项已保存到这个空间');
     }});
   }
   async function upload(files) {
@@ -247,19 +259,20 @@ export function mountSpace(ctx, id) {
     const button=event.target.closest('[data-sp-action]');if(!button||!root.contains(button))return;
     const action=button.dataset.spAction,note=space.notes.find(item=>item.id===button.dataset.id),task=state.tasks.find(item=>item.id===button.dataset.id&&item.spaceId===space.id);
     try {
-      if(action==='home')return go('home');
+      if(action==='home')return space.parentId?go('space',space.parentId):go('home');
+      if(action==='builder')return go('builder',space.id);
       if(action==='ai')return openSpaceAI();
       if(action==='settings')return openSpaceDialog({...ctx,refresh:localRefresh},space);
-      if(action==='tab'){tab=button.dataset.tab;selectedNote='';selectedFile='';render();}
-      if(action==='back-board'){selectedNote='';selectedFile='';render();}
+      if(action==='tab')return go('space',space.id,button.dataset.tab==='workbench'?'':button.dataset.tab);
+      if(action==='back-board')return go('space',space.id,tab);
       if(action==='new-note')noteDialog();
       if(action==='edit-note'&&note)noteDialog(note);
-      if(action==='select-note'){selectedNote=button.dataset.id;tab='notes';render();}
+      if(action==='select-note')return go('space',space.id,'notes',button.dataset.id);
       if(action==='archive-note'&&note){commit(()=>{note.archived=!note.archived;});render();toast(note.archived?'笔记已归档，可在「显示已归档笔记」中恢复':'笔记已恢复');}
       if(action==='export-note'&&note)download(new Blob([`# ${note.title}\n\n${note.content}\n\n---\n来源：${note.source||'手动记录'}\n`],{type:'text/markdown;charset=utf-8'}),`${filename(note.title)}.md`);
       if(action==='note-history'&&note)modal({title:'每一次想法，都留有记录',body:`<p class="muted">当前为版本 ${(note.revisions?.length||0)+1}。以下为编辑前保留的版本。</p><div class="sp-history">${[...(note.revisions||[])].reverse().map((revision,index)=>`<details><summary><strong>版本 ${note.revisions.length-index} · ${esc(revision.title)}</strong><small>${dateLabel(revision.updatedAt)}</small></summary><article class="sp-prose">${prose(revision.content,esc)}</article><p class="sp-source">${esc(revision.source||'手动记录')}</p></details>`).join('')||'<div class="sp-empty"><p>还没有历史修订，下次编辑保存时会保留当前内容。</p></div>'}</div>`});
       if(action==='upload')root.querySelector('[data-sp-file-input]').click();
-      if(action==='select-file'){selectedFile=button.dataset.id;tab='files';render();}
+      if(action==='select-file')return go('space',space.id,'files',button.dataset.id);
       if(action==='download-file'){const file=fileList().find(item=>item.id===button.dataset.id);if(!file)return;const blob=await getFile(file.blobId);if(!blob)throw new Error('本机找不到原件，请重新添加文件');download(blob,file.name);}
       if(action==='new-task')taskDialog();
       if(action==='edit-task'&&task)taskDialog(task);

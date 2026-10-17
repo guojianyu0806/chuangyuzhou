@@ -10,20 +10,20 @@ import {CUSTOM_BLOCK_PRESETS} from './custom-block-presets.js';
 const mini='<span class="wb-block-mini" aria-hidden="true"><i></i><i></i><i></i></span>';
 const glyph=(item)=>`<span class="wb-block-icon" style="--block-color:${canvasCardFill(item.color)}">${icon(item.icon||'folder',20)}</span>`;
 const presetCard=id=>{const preset=CUSTOM_BLOCK_PRESETS.find(item=>item.id===id);return preset?{...preset,id:`preset:${id}`,x:0,y:0,w:340,h:280}:null;};
-export function placementHTML(state){
-  const config=getWorkbench(state),visible=placementCards(state);
+export function placementHTML(state,options={}){
+  const config=options.config||getWorkbench(state),visible=(options.model?.cards||placementCards)(state),catalog=options.catalog||WORKBENCH_MODULES,blocks=options.blocks||getCustomBlocks(state).items.filter(item=>!item.spaceId);
   return `<section class="wb-placement" aria-labelledby="wb-placement-title">
     <div class="wb-placement-heading"><div><h2 id="wb-placement-title">像摆积木一样，搭好你的工作台</h2><p>选一块，放到右边。这里的位置，会直接成为你的工作台布局。</p></div><span class="wb-placement-count">${visible.length} 块已放置</span></div>
     <div class="wb-placement-workspace"><aside class="wb-palette" aria-label="方块库"><header><h3>方块库</h3><p>直接拖到右边，也可点选后放下</p><button type="button" class="wb-palette-create" data-wb-action="create-block">${icon('plus',15)} 自定义方块</button><button type="button" class="wb-palette-ai" data-wb-action="ask-miniapp">${icon('sparkles',15)} 让 AI 造小工具</button></header>
     <label class="wb-palette-search"><span class="sr-only">搜索方块</span><input type="search" data-palette-search placeholder="搜索用途或名称" aria-label="搜索方块"></label>
     <div class="wb-palette-tabs" role="group" aria-label="方块分类"><button type="button" data-palette-tab="builtin" aria-pressed="true">模块</button><button type="button" data-palette-tab="scene" aria-pressed="false">场景</button><button type="button" data-palette-tab="mine" aria-pressed="false">自建</button></div>
     <div class="wb-palette-list">${CUSTOM_BLOCK_PRESETS.map(item=>`<button type="button" hidden class="wb-palette-item" data-palette-group="scene" data-palette-search-text="${esc(item.title+' '+item.description+' '+item.category)}" data-place-preset="${esc(item.id)}" aria-label="创建${esc(item.title)}方块" title="${esc(item.description)}；可拖入画布创建">${glyph(item)}<span class="wb-palette-copy"><strong>${esc(item.title)}</strong><small>${esc(item.category)} · 拖入或点击创建</small></span>${mini}</button>`).join('')}
-    ${getCustomBlocks(state).items.filter(item=>!item.archived).map(item=>{const type=CUSTOM_BLOCK_KINDS.find(type=>type.kind===item.kind||type.id===item.kind);return `<button type="button" hidden class="wb-palette-item is-placed" data-palette-group="mine" data-palette-search-text="${esc(item.title+' '+item.description)}" data-place-source="${esc(item.id)}" aria-label="选择${esc(item.title)}方块" aria-pressed="false" title="${esc(item.description)}">${glyph({...item,icon:type?.icon||'layers'})}<span class="wb-palette-copy"><strong>${esc(item.title)}</strong><small>${esc(type?.title||'自定义')} · 可以挪动</small></span>${mini}</button>`;}).join('')}
-    ${WORKBENCH_MODULES.map(item=>{
+    ${blocks.filter(item=>!item.archived).map(item=>{const type=CUSTOM_BLOCK_KINDS.find(type=>type.kind===item.kind||type.id===item.kind);return `<button type="button" hidden class="wb-palette-item is-placed" data-palette-group="mine" data-palette-search-text="${esc(item.title+' '+item.description)}" data-place-source="${esc(item.id)}" aria-label="选择${esc(item.title)}方块" aria-pressed="false" title="${esc(item.description)}">${glyph({...item,icon:type?.icon||'layers'})}<span class="wb-palette-copy"><strong>${esc(item.title)}</strong><small>${esc(type?.title||'自定义')} · 可以挪动</small></span>${mini}</button>`;}).join('')}
+    ${catalog.map(item=>{
       const module=config.modules.find(row=>row.id===item.id);
       return `<button type="button" class="wb-palette-item ${module.enabled?'is-placed':''}" data-palette-group="builtin" data-palette-search-text="${esc(module.title+' '+item.description)}" data-place-source="${esc(item.id)}" aria-label="选择${esc(module.title)}方块" aria-pressed="false" title="${esc(item.description)}">${glyph(item)}<span class="wb-palette-copy"><strong>${esc(module.title)}</strong><small>${module.enabled?'已放置 · 可以挪动':'拖到右侧放入'}</small></span>${mini}</button>`;
     }).join('')}</div><p class="wb-palette-empty" data-palette-empty hidden>这里还没有匹配的方块。试试其他分类或创建一个。</p></aside>
-    <section class="wb-placement-board" aria-label="摆放工作台方块"><div class="wb-placement-toolbar"><strong>你的工作台</strong><div class="wb-placement-navigation" role="group" aria-label="搭建画布视野"><button type="button" data-place-action="zoom-out" aria-label="缩小搭建画布">−</button><button type="button" data-place-action="zoom-reset" aria-label="恢复搭建画布为100%" title="恢复100%大小">100%</button><button type="button" data-place-action="zoom-in" aria-label="放大搭建画布">+</button><button type="button" class="btn" data-place-action="fit">看全画布</button></div><div class="wb-placement-layout-actions"><button type="button" class="btn" data-place-action="arrange">整齐排列</button><button type="button" class="btn" data-place-action="undo" disabled>撤销上次摆放</button></div></div>
+    <section class="wb-placement-board" aria-label="摆放工作台方块"><div class="wb-placement-toolbar"><strong>${esc(options.title||'你的工作台')}</strong><div class="wb-placement-navigation" role="group" aria-label="搭建画布视野"><button type="button" data-place-action="zoom-out" aria-label="缩小搭建画布">−</button><button type="button" data-place-action="zoom-reset" aria-label="恢复搭建画布为100%" title="恢复100%大小">100%</button><button type="button" data-place-action="zoom-in" aria-label="放大搭建画布">+</button><button type="button" class="btn" data-place-action="fit">看全画布</button></div><div class="wb-placement-layout-actions"><button type="button" class="btn" data-place-action="arrange">整齐排列</button><button type="button" class="btn" data-place-action="undo" disabled>撤销上次摆放</button></div></div>
     <p class="wb-placement-hint" role="status" aria-live="polite">从左边拖入方块；双击右边已有方块，进入对应内容。</p>
     <div class="wb-placement-stage" tabindex="0" aria-label="方块摆放画布；选择方块后点击位置，方向键微调，回车放下，Escape取消" aria-describedby="wb-placement-help"><div class="wb-placement-ghost" hidden aria-hidden="true"></div><p class="wb-stage-empty" hidden>从左边拿一个方块，放在这里。</p></div>
     <div class="wb-placement-inspector"><span data-place-selection>直接拖动画布里的方块，就能移动它。</span><div><button type="button" data-place-action="left" aria-label="所选方块向左移动" disabled>←</button><button type="button" data-place-action="up" aria-label="所选方块向上移动" disabled>↑</button><button type="button" data-place-action="down" aria-label="所选方块向下移动" disabled>↓</button><button type="button" data-place-action="right" aria-label="所选方块向右移动" disabled>→</button><button type="button" data-place-action="cancel" disabled>取消选择</button></div></div>
@@ -44,12 +44,13 @@ export function placementPoint(view,rect,clientX,clientY,offset={x:0,y:0}){
 
 export function mountPlacement(ctx,session={}){
   const {root,state,toast}=ctx,stage=root.querySelector('.wb-placement-stage');
+  const model=ctx.placementModel||{cards:placementCards,layout:placementLayout,place:placeBlock,arrange:arrangeBlocks,save:savePlacement,undo:undoPlacement};
   if(!stage)return ()=>{};
   let active=true,gesture=null,view=null,point=null,lastSize='',spaceHeld=false;
   session.placingId=null;
   const ghost=stage.querySelector('.wb-placement-ghost'),hint=root.querySelector('.wb-placement-hint');
-  const selected=()=>{const id=session.placingId||session.selectedId;return id?.startsWith('preset:')?presetCard(id.slice(7)):placementLayout(state).cards.find(card=>card.id===id);};
-  const titleFor=id=>id?.startsWith('preset:')?presetCard(id.slice(7))?.title||'方块':getWorkbench(state).modules.find(item=>item.id===id)?.title||getCustomBlocks(state).items.find(item=>item.id===id)?.title||(state.spaces||[]).find(item=>item.id===id)?.title||'方块';
+  const selected=()=>{const id=session.placingId||session.selectedId;return id?.startsWith('preset:')?presetCard(id.slice(7)):model.layout(state).cards.find(card=>card.id===id);};
+  const titleFor=id=>!id?.startsWith('preset:')&&model.title?model.title(state,id):id?.startsWith('preset:')?presetCard(id.slice(7))?.title||'方块':getWorkbench(state).modules.find(item=>item.id===id)?.title||getCustomBlocks(state).items.find(item=>item.id===id)?.title||(state.spaces||[]).find(item=>item.id===id)?.title||'方块';
   function filterPalette(){
     const group=session.paletteGroup||'builtin',search=String(session.paletteSearch||'').trim().toLowerCase();let count=0;
     root.querySelectorAll('[data-palette-group]').forEach(button=>{button.hidden=button.dataset.paletteGroup!==group||!String(button.dataset.paletteSearchText||'').toLowerCase().includes(search);if(!button.hidden)count++;});
@@ -66,7 +67,7 @@ export function mountPlacement(ctx,session={}){
   // Camera navigation stays outside saved workspace state and AI context.
   function paintCamera(next=view){
     view=next;session.viewport={size:lastSize,view};
-    const cards=new Map(placementCards(state).map(card=>[card.id,card]));
+    const cards=new Map(model.cards(state).map(card=>[card.id,card]));
     stage.querySelectorAll('[data-place-card]').forEach(element=>{const card=cards.get(element.dataset.placeCard);if(card)geometry(element,card);});
     stage.style.backgroundSize=`${40*view.scale}px ${40*view.scale}px`;
     stage.style.backgroundPosition=`${view.left-view.x*view.scale}px ${view.top-view.y*view.scale}px`;
@@ -90,7 +91,7 @@ export function mountPlacement(ctx,session={}){
     stage.classList.toggle('is-placing',!!session.placingId);
   }
   function draw({fit=false}={}){
-    const cards=placementCards(state),rect=stage.getBoundingClientRect();
+    const cards=model.cards(state),rect=stage.getBoundingClientRect();
     lastSize=`${rect.width},${rect.height}`;
     // Keep the camera still after a drop so the saved block stays under the pointer.
     // Explicit fit, a new visit or a resized viewport can choose a new overview.
@@ -123,7 +124,7 @@ export function mountPlacement(ctx,session={}){
   function commit(id,next){
     if(id?.startsWith('preset:')){createPreset(id.slice(7),next);return;}
     try{
-      session.undo=savePlacement(ctx,workspace=>placeBlock(workspace,id,next));session.undoViewport=session.viewport;session.placingId=null;session.selectedId=id;session.focusId=id;session.landingId=id;session.message=`「${titleFor(id)}」已放好，位置已保存。`;
+      session.undo=model.save(ctx,workspace=>model.place(workspace,id,next));session.undoViewport=session.viewport;session.placingId=null;session.selectedId=id;session.focusId=id;session.landingId=id;session.message=`「${titleFor(id)}」已放好，位置已保存。`;
       redraw();toast(session.message);
     }catch(error){ghost.hidden=true;gesture=null;session.placingId=null;refreshSelection();status(error.message||'保存失败，已恢复原位置。');toast(error.message||'保存失败，已恢复原位置。');}
   }
@@ -141,7 +142,8 @@ export function mountPlacement(ctx,session={}){
     }catch(error){cancel(error.message);toast(error.message);}
   }
   function openCard(id){
-    const card=placementCards(state).find(item=>item.id===id);if(!card||typeof ctx.go!=='function')return;
+    const card=model.cards(state).find(item=>item.id===id);if(!card||typeof ctx.go!=='function')return;
+    if(ctx.openPlacementCard)return ctx.openPlacementCard(card);
     if(card.kind==='block')ctx.go('block',id);
     else if(card.kind==='space')ctx.go('space',id);
     else ctx.go(id);
@@ -162,7 +164,7 @@ export function mountPlacement(ctx,session={}){
     }
     if(!active||!button||event.button!==0||!root.contains(button))return;
     const preset=button.dataset.placePreset,source=!!button.dataset.placeSource||!!preset,id=preset?`preset:${preset}`:button.dataset.placeSource||button.dataset.placeCard;
-    const card=preset?presetCard(preset):placementLayout(state).cards.find(item=>item.id===id);if(!card)return;
+    const card=preset?presetCard(preset):model.layout(state).cards.find(item=>item.id===id);if(!card)return;
     const rect=stage.getBoundingClientRect();
     gesture={pointerId:event.pointerId,id,source,element:button,startX:event.clientX,startY:event.clientY,moved:false,offset:source?{x:card.w/2,y:card.h/2}:{x:(event.clientX-rect.left-view.left)/view.scale+view.x-card.x,y:(event.clientY-rect.top-view.top)/view.scale+view.y-card.y}};
     button.setPointerCapture?.(event.pointerId);
@@ -216,8 +218,8 @@ export function mountPlacement(ctx,session={}){
         if(action==='zoom-in')zoom(view.scale*1.2);
         if(action==='zoom-out')zoom(view.scale/1.2);
         if(action==='zoom-reset')zoom(1);
-        if(action==='arrange'){session.undo=savePlacement(ctx,arrangeBlocks);session.undoViewport=session.viewport;session.placingId=null;session.viewport=null;session.message='方块已整齐排列，可撤销。';redraw();toast(session.message);}
-        if(action==='undo'){if(!undoPlacement(ctx,session.undo)){status('布局已有其他修改，未覆盖这些改动。');toast('布局已有其他修改，不能撤销这一步。');session.undo=null;refreshSelection();return;}session.undo=null;session.viewport=session.undoViewport||null;session.undoViewport=null;session.placingId=null;session.selectedId=null;session.message='已撤销上次摆放。';redraw();toast(session.message);}
+        if(action==='arrange'){session.undo=model.save(ctx,model.arrange);session.undoViewport=session.viewport;session.placingId=null;session.viewport=null;session.message='方块已整齐排列，可撤销。';redraw();toast(session.message);}
+        if(action==='undo'){if(!model.undo(ctx,session.undo)){status('布局已有其他修改，未覆盖这些改动。');toast('布局已有其他修改，不能撤销这一步。');session.undo=null;refreshSelection();return;}session.undo=null;session.viewport=session.undoViewport||null;session.undoViewport=null;session.placingId=null;session.selectedId=null;session.message='已撤销上次摆放。';redraw();toast(session.message);}
         if(['left','right','up','down'].includes(action)){const card=selected();if(!card)return;const next={...(session.placingId?point:card)};next.x+=(action==='left'?-40:action==='right'?40:0);next.y+=(action==='up'?-40:action==='down'?40:0);if(session.placingId)showGhost(next);else commit(card.id,next);}
       }catch(error){status(error.message);toast(error.message);}return;
     }

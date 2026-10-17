@@ -45,7 +45,7 @@ export function ensureCanvas(state, presets = PRESETS) {
   const seen=new Set();
   canvas.cards=canvas.cards.filter(card=>card&&typeof card.id==='string'&&!seen.has(card.id)&&seen.add(card.id));
   const blocks=getCustomBlocks(state).items;
-  const defaults=[...Object.entries(presets).map(([id,p])=>({id,...p})),...state.spaces.map((space,index)=>({id:space.id,...customSpot(index),color:color(space.color)})),...blocks.map((block,index)=>({id:block.id,...customSpot(state.spaces.length+index),w:340,h:280,color:color(block.color)}))];
+  const defaults=[...Object.entries(presets).map(([id,p])=>({id,...p})),...state.spaces.filter(space=>!space.parentId).map((space,index)=>({id:space.id,...customSpot(index),color:color(space.color)})),...blocks.filter(block=>!block.spaceId).map((block,index)=>({id:block.id,...customSpot(state.spaces.length+index),w:340,h:280,color:color(block.color)}))];
   for(const def of defaults){
     let card=canvas.cards.find(c=>c.id===def.id);
     if(!card){
@@ -82,7 +82,7 @@ export function visibleCanvasCards(state,canvas=state.canvas) {
   const modules=getWorkbench(state).modules,byId=new Map(modules.map((module,index)=>[module.id,{...module,index}]));
   const spaces=new Map((state.spaces||[]).map(space=>[space.id,space]));
   const blocks=new Map(getCustomBlocks(state).items.map(block=>[block.id,block]));
-  return (canvas?.cards||[]).filter(card=>byId.has(card.id)?byId.get(card.id).enabled:blocks.has(card.id)?!blocks.get(card.id).archived:spaces.has(card.id)&&!spaces.get(card.id).archived)
+  return (canvas?.cards||[]).filter(card=>byId.has(card.id)?byId.get(card.id).enabled:blocks.has(card.id)?!blocks.get(card.id).archived&&!blocks.get(card.id).spaceId:spaces.has(card.id)&&!spaces.get(card.id).archived&&!spaces.get(card.id).parentId)
     .sort((a,b)=>(byId.get(a.id)?.index??modules.length)-(byId.get(b.id)?.index??modules.length));
 }
 
