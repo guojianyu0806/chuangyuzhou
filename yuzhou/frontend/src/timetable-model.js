@@ -78,7 +78,8 @@ export function validateTimetable(input) {
       return {id:identifier(entry.id, '课程编号'), title:text(entry.title, '课程名称', 160, true),
         teacher:text(entry.teacher, '授课教师', 160), location:text(entry.location, '上课地点', 300),
         weekday:integer(entry.weekday, '星期', 1, 7), startPeriod, endPeriod,
-        weeks:weeksList(entry.weeks, totalWeeks), color:entry.color, archived:entry.archived ?? false};
+        weeks:weeksList(entry.weeks, totalWeeks), color:entry.color, archived:entry.archived ?? false,
+        ...(entry.courseId===undefined||entry.courseId===''?{}:{courseId:identifier(entry.courseId,'关联课程编号')})};
     });
     return {id:identifier(value.id, '学期编号'), title:text(value.title, '学期名称', 160, true),
       campus:text(value.campus, '校区', 100), weekOne:value.weekOne, totalWeeks, teachingWeeks,

@@ -2,6 +2,7 @@ import { mountCanvas, canvasCardFill } from './canvas.js';
 import { assignRecordColor, createColorDraft } from './creation-colors.js';
 import { openAIConversation } from './ai.js';
 import { mountFileText } from './file-text.js';
+import {courseTimetableHTML} from './timetable-courses.js';
 
 const DEFAULT_PROMPT = `你是我的软件工程课程助教。请以我上传的课程资料和课堂笔记为依据，按章节整理：
 1. 核心概念、概念关系与适用条件。
@@ -162,7 +163,7 @@ export function mountCourses(ctx, courseId) {
     const selectedColor = state.boards[boardKey].cards?.find(card => card.id === selected?.id)?.color || colorOf(course);
     const fileReader = file ? `<header class="course-file-head"><div><span class="eyebrow">原始资料 · 仅本机</span><h2>${esc(file.name)}</h2><p class="muted">${readableSize(file.size)} · ${dateLabel(file.createdAt)}上传</p></div><button class="btn" data-course-action="download-file" data-id="${esc(file.id)}">${glyph('download', 17)} 下载原件</button></header><div data-course-file-preview class="course-file-preview"><div class="empty-state">正在读取本机文件…</div></div>` : '';
     root.innerHTML = `<section class="courses-page course-detail course-card-workspace" style="--course-color:${colorOf(course)};--course-fill:${canvasCardFill(colorOf(course))}"><button class="course-back" data-course-action="back">${glyph('arrow-left', 17)} 全部课程</button><header class="page-head course-detail-head course-detail-hero"><div class="course-detail-title"><span class="course-symbol">${glyph(course.icon || 'book', 25)}</span><div><div class="eyebrow">${course.example ? '课程资料' : '我的课程空间'}</div><h1>${esc(course.title)}</h1><p>${esc(course.subtitle || '让每一份资料、每一次理解，都有自己的位置。')}</p></div></div><div class="course-head-actions"><button class="btn" data-course-action="preferences">${glyph('settings', 17)} 助教偏好</button><button class="btn primary" data-course-action="upload">${glyph('upload', 17)} 上传资料</button></div></header>
-      <div class="course-detail-navigation"><div class="tabs" aria-label="课程内容"><button class="tab ${isNote ? 'active' : ''}" data-course-action="tab" data-tab="notes">学习笔记 <span>${visibleRecords(course.notes).length}</span></button><button class="tab ${!isNote ? 'active' : ''}" data-course-action="tab" data-tab="files">课程资料 <span>${visibleRecords(course.files).length}</span></button></div><div class="course-detail-navigation-actions"><button class="btn course-ai-entry" data-course-action="ai">${glyph('sparkles', 17)} 整理课程资料</button>${isNote ? `<button class="btn primary" data-course-action="new-note">${glyph('plus', 17)} 新建笔记</button>` : ''}</div></div>
+      ${courseTimetableHTML(state,course.id)}<div class="course-detail-navigation"><div class="tabs" aria-label="课程内容"><button class="tab ${isNote ? 'active' : ''}" data-course-action="tab" data-tab="notes">学习笔记 <span>${visibleRecords(course.notes).length}</span></button><button class="tab ${!isNote ? 'active' : ''}" data-course-action="tab" data-tab="files">课程资料 <span>${visibleRecords(course.files).length}</span></button></div><div class="course-detail-navigation-actions"><button class="btn course-ai-entry" data-course-action="ai">${glyph('sparkles', 17)} 整理课程资料</button>${isNote ? `<button class="btn primary" data-course-action="new-note">${glyph('plus', 17)} 新建笔记</button>` : ''}</div></div>
       <div class="course-workspace ${detailView === 'board' ? 'course-board-workspace' : 'course-reader-workspace'}">${detailView === 'board' ? '<div data-course-detail-canvas></div>' : `<div class="course-reader-card" style="--reader-color:${colorOf({ color: selectedColor })};--reader-fill:${canvasCardFill(selectedColor)}"><div class="course-reader-top"><button class="course-reader-return" data-course-action="back-board">${glyph('arrow-left', 17)} 返回${isNote ? '笔记' : '资料'}卡片</button><span>${glyph(isNote ? 'book' : 'file', 16)} ${isNote ? '学习笔记' : '课程资料'}</span></div><div class="course-reading-panel ${!isNote ? 'course-file-reader' : ''}">${isNote ? noteReading(note) : fileReader}</div></div>`}</div>
       <p class="course-board-footnote">${glyph('info', 15)} 文件可以拖入这个课程空间。正文提取不调用模型；AI 整理需单独连接模型。</p><input type="file" class="course-file-input" data-course-files multiple accept=".ppt,.pptx,.docx,.pdf,.txt,.md,.csv,.png,.jpg,.jpeg,.webp,.gif" aria-label="选择课程资料"></section>`;
     if (detailView === 'reader') { if (!isNote && file) showFile(file); return; }
@@ -304,6 +305,7 @@ export function mountCourses(ctx, courseId) {
     const button = event.target.closest('[data-course-action]');
     if (!button || !root.contains(button)) return;
     const action = button.dataset.courseAction;
+    if(action==='timetable')return go('timetable');
     const id = button.dataset.id;
     if (action === 'new-course') return newCourse();
     if (action === 'open-course') return enterCourse(id, button.closest('[data-card]'));
