@@ -26,7 +26,7 @@
 .cv-home .cv-card-body:has(.cv-preview-space)>.cv-card-copy{max-width:100%}
 .cv-home .cv-card-body:has(.cv-preview-space)>.cv-card-copy>p{-webkit-line-clamp:2}
 .cv-home .cv-card .cv-preview-summary{margin-top:5px;font-size:12px}
-.cv-home .cv-viewport.is-list:not(.is-stack) .cv-card:has(.cv-content-preview){min-height:300px}
+.cv-home .cv-viewport.is-list:not(.is-stack) .cv-card:has(.cv-content-preview){min-height:340px}
 .cv-home .cv-viewport.is-stack .cv-content-preview{flex:0 1 auto;max-height:130px}
 .cv-home .cv-viewport.is-grid.is-list .cv-card:not(:has(.cv-content-preview)){height:250px!important}
 .cv-home .cv-viewport.is-grid .cv-card h2{font-size:clamp(24px,5.5cqw,30px)}
