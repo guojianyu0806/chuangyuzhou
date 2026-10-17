@@ -117,9 +117,10 @@ export function mountAIComposer(ctx, host, settings={}) {
   const { state, esc, icon, save, uid, toast, go } = ctx;
   const activity = ensure(state),followRequest=settings.request;
   const draftKey=ctx.cloud?.draftKey(`conversation-${followRequest?.id}`)||`czb-yuzhou-conversation-${state.mode}-${followRequest?.id}`;
+  const draftStorage=ctx.cloud?.storage||localStorage;
   const owner=followRequest?{aiDraft:{text:'',files:[],targetId:followRequest.targetId}}:state;
-  if(followRequest)try{const cached=JSON.parse(localStorage.getItem(draftKey));if(cached&&typeof cached.text==='string'&&Array.isArray(cached.files))owner.aiDraft=cached;}catch{}
-  const saveDraft=()=>{if(followRequest)localStorage.setItem(draftKey,JSON.stringify(owner.aiDraft));else save(state);};
+  if(followRequest)try{const cached=JSON.parse(draftStorage.getItem(draftKey));if(cached&&typeof cached.text==='string'&&Array.isArray(cached.files))owner.aiDraft=cached;}catch{}
+  const saveDraft=()=>{if(followRequest)draftStorage.setItem(draftKey,JSON.stringify(owner.aiDraft));else save(state);};
   let alive = true;
   let dragDepth = 0;
   let sending = false;
@@ -200,7 +201,7 @@ export function mountAIComposer(ctx, host, settings={}) {
       validateConversation(request.conversation);
       if(!followRequest)state.aiRequests.unshift(request);
       owner.aiDraft={text:'',files:[],targetId:followRequest?request.targetId:'auto'};
-      save(state);if(followRequest)localStorage.removeItem(draftKey);
+      save(state);if(followRequest)draftStorage.removeItem(draftKey);
     }catch(error){
       if(previous){for(const key of Object.keys(request))delete request[key];Object.assign(request,previous);}
       else state.aiRequests=state.aiRequests.filter(r=>r!==request);

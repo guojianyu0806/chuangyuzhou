@@ -1,18 +1,19 @@
 import {escapeHTML as esc, configureFileStore, getLocalFile} from './services.js';
 import {modelStatusLabel,modelEngineDescription} from './model-status.js';
+import {createWorkspaceStorage,sameWorkspaceContent} from './workspace-storage.js';
 
 const stamp = () => new Date().toISOString();
 const isLocalInstance=()=>['127.0.0.1','localhost','[::1]'].includes(globalThis.location?.hostname);
 const connectionUnavailable=()=>isLocalInstance()?'暂时无法连接本机工作台。电脑重启或服务窗口关闭后，请运行比赛目录中的“启动宇宙完整副本.cmd”，再重试；本设备改动仍保留。':'暂时无法连接工作台，请检查网络后重试；本设备改动仍保留。';
 const clone = value => JSON.parse(JSON.stringify(value));
-const read = key => { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } };
+const read = (key,storage=localStorage) => { try { return JSON.parse(storage.getItem(key) || 'null'); } catch { return null; } };
 const apiMessages={unauthorized:'登录已过期，请重新登录。',invalid_credentials:'账号或密码不正确。',setup_token_invalid:'初始化口令不正确，请检查后重试。',setup_closed:'账号已经建立，请刷新页面后登录。',csrf_invalid:'登录信息已更新，请重新登录。',csrf_forbidden:'登录信息已更新，请重新登录。',rate_limited:'尝试次数较多，请稍后再试。',revision_conflict:'其他设备有新内容，请先处理同步冲突。',missing_files:'部分附件尚未上传完整，请保留本机副本后重试。',invalid_password:'密码需要包含 12 至 256 位字符。',invalid_username:'请使用 2 至 64 位用户名。',file_not_found:'附件暂时不可用。',model_not_configured:'请先在偏好与连接中配置 DeepSeek。'};
 Object.assign(apiMessages,{invalid_calendar:'日历格式有误，请检查日期、时间及内容。',authentication_required:'登录已过期，请重新登录。',too_many_attempts:'尝试次数较多，请稍后再试。',password_length_12_to_256:'密码需要包含 12 至 256 位字符。'});
 Object.assign(apiMessages,{invalid_ledger:'账目格式有误，请检查金额、日期及所属项目。',invalid_timetable:'课表格式有误，请检查学期、周次与节次。',workspace_update_required:'此页面缺少新版资料。请先导出本设备改动，再刷新页面并加载云端内容。'});
 Object.assign(apiMessages,{invalid_fitness:'运动记录格式有误，请检查日期、时长、里程和热量。',invalid_fitness_reference:'运动记录关联的空间已不存在，请同步最新工作区后重试。',invalid_space_fitness_enabled:'运动统计开关格式有误，请重新保存空间设置。'});
 Object.assign(apiMessages,{invalid_competitions:'比赛记录格式有误，请检查比赛、截止日期和准备事项的关联。'});
 function errorMessage(result,fallback){const value=typeof result.error==='string'?result.error:result.error?.message;return apiMessages[value]||result.message||value||fallback;}
-const statusNames = {ready:'工作台已连接',saved:'已同步',saving:'正在同步',pending:'等待同步',offline:'离线 · 待同步',conflict:'同步冲突 · 已保留',remote:'其他设备有更新',result:'本次操作结果待加载',auth:'请重新登录'};
+const statusNames = {ready:'工作台已连接',saved:'已同步',saving:'正在同步',pending:'等待同步',offline:'离线 · 待同步',conflict:'同步冲突 · 已保留',remote:'其他设备有更新',result:'本次操作结果待加载',storage:'本机保存待重试',auth:'请重新登录'};
 
 // Each tab owns its revision and pending snapshot. Sharing a browser cache must
 // never make an old tab inherit a newer revision and overwrite another device.
@@ -35,27 +36,39 @@ export class CloudClient {
     const tab=reloading&&previousTab?previousTab:crypto.randomUUID();sessionStorage.setItem(`czb-yuzhou-cloud-tab-${this.account}`,tab);
     this.prefix = `czb-yuzhou-cloud-v1-${this.account}-${tab}`;
     this.cacheKey = `${this.prefix}-sync`;
-    if(previousTab&&previousTab!==tab){
-      const previousPrefix=`czb-yuzhou-cloud-v1-${this.account}-${previousTab}`;
-      for(const suffix of ['sync','workspace-personal','workspace-demo']){const value=localStorage.getItem(`${previousPrefix}-${suffix}`);if(value)localStorage.setItem(`${this.prefix}-${suffix}`,value);}
-    }
+    this.previousPrefix=previousTab&&previousTab!==tab?`czb-yuzhou-cloud-v1-${this.account}-${previousTab}`:null;
     this.recoveryPrefix = `czb-yuzhou-cloud-recovery-${this.account}-`;
     this.scope = `cloud-${this.account}`;
     this.mode = 'personal';
     this.setMode('personal');
     window.addEventListener('online',()=>{if(this.pending)this.flush().catch(()=>{});else this.poll();});
     window.addEventListener('offline',()=>{if(this.pending)this.setStatus('offline');});
-    window.addEventListener('beforeunload',event=>{if(this.pending){event.preventDefault();event.returnValue='';}});
+    window.addEventListener('beforeunload',event=>{if(this.pending||this.storage?.dirty){event.preventDefault();event.returnValue='';}});
   }
+  async prepareStorage(){
+    this.storage=await createWorkspaceStorage(this.account);
+    this.storage.onError=error=>this.setStatus('storage',error.message);
+    // Carry only real unsynced work when a browser duplicates a tab. Clean tabs
+    // obtain the latest server state instead of copying another full cache.
+    if(this.previousPrefix){
+      const cached=read(`${this.previousPrefix}-sync`,this.storage);
+      if(cached?.pending){this.storage.setItem(this.cacheKey,JSON.stringify(cached));this.storage.setItem(this.key('personal'),JSON.stringify(cached.pending.state));}
+    }
+    await this.waitForStorage();
+  }
+  async waitForStorage(){await this.storage?.settled();}
   key(mode) {return `${this.prefix}-workspace-${mode}`;}
   draftKey(value) {return `${this.prefix}-draft-${value}`;}
   recoveryCopies() {
     const copies=[];
     const accountPrefix=`czb-yuzhou-cloud-v1-${this.account}-`;
-    for(const key of Object.keys(localStorage)){
-      if(key.startsWith(this.recoveryPrefix)){const state=read(key);if(state)copies.push({key,state,label:'冲突恢复副本'});}
+    const storage=this.storage||localStorage;
+    const known=new Set();
+    const add=(key,state,label)=>{if(!state||typeof state!=='object')return;const signature=JSON.stringify(state);if(!known.has(signature)){known.add(signature);copies.push({key,state,label});}};
+    for(const key of storage.keys?storage.keys():Object.keys(storage)){
+      if(key.startsWith(this.recoveryPrefix)){let state=read(key,storage);if(state?.cacheRecovery){try{const old=JSON.parse(state.raw);state=old.pending?.state||(old.schema===1?old:null);}catch{state=null;}}add(key,state,'冲突恢复副本');}
       else if(key!==this.cacheKey&&key.startsWith(accountPrefix)&&key.slice(accountPrefix.length).length===41&&key.endsWith('-sync')){
-        const cached=read(key);if(cached?.pending?.state)copies.push({key,state:cached.pending.state,label:'其他窗口未同步副本'});
+        const cached=read(key,storage);if(cached?.pending?.state)add(key,cached.pending.state,'其他窗口未同步副本');
       }
     }
     return copies.sort((a,b)=>String(b.state.updatedAt).localeCompare(String(a.state.updatedAt)));
@@ -71,7 +84,7 @@ export class CloudClient {
   setStatus(status,error='') {if(this.status===status&&this.error===error)return;this.status=status;this.error=error;for(const fn of this.listeners)fn(this);}
   get label(){return statusNames[this.status]||this.status;}
   persist() {
-    localStorage.setItem(this.cacheKey,JSON.stringify({revision:this.revision,pending:this.pending,conflict:this.status==='conflict',updatedAt:stamp()}));
+    (this.storage||localStorage).setItem(this.cacheKey,JSON.stringify({revision:this.revision,pending:this.pending,conflict:this.status==='conflict',updatedAt:stamp()}));
   }
   async request(path,{method='GET',body,headers={},raw=false,...options}={}) {
     const write = !['GET','HEAD'].includes(method);
@@ -86,22 +99,26 @@ export class CloudClient {
     return raw?response:response.status===204?{}:response.json();
   }
   async initialize(empty) {
-    const cached=read(this.cacheKey);
+    const cached=read(this.cacheKey,this.storage||localStorage);
     this.revision=cached?.revision||0;
     this.pending=cached?.pending||null;
     let remote;
     try{remote=await this.request('/api/workspace');}catch(error){
-      const stored=read(this.key('personal'));
+      const stored=read(this.key('personal'),this.storage||localStorage);
       if(error.status!==401)this.setStatus('offline',connectionUnavailable());
       return this.pending?.state||stored||empty;
     }
     if(this.pending){
+      if(remote.state&&sameWorkspaceContent(this.pending.state,remote.state)){
+        this.pending=null;this.revision=remote.revision;this.incoming=null;this.persist();await this.waitForStorage();this.setStatus('saved');return remote.state;
+      }
       if(cached.conflict||remote.revision!==this.revision){this.incoming=remote;this.conflict();}
       else{this.setStatus('pending');setTimeout(()=>this.flush().catch(()=>{}),500);}
-      return this.pending.state;
+      await this.waitForStorage();return this.pending.state;
     }
     this.revision=remote.revision;
     this.persist();
+    await this.waitForStorage();
     this.setStatus(remote.state?'saved':'ready');
     return remote.state||empty;
   }
@@ -130,7 +147,7 @@ export class CloudClient {
     clearTimeout(this.timer);this.timer=setTimeout(()=>this.flush().catch(()=>{}),700);
   }
   preserve() {
-    if(this.pending)localStorage.setItem(`${this.recoveryPrefix}${Date.now()}-${this.pending.id}`,JSON.stringify(this.pending.state));
+    if(this.pending)(this.storage||localStorage).setItem(`${this.recoveryPrefix}${this.pending.id}`,JSON.stringify(this.pending.state));
   }
   conflict() {
     this.setStatus('conflict','其他设备已提交新内容。本设备改动已保留，请先导出，再加载云端内容。');
@@ -173,19 +190,33 @@ export class CloudClient {
     if(!this.authenticated)throw new Error('请重新登录后继续同步。');
     if(this.sending)return this.sending;
     this.sending=(async()=>{
+      if(this.storage?.error)await this.storage.retry();
+      await this.waitForStorage();
       while(this.pending){
         const current=this.pending;
         this.setStatus('saving');
         try{
+          if(this.storage?.error)await this.storage.retry();
+          await this.waitForStorage();
           await this.uploadFiles(current.state);
           const result=await this.request('/api/workspace',{method:'PUT',body:{baseRevision:this.revision,state:current.state}});
           this.revision=result.revision;
           if(this.pending.id===current.id)this.pending=null;
           this.persist();
+          await this.waitForStorage();
           this.setStatus(this.pending?'pending':'saved');
         }catch(error){
-          if(error.status===409&&error.code==='revision_conflict')this.conflict();
+          if(error.status===409&&error.code==='revision_conflict'){
+            const remote=await this.request('/api/workspace');
+            // A response may be lost after the server has accepted the write.
+            // Treat the retry as acknowledged only when its full content agrees.
+            if(sameWorkspaceContent(current.state,remote.state)){
+              this.revision=remote.revision;if(this.pending?.id===current.id)this.pending=null;this.persist();await this.waitForStorage();this.setStatus(this.pending?'pending':'saved');continue;
+            }
+            this.incoming=remote;this.conflict();
+          }
           else if(error.status===409&&error.code==='workspace_update_required'){this.setStatus('conflict',error.message);this.preserve();this.persist();}
+          else if(error.name==='WorkspaceStorageError')this.setStatus('storage',error.message);
           else if(this.authenticated)this.setStatus('offline',error.message||'暂时无法同步，改动已保存在此设备。');
           throw error;
         }
@@ -203,7 +234,7 @@ export class CloudClient {
       const remote=await this.request(`/api/workspace?since=${encodeURIComponent(this.revision)}`);
       if(this.pending||this.sending||this.mutation)return;
       if(remote.revision>this.revision){this.incoming=remote;this.setStatus('remote');this.onRemote?.(remote);}
-      else if(this.status==='offline')this.setStatus('saved');
+      else if(['offline','storage'].includes(this.status)&&!this.storage?.error)this.setStatus('saved');
     }catch(error){if(error.status!==401)this.setStatus('offline',connectionUnavailable());}
     finally{this.polling=false;}
   }
@@ -213,9 +244,13 @@ export class CloudClient {
     const pendingId=this.pending?.id;
     const remote=await this.request('/api/workspace');
     if(this.mutation||pendingId!==this.pending?.id||!guard())throw new Error('本设备刚有新的编辑，已暂缓加载云端内容。');
-    if(this.pending)this.preserve();
+    if(this.pending){
+      this.preserve();await this.waitForStorage();
+      if(this.mutation||pendingId!==this.pending?.id||!guard())throw new Error('本设备刚有新的编辑，已暂缓加载云端内容。');
+    }
     this.pending=null;this.revision=remote.revision;this.incoming=null;
     this.setStatus(remote.state?'saved':'ready');this.persist();
+    await this.waitForStorage();
     return remote.state;
   }
   async runWorkspaceMutation(operation,{canApply=()=>true,apply=()=>{}}={}) {
@@ -233,10 +268,16 @@ export class CloudClient {
         this.setStatus('result','本次操作已完成。期间的新编辑已保留，请先保存或导出本设备改动，再加载操作结果。');
         if(this.pending)this.preserve();
         this.persist();
+        await this.waitForStorage();
         return {result,applied:false};
       }
       this.revision=remote.revision;this.incoming=null;
       this.setStatus(remote.state?'saved':'ready');this.persist();
+      await this.waitForStorage();
+      if(this.pending||!canApply()){
+        this.incoming=remote;this.setStatus('result','本次操作已完成。期间的新编辑已保留，请先保存或导出本设备改动，再加载操作结果。');
+        if(this.pending)this.preserve();this.persist();await this.waitForStorage();return {result,applied:false};
+      }
       apply(remote.state);
       return {result,applied:true};
     } finally {
@@ -292,7 +333,12 @@ export async function bootstrapCloud() {
   try{const res=await fetch('/api/auth/session',{cache:'no-store',credentials:'same-origin'});if(!res.ok)throw new Error();session=await res.json();}
   catch{const form=authView(false,'暂时无法检查登录状态，请重试。');form.onsubmit=event=>{event.preventDefault();location.reload();};return new Promise(()=>{});}
   if(!session.authenticated)session=await authenticate(session);
-  return new CloudClient(session);
+  const client=new CloudClient(session);
+  try{await client.prepareStorage();return client;}
+  catch{
+    document.querySelector('#app').innerHTML='<main class="cloud-entry cloud-unavailable"><section class="cloud-login-card"><h1>本机数据存储暂不可用</h1><p>旧缓存仍保留。请保留原页面，检查浏览器存储权限后重试；请勿清除浏览器数据。</p><button class="btn primary" id="storage-retry">重试加载</button></section></main>';
+    document.querySelector('#storage-retry').onclick=()=>location.reload();return new Promise(()=>{});
+  }
 }
 
 export function mountModelSettings(container,client,toast) {
