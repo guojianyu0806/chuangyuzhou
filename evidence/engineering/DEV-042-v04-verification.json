@@ -1,0 +1,36 @@
+{
+  "unchangedOtherItems": 52,
+  "durationFrames": 12417,
+  "replacement": {
+    "startFrame": 630,
+    "endFrame": 768,
+    "sourceIn": 1350000,
+    "sourceEnd": 5950000,
+    "recording": "2026-10-18 19-10-11.mp4"
+  },
+  "projectId": "324a238c-c866-46ae-bb8c-7c842244f488",
+  "timelineId": "7b8f6368-27e1-4dfc-aa86-3f10af471404",
+  "allOtherItemMediaNamesTimingAndSourceRangesUnchanged": true,
+  "file": "创宇宙_实录修订_v04_配音字幕.mp4",
+  "bytes": 95691786,
+  "sha256": "845cfd2239e138da33fa77039a1355db614c9c1fcb33a71726466733472dec7f",
+  "duration": 413.909313,
+  "frames": 12417,
+  "resolution": "1920x1080",
+  "fps": 30,
+  "changedVisualRangeSeconds": [
+    21,
+    25.6
+  ],
+  "captionCount": 178,
+  "nativeSrtIdenticalToV03": true,
+  "fullDecodePassed": true,
+  "fullAudioComparisonPassed": true,
+  "unchangedPixelSamples": 11,
+  "exportTask": "d3eaa893-142c-4ae0-8a22-c9a30346eaeb",
+  "audioCorrelationWithV03": 1,
+  "finalComposedFramesInspected": 9,
+  "oldV03Preserved": true,
+  "sourceOriginalPreserved": true,
+  "scope": "Only replace AI assistant popup shot; no app or formal data change"
+}
