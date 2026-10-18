@@ -1,0 +1,33 @@
+{
+  "draftName": "创宇宙_视频v04_AI助手点击弹出_2026-10-18",
+  "draftPath": "C:\\Users\\g2806\\AppData\\Local\\JianyingPro\\User Data\\Projects\\com.lveditor.draft\\创宇宙_视频v04_AI助手点击弹出_2026-10-18",
+  "installedJianyingVersion": "11.3.0.14362",
+  "durationMicroseconds": 413900000,
+  "fps": 30,
+  "canvas": {
+    "width": 1920,
+    "height": 1080,
+    "ratio": "original"
+  },
+  "videoSegments": 50,
+  "audioSegments": 4,
+  "approvedCaptionSegments": 178,
+  "allMediaPathsExistInsideNewDraft": true,
+  "videoAudioUnchangedByCaptionFix": true,
+  "backupPath": "E:\\传智杯\\传智杯AI创新应用挑战赛\\视频相关\\2026-10-18_成片_v04\\剪映草稿导出原件备份_v01",
+  "registeredInDraftIndex": true,
+  "preexistingIndexEntriesPreserved": 45,
+  "all50VideoSourceTimesSpeedsAndPositionsMatchV04Within1Millisecond": true,
+  "maximumStartTimeRoundingErrorMicroseconds": 2,
+  "all4NarrationClipsMatchV04": true,
+  "all178CaptionsRestoredFromApprovedSrt": true,
+  "allMaterialAndFontReferencesResolve": true,
+  "independentMediaFileCount": 19,
+  "originalChatCutAndMp4Unchanged": true,
+  "uiPlaybackVerified": false,
+  "nativeExportIssuesCorrected": [
+    "Exporter regenerated 200 ASR subtitle cards; restored approved 178 cards after backup",
+    "Exporter created files without root draft registry entry; registered only the new draft with full registry backup",
+    "Exporter shortened the final narration item by 17000 microseconds; restored all four approved audio ranges after an additional backup"
+  ]
+}
