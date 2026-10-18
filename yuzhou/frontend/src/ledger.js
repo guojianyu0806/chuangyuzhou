@@ -1,11 +1,8 @@
 import { initializeLedger, parseAmount, formatMoney, localDate, isValidDate, selectEntries, summarizeEntries, ledgerCategories, groupLedgerEntries } from './ledger-model.js';
 import { createColorDraft } from './creation-colors.js';
+import { entryCategories as categories, entryCategoryOptions, categoryAfterTypeChange } from './ledger-entry-categories.js';
 
 const views = new WeakMap();
-const categories = {
-  expense: ['餐饮', '交通', '学习', '学习用品', '购物', '活动', '住房', '其他支出'],
-  income: ['生活费', '兼职', '报销', '奖学金', '其他收入']
-};
 const colors = ['#FFBD82', '#63E6DC', '#AE88FF', '#FF9CCE', '#D5F542', '#82BDFF'];
 const stamp = () => new Date().toISOString();
 const safeColor = value => /^#[\da-f]{6}$/i.test(value || '') ? value : colors[0];
@@ -59,18 +56,21 @@ export function mountLedger(ctx, destination='') {
   }
   function openEntry(entry) {
     const type = entry?.type || 'expense';
+    const initialCategory = entry?.category || categories[type][0];
+    const entryOptions = (nextType, current, restoring = false) => `${[...new Set([...entryCategoryOptions(state.ledger, nextType, current), ...(restoring ? entryCategoryOptions(state.ledger, nextType === 'expense' ? 'income' : 'expense') : [])])].map(name => `<option value="${esc(name)}" ${name === current ? 'selected' : ''}>${esc(name)}</option>`).join('')}<option value="">＋ 自定义分类…</option>`;
     const defaultProject = state.ledger.projects.some(p => p.id === view.projectId && !p.archived) ? view.projectId : '';
     ctx.modal({ title: entry ? '编辑账目' : '记一笔', submitLabel: entry ? '保存修改' : '保存账目', body: `
       <div class="ledger-form">
         <div class="ledger-form-grid"><label class="field">收支类型<select name="type"><option value="expense" ${type === 'expense' ? 'selected' : ''}>支出</option><option value="income" ${type === 'income' ? 'selected' : ''}>收入</option></select></label>
         <label class="field">金额 · 人民币（元）<input name="amount" type="text" inputmode="decimal" autocomplete="off" maxlength="12" placeholder="0.00" value="${entry ? formatMoney(entry.amountCents).replaceAll(',', '') : ''}" required aria-describedby="ledger-amount-hint"><small id="ledger-amount-hint">大于 0，最多两位小数</small></label></div>
         <div class="ledger-form-grid"><label class="field">日期<input name="date" type="date" value="${esc(entry?.date || localDate())}" required min="1900-01-01" max="9999-12-31"></label>
-        <label class="field">分类<input name="category" list="ledger-category-options" maxlength="80" value="${esc(entry?.category || categories[type][0])}" required placeholder="选择或输入分类"><datalist id="ledger-category-options">${categories[type].map(c => `<option value="${c}"></option>`).join('')}</datalist></label></div>
+        <label class="field">分类<select name="category" aria-describedby="ledger-category-hint">${entryOptions(type, initialCategory, true)}</select><small id="ledger-category-hint">展开选择分类，也可以新增自己的分类。</small></label></div>
+        <label class="field ledger-custom-category" hidden>自定义分类<input name="customCategory" maxlength="80" placeholder="例如：社团活动、订阅服务" disabled></label>
         <label class="field">所属账本<select name="projectId">${projectOptions(entry?.projectId ?? defaultProject)}</select><small>日常开销选「日常零钱」；旅行、活动费用选对应项目。</small></label>
         <label class="field">备注<textarea name="note" maxlength="2000" rows="3" placeholder="记下用途、活动名称或其他细节">${esc(entry?.note || '')}</textarea></label>
         ${entry?.example ? '<p class="ledger-form-note">这是一条起始占位账目，并非实际收支。</p>' : ''}
       </div>`, onSubmit(data) {
-      const values = { type: String(data.get('type')), amountCents: parseAmount(String(data.get('amount')).trim()), date: String(data.get('date')), category: String(data.get('category')).trim(), projectId: String(data.get('projectId')), note: String(data.get('note')).trim() };
+      const values = { type: String(data.get('type')), amountCents: parseAmount(String(data.get('amount')).trim()), date: String(data.get('date')), category: String(data.get('category') || data.get('customCategory') || '').trim(), projectId: String(data.get('projectId')), note: String(data.get('note')).trim() };
       if (!['income', 'expense'].includes(values.type)) throw new Error('请选择收入或支出。');
       if (!isValidDate(values.date)) throw new Error('请选择有效的日期。');
       if (!values.category || values.category.length > 80) throw new Error('请填写分类，最多 80 个字。');
@@ -90,10 +90,32 @@ export function mountLedger(ctx, destination='') {
       refreshed();
     } });
     const form = document.querySelector('#modal form');
+    const field = form?.querySelector('[name=category]');
+    const customField = form?.querySelector('[name=customCategory]');
+    const syncCustom = () => {
+      const custom = field.value === '';
+      customField.closest('label').hidden = !custom;
+      customField.disabled = !custom;
+      customField.required = custom;
+    };
+    field?.addEventListener('change', () => { syncCustom(); if (!field.value) customField.focus(); });
+    // The shared modal restores unsaved form values before returning. Rebuild
+    // choices for that restored type and reveal a restored custom input too.
+    let previousType = form.querySelector('[name=type]').value;
+    const restoredCategory = field.value;
+    field.innerHTML = entryOptions(previousType, restoredCategory);
+    field.value = restoredCategory;
+    syncCustom();
+    const drafts = new Map([[previousType, { value: field.value, custom: customField.value }]]);
     form?.querySelector('[name=type]')?.addEventListener('change', event => {
-      const next = event.target.value, field = form.querySelector('[name=category]');
-      if (Object.values(categories).flat().includes(field.value)) field.value = categories[next][0];
-      form.querySelector('#ledger-category-options').innerHTML = categories[next].map(c => `<option value="${c}"></option>`).join('');
+      const next = event.target.value;
+      drafts.set(previousType, { value: field.value, custom: customField.value });
+      const draft = drafts.get(next) || { value: categoryAfterTypeChange(field.value || customField.value.trim(), next), custom: customField.value };
+      field.innerHTML = entryOptions(next, draft.value);
+      field.value = draft.value;
+      customField.value = draft.custom;
+      previousType = next;
+      syncCustom();
     });
   }
   function openProject(project) {
