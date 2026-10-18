@@ -1,0 +1,49 @@
+{
+  "dev": "DEV-039",
+  "verifiedAt": "2026-10-18T06:53:28.627Z",
+  "deleted": {
+    "spaces": 3,
+    "notes": 4,
+    "tasks": 6,
+    "blocks": 2,
+    "events": 1
+  },
+  "expectedCleanupStateMatched": true,
+  "unrelatedBusinessPreserved": true,
+  "attachmentManifestPreserved": true,
+  "originalCompetitionAndChildrenPreserved": true,
+  "addedCompetitions": 2,
+  "addedCompetitionTasks": 6,
+  "addedOfficialRegistrationNodes": 2,
+  "newCompetitionsWatchingAndIncomplete": true,
+  "formalExportComparedThroughNormalUI": true,
+  "tests": {
+    "total": 857,
+    "passed": 856,
+    "failed": 0,
+    "skipped": 1,
+    "report": "DEV-039-tests-2026-10-18T06-51-30-086Z.tap"
+  },
+  "syntheticBrowser": {
+    "uncheckedConfirmationBlocked": true,
+    "deleteAndReloadVerified": true,
+    "scopeIncludesChildSpace": true,
+    "modelRequests": 0
+  },
+  "sources": [
+    {
+      "title": "AI大模型创新应用挑战赛",
+      "api": "https://gateway.boxuegu.com/portal-marketing/competition/track/detail?id=10040&includeDetail=true",
+      "trackId": 10040,
+      "registrationEnd": "2026-11-18",
+      "url": "https://www.boxuegu.com/matchTrack/detail/?id=10040"
+    },
+    {
+      "title": "WPS智能办公能力挑战赛",
+      "api": "https://gateway.boxuegu.com/portal-marketing/competition/track/detail?id=10049&includeDetail=true",
+      "trackId": 10049,
+      "registrationEnd": "2026-11-18",
+      "url": "https://www.boxuegu.com/matchTrack/detail/?id=10049"
+    }
+  ]
+}
