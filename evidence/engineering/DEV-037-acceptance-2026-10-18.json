@@ -1,0 +1,57 @@
+{
+  "dev": "DEV-037",
+  "verifiedAt": "2026-10-18T00:36:53.5242572Z",
+  "tests": {
+    "total": 854,
+    "sha256": "86c498e3b82a82c089d4cac1d0d95b6019ac638899344a204f29158caa63cd31",
+    "failed": 0,
+    "report": "evidence/engineering/DEV-037-tests-2026-10-18T00-32-47-344Z.tap",
+    "passed": 853,
+    "skipped": 1
+  },
+  "formalData": {
+    "originalCoursesAndNotesPreserved": true,
+    "originalLessonFieldsAndWeeksPreserved": true,
+    "originalBoardsAndCoursePositionsPreserved": true,
+    "otherBusinessAndAttachmentsPreserved": true,
+    "newCourses": 10,
+    "newArrangementNotes": 10,
+    "linkedSlots": 13,
+    "uniqueLinkedCourses": 10,
+    "newPreparationTasks": 8,
+    "newPersonalMilestones": 2,
+    "existingCompetitionChildrenPreserved": true,
+    "oldCompetitionTextRetained": true,
+    "colorInputCaseNormalizationOnly": true,
+    "verifiedAt": "2026-10-18T00:33:34.354Z"
+  },
+  "browser": {
+    "realFilesUploaded": 0,
+    "syntheticReuseAndIdempotenceVerified": true,
+    "formalSlotRoutesVerified": 13,
+    "calendarProjectionObserved": true,
+    "calendarSourceReturnVerified": false,
+    "formalUniqueCourseDestinations": 10,
+    "afterServiceRestart": {
+      "arrangementButtons": 13,
+      "competitionTasks": 10,
+      "courseNoteAndLiveScheduleVisible": true,
+      "competitionMilestones": 4,
+      "linkedSlots": 13
+    }
+  },
+  "service": {
+    "identityMatchedCurrentCompetitionPaths": true,
+    "healthOk": true,
+    "pid": 25344,
+    "application": "czb-yuzhou",
+    "existingServiceStoppedByAgent": false
+  },
+  "boundaries": {
+    "modelCalls": 0,
+    "pushOrPublication": false,
+    "originalProjectsModified": false,
+    "privateExportsCommitted": false
+  },
+  "interruptedReport": "DEV-037-tests-2026-10-17T16-25-56-457Z.tap (incomplete, not a successful run)"
+}

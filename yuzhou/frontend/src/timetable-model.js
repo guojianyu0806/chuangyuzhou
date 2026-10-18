@@ -110,7 +110,9 @@ export function mergeTimetables(current, incoming) {
   };
   mergeRecords(timetable.terms, source.terms, (existing, item) => {
     mergeRecords(existing.periods, item.periods);
-    mergeRecords(existing.entries, item.entries);
+    mergeRecords(existing.entries, item.entries,(entry,incoming)=>{
+      if(!entry.courseId&&incoming.courseId){entry.courseId=incoming.courseId;count++;}
+    });
   });
   if (!timetable.activeTermId && source.activeTermId) timetable.activeTermId = source.activeTermId;
   // Conflicting term lengths/period definitions must be resolved explicitly, not silently discarded.

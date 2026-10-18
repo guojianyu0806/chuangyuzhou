@@ -26,7 +26,7 @@ export function planTimetableCourses(state,termId){
 
 function arrangementNote(term,entries){
   const days=['周一','周二','周三','周四','周五','周六','周日'];
-  return `# 课程安排\n${term.title}\n\n${entries.map(entry=>`- ${days[entry.weekday-1]} ${entry.startPeriod}–${entry.endPeriod}节，${term.periods.find(p=>p.id===entry.startPeriod)?.start}–${term.periods.find(p=>p.id===entry.endPeriod)?.end}；${entry.location||'地点待补充'}；${entry.teacher||'教师待补充'}；${formatWeeks(entry.weeks)}。`).join('\n')}\n\n## 资料与笔记\n课程资料页收纳课件、教材索引和作业文件。学习笔记页记录课堂要点、练习过程和待解决的问题。这里记录的是上课安排，课堂内容可以继续补充。`;
+  return `# 课程安排\n${term.title}\n以下为建立课程关联时的安排；最新上课信息以本页“关联课表”为准。\n\n${entries.map(entry=>`- ${days[entry.weekday-1]} ${entry.startPeriod}–${entry.endPeriod}节，${term.periods.find(p=>p.id===entry.startPeriod)?.start}–${term.periods.find(p=>p.id===entry.endPeriod)?.end}；${entry.location||'地点待补充'}；${entry.teacher||'教师待补充'}；${formatWeeks(entry.weeks)}。`).join('\n')}\n\n## 资料与笔记\n课程资料页收纳课件、教材索引和作业文件。学习笔记页记录课堂要点、练习过程和待解决的问题。这里记录的是上课安排，课堂内容可以继续补充。`;
 }
 
 export async function applyTimetableCourses(ctx,plan){
