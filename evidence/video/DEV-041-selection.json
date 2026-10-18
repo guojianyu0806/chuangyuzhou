@@ -1,0 +1,373 @@
+{
+  "fps": 30,
+  "durationFrames": 12700,
+  "clips": [
+    {
+      "index": 1,
+      "startFrame": 0,
+      "endFrame": 444,
+      "code": "A",
+      "sourceIn": 11000000,
+      "note": "入口自主悬浮与形式切换",
+      "playbackRate": 1
+    },
+    {
+      "index": 2,
+      "startFrame": 444,
+      "endFrame": 768,
+      "code": "A",
+      "sourceIn": 42000000,
+      "note": "工作台总览",
+      "playbackRate": 1
+    },
+    {
+      "index": 3,
+      "startFrame": 768,
+      "endFrame": 1340,
+      "code": "A",
+      "sourceIn": 94000000,
+      "note": "画布与排列选择",
+      "playbackRate": 1
+    },
+    {
+      "index": 4,
+      "startFrame": 1340,
+      "endFrame": 1685,
+      "code": "A",
+      "sourceIn": 139000000,
+      "note": "AI伙伴入口",
+      "playbackRate": 1
+    },
+    {
+      "index": 5,
+      "startFrame": 1685,
+      "endFrame": 2350,
+      "code": "A",
+      "sourceIn": 44500000,
+      "note": "自由画布卡片调整",
+      "playbackRate": 1
+    },
+    {
+      "index": 6,
+      "startFrame": 2350,
+      "endFrame": 2980,
+      "code": "A",
+      "sourceIn": 68000000,
+      "note": "搭建台方块库与真实拖入",
+      "playbackRate": 1
+    },
+    {
+      "index": 7,
+      "startFrame": 2980,
+      "endFrame": 3083,
+      "code": "A",
+      "sourceIn": 89000000,
+      "note": "搭建布局到主画布",
+      "playbackRate": 1
+    },
+    {
+      "index": 8,
+      "startFrame": 3211,
+      "endFrame": 3399,
+      "code": "A",
+      "sourceIn": 190000000,
+      "note": "子空间现有结构",
+      "playbackRate": 1
+    },
+    {
+      "index": 9,
+      "startFrame": 3699,
+      "endFrame": 3921,
+      "code": "A",
+      "sourceIn": 190000000,
+      "note": "空间入口与内容",
+      "playbackRate": 1
+    },
+    {
+      "index": 10,
+      "startFrame": 3921,
+      "endFrame": 4032,
+      "code": "B",
+      "sourceIn": 130000000,
+      "note": "空间待办",
+      "playbackRate": 1
+    },
+    {
+      "index": 11,
+      "startFrame": 4032,
+      "endFrame": 4172,
+      "code": "B",
+      "sourceIn": 137000000,
+      "note": "日历关联",
+      "playbackRate": 1
+    },
+    {
+      "index": 12,
+      "startFrame": 4172,
+      "endFrame": 4611,
+      "code": "A",
+      "sourceIn": 140000000,
+      "note": "常驻伙伴与需求输入",
+      "playbackRate": 1
+    },
+    {
+      "index": 13,
+      "startFrame": 4611,
+      "endFrame": 4770,
+      "code": "A",
+      "sourceIn": 154500000,
+      "note": "建立空间需求与发送",
+      "playbackRate": 1
+    },
+    {
+      "index": 14,
+      "startFrame": 4770,
+      "endFrame": 5010,
+      "code": "A",
+      "sourceIn": 162000000,
+      "note": "空间方案审核与确认",
+      "playbackRate": 1
+    },
+    {
+      "index": 15,
+      "startFrame": 5010,
+      "endFrame": 5217,
+      "code": "A",
+      "sourceIn": 188500000,
+      "note": "查看新建读书分享会空间",
+      "playbackRate": 1
+    },
+    {
+      "index": 16,
+      "startFrame": 5217,
+      "endFrame": 5487,
+      "code": "A",
+      "sourceIn": 270000000,
+      "note": "检查清单方案与确认",
+      "playbackRate": 1
+    },
+    {
+      "index": 17,
+      "startFrame": 5487,
+      "endFrame": 5624,
+      "code": "A",
+      "sourceIn": 282000000,
+      "note": "检查清单落入子空间",
+      "playbackRate": 1
+    },
+    {
+      "index": 18,
+      "startFrame": 5927,
+      "endFrame": 6105,
+      "code": "B",
+      "sourceIn": 46000000,
+      "note": "通知需求与发送",
+      "playbackRate": 1
+    },
+    {
+      "index": 19,
+      "startFrame": 6105,
+      "endFrame": 6300,
+      "code": "B",
+      "sourceIn": 70000000,
+      "note": "通知方案审核",
+      "playbackRate": 1
+    },
+    {
+      "index": 20,
+      "startFrame": 6300,
+      "endFrame": 6443,
+      "code": "B",
+      "sourceIn": 81000000,
+      "note": "确认通知方案",
+      "playbackRate": 1
+    },
+    {
+      "index": 21,
+      "startFrame": 6588,
+      "endFrame": 6702,
+      "code": "B",
+      "sourceIn": 87000000,
+      "note": "五项执行回执",
+      "playbackRate": 1
+    },
+    {
+      "index": 22,
+      "startFrame": 6702,
+      "endFrame": 6912,
+      "code": "B",
+      "sourceIn": 100000000,
+      "note": "空间待办结果",
+      "playbackRate": 1
+    },
+    {
+      "index": 23,
+      "startFrame": 6912,
+      "endFrame": 7081,
+      "code": "B",
+      "sourceIn": 137000000,
+      "note": "通知在日历的结果",
+      "playbackRate": 1
+    },
+    {
+      "index": 24,
+      "startFrame": 7081,
+      "endFrame": 7395,
+      "code": "A",
+      "sourceIn": 46000000,
+      "note": "转入开发过程的作品总览",
+      "playbackRate": 1
+    },
+    {
+      "index": 25,
+      "startFrame": 7395,
+      "endFrame": 8087,
+      "code": "C",
+      "sourceIn": 50000,
+      "note": "平台方向真实开发对话",
+      "playbackRate": 0.6808326105810928
+    },
+    {
+      "index": 26,
+      "startFrame": 8890,
+      "endFrame": 9121,
+      "code": "D",
+      "sourceIn": 100000,
+      "note": "拖入回退反馈",
+      "playbackRate": 0.6371911573472042
+    },
+    {
+      "index": 27,
+      "startFrame": 9121,
+      "endFrame": 9513,
+      "code": "D",
+      "sourceIn": 9000000,
+      "note": "反馈要求与修改回执",
+      "playbackRate": 0.6503442999234889
+    },
+    {
+      "index": 28,
+      "startFrame": 9513,
+      "endFrame": 9615,
+      "code": "D",
+      "sourceIn": 20300000,
+      "note": "同轮开发回执",
+      "playbackRate": 0.6194690265486725
+    },
+    {
+      "index": 29,
+      "startFrame": 9756,
+      "endFrame": 10174,
+      "code": "A",
+      "sourceIn": 78000000,
+      "note": "恢复拖入与进入内容的实际操作",
+      "playbackRate": 1
+    },
+    {
+      "index": 30,
+      "startFrame": 10174,
+      "endFrame": 10434,
+      "code": "E",
+      "sourceIn": 100000,
+      "note": "入口页早期设计真实对话",
+      "playbackRate": 1
+    },
+    {
+      "index": 31,
+      "startFrame": 10680,
+      "endFrame": 10972,
+      "code": "A",
+      "sourceIn": 24000000,
+      "note": "两种排列真实切换",
+      "playbackRate": 1
+    },
+    {
+      "index": 32,
+      "startFrame": 11543,
+      "endFrame": 11895,
+      "code": "A",
+      "sourceIn": 46000000,
+      "note": "画布总览与结语",
+      "playbackRate": 1
+    },
+    {
+      "index": 33,
+      "startFrame": 11895,
+      "endFrame": 12165,
+      "code": "B",
+      "sourceIn": 229000000,
+      "note": "灵感收集墙",
+      "playbackRate": 1
+    },
+    {
+      "index": 34,
+      "startFrame": 12165,
+      "endFrame": 12420,
+      "code": "B",
+      "sourceIn": 238000000,
+      "note": "梦境流动",
+      "playbackRate": 1
+    },
+    {
+      "index": 35,
+      "startFrame": 12420,
+      "endFrame": 12700,
+      "code": "A",
+      "sourceIn": 13000000,
+      "note": "欢迎页结尾",
+      "playbackRate": 1
+    }
+  ],
+  "gaps": [
+    {
+      "startFrame": 3083,
+      "endFrame": 3211,
+      "reason": "创建自定义方块的实际弹窗/填写操作",
+      "seconds": 4.266666666666667
+    },
+    {
+      "startFrame": 3399,
+      "endFrame": 3699,
+      "reason": "手动新建空间、命名及填写说明",
+      "seconds": 10
+    },
+    {
+      "startFrame": 5624,
+      "endFrame": 5927,
+      "reason": "AI调整布局的可靠执行过程",
+      "seconds": 10.1
+    },
+    {
+      "startFrame": 6443,
+      "endFrame": 6588,
+      "reason": "同一通知多轮修订的清晰成功过程",
+      "seconds": 4.833333333333333
+    },
+    {
+      "startFrame": 8087,
+      "endFrame": 8890,
+      "reason": "项目规则、上下文和范围管理的原始对话或文件",
+      "seconds": 26.766666666666666
+    },
+    {
+      "startFrame": 9615,
+      "endFrame": 9756,
+      "reason": "对应修改的检查细节",
+      "seconds": 4.7
+    },
+    {
+      "startFrame": 10434,
+      "endFrame": 10680,
+      "reason": "双形式精确要求及只随浏览器缩放的原始对话",
+      "seconds": 8.2
+    },
+    {
+      "startFrame": 10972,
+      "endFrame": 11543,
+      "reason": "阶段Git、原始记录索引及README实际操作",
+      "seconds": 19.033333333333335
+    }
+  ],
+  "audioStatus": "pending",
+  "visualSources": "Only five user recordings dated 2026-10-18"
+}
