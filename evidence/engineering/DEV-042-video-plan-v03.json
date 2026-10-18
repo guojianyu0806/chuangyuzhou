@@ -1,0 +1,749 @@
+{
+  "fps": 30,
+  "durationFrames": 12417,
+  "clips": [
+    {
+      "startFrame": 0,
+      "endFrame": 240,
+      "code": "A",
+      "sourceIn": 11000000,
+      "playbackRate": 1,
+      "note": "保留开场悬浮",
+      "oldRange": [
+        0,
+        240
+      ]
+    },
+    {
+      "startFrame": 240,
+      "endFrame": 444,
+      "code": "A",
+      "sourceIn": 28000000,
+      "playbackRate": 1,
+      "note": "开场末尾实际双击双形式切换",
+      "oldRange": [
+        240,
+        444
+      ]
+    },
+    {
+      "startFrame": 444,
+      "endFrame": 768,
+      "code": "A",
+      "sourceIn": 42000000,
+      "playbackRate": 1,
+      "note": "工作台总览",
+      "oldRange": [
+        444,
+        768
+      ]
+    },
+    {
+      "startFrame": 768,
+      "endFrame": 1340,
+      "code": "A",
+      "sourceIn": 94000000,
+      "playbackRate": 1,
+      "note": "画布与排列选择",
+      "oldRange": [
+        768,
+        1340
+      ]
+    },
+    {
+      "startFrame": 1340,
+      "endFrame": 1685,
+      "code": "A",
+      "sourceIn": 139000000,
+      "playbackRate": 1,
+      "note": "AI伙伴入口",
+      "oldRange": [
+        1340,
+        1685
+      ]
+    },
+    {
+      "startFrame": 1685,
+      "endFrame": 2115,
+      "code": "A",
+      "sourceIn": 44500000,
+      "playbackRate": 1,
+      "note": "自由画布卡片调整",
+      "oldRange": [
+        1685,
+        2115
+      ]
+    },
+    {
+      "startFrame": 2115,
+      "endFrame": 2395,
+      "code": "A",
+      "sourceIn": 104300000,
+      "playbackRate": 1.45,
+      "note": "提前展示双列及三列，另插入1.5秒口播停顿 / 1.5秒无口播看清行列布局",
+      "oldRange": null
+    },
+    {
+      "startFrame": 2395,
+      "endFrame": 2695,
+      "code": "A",
+      "sourceIn": 68000000,
+      "playbackRate": 1,
+      "note": "搭建台方块库与真实拖入",
+      "oldRange": [
+        2350,
+        2650
+      ]
+    },
+    {
+      "startFrame": 2695,
+      "endFrame": 3025,
+      "code": "I",
+      "sourceIn": 48500000,
+      "playbackRate": 0.7,
+      "note": "真实从左侧方块库拖入右侧画布并保存",
+      "oldRange": [
+        2650,
+        2980
+      ]
+    },
+    {
+      "startFrame": 3025,
+      "endFrame": 3128,
+      "code": "A",
+      "sourceIn": 89000000,
+      "playbackRate": 1,
+      "note": "搭建布局到主画布",
+      "oldRange": [
+        2980,
+        3083
+      ]
+    },
+    {
+      "startFrame": 3128,
+      "endFrame": 3256,
+      "code": "F",
+      "sourceIn": 9500000,
+      "playbackRate": 1.4,
+      "note": "打开自定义方块配置并填写名称",
+      "oldRange": [
+        3083,
+        3211
+      ]
+    },
+    {
+      "startFrame": 3256,
+      "endFrame": 3444,
+      "code": "A",
+      "sourceIn": 190000000,
+      "playbackRate": 1,
+      "note": "子空间现有结构",
+      "oldRange": [
+        3211,
+        3399
+      ]
+    },
+    {
+      "startFrame": 3444,
+      "endFrame": 3744,
+      "code": "G",
+      "sourceIn": 7500000,
+      "playbackRate": 0.63,
+      "note": "手动新建空间并命名，避开后续2字后缀",
+      "oldRange": [
+        3399,
+        3699
+      ]
+    },
+    {
+      "startFrame": 3744,
+      "endFrame": 3966,
+      "code": "A",
+      "sourceIn": 190000000,
+      "playbackRate": 1,
+      "note": "空间入口与内容",
+      "oldRange": [
+        3699,
+        3921
+      ]
+    },
+    {
+      "startFrame": 3966,
+      "endFrame": 4077,
+      "code": "B",
+      "sourceIn": 130000000,
+      "playbackRate": 1,
+      "note": "空间待办",
+      "oldRange": [
+        3921,
+        4032
+      ]
+    },
+    {
+      "startFrame": 4077,
+      "endFrame": 4217,
+      "code": "B",
+      "sourceIn": 137000000,
+      "playbackRate": 1,
+      "note": "日历关联",
+      "oldRange": [
+        4032,
+        4172
+      ]
+    },
+    {
+      "startFrame": 4217,
+      "endFrame": 4656,
+      "code": "A",
+      "sourceIn": 140000000,
+      "playbackRate": 1,
+      "note": "常驻伙伴与需求输入",
+      "oldRange": [
+        4172,
+        4611
+      ]
+    },
+    {
+      "startFrame": 4656,
+      "endFrame": 4815,
+      "code": "A",
+      "sourceIn": 154500000,
+      "playbackRate": 1,
+      "note": "建立空间需求与发送",
+      "oldRange": [
+        4611,
+        4770
+      ]
+    },
+    {
+      "startFrame": 4815,
+      "endFrame": 5055,
+      "code": "A",
+      "sourceIn": 162000000,
+      "playbackRate": 1,
+      "note": "空间方案审核与确认",
+      "oldRange": [
+        4770,
+        5010
+      ]
+    },
+    {
+      "startFrame": 5055,
+      "endFrame": 5262,
+      "code": "A",
+      "sourceIn": 188500000,
+      "playbackRate": 1,
+      "note": "查看新建读书分享会空间",
+      "oldRange": [
+        5010,
+        5217
+      ]
+    },
+    {
+      "startFrame": 5262,
+      "endFrame": 5532,
+      "code": "A",
+      "sourceIn": 270000000,
+      "playbackRate": 1,
+      "note": "检查清单方案与确认",
+      "oldRange": [
+        5217,
+        5487
+      ]
+    },
+    {
+      "startFrame": 5532,
+      "endFrame": 5665,
+      "code": "A",
+      "sourceIn": 282000000,
+      "playbackRate": 1,
+      "note": "检查清单落入子空间",
+      "oldRange": [
+        5487,
+        5620
+      ]
+    },
+    {
+      "startFrame": 5665,
+      "endFrame": 5847,
+      "code": "B",
+      "sourceIn": 45866667,
+      "playbackRate": 1,
+      "note": "剪去AI排列口播后连续衔接通知需求，避免4帧空隙",
+      "oldRange": null
+    },
+    {
+      "startFrame": 5847,
+      "endFrame": 6042,
+      "code": "B",
+      "sourceIn": 70000000,
+      "playbackRate": 1,
+      "note": "通知方案审核",
+      "oldRange": [
+        6105,
+        6300
+      ]
+    },
+    {
+      "startFrame": 6042,
+      "endFrame": 6185,
+      "code": "B",
+      "sourceIn": 81000000,
+      "playbackRate": 1,
+      "note": "确认通知方案",
+      "oldRange": [
+        6300,
+        6443
+      ]
+    },
+    {
+      "startFrame": 6185,
+      "endFrame": 6263,
+      "code": "H",
+      "sourceIn": 800000,
+      "playbackRate": 1,
+      "note": "多轮任务日期修订请求",
+      "oldRange": [
+        6443,
+        6521
+      ]
+    },
+    {
+      "startFrame": 6263,
+      "endFrame": 6388,
+      "code": "H",
+      "sourceIn": 11800000,
+      "playbackRate": 1,
+      "note": "实际审核与确认 / 实际执行回执并返回画布",
+      "oldRange": null
+    },
+    {
+      "startFrame": 6388,
+      "endFrame": 6580,
+      "code": "H",
+      "sourceIn": 16800000,
+      "playbackRate": 1,
+      "note": "实际执行回执并返回画布",
+      "oldRange": null
+    },
+    {
+      "startFrame": 6580,
+      "endFrame": 6798,
+      "code": "B",
+      "sourceIn": 136000000,
+      "playbackRate": 1,
+      "note": "保留日历通知结果",
+      "oldRange": null
+    },
+    {
+      "startFrame": 6798,
+      "endFrame": 7112,
+      "code": "A",
+      "sourceIn": 46000000,
+      "playbackRate": 1,
+      "note": "转入开发过程的作品总览",
+      "oldRange": [
+        7081,
+        7395
+      ]
+    },
+    {
+      "startFrame": 7112,
+      "endFrame": 7804,
+      "code": "C",
+      "sourceIn": 50000,
+      "playbackRate": 0.6808326105810928,
+      "note": "平台方向真实开发对话",
+      "oldRange": [
+        7395,
+        8087
+      ]
+    },
+    {
+      "startFrame": 7804,
+      "endFrame": 8057,
+      "code": "P1",
+      "sourceIn": 0,
+      "playbackRate": 1,
+      "note": "仅在原空缺处加入真实对话和修改对照",
+      "oldRange": [
+        8087,
+        8340
+      ]
+    },
+    {
+      "startFrame": 8057,
+      "endFrame": 8327,
+      "code": "P2",
+      "sourceIn": 0,
+      "playbackRate": 1,
+      "note": "仅在原空缺处加入真实对话和修改对照",
+      "oldRange": [
+        8340,
+        8610
+      ]
+    },
+    {
+      "startFrame": 8327,
+      "endFrame": 8607,
+      "code": "P3",
+      "sourceIn": 0,
+      "playbackRate": 1,
+      "note": "仅在原空缺处加入真实对话和修改对照",
+      "oldRange": [
+        8610,
+        8890
+      ]
+    },
+    {
+      "startFrame": 8607,
+      "endFrame": 8838,
+      "code": "D",
+      "sourceIn": 100000,
+      "playbackRate": 0.6371911573472042,
+      "note": "拖入回退反馈",
+      "oldRange": [
+        8890,
+        9121
+      ]
+    },
+    {
+      "startFrame": 8838,
+      "endFrame": 9230,
+      "code": "D",
+      "sourceIn": 9000000,
+      "playbackRate": 0.6503442999234889,
+      "note": "反馈要求与修改回执",
+      "oldRange": [
+        9121,
+        9513
+      ]
+    },
+    {
+      "startFrame": 9230,
+      "endFrame": 9332,
+      "code": "D",
+      "sourceIn": 20300000,
+      "playbackRate": 0.6194690265486725,
+      "note": "同轮开发回执",
+      "oldRange": [
+        9513,
+        9615
+      ]
+    },
+    {
+      "startFrame": 9332,
+      "endFrame": 9413,
+      "code": "P4b",
+      "sourceIn": 0,
+      "playbackRate": 1,
+      "note": "仅在原空缺处加入真实对话和修改对照",
+      "oldRange": [
+        9615,
+        9696
+      ]
+    },
+    {
+      "startFrame": 9413,
+      "endFrame": 9593,
+      "code": "I",
+      "sourceIn": 50000000,
+      "playbackRate": 1,
+      "note": "用户指定结果口播：完整左拖右操作，含拖前和落点保存",
+      "oldRange": null
+    },
+    {
+      "startFrame": 9593,
+      "endFrame": 9891,
+      "code": "A",
+      "sourceIn": 82000000,
+      "playbackRate": 1,
+      "note": "恢复拖入与进入内容的实际操作",
+      "oldRange": [
+        9876,
+        10174
+      ]
+    },
+    {
+      "startFrame": 9891,
+      "endFrame": 10151,
+      "code": "E",
+      "sourceIn": 100000,
+      "playbackRate": 1,
+      "note": "入口页早期设计真实对话",
+      "oldRange": [
+        10174,
+        10434
+      ]
+    },
+    {
+      "startFrame": 10151,
+      "endFrame": 10274,
+      "code": "P5",
+      "sourceIn": 0,
+      "playbackRate": 1,
+      "note": "仅在原空缺处加入真实对话和修改对照",
+      "oldRange": [
+        10434,
+        10557
+      ]
+    },
+    {
+      "startFrame": 10274,
+      "endFrame": 10397,
+      "code": "P6",
+      "sourceIn": 0,
+      "playbackRate": 1,
+      "note": "仅在原空缺处加入真实对话和修改对照",
+      "oldRange": [
+        10557,
+        10680
+      ]
+    },
+    {
+      "startFrame": 10397,
+      "endFrame": 10689,
+      "code": "A",
+      "sourceIn": 24000000,
+      "playbackRate": 1,
+      "note": "两种排列真实切换",
+      "oldRange": [
+        10680,
+        10972
+      ]
+    },
+    {
+      "startFrame": 10689,
+      "endFrame": 10975,
+      "code": "P7b",
+      "sourceIn": 0,
+      "playbackRate": 1,
+      "note": "仅在原空缺处加入真实对话和修改对照",
+      "oldRange": [
+        10972,
+        11258
+      ]
+    },
+    {
+      "startFrame": 10975,
+      "endFrame": 11260,
+      "code": "P8",
+      "sourceIn": 0,
+      "playbackRate": 1,
+      "note": "仅在原空缺处加入真实对话和修改对照",
+      "oldRange": [
+        11258,
+        11543
+      ]
+    },
+    {
+      "startFrame": 11260,
+      "endFrame": 11612,
+      "code": "A",
+      "sourceIn": 46000000,
+      "playbackRate": 1,
+      "note": "画布总览与结语",
+      "oldRange": [
+        11543,
+        11895
+      ]
+    },
+    {
+      "startFrame": 11612,
+      "endFrame": 12137,
+      "code": "B",
+      "sourceIn": 229000000,
+      "playbackRate": 1,
+      "note": "灵感收集墙 / 梦境流动并打开常驻伙伴",
+      "oldRange": null
+    },
+    {
+      "startFrame": 12137,
+      "endFrame": 12417,
+      "code": "A",
+      "sourceIn": 13000000,
+      "playbackRate": 1,
+      "note": "欢迎页结尾",
+      "oldRange": [
+        12420,
+        12700
+      ]
+    }
+  ],
+  "gaps": [],
+  "pause": {
+    "oldFrame": 2345,
+    "frames": 45
+  },
+  "removedOldRanges": [
+    [
+      5620,
+      5923
+    ],
+    [
+      6646,
+      6671
+    ]
+  ],
+  "protectedBackHalf": [
+    {
+      "oldRange": [
+        7081,
+        7395
+      ],
+      "newRange": [
+        6798,
+        7112
+      ],
+      "source": "A",
+      "verified": "source code, rate and source time at first/middle/last frames unchanged"
+    },
+    {
+      "oldRange": [
+        7395,
+        8087
+      ],
+      "newRange": [
+        7112,
+        7804
+      ],
+      "source": "C",
+      "verified": "source code, rate and source time at first/middle/last frames unchanged"
+    },
+    {
+      "oldRange": [
+        8890,
+        9121
+      ],
+      "newRange": [
+        8607,
+        8838
+      ],
+      "source": "D",
+      "verified": "source code, rate and source time at first/middle/last frames unchanged"
+    },
+    {
+      "oldRange": [
+        9121,
+        9513
+      ],
+      "newRange": [
+        8838,
+        9230
+      ],
+      "source": "D",
+      "verified": "source code, rate and source time at first/middle/last frames unchanged"
+    },
+    {
+      "oldRange": [
+        9513,
+        9615
+      ],
+      "newRange": [
+        9230,
+        9332
+      ],
+      "source": "D",
+      "verified": "source code, rate and source time at first/middle/last frames unchanged"
+    },
+    {
+      "oldRange": [
+        9876,
+        10174
+      ],
+      "newRange": [
+        9593,
+        9891
+      ],
+      "source": "A",
+      "verified": "source code, rate and source time at first/middle/last frames unchanged"
+    },
+    {
+      "oldRange": [
+        10174,
+        10434
+      ],
+      "newRange": [
+        9891,
+        10151
+      ],
+      "source": "E",
+      "verified": "source code, rate and source time at first/middle/last frames unchanged"
+    },
+    {
+      "oldRange": [
+        10680,
+        10972
+      ],
+      "newRange": [
+        10397,
+        10689
+      ],
+      "source": "A",
+      "verified": "source code, rate and source time at first/middle/last frames unchanged"
+    },
+    {
+      "oldRange": [
+        11543,
+        11895
+      ],
+      "newRange": [
+        11260,
+        11612
+      ],
+      "source": "A",
+      "verified": "source code, rate and source time at first/middle/last frames unchanged"
+    },
+    {
+      "oldRange": [
+        11895,
+        12165
+      ],
+      "newRange": [
+        11612,
+        11882
+      ],
+      "source": "B",
+      "verified": "source code, rate and source time at first/middle/last frames unchanged"
+    },
+    {
+      "oldRange": [
+        12165,
+        12420
+      ],
+      "newRange": [
+        11882,
+        12137
+      ],
+      "source": "B",
+      "verified": "source code, rate and source time at first/middle/last frames unchanged"
+    },
+    {
+      "oldRange": [
+        12420,
+        12700
+      ],
+      "newRange": [
+        12137,
+        12417
+      ],
+      "source": "A",
+      "verified": "source code, rate and source time at first/middle/last frames unchanged"
+    }
+  ],
+  "newRecordingI": {
+    "usedSourceRangeSeconds": [
+      48.5,
+      56.2
+    ],
+    "resultOldFrames": [
+      9696,
+      9876
+    ],
+    "resultNewFrames": [
+      9413,
+      9593
+    ]
+  },
+  "notes": "All existing back-half clips preserved except the specifically requested left-to-right drag result shot. Inserted paired panels only fill former gaps."
+}

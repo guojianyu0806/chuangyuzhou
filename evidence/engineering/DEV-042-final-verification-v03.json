@@ -1,0 +1,392 @@
+{
+  "projectId": "77ba7817-aa1a-4b8c-9bb4-a7b929994511",
+  "timelineId": "3c238ff1-3df3-41da-a86b-0ff42480d650",
+  "nativeExportTask": "edc58050-71e4-4ae7-be0b-c08c39ae6494",
+  "sourcePreservation": {
+    "originalRecordings": [
+      {
+        "code": "A",
+        "name": "2026-10-18 15-00-59.mp4",
+        "sourceAndCopyUnchanged": true,
+        "sha256": "cb73f26872d60055a22f0f4ee97f0b0f665d51747d19abc6589ffcb862f5497d"
+      },
+      {
+        "code": "B",
+        "name": "2026-10-18 15-10-20.mp4",
+        "sourceAndCopyUnchanged": true,
+        "sha256": "0f2a8794803928bb6b598ba374d235aa15217328073120aaa61fa8d81594e1d4"
+      },
+      {
+        "code": "C",
+        "name": "2026-10-18 15-18-56.mp4",
+        "sourceAndCopyUnchanged": true,
+        "sha256": "be3f2d89be3050ffbb195cefff2f7f22ba2737888082badbeb1fdf1e512d6a26"
+      },
+      {
+        "code": "D",
+        "name": "2026-10-18 15-19-55.mp4",
+        "sourceAndCopyUnchanged": true,
+        "sha256": "7a0fe7766ff749f8f6af38648a6e5a40f17c6db5ee86e77094b5ab46ff304c05"
+      },
+      {
+        "code": "E",
+        "name": "2026-10-18 15-21-02.mp4",
+        "sourceAndCopyUnchanged": true,
+        "sha256": "1df95ecdae60db99a24c6bc37c791a5a9c848e9f1dc314b806e7861c9c1cf45d"
+      },
+      {
+        "code": "F",
+        "name": "2026-10-18 18-26-10.mp4",
+        "sourceAndCopyUnchanged": true,
+        "sha256": "68053ed43905f406819ba95559bca454b91a02b13a6f61ed165bca46d92906c3"
+      },
+      {
+        "code": "G",
+        "name": "2026-10-18 18-28-04.mp4",
+        "sourceAndCopyUnchanged": true,
+        "sha256": "91ff9056ed9f88002e70690db4cd61185c15629c4ad507b9bb2794758ef3da15"
+      },
+      {
+        "code": "H",
+        "name": "2026-10-18 18-31-28.mp4",
+        "sourceAndCopyUnchanged": true,
+        "sha256": "72ef26ba5e8af3eec15afefde49d65fea7ccec9e6196219c89bd094a3e1de387"
+      },
+      {
+        "code": "I",
+        "name": "2026-10-18 18-48-18.mp4",
+        "sourceAndCopyUnchanged": true,
+        "sha256": "f3e9a968adfe901ea456706dcfa71ee53bbc79dee38fc0717dd2eda1c3cff487"
+      }
+    ],
+    "oldV02Unchanged": true,
+    "v02Sha256": "041bce5c2bee7db4364a229bd2f1b0c834e5da5790121644674f3a39372064ba"
+  },
+  "preflight": {
+    "captionCount": 178,
+    "nativeCaptionGroupingMatchesApprovedAfterCuts": true,
+    "removedPhraseAbsent": true,
+    "xmlParse": true,
+    "durationFrames": 12417,
+    "visualGaps": 0,
+    "protectedBackHalfChecks": 12
+  },
+  "rawOriginalsReadOnly": true,
+  "appCodeAndFormalDataNotModified": true,
+  "oldV02ProjectRetained": true,
+  "mediaFolder": "视频相关/2026-10-18_成片_v03",
+  "summary": {
+    "file": "创宇宙_实录修订_v03_配音字幕.mp4",
+    "sha256": "73ef5f1b19712350a03d400cf7daf9f0e864fb4bfb6673b135b90a173e309b16",
+    "bytes": 96040364,
+    "duration": 413.909313,
+    "frames": 12417,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "visualSourceRecordings": 9,
+    "clips": 49,
+    "blankRanges": 0,
+    "captions": 178,
+    "audioComparisonPassed": true,
+    "fullDecodePassed": true,
+    "protectedBackHalfPixelChecks": 12,
+    "visualInspection": "contact sheets require model viewing"
+  },
+  "audio-compare": {
+    "source": "创宇宙_配音_v03_2倍音量_1.15倍速.m4a",
+    "expectedSeconds": 413.9,
+    "exportSeconds": 413.9093125,
+    "correlation": 0.9998467180929292,
+    "windows": [
+      {
+        "startSeconds": 0.0,
+        "correlation": 0.9999008775258253
+      },
+      {
+        "startSeconds": 30.0,
+        "correlation": 0.99989672070266
+      },
+      {
+        "startSeconds": 60.0,
+        "correlation": 0.9998676108524862
+      },
+      {
+        "startSeconds": 90.0,
+        "correlation": 0.9998813479627057
+      },
+      {
+        "startSeconds": 120.0,
+        "correlation": 0.9998890744471272
+      },
+      {
+        "startSeconds": 150.0,
+        "correlation": 0.9998873236234295
+      },
+      {
+        "startSeconds": 180.0,
+        "correlation": 0.9998331840895556
+      },
+      {
+        "startSeconds": 210.0,
+        "correlation": 0.9997983720599998
+      },
+      {
+        "startSeconds": 240.0,
+        "correlation": 0.9998082406047455
+      },
+      {
+        "startSeconds": 270.0,
+        "correlation": 0.9998346768702575
+      },
+      {
+        "startSeconds": 300.0,
+        "correlation": 0.9998455625684469
+      },
+      {
+        "startSeconds": 330.0,
+        "correlation": 0.9998257506690346
+      },
+      {
+        "startSeconds": 360.0,
+        "correlation": 0.9997738392306065
+      },
+      {
+        "startSeconds": 390.0,
+        "correlation": 0.9998345430461808
+      }
+    ],
+    "pauseRms": 5.5997252275119536e-06,
+    "noSecondSpeedOrGain": true,
+    "sourceEdits": "1.5s pause; remove AI arrangement paragraph and summary phrase only"
+  },
+  "decode-and-blanks": {
+    "fullDecode": true,
+    "errors": [],
+    "unintendedBlackRanges": []
+  },
+  "protected-back-half": {
+    "preservedSourceProperties": [
+      {
+        "oldRange": [
+          7081,
+          7395
+        ],
+        "newRange": [
+          6798,
+          7112
+        ],
+        "source": "A",
+        "verified": "source code, rate and source time at first/middle/last frames unchanged"
+      },
+      {
+        "oldRange": [
+          7395,
+          8087
+        ],
+        "newRange": [
+          7112,
+          7804
+        ],
+        "source": "C",
+        "verified": "source code, rate and source time at first/middle/last frames unchanged"
+      },
+      {
+        "oldRange": [
+          8890,
+          9121
+        ],
+        "newRange": [
+          8607,
+          8838
+        ],
+        "source": "D",
+        "verified": "source code, rate and source time at first/middle/last frames unchanged"
+      },
+      {
+        "oldRange": [
+          9121,
+          9513
+        ],
+        "newRange": [
+          8838,
+          9230
+        ],
+        "source": "D",
+        "verified": "source code, rate and source time at first/middle/last frames unchanged"
+      },
+      {
+        "oldRange": [
+          9513,
+          9615
+        ],
+        "newRange": [
+          9230,
+          9332
+        ],
+        "source": "D",
+        "verified": "source code, rate and source time at first/middle/last frames unchanged"
+      },
+      {
+        "oldRange": [
+          9876,
+          10174
+        ],
+        "newRange": [
+          9593,
+          9891
+        ],
+        "source": "A",
+        "verified": "source code, rate and source time at first/middle/last frames unchanged"
+      },
+      {
+        "oldRange": [
+          10174,
+          10434
+        ],
+        "newRange": [
+          9891,
+          10151
+        ],
+        "source": "E",
+        "verified": "source code, rate and source time at first/middle/last frames unchanged"
+      },
+      {
+        "oldRange": [
+          10680,
+          10972
+        ],
+        "newRange": [
+          10397,
+          10689
+        ],
+        "source": "A",
+        "verified": "source code, rate and source time at first/middle/last frames unchanged"
+      },
+      {
+        "oldRange": [
+          11543,
+          11895
+        ],
+        "newRange": [
+          11260,
+          11612
+        ],
+        "source": "A",
+        "verified": "source code, rate and source time at first/middle/last frames unchanged"
+      },
+      {
+        "oldRange": [
+          11895,
+          12165
+        ],
+        "newRange": [
+          11612,
+          11882
+        ],
+        "source": "B",
+        "verified": "source code, rate and source time at first/middle/last frames unchanged"
+      },
+      {
+        "oldRange": [
+          12165,
+          12420
+        ],
+        "newRange": [
+          11882,
+          12137
+        ],
+        "source": "B",
+        "verified": "source code, rate and source time at first/middle/last frames unchanged"
+      },
+      {
+        "oldRange": [
+          12420,
+          12700
+        ],
+        "newRange": [
+          12137,
+          12417
+        ],
+        "source": "A",
+        "verified": "source code, rate and source time at first/middle/last frames unchanged"
+      }
+    ],
+    "pixelComparisons": [
+      {
+        "oldFrame": 7238,
+        "newFrame": 6955,
+        "source": "A",
+        "upperRegionMeanPixelDifference": 0.5555172562599182
+      },
+      {
+        "oldFrame": 7741,
+        "newFrame": 7458,
+        "source": "C",
+        "upperRegionMeanPixelDifference": 0.07513829320669174
+      },
+      {
+        "oldFrame": 9005,
+        "newFrame": 8722,
+        "source": "D",
+        "upperRegionMeanPixelDifference": 0.0003107040247414261
+      },
+      {
+        "oldFrame": 9317,
+        "newFrame": 9034,
+        "source": "D",
+        "upperRegionMeanPixelDifference": 0.0395384356379509
+      },
+      {
+        "oldFrame": 9564,
+        "newFrame": 9281,
+        "source": "D",
+        "upperRegionMeanPixelDifference": 0.07615840435028076
+      },
+      {
+        "oldFrame": 10025,
+        "newFrame": 9742,
+        "source": "A",
+        "upperRegionMeanPixelDifference": 0.33094289898872375
+      },
+      {
+        "oldFrame": 10304,
+        "newFrame": 10021,
+        "source": "E",
+        "upperRegionMeanPixelDifference": 0.20702944695949554
+      },
+      {
+        "oldFrame": 10826,
+        "newFrame": 10543,
+        "source": "A",
+        "upperRegionMeanPixelDifference": 0.5573545098304749
+      },
+      {
+        "oldFrame": 11719,
+        "newFrame": 11436,
+        "source": "A",
+        "upperRegionMeanPixelDifference": 0.06488685309886932
+      },
+      {
+        "oldFrame": 12030,
+        "newFrame": 11747,
+        "source": "B",
+        "upperRegionMeanPixelDifference": 0.124005027115345
+      },
+      {
+        "oldFrame": 12292,
+        "newFrame": 12009,
+        "source": "B",
+        "upperRegionMeanPixelDifference": 0.223209410905838
+      },
+      {
+        "oldFrame": 12560,
+        "newFrame": 12277,
+        "source": "A",
+        "upperRegionMeanPixelDifference": 0.6178107261657715
+      }
+    ],
+    "sampledMiddleFrameOfEachPreservedClip": true,
+    "captionRegionExcluded": true
+  }
+}
