@@ -1,0 +1,159 @@
+{
+  "dev": "DEV-040",
+  "verifiedAt": "2026-10-18T06:59:55.5638717Z",
+  "scope": "competition-card CSS only",
+  "synthetic": [
+    {
+      "cards": [
+        {
+          "contentBottom": 801.8377685546875,
+          "footerBottom": 847.7979736328125,
+          "height": 59,
+          "scrollHeight": 59,
+          "scrollWidth": 338,
+          "titleBottom": 476.5569763183594,
+          "titleLength": 14,
+          "whiteSpace": "normal",
+          "width": 338
+        },
+        {
+          "contentBottom": 801.8377685546875,
+          "footerBottom": 847.7979736328125,
+          "height": 147,
+          "scrollHeight": 147,
+          "scrollWidth": 338,
+          "titleBottom": 564.7774658203125,
+          "titleLength": 120,
+          "whiteSpace": "normal",
+          "width": 338
+        },
+        {
+          "contentBottom": 801.8377685546875,
+          "footerBottom": 847.7979736328125,
+          "height": 206,
+          "scrollHeight": 206,
+          "scrollWidth": 338,
+          "titleBottom": 623.6015014648438,
+          "titleLength": 120,
+          "whiteSpace": "normal",
+          "width": 338
+        }
+      ],
+      "clientWidth": 1265,
+      "scrollWidth": 1265,
+      "viewport": 1280
+    },
+    {
+      "cards": [
+        {
+          "contentBottom": 664.8602905273438,
+          "footerBottom": 709.8602294921875,
+          "height": 59,
+          "scrollHeight": 59,
+          "scrollWidth": 323,
+          "titleBottom": 489.07916259765625,
+          "titleLength": 14,
+          "whiteSpace": "normal",
+          "width": 323
+        },
+        {
+          "contentBottom": 1092.4381103515625,
+          "footerBottom": 1137.43798828125,
+          "height": 147,
+          "scrollHeight": 147,
+          "scrollWidth": 323,
+          "titleBottom": 918.047607421875,
+          "titleLength": 120,
+          "whiteSpace": "normal",
+          "width": 323
+        },
+        {
+          "contentBottom": 1608.328369140625,
+          "footerBottom": 1653.328369140625,
+          "height": 236,
+          "scrollHeight": 236,
+          "scrollWidth": 323,
+          "titleBottom": 1433.937744140625,
+          "titleLength": 120,
+          "whiteSpace": "normal",
+          "width": 323
+        }
+      ],
+      "clientWidth": 375,
+      "scrollWidth": 375,
+      "viewport": 390
+    },
+    {
+      "cards": [
+        {
+          "contentBottom": 706.5625,
+          "footerBottom": 751.5625,
+          "height": 56,
+          "scrollHeight": 56,
+          "scrollWidth": 259,
+          "titleBottom": 529.78125,
+          "titleLength": 14,
+          "whiteSpace": "normal",
+          "width": 259
+        },
+        {
+          "contentBottom": 1153.296875,
+          "footerBottom": 1198.296875,
+          "height": 167,
+          "scrollHeight": 167,
+          "scrollWidth": 259,
+          "titleBottom": 977.90625,
+          "titleLength": 120,
+          "whiteSpace": "normal",
+          "width": 259
+        },
+        {
+          "contentBottom": 1683.703125,
+          "footerBottom": 1728.703125,
+          "height": 251,
+          "scrollHeight": 251,
+          "scrollWidth": 259,
+          "titleBottom": 1508.3125,
+          "titleLength": 120,
+          "whiteSpace": "normal",
+          "width": 259
+        }
+      ],
+      "clientWidth": 305,
+      "scrollWidth": 305,
+      "viewport": 320
+    }
+  ],
+  "formal": [
+    {
+      "height": 59,
+      "scrollHeight": 59,
+      "scrollWidth": 245,
+      "titleLength": 7,
+      "whiteSpace": "normal",
+      "width": 245
+    },
+    {
+      "height": 59,
+      "scrollHeight": 59,
+      "scrollWidth": 245,
+      "titleLength": 21,
+      "whiteSpace": "normal",
+      "width": 245
+    },
+    {
+      "height": 59,
+      "scrollHeight": 59,
+      "scrollWidth": 245,
+      "titleLength": 21,
+      "whiteSpace": "normal",
+      "width": 245
+    }
+  ],
+  "formalCardOpenAndReturnVerified": true,
+  "formalBusinessWrites": 0,
+  "modelCalls": 0,
+  "viewportRestored": true,
+  "fullSuiteRerun": false,
+  "notes": "Browser layout verification at 1280, 390, 320 widths; synthetic Chinese and unbroken English names reach 120 characters; no physical mobile device."
+}
