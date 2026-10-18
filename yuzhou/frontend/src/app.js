@@ -10,6 +10,7 @@ import {mountLedger} from './ledger.js';
 import {mountTimetable} from './timetable.js';
 import {mountCalendar} from './calendar.js';
 import {mountCompetitions} from './competitions.js';
+import {openArchivedRemoval} from './archive-removal.js';
 import {mountDream} from './dream.js';
 import {mountInspirationWall} from './inspiration.js';
 import {assignRecordColor,isRecordColor} from './creation-colors.js';
@@ -414,7 +415,8 @@ function renderSettings(){
   ctx.root.querySelector('#profile-form').onsubmit=e=>{e.preventDefault();const data=new FormData(e.target);const name=data.get('name').trim(),major=data.get('major').trim();if(!name){toast('请填写称呼。');return;}state.profile.name=name;state.profile.major=major;save();shell();render();toast('个人资料已保存。');};
   ctx.root.querySelector('#provider').onchange=e=>{state.profile.provider=e.target.value;save();toast('模型偏好已保存，等待服务端连接。');};
   if(cloudClient)renderCloudSettings();
-  ctx.root.onclick=async e=>{const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action;if(a==='export')await exportBackup();if(a==='import')importBackup();if(a==='paste-message'){captureDialog();dialog.querySelector('[name=category]').value='消息摘录';}};
+  const removalButton=document.createElement('button');removalButton.className='btn full danger';removalButton.dataset.action='remove-archived';removalButton.textContent='清理已归档空间';ctx.root.querySelector('[data-action=import]').after(removalButton);
+  ctx.root.onclick=async e=>{const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action;if(a==='export')await exportBackup();if(a==='import')importBackup();if(a==='remove-archived')openArchivedRemoval(makeContext());if(a==='paste-message'){captureDialog();dialog.querySelector('[name=category]').value='消息摘录';}};
 }
 async function exportBackup(dataState=state){
   try{

@@ -169,6 +169,8 @@
 @media(max-width:700px){.wb-scope-switcher{align-items:stretch;flex-direction:column;gap:10px;padding:13px 14px}.wb-scope-switcher label,.wb-scope-switcher>div{flex-basis:auto}.wb-scope-switcher p{margin-top:3px}}
 
 /* DEV-038: keep the frame close to the content, without changing saved cards. */
+.archive-removal-choice{display:flex;align-items:flex-start;gap:10px;padding:10px 6px;font-size:13px;line-height:1.7;cursor:pointer}
+.archive-removal-choice input{flex:none;margin-top:5px}.archive-removal-choice span{min-width:0;overflow-wrap:anywhere}.archive-removal-choice small{display:block;color:var(--muted)}
 .space-shell:not(.on-welcome) #main{width:100%;max-width:none;margin:0;padding:12px 12px 24px}
 .space-shell:not(.on-welcome) .topbar{padding-inline:14px}
 .space-shell:not(.on-welcome) .wb-builder{max-width:none;margin:0}
