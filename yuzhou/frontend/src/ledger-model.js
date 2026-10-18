@@ -112,7 +112,7 @@ export function initializeLedger(state) {
   return state.ledger;
 }
 
-export function selectEntries(ledger, {start = '', end = '', projectId = 'all', type = 'all', archived = false, query = '', scope = 'all'} = {}) {
+export function selectEntries(ledger, {start = '', end = '', projectId = 'all', type = 'all', category = '', archived = false, query = '', scope = 'all'} = {}) {
   if ((start && !isValidDate(start)) || (end && !isValidDate(end)) || (start && end && start > end)) fail('请选择有效的起止日期，开始日期不能晚于结束日期。');
   const term = String(query).trim().toLocaleLowerCase('zh-CN');
   const projects = new Map(ledger.projects.map(project => [project.id, project.title]));
@@ -124,8 +124,21 @@ export function selectEntries(ledger, {start = '', end = '', projectId = 'all', 
     && (!start || entry.date >= start) && (!end || entry.date <= end)
     && (projectId === 'all' || entry.projectId === projectId)
     && (type === 'all' || entry.type === type)
+    && (!category || entry.category === category)
     && (!term || `${entry.category}\n${entry.note}\n${projects.get(entry.projectId) || '未分项目'}`.toLocaleLowerCase('zh-CN').includes(term))
   ).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
+}
+
+/** Empty string is the unfiltered value: a user category named "all" is valid. */
+export function ledgerCategories(ledger, filters = {}) {
+  return [...new Set(selectEntries(ledger,{...filters,category:'',start:'',end:'',query:''}).map(entry=>entry.category))].sort((a,b)=>a.localeCompare(b,'zh-CN'));
+}
+
+export function groupLedgerEntries(entries, group = 'date') {
+  if(!['date','project','category'].includes(group))fail('账目排列方式无效。');
+  const groups=new Map();
+  for(const entry of entries){const key=group==='project'?entry.projectId:group==='category'?entry.category:entry.date;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(entry);}
+  return groups;
 }
 
 export function summarizeEntries(entries) {
