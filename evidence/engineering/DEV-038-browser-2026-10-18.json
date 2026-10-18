@@ -1,0 +1,260 @@
+{
+  "dev": "DEV-038",
+  "timestamp": "2026-10-18T00:50:59.7790211Z",
+  "sourceCommit": "2fc96e2",
+  "tests": {
+    "report": "evidence/engineering/DEV-038-tests-2026-10-18T00-49-12-159Z.tap",
+    "total": 854,
+    "passed": 853,
+    "failed": 0,
+    "skipped": 1
+  },
+  "syntheticBrowser": {
+    "newChildEntryPresent": true,
+    "spaceAIDestination": "space:qa-child",
+    "automaticModelRequests": 0,
+    "existingUnsentDraftPreserved": true,
+    "mainAIDraftOpened": true,
+    "mobile": [
+      {
+        "clientWidth": 375,
+        "padding": "10px 8px 24px",
+        "returnHeight": 42,
+        "returnWidth": 214,
+        "route": "#/review",
+        "scrollWidth": 375
+      },
+      {
+        "clientWidth": 390,
+        "padding": "10px 8px 93px",
+        "returnHeight": 42,
+        "returnWidth": 189,
+        "route": "#/home",
+        "scrollWidth": 390
+      },
+      {
+        "clientWidth": 375,
+        "padding": "10px 8px 24px",
+        "returnHeight": 42,
+        "returnWidth": 190,
+        "route": "#/courses",
+        "scrollWidth": 375
+      },
+      {
+        "clientWidth": 375,
+        "padding": "10px 8px 24px",
+        "returnHeight": 42,
+        "returnWidth": 156,
+        "route": "#/english",
+        "scrollWidth": 375
+      },
+      {
+        "clientWidth": 375,
+        "padding": "10px 8px 24px",
+        "returnHeight": 42,
+        "returnWidth": 165,
+        "route": "#/inbox",
+        "scrollWidth": 375
+      },
+      {
+        "clientWidth": 375,
+        "padding": "10px 8px 24px",
+        "returnHeight": 42,
+        "returnWidth": 201,
+        "route": "#/tasks",
+        "scrollWidth": 375
+      },
+      {
+        "clientWidth": 375,
+        "padding": "10px 8px 24px",
+        "returnHeight": 42,
+        "returnWidth": 168,
+        "route": "#/ledger",
+        "scrollWidth": 375
+      },
+      {
+        "clientWidth": 375,
+        "padding": "10px 8px 24px",
+        "returnHeight": 42,
+        "returnWidth": 132,
+        "route": "#/calendar",
+        "scrollWidth": 375
+      },
+      {
+        "clientWidth": 375,
+        "padding": "10px 8px 24px",
+        "returnHeight": 42,
+        "returnWidth": 154,
+        "route": "#/timetable",
+        "scrollWidth": 375
+      },
+      {
+        "clientWidth": 375,
+        "padding": "10px 8px 24px",
+        "returnHeight": 42,
+        "returnWidth": 156,
+        "route": "#/competitions",
+        "scrollWidth": 375
+      },
+      {
+        "clientWidth": 375,
+        "padding": "10px 8px 24px",
+        "returnHeight": 42,
+        "returnWidth": 165,
+        "route": "#/settings",
+        "scrollWidth": 375
+      },
+      {
+        "clientWidth": 375,
+        "padding": "10px 8px 24px",
+        "returnHeight": 42,
+        "returnWidth": 179,
+        "route": "#/builder",
+        "scrollWidth": 375
+      }
+    ],
+    "desktop": [
+      {
+        "clientWidth": 1265,
+        "mainPadding": "12px 12px 24px",
+        "mainWidth": 1184.7080078125,
+        "returnHeight": 36,
+        "returnWidth": 171.5625,
+        "route": "#/review",
+        "scrollWidth": 1265
+      },
+      {
+        "clientWidth": 1280,
+        "mainPadding": "12px 12px 24px",
+        "mainWidth": 1200,
+        "returnHeight": 36,
+        "returnWidth": 196,
+        "route": "#/home",
+        "scrollWidth": 1280
+      },
+      {
+        "clientWidth": 1265,
+        "mainPadding": "12px 12px 24px",
+        "mainWidth": 1184.88525390625,
+        "returnHeight": 36,
+        "returnWidth": 196,
+        "route": "#/courses",
+        "scrollWidth": 1265
+      },
+      {
+        "clientWidth": 1265,
+        "mainPadding": "12px 12px 24px",
+        "mainWidth": 1184.5830078125,
+        "returnHeight": 36,
+        "returnWidth": 160,
+        "route": "#/english",
+        "scrollWidth": 1265
+      },
+      {
+        "clientWidth": 1265,
+        "mainPadding": "12px 12px 24px",
+        "mainWidth": 1184.793212890625,
+        "returnHeight": 36,
+        "returnWidth": 172,
+        "route": "#/inbox",
+        "scrollWidth": 1265
+      },
+      {
+        "clientWidth": 1265,
+        "mainPadding": "12px 12px 24px",
+        "mainWidth": 1184.80078125,
+        "returnHeight": 36,
+        "returnWidth": 208,
+        "route": "#/tasks",
+        "scrollWidth": 1265
+      },
+      {
+        "clientWidth": 1265,
+        "mainPadding": "12px 12px 24px",
+        "mainWidth": 1184.950439453125,
+        "returnHeight": 36,
+        "returnWidth": 172,
+        "route": "#/ledger",
+        "scrollWidth": 1265
+      },
+      {
+        "clientWidth": 1265,
+        "mainPadding": "12px 12px 24px",
+        "mainWidth": 1184.9794921875,
+        "returnHeight": 36,
+        "returnWidth": 136,
+        "route": "#/calendar",
+        "scrollWidth": 1265
+      },
+      {
+        "clientWidth": 1265,
+        "mainPadding": "12px 12px 24px",
+        "mainWidth": 1184.9169921875,
+        "returnHeight": 36,
+        "returnWidth": 160,
+        "route": "#/timetable",
+        "scrollWidth": 1265
+      },
+      {
+        "clientWidth": 1265,
+        "mainPadding": "12px 12px 24px",
+        "mainWidth": 1184.53662109375,
+        "returnHeight": 36,
+        "returnWidth": 160,
+        "route": "#/competitions",
+        "scrollWidth": 1265
+      },
+      {
+        "clientWidth": 1265,
+        "mainPadding": "12px 12px 24px",
+        "mainWidth": 1184.7392578125,
+        "returnHeight": 36,
+        "returnWidth": 172,
+        "route": "#/settings",
+        "scrollWidth": 1265
+      },
+      {
+        "clientWidth": 1265,
+        "mainPadding": "12px 12px 24px",
+        "mainWidth": 1185,
+        "returnHeight": 36,
+        "returnWidth": 184,
+        "route": "#/builder",
+        "scrollWidth": 1265
+      }
+    ],
+    "desktopAIWidth": 36,
+    "testServiceClosed": true,
+    "mobileAIWidth": 40
+  },
+  "formalReadOnly": {
+    "businessWrites": 0,
+    "after": {
+      "mainPadding": "12px 12px 24px",
+      "scrollWidth": 1436,
+      "aiWidth": 36,
+      "returnWidth": 184,
+      "returnHeight": 36,
+      "clientWidth": 1436,
+      "aiInvitePresent": false
+    },
+    "before": {
+      "returnHeight": 59,
+      "returnWidth": 1182,
+      "mainPadding": "26px 30px 36px",
+      "aiInvitePresent": true
+    },
+    "review": {
+      "statPadding": "16px",
+      "heroPadding": "16px 20px",
+      "clientWidth": 1436,
+      "mainPadding": "12px 12px 24px",
+      "scrollWidth": 1436
+    },
+    "privateScreenshotsCommitted": false
+  },
+  "limitations": [
+    "CSS and existing-event entry changes only; no real model call or business-flow reacceptance",
+    "Browser viewport emulation only; no physical mobile device tested"
+  ]
+}
