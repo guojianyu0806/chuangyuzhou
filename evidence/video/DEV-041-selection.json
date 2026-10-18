@@ -305,7 +305,7 @@
       "endFrame": 12420,
       "code": "B",
       "sourceIn": 238000000,
-      "note": "梦境流动",
+      "note": "梦境流动并打开常驻伙伴",
       "playbackRate": 1
     },
     {
@@ -368,6 +368,6 @@
       "seconds": 19.033333333333335
     }
   ],
-  "audioStatus": "pending",
+  "audioStatus": "approved v03 narration at already baked 1.15x, native captions restored",
   "visualSources": "Only five user recordings dated 2026-10-18"
 }

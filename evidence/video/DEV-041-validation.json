@@ -1,0 +1,45 @@
+{
+  "date": "2026-10-18",
+  "projectId": "4d68a75c-74af-4ee8-9df0-613a9a2933ae",
+  "timelineId": "c727ab00-923c-4355-ab77-9cf9519ac2dd",
+  "nativeExportTask": "e43eced5-7e5a-45e8-9f1b-275e3ad2d08e",
+  "nativeExportStatus": "done",
+  "output": "视频相关/2026-10-18_成片_v02/创宇宙_实录初剪_v02_配音字幕_待补录.mp4",
+  "sha256": "041bce5c2bee7db4364a229bd2f1b0c834e5da5790121644674f3a39372064ba",
+  "bytes": 84185865,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "frames": 12700,
+  "durationSeconds": 423.338646,
+  "newVisualSources": 5,
+  "selectedClips": 35,
+  "plannedGaps": 8,
+  "gapSeconds": 87.9,
+  "allOriginalSourceHashesMatchCopies": true,
+  "fullVideoDecodePassed": true,
+  "plannedBlankRangesMatched": true,
+  "audioSource": "approved v03 with 1.15x baked; no further speed or gain",
+  "audioCorrelation": 0.9998895533942327,
+  "audioDecodedDurationsMatch": true,
+  "captions": 182,
+  "srtIdenticalToApprovedV03": true,
+  "visualReview": {
+    "exportSamples": 53,
+    "sheetsReviewed": 6,
+    "fullResolutionChecks": [
+      "Codex conversation",
+      "notice action proposal"
+    ],
+    "continuousManualViewing": false
+  },
+  "oldOriginalsAndV01Preserved": true,
+  "softwareAndFormalBusinessModified": false,
+  "publishedOrSubmitted": false,
+  "limitations": [
+    "8 missing shots remain blank with captions and narration",
+    "Some subspace clips retain original viewport panning",
+    "XML export not verified in another editor",
+    "Selected successful AI workflows do not imply first-attempt success or a reliability rate"
+  ]
+}
