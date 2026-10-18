@@ -1,0 +1,43 @@
+{
+  "dev": "DEV-043",
+  "verifiedAt": "2026-10-18T10:50:32.939Z",
+  "newProjectCount": 1,
+  "newEntryCount": 8,
+  "categoryCount": 7,
+  "newProjectExcludedFromTotal": true,
+  "oldProjectsAndEntriesUnchanged": true,
+  "dailyAndTotalSumsUnchanged": true,
+  "otherNonLayoutBusinessPreserved": true,
+  "attachmentManifestUnchanged": true,
+  "newEntryTotalsVerified": true,
+  "layoutChangesObservedAndRetained": {
+    "canvasFields": [
+      "cards",
+      "view",
+      "modifiedAt"
+    ],
+    "addedBoards": 2,
+    "removedBoards": 0,
+    "changedExistingBoards": 0
+  },
+  "tests": {
+    "total": 860,
+    "passed": 859,
+    "failed": 0,
+    "skipped": 1,
+    "report": "DEV-043-tests-2026-10-18T10-47-31-613Z.tap"
+  },
+  "browser": {
+    "customCategoryFilterVerified": true,
+    "groupedMixedIncomeExpenseVerified": true,
+    "switchTypeResetsCategory": true,
+    "refreshRows": 8,
+    "refreshCategoryGroups": 7,
+    "mobileWidths": [
+      390,
+      320
+    ],
+    "noHorizontalOverflow": true,
+    "modelCalls": 0
+  }
+}
