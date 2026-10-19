@@ -1,41 +1,27 @@
 {
-  "archive": "0-13-0-20260922-130751.tar.gz",
-  "version": "0.13.0",
-  "archiveSha256": "dbf4deef8c6f18d4534929f6ac62ef93e61ae275a991701aca5d93c949237213",
-  "bytes": 351263,
+  "archive": "0-13-1-20260923-033135.tar.gz",
+  "version": "0.13.1",
+  "archiveSha256": "598c43e5c913354d3558891e243444ec7585ed99e7f9c188b1efba272e720407",
+  "bytes": 353835,
   "relation": "pre-competition-source-snapshot",
   "metadataSha256Matches": true,
-  "recordedAtUtc": "2026-10-19T13:33:15.755695+00:00",
+  "recordedAtUtc": "2026-10-19T13:33:19.544513+00:00",
   "kind": "historical-source-snapshot-recorded-now",
   "sourceSubset": "files present in the retained deployment archive, not an entire original workspace",
   "mainBaselinePreserved": "96bdda69beccf77910b92f2699a4726e90b4711d",
   "deltaFromPreviousArchive": {
     "added": [
-      "backend/tests/fitness-persistence.test.mjs",
-      "backend/tests/fitness-queries.test.mjs",
-      "frontend/src/fitness-model.js",
-      "frontend/src/fitness.css",
-      "frontend/src/fitness.js",
-      "frontend/src/workspace-actions-fitness.js"
+      "frontend/src/timetable-display.js"
     ],
     "deleted": [],
     "changed": [
-      "backend/hermes.mjs",
       "backend/package.json",
       "backend/server.mjs",
-      "backend/store.mjs",
-      "backend/workspace-queries.mjs",
-      "frontend/index.html",
       "frontend/package.json",
       "frontend/server.mjs",
-      "frontend/src/ai-chat.js",
-      "frontend/src/app.js",
-      "frontend/src/backup.js",
-      "frontend/src/cloud.js",
       "frontend/src/services.js",
-      "frontend/src/spaces.js",
-      "frontend/src/workspace-actions-core.js",
-      "frontend/src/workspace-actions.js"
+      "frontend/src/timetable.css",
+      "frontend/src/timetable.js"
     ]
   }
 }

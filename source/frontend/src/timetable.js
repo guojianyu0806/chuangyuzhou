@@ -1,5 +1,6 @@
 import { initializeTimetable, validateTimetable, weekForDate, dateForWeek, entriesForWeek, parseWeeks, formatWeeks } from './timetable-model.js';
 import { createColorDraft } from './creation-colors.js';
+import { timetableDisplay, TIMETABLE_DISPLAY_KEY, TIMETABLE_SCALE } from './timetable-display.js';
 
 const views = new WeakMap();
 const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
@@ -43,6 +44,29 @@ export function mountTimetable(ctx) {
   const view = ownerViews.get(viewKey);
   const events = new AbortController();
   let mounted = true;
+  let scale = timetableDisplay.read(), storageWarningShown = false;
+  function scaleControls() {
+    return `<div class="tt-scale-controls" role="group" aria-label="本机课表大小"><span class="tt-scale-label">大小<small>仅本机</small></span><button type="button" data-tt-action="scale-down" aria-label="缩小课表" title="缩小课表" ${scale <= TIMETABLE_SCALE.min ? 'disabled' : ''}><span aria-hidden="true">−</span></button><input type="range" data-tt-scale data-timetable-view min="${TIMETABLE_SCALE.min}" max="${TIMETABLE_SCALE.max}" step="${TIMETABLE_SCALE.step}" value="${scale}" aria-label="课表大小" aria-valuetext="${scale}%"><output data-tt-scale-value aria-label="当前课表大小">${scale}%</output><button type="button" data-tt-action="scale-up" aria-label="放大课表" title="放大课表" ${scale >= TIMETABLE_SCALE.max ? 'disabled' : ''}>${icon('plus', 16)}</button><button type="button" class="tt-scale-reset" data-tt-action="scale-reset" aria-label="恢复默认课表大小" title="恢复为 100%">重置</button></div>`;
+  }
+  function applyScale(value, persist = true) {
+    const scroll = root.querySelector('.tt-grid-scroll'), previousScale = scale;
+    const offset = scroll ? {x:scroll.scrollLeft, y:scroll.scrollTop} : null;
+    if (persist) {
+      const result = timetableDisplay.write(value); scale = result.scale;
+      if (!result.saved && !storageWarningShown) { storageWarningShown = true; ctx.toast('本次大小已调整；当前设备无法保存设置，重新打开后可能恢复默认。'); }
+    } else scale = value;
+    scroll?.style.setProperty('--tt-scale', String(scale / 100));
+    if (scroll && offset) {
+      scroll.scrollLeft = offset.x * scale / previousScale;
+      scroll.scrollTop = offset.y * scale / previousScale;
+    }
+    const slider = root.querySelector('[data-tt-scale]');
+    if (slider) { slider.value = String(scale); slider.setAttribute('aria-valuetext', `${scale}%`); }
+    const output = root.querySelector('[data-tt-scale-value]'); if (output) output.textContent = `${scale}%`;
+    const down = root.querySelector('[data-tt-action=scale-down]'), up = root.querySelector('[data-tt-action=scale-up]');
+    if (down) down.disabled = scale <= TIMETABLE_SCALE.min;
+    if (up) up.disabled = scale >= TIMETABLE_SCALE.max;
+  }
   const term = () => state.timetable.terms.find(t => t.id === state.timetable.activeTermId) || state.timetable.terms[0];
   const selectedWeek = t => clampWeek(t, view.termWeeks[t.id] ?? weekForDate(t, today()));
   const timeLabel = (t, entry) => `${t.periods.find(p => p.id === entry.startPeriod)?.start || ''}–${t.periods.find(p => p.id === entry.endPeriod)?.end || ''}`;
@@ -126,7 +150,7 @@ export function mountTimetable(ctx) {
     const layouts = weekdays.map((_, index) => dayLayout(entries.filter(e => e.weekday === index + 1)));
     const conflictCount = layouts.flat().filter(item => item.lanes > 1).length;
     const dates = weekdays.map((_, index) => dateForWeek(t, week, index + 1));
-    return `<div class="tt-grid-help"><span>${icon('info', 14)}点击课程查看详情；左右滑动查看整周</span>${conflictCount ? `<strong>${conflictCount} 个安排存在时间重叠，已并列显示</strong>` : `<span>${entries.length} 个上课安排</span>`}</div><div class="tt-grid-scroll" tabindex="0" role="region" aria-label="第 ${week} 周课表，可以横向与纵向滚动"><div class="tt-grid" style="--tt-periods:${t.periods.length}"><div class="tt-grid-corner">节次</div>${weekdays.map((day, index) => `<div class="tt-grid-day ${dates[index] === today() ? 'is-today' : ''}"><strong>${day}${dates[index] === today() ? '<b>今天</b>' : ''}</strong><span>${shortDate(dates[index])}</span></div>`).join('')}<div class="tt-times">${t.periods.map(p => `<div><strong>${p.id}</strong><time>${esc(p.start)}<br>${esc(p.end)}</time></div>`).join('')}</div>${layouts.map((items, day) => `<div class="tt-day-column ${dates[day] === today() ? 'is-today' : ''}">${items.map(({ entry, lane, lanes }) => `<button type="button" class="tt-course ${lanes > 1 ? 'has-conflict' : ''}" data-tt-action="detail" data-tt-entry="${esc(entry.id)}" data-id="${esc(entry.id)}" style="--tt-course:${safeColor(entry.color)};--tt-start:${t.periods.findIndex(p => p.id === entry.startPeriod)};--tt-span:${t.periods.findIndex(p => p.id === entry.endPeriod) - t.periods.findIndex(p => p.id === entry.startPeriod) + 1};--tt-lane:${lane};--tt-lanes:${lanes}" aria-label="${esc(entry.title)}，${weekdays[entry.weekday - 1]}，${periodLabel(entry)}，${esc(entry.location || '地点未填')}，${lanes > 1 ? '与其他课程时间重叠，' : ''}查看详情"><strong>${esc(entry.title)}</strong><span>${esc(entry.location || '地点待补充')}</span><small>${esc(entry.teacher)}</small>${lanes > 1 ? '<em>时间重叠</em>' : ''}</button>`).join('')}</div>`).join('')}</div></div>${!entries.length ? `<div class="tt-week-empty">${icon('coffee', 20)}<span>第 ${week} 周没有课程安排${week > t.teachingWeeks ? '，可在学期备注中查看考试安排' : ''}。</span></div>` : ''}`;
+    return `${scaleControls()}<div class="tt-grid-help"><span>${icon('info', 14)}点击课程查看详情；缩小看整周，放大后可滑动</span>${conflictCount ? `<strong>${conflictCount} 个安排存在时间重叠，已并列显示</strong>` : `<span>${entries.length} 个上课安排</span>`}</div><div class="tt-grid-scroll" style="--tt-scale:${scale / 100}" tabindex="0" role="region" aria-label="第 ${week} 周课表，可以横向与纵向滚动"><div class="tt-grid" style="--tt-periods:${t.periods.length}"><div class="tt-grid-corner">节次</div>${weekdays.map((day, index) => `<div class="tt-grid-day ${dates[index] === today() ? 'is-today' : ''}"><strong>${day}${dates[index] === today() ? '<b>今天</b>' : ''}</strong><span>${shortDate(dates[index])}</span></div>`).join('')}<div class="tt-times">${t.periods.map(p => `<div><strong>${p.id}</strong><time>${esc(p.start)}<br>${esc(p.end)}</time></div>`).join('')}</div>${layouts.map((items, day) => `<div class="tt-day-column ${dates[day] === today() ? 'is-today' : ''}">${items.map(({ entry, lane, lanes }) => `<button type="button" class="tt-course ${lanes > 1 ? 'has-conflict' : ''}" data-tt-action="detail" data-tt-entry="${esc(entry.id)}" data-id="${esc(entry.id)}" style="--tt-course:${safeColor(entry.color)};--tt-start:${t.periods.findIndex(p => p.id === entry.startPeriod)};--tt-span:${t.periods.findIndex(p => p.id === entry.endPeriod) - t.periods.findIndex(p => p.id === entry.startPeriod) + 1};--tt-lane:${lane};--tt-lanes:${lanes}" aria-label="${esc(entry.title)}，${weekdays[entry.weekday - 1]}，${periodLabel(entry)}，${esc(entry.location || '地点未填')}，${lanes > 1 ? '与其他课程时间重叠，' : ''}查看详情"><strong>${esc(entry.title)}</strong><span>${esc(entry.location || '地点待补充')}</span><small>${esc(entry.teacher)}</small>${lanes > 1 ? '<em>时间重叠</em>' : ''}</button>`).join('')}</div>`).join('')}</div></div>${!entries.length ? `<div class="tt-week-empty">${icon('coffee', 20)}<span>第 ${week} 周没有课程安排${week > t.teachingWeeks ? '，可在学期备注中查看考试安排' : ''}。</span></div>` : ''}`;
   }
   function listMarkup(t, week) {
     const query = view.query.trim().toLocaleLowerCase();
@@ -159,6 +183,10 @@ export function mountTimetable(ctx) {
   function click(event) {
     const button = event.target.closest('[data-tt-action]'); if (!button || button.disabled) return;
     const action = button.dataset.ttAction;
+    if (['scale-down', 'scale-up', 'scale-reset'].includes(action)) {
+      applyScale(action === 'scale-reset' ? TIMETABLE_SCALE.default : scale + (action === 'scale-up' ? 1 : -1) * TIMETABLE_SCALE.step);
+      return;
+    }
     run(() => {
       const t = term();
       if (action === 'add-term') return editTerm();
@@ -171,6 +199,7 @@ export function mountTimetable(ctx) {
     });
   }
   function change(event) {
+    if (event.target.matches('[data-tt-scale]')) { applyScale(Number(event.target.value)); return; }
     const field = event.target.closest('[data-tt-filter]'); if (!field) return;
     if (field.dataset.ttFilter === 'query' && event.type !== 'input') return;
     if (field.dataset.ttFilter !== 'query' && event.type !== 'change') return;
@@ -190,6 +219,9 @@ export function mountTimetable(ctx) {
   root.addEventListener('click', click, { signal: events.signal });
   root.addEventListener('change', change, { signal: events.signal });
   root.addEventListener('input', change, { signal: events.signal });
+  root.ownerDocument.defaultView.addEventListener('storage', event => {
+    if (event.key === TIMETABLE_DISPLAY_KEY || event.key === null) applyScale(timetableDisplay.read(), false);
+  }, {signal:events.signal});
   draw();
   return () => { mounted = false; events.abort(); };
 }
