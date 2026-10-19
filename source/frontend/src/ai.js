@@ -126,7 +126,7 @@ export function mountAIComposer(ctx, host, settings={}) {
     if (cloudAIEnabled(ctx)) {
       form.querySelector('.ai-local-status').innerHTML = `<i></i>${ctx.cloud.modelStatus?.configured ? 'DeepSeek 已接入' : '云端已连接'}`;
       form.querySelector('.ai-drop-target small').textContent = '每个文件最多 40 MB · 登录后自动同步';
-      form.querySelector('.ai-compose-note').textContent = '可以补充、追问和修改。确认方案后才会归档。';
+      form.querySelector('.ai-compose-note').textContent = '发送只用于对话。审核行动方案并点击「确认执行」后，才会改动工作区。';
     }
     const chips = form.querySelector('.ai-attachment-chips');
     chips.innerHTML = draft.files.map(f => `<span class="ai-attachment-chip" title="${esc(f.name)}">${icon('file', 14)}<span>${esc(f.name)}</span><small>${sizeLabel(f.size)}</small><button type="button" data-ai="remove-attachment" data-id="${esc(f.id)}" aria-label="移除附件 ${esc(f.name)}">${icon('close', 13)}</button></span>`).join('');

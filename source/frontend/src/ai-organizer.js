@@ -80,3 +80,16 @@ export function applyOrganizedContent(state, requestId, input, {uid = () => cryp
   state.updatedAt = now;
   return receipt;
 }
+
+// Use the same bounded writer on an isolated copy so review includes every
+// actual operation, including summary fallback, attachments and task routing.
+export function previewOrganizedContent(state,requestId,input){
+  const copy=structuredClone(state);let sequence=0;
+  const receipt=applyOrganizedContent(copy,requestId,input,{uid:()=>`review-${++sequence}`});
+  return receipt.items.map(item=>{
+    const record=JSON.parse(item.snapshot);
+    const container=item.containerId.startsWith('space:')?state.spaces?.find(s=>s.id===item.containerId.slice(6)):item.containerId.startsWith('course:')?state.courses?.find(c=>c.id===item.containerId.slice(7)):null;
+    const destination=container?.title||(item.collection==='tasks'?'备忘与待办':record.category==='英语'?'收集箱 · 六级资料':'收集箱');
+    return {type:item.collection==='files'||record.blobId?'保存原文件':item.collection==='tasks'?'新增待办':item.collection==='notes'?'新增笔记':'新增整理记录',title:item.title,destination,content:record.content||record.text||record.description||'',date:record.date||'',priority:item.collection==='tasks'?(record.priority==='high'?'重要':'普通'):'',fileName:record.name||record.fileName||''};
+  });
+}

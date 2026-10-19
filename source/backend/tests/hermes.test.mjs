@@ -24,6 +24,13 @@ test('conversation asks, remembers corrections, and only explicit confirmation f
   assert.equal((await ctx.call('POST',`/api/ai/jobs/${ready.id}/confirm`,{})).status,200);assert.equal(ctx.state().tasks.length,1);
 });
 
+test('saying confirm in chat still only produces a review and performs no workspace actions',async t=>{
+  const ctx=setup(t,{runModel:async()=>({reply:'请在审核单点击确认执行',proposal:proposal()})});await ctx.configure();
+  ctx.change(s=>s.aiRequests.push({id:'chat1',text:'整理复习',targetId:'auto',files:[],status:'waiting_model',conversation:{version:1,messages:[{id:'t1',role:'user',text:'整理复习',createdAt:new Date().toISOString()},{id:'a1',role:'assistant',text:'先核对方案',createdAt:new Date().toISOString()},{id:'t2',role:'user',text:'确认，帮我执行吧',createdAt:new Date().toISOString()}]}}));
+  const started=await ctx.call('POST','/api/ai/jobs',{requestId:'chat1',text:'整理复习',kind:'conversation',turnId:'t2',autoFile:true});await ctx.finish(started.body.job.id);
+  assert.equal(ctx.state().tasks.length,0);assert.equal(ctx.state().captures.length,0);assert.equal(ctx.state().aiRequests[0].status,'waiting_model');assert.ok(ctx.state().aiRequests[0].conversation.proposal);
+});
+
 test('conversation rejects outdated proposals and preserves later user messages',async t=>{
   const ctx=setup(t,{runModel:async()=>({reply:'请确认方案',proposal:proposal()})});await ctx.configure();
   ctx.change(s=>s.aiRequests.push({id:'chat1',text:'复习',targetId:'auto',files:[],status:'waiting_model',conversation:{version:1,messages:[{id:'t1',role:'user',text:'复习',createdAt:new Date().toISOString()}]}}));
