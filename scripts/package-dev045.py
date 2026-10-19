@@ -72,6 +72,10 @@ def prepare():
             try: s=old.decode('utf8')
             except UnicodeDecodeError: s=None
             if s is not None:
+                if target=='yuzhou/backend/tests/extractor.test.mjs':
+                    s,n=re.subn(r"const python = \[[\s\S]*?\]\.find\(existsSync\);", "const python = [join(RUNTIME_ROOT, 'extractor-venv', 'Scripts', 'python.exe'), join(RUNTIME_ROOT, 'extractor-venv', 'bin', 'python')].find(existsSync);", s, count=1)
+                    if n!=1: raise ValueError('Extractor test pattern changed')
+                    reasons.append('discover only this package optional Python environment')
                 if target in ['yuzhou/frontend/index.html','yuzhou/frontend/manifest.webmanifest','yuzhou/frontend/src/ai-chat.js','yuzhou/frontend/src/app.js','yuzhou/frontend/src/cloud.js','yuzhou/frontend/src/welcome.js','yuzhou/frontend/src/workbench-model.js','yuzhou/backend/hermes.mjs','yuzhou/frontend/package.json','yuzhou/mobile/android/app/src/main/res/values/strings.xml']:
                     s=s.replace('宇宙','创宇宙').replace('传智杯创宇宙','创宇宙').replace('创宇宙 · 传智杯独立副本','创宇宙')
                     s=s.replace('基于创宇宙 v','基于原宇宙 v').replace('原创宇宙的全部内置模块','既有全部内置模块')

@@ -1,0 +1,84 @@
+{
+  "status": "passed",
+  "verified_at_utc": "2026-10-19T11:46:48.709012+00:00",
+  "kind": "documentation evidence checks; historical tests read, not rerun",
+  "dialogue": {
+    "status": "passed",
+    "archive_files_verified": 6,
+    "source_verified": false,
+    "source_prefix_lines": null,
+    "public_records": 104,
+    "redactions": 0
+  },
+  "historical_commits_verified": 46,
+  "diffs_verified": 10,
+  "local_links_verified": 95,
+  "dialogue_anchors_verified": 31,
+  "git_and_windows_checkout_byte_checks": 16,
+  "secret_pattern_files_checked": 24,
+  "protected_app_and_old_evidence_changes": [],
+  "baseline_commit": "0348aefa2b99ce5a52d7d25ec0a96c6769ac1a22",
+  "historical_test_results": {
+    "DEV-020-tests-2026-10-13T11-00-37-860Z.tap": {
+      "tests": 653,
+      "pass": 652,
+      "fail": 0,
+      "skipped": 1
+    },
+    "DEV-027-tests-2026-10-15T12-26-41-538Z.tap": {
+      "tests": 785,
+      "pass": 784,
+      "fail": 0,
+      "skipped": 1
+    },
+    "DEV-028-tests-2026-10-15T13-57-04-322Z.tap": {
+      "tests": 810,
+      "pass": 809,
+      "fail": 0,
+      "skipped": 1
+    },
+    "DEV-027-board-undo-first-failure-2026-10-15.tap": {
+      "tests": 7,
+      "pass": 3,
+      "fail": 4,
+      "skipped": 0
+    },
+    "DEV-027-board-undo-targeted-2026-10-15.tap": {
+      "tests": 43,
+      "pass": 43,
+      "fail": 0,
+      "skipped": 0
+    },
+    "DEV-028-miniapp-lifecycle-red-2026-10-15T13-41-05-699Z.tap": {
+      "tests": 6,
+      "pass": 2,
+      "fail": 4,
+      "skipped": 0
+    },
+    "DEV-028-miniapp-lifecycle-green-2026-10-15T13-43-16-656Z.tap": {
+      "tests": 52,
+      "pass": 52,
+      "fail": 0,
+      "skipped": 0
+    },
+    "DEV-028-block-partial-undo-red-2026-10-15T13-53-37-656Z.tap": {
+      "tests": 18,
+      "pass": 17,
+      "fail": 1,
+      "skipped": 0
+    },
+    "DEV-028-block-partial-undo-green-2026-10-15T13-54-27-667Z.tap": {
+      "tests": 57,
+      "pass": 57,
+      "fail": 0,
+      "skipped": 0
+    }
+  },
+  "limitations": [
+    "No new software, browser, model or user trial test",
+    "Selected public text spans only; original image pixels not re-exported",
+    "Hashes establish comparison, not independent attestation",
+    "Only listed credential patterns checked; no claim of a complete security audit"
+  ],
+  "adaptation": "Legacy verifier froze all application changes at DEV-030. Its original run rejected later legitimate development. This run uses the DEV-045 preparation commit for the no-change guard; dialogue hashes, links, anchors, historical commits, diffs, results and credential checks are unchanged."
+}

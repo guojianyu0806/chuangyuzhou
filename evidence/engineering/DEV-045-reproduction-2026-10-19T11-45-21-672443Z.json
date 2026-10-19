@@ -1,0 +1,59 @@
+{
+  "startedAtUtc": "2026-10-19T11:45:21.675454+00:00",
+  "status": "passed",
+  "scope": "Same Windows host; fresh extracted directory, portable Node, empty account and sanitized child environment; not a fresh OS or independent human trial",
+  "archive": "delivery/2026-10-19_创宇宙正式提交_v1/创宇宙_源码_正式提交版_v1.zip",
+  "archiveSha256": "1ec8fabc592472f612c298016545152b7e3f65dae083d2218adb89ebfb6f60b3",
+  "directory": ".local/dev045-clean-2026-10-19T11-45-21-672443Z",
+  "modelRequests": 0,
+  "syntheticSetup": "New random setup token prepared by harness, normal setup/login APIs; production credentials never read",
+  "steps": [
+    {
+      "name": "fresh_archive_extracted",
+      "elapsedSeconds": 0.921,
+      "files": 297,
+      "existingRuntime": false
+    },
+    {
+      "name": "source_configuration_and_environment_checks_passed",
+      "elapsedSeconds": 4.224,
+      "negativeConfigurations": 4
+    },
+    {
+      "name": "entry_health_identity_and_initialization_page_ready",
+      "elapsedSeconds": 5.914
+    },
+    {
+      "name": "normal_account_login_save_and_readback_passed",
+      "elapsedSeconds": 6.156
+    },
+    {
+      "name": "restart_persistence_passed",
+      "elapsedSeconds": 8.305,
+      "withinTenMinutes": true
+    },
+    {
+      "name": "native_text_extraction_passed",
+      "elapsedSeconds": 8.352
+    },
+    {
+      "name": "optional_fresh_python_and_pinned_pdf_dependency_configured",
+      "elapsedSeconds": 27.364
+    },
+    {
+      "name": "docx_pptx_pdf_actual_extraction_and_original_preservation_passed",
+      "elapsedSeconds": 29.748,
+      "fixtures": "Minimal synthetic parsing fixtures, not full Office compatibility tests"
+    }
+  ],
+  "nodeVersion": "v22.23.3",
+  "modelConfigured": false,
+  "coreElapsedSeconds": 8.305,
+  "coreWithinTenMinutes": true,
+  "extractorVersions": "{\"python\": \"3.13.15\", \"pypdf\": \"6.21.0\"}",
+  "optionalSetupSeconds": 18.53,
+  "optionalValidationSeconds": 20.914,
+  "totalElapsedSeconds": 30.433,
+  "finishedAtUtc": "2026-10-19T11:45:52.110383+00:00",
+  "ownedServerStopped": true
+}

@@ -1,0 +1,10 @@
+{
+  "kind": "fresh browser context, synthetic account, package code",
+  "modelRequests": 0,
+  "steps": [
+    "normal UI initialization; new blank account"
+  ],
+  "status": "failed",
+  "failure": "TimeoutError: locator.click: Timeout 12000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.wb-advanced > summary')\u001b[22m\n",
+  "ownedServerStopped": true
+}

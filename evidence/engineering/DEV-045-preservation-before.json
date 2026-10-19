@@ -1,0 +1,137 @@
+{
+  "files": [
+    {
+      "path": "delivery/DEV-031/README.md",
+      "sha256": "e2a743b8e17756a7d84b2d8c2dad440409fdf3bc25eef80ca8fd298fab244923"
+    },
+    {
+      "path": "delivery/DEV-031/template/.env.example",
+      "sha256": "441f41e48194209be69dfee27aa22c67e7d1c9ae393b69cb8c961a610040a57b"
+    },
+    {
+      "path": "delivery/DEV-031/template/.gitignore",
+      "sha256": "709f1017539f5dcfcf579771ae49d7e5bce4498ea6081dcdcc1836991bdbeb82"
+    },
+    {
+      "path": "delivery/DEV-031/template/README.md",
+      "sha256": "ab855446d1fb1805da850e4ee62339d920b010c4d94408fb7a93da6aab332516"
+    },
+    {
+      "path": "delivery/DEV-031/template/requirements-extractor.txt",
+      "sha256": "ed0bb3d9afe027009df77a940f1d25faf8a899d67d1509c2f3ecca2778b7abe0"
+    },
+    {
+      "path": "delivery/DEV-031/template/SOURCE-NOTICE.md",
+      "sha256": "43fdb7adebbff7b40361e795b7eea6c436ef79182e63cd005d7a5a9f3ff95b85"
+    },
+    {
+      "path": "delivery/DEV-031/template/启动工作台.cmd",
+      "sha256": "0613ff7596f9a78e4ef9cf33dfa39617d8dd71d198655d42914d75237a0708bc"
+    },
+    {
+      "path": "delivery/DEV-031/template/config/extractor-config.example.json",
+      "sha256": "b7f27469e651b73173c72bef8afc7f0030ee2dfa2e7d84f7713760f975b9c5eb"
+    },
+    {
+      "path": "delivery/DEV-031/template/config/model-settings.example.json",
+      "sha256": "80bf5fd04171252a55bc4c55b5cd74d36fbc226bcec58f5301d50c95cd3768f2"
+    },
+    {
+      "path": "delivery/DEV-031/template/tools/start.mjs",
+      "sha256": "412ea0526e4f152338f7a2beb281725f09cd94a2105b84a7d8a3c86d436f6cac"
+    },
+    {
+      "path": "delivery/DEV-031/template/tools/verify-source.mjs",
+      "sha256": "bf4ac4853425c840184dee828e20a3eafc743c938a4efe159405cbb193809ca5"
+    },
+    {
+      "path": "delivery/DEV-031/template/evidence/engineering/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "delivery/DEV-032/.gitattributes",
+      "sha256": "86013e6b9434810158ab594bbfd2d77f64b030a5eac5f27fc17afd2f474d561e"
+    },
+    {
+      "path": "delivery/DEV-032/build_pdf.py",
+      "sha256": "a40060733f94f3fa9fb68af1d9fa35f9e64b945d6798471a4056c34b1b679f3d"
+    },
+    {
+      "path": "delivery/DEV-032/README.md",
+      "sha256": "4fc3b981a0c788adee05b2d8290e4df75bbdd09c241b839465acf75eb7af825b"
+    },
+    {
+      "path": "delivery/DEV-032/verify_materials.py",
+      "sha256": "4c7d10674457517f2d912a12db5d69dcf6017ae33b2b4575a007806df5456d7e"
+    },
+    {
+      "path": "delivery/DEV-032/宇宙工作台-7分45秒版-录屏画面与操作清单-2026-10-17.txt",
+      "sha256": "d16c141b9146c8878a4a217f2235ff4faba5ee40cc25672033175f3a125d4acd"
+    },
+    {
+      "path": "delivery/DEV-032/宇宙工作台-7分45秒版-纯口播稿-2026-10-17.txt",
+      "sha256": "17c3b9ba0ea099ff09b7258dab549267b038c44b271879e32d8716d5c3318a22"
+    },
+    {
+      "path": "delivery/DEV-032/宇宙工作台-完整修订版-录屏画面与操作清单-未压缩-2026-10-17.txt",
+      "sha256": "372f52be90309548d9e92e9e135d9cd9fdd6d769e088b88ed8aac1373edc2791"
+    },
+    {
+      "path": "delivery/DEV-032/宇宙工作台-完整修订版-纯口播稿-未压缩-2026-10-17.txt",
+      "sha256": "2ec409a768a521e05e9eacca00b66a2141efe2e6f4e1463d93123328ded89002"
+    },
+    {
+      "path": "delivery/DEV-032/技术文档-v1.md",
+      "sha256": "db012421800d944168388e689f52c4c1702a87d021387ebd446857826554d447"
+    },
+    {
+      "path": "delivery/DEV-032/编制与证据计划.md",
+      "sha256": "1ea9fcf8ac2fb375624564de587813f8074a4044adfa2ee29d673af58dcf6384"
+    },
+    {
+      "path": "delivery/DEV-032/视频文案-第一人称修订版-2026-10-17.txt",
+      "sha256": "3d18de04dcafb43c22c3768b8deed8845a8ebfd11508e2634aff686cadc8eb23"
+    },
+    {
+      "path": "delivery/DEV-032/视频脚本-v1.md",
+      "sha256": "7488320f7d31cf33ab3456eca03c874337b4c9d661227443c4429d4ea753544e"
+    },
+    {
+      "path": "output/pdf/DEV-032/.gitattributes",
+      "sha256": "a1c0eabee684c2d941320bee4330f9f67d5b46013801b4f2e973ecbe777943ef"
+    },
+    {
+      "path": "output/pdf/DEV-032/宇宙工作台-技术文档-v1.pdf",
+      "sha256": "d928598a7c14d93879259ec71d2d4adb1ae9355cf2e2bf00cc866157e4e35fff"
+    },
+    {
+      "path": "releases/yuzhou-dev031-2790a44521e8/package-report.json",
+      "sha256": "224149e0f53576460234125aebee665596bf34ec1c83c439d128a9f378c01420"
+    },
+    {
+      "path": "releases/yuzhou-dev031-2790a44521e8/SOURCE-MANIFEST.json",
+      "sha256": "d81295d9ab272469cf1c2c2603aef413ca281504ca5f640a98401f1b5004b5ff"
+    },
+    {
+      "path": "releases/yuzhou-dev031-2790a44521e8/yuzhou-dev031-2790a44521e8.zip",
+      "sha256": "e13dade4b5c1fe293defd0292106b479bad97f6748f693b68257f7d08d055dea"
+    },
+    {
+      "path": "releases/yuzhou-dev031-a96689c79bc3/package-report.json",
+      "sha256": "765b02a34000bee631fd7c2c443a7d37b9509b2ec38eb853c474146953a5337e"
+    },
+    {
+      "path": "releases/yuzhou-dev031-a96689c79bc3/SOURCE-MANIFEST.json",
+      "sha256": "0f3bb109330d1118277b87e657670a7f3d62151594439366e088cbfdac0f284d"
+    },
+    {
+      "path": "releases/yuzhou-dev031-a96689c79bc3/yuzhou-dev031-a96689c79bc3.zip",
+      "sha256": "6400a6f3a20ba2c4bc9f14bca9b4dc094794d783fb845eed5b1afe0fb965e2eb"
+    },
+    {
+      "path": "正式视频/“创宇宙”正式提交视频.mp4",
+      "sha256": "ab2816d9bab7a6ce9196575b1d95619a094d8386761dfb235130eafba233ae81"
+    }
+  ],
+  "statusBefore": " M delivery/DEV-032/宇宙工作台-完整修订版-纯口播稿-未压缩-2026-10-17.txt\u0000?? delivery/2026-10-17_异机迁移_v01/\u0000?? delivery/DEV-045/\u0000?? evidence/dev/DEV-045.md\u0000?? evidence/engineering/DEV-045-preservation-before.json\u0000?? output/audio/\u0000?? scripts/package-dev045.py\u0000?? 正式视频/\u0000?? 视频相关/\u0000"
+}

@@ -1,0 +1,48 @@
+{
+  "status": "passed",
+  "sourceCommit": "9c567d7d3c3a069fe681723f1aa9cbc350407d0f",
+  "archiveFiles": 297,
+  "applicationTreeFiles": 281,
+  "archiveSha256": "1ec8fabc592472f612c298016545152b7e3f65dae083d2218adb89ebfb6f60b3",
+  "pdfPages": 13,
+  "pdfSha256": "bc1433225ecf17ccea9a696f0b58e2493d073fd52ce71d09730d2feb61199705",
+  "pdfFontsEmbedded": true,
+  "pdfVisualReview": "All 13 v2 rendered pages visually reviewed; v3 page 2 reviewed separately; all other 12 pages pixel-identical",
+  "pdfUnchangedPagesComparedWithReviewedV2": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+  ],
+  "sourceImportLinksResolved": true,
+  "readmeExactMatch": true,
+  "protectedOldArtifactsUnchanged": 33,
+  "activeSourceUnchanged": true,
+  "knownCredentialMatches": 0,
+  "machinePrivateReferenceMatches": 0,
+  "fullHistoricalSecretAudit": false,
+  "tests": {
+    "tests": 862,
+    "pass": 861,
+    "fail": 0,
+    "skipped": 1
+  },
+  "uiReport": "evidence/engineering/DEV-045-ui/run-1792410735187/result-1792410743230.json",
+  "uiEarlierHarnessFailures": 3,
+  "modelRequestsThisTurn": 0,
+  "uploaded": false,
+  "limitations": [
+    "No audit of all historical Git blobs",
+    "No new real model run",
+    "No independent user trial or second device test",
+    "Video content not re-audited in this scope"
+  ]
+}

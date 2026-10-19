@@ -1,0 +1,8 @@
+{
+  "kind": "fresh browser context, synthetic account, package code",
+  "modelRequests": 0,
+  "steps": [],
+  "status": "failed",
+  "failure": "TimeoutError: locator.waitFor: Timeout 12000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.brand') to be visible\u001b[22m\n\u001b[2m    24 × locator resolved to hidden <a class=\"brand\" href=\"#/welcome\" aria-label=\"返回创宇宙工作区入口\">…</a>\u001b[22m\n",
+  "ownedServerStopped": true
+}

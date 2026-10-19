@@ -1,0 +1,63 @@
+// Isolated browser acceptance for the new submission copy, never a personal session.
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import {resolve,join} from 'node:path';
+import {mkdirSync,writeFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const require=createRequire(import.meta.url);
+const {chromium}=require(process.argv[3]);
+const pkg=resolve(process.argv[2]), out=resolve('evidence/engineering/DEV-045-ui','run-'+Date.now());
+mkdirSync(out,{recursive:true});
+const {createWorkbenchServer}=await import(pathToFileURL(join(pkg,'yuzhou/backend/server.mjs')));
+const app=await createWorkbenchServer({dataDir:join(pkg,'yuzhou/.cu-runtime','ui-'+Date.now()),secureCookie:false,setupToken:'dev045-only-synthetic-setup-token'});
+await new Promise(done=>app.server.listen(0,'127.0.0.1',done));
+const origin=`http://127.0.0.1:${app.server.address().port}`;
+let browser;const errors=[],result={kind:'fresh browser context, synthetic account, package code',modelRequests:0,steps:[]};
+try{
+  browser=await chromium.launch({channel:'msedge',headless:true});
+  const context=await browser.newContext({viewport:{width:1280,height:900},locale:'zh-CN'});
+  const page=await context.newPage();page.setDefaultTimeout(12000);page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(origin);await page.locator('#cloud-auth-form').waitFor();
+  assert.equal(await page.title(),'创宇宙');
+  assert.equal(await page.locator('.cloud-welcome .eyebrow').innerText(),'创宇宙');
+  await page.screenshot({path:join(out,'01-login.png'),fullPage:true});
+  await page.locator('[name=username]').fill('submission-review');
+  await page.locator('[name=password]').fill('Only-synthetic-DEV045-2026');
+  await page.locator('[name=setupToken]').fill('dev045-only-synthetic-setup-token');
+  await page.locator('#cloud-auth-form button[type=submit]').click();
+  await page.locator('#cloud-auth-form').waitFor({state:'hidden'});
+  await page.locator('.brand').waitFor({state:'attached'});
+  result.steps.push('normal UI initialization; new blank account');
+  await page.goto(origin+'/#/builder');
+  await page.locator('.wb-advanced > summary').click();
+  await page.locator('[data-wb-action=template][data-id=full]').click();
+  await page.locator('#modal[open] button[type=submit]').click();
+  await page.locator('#modal').waitFor({state:'hidden'});
+  await page.locator('.sync-indicator[data-status=saved]').waitFor();
+  result.steps.push('apply full module template using UI');
+  await page.goto(origin+'/#/tasks');
+  await page.locator('[data-action=add-task]').first().click();
+  await page.locator('#modal [name=title]').fill('准备读书分享会');
+  await page.locator('#modal button[type=submit]').click();
+  await page.locator('.sync-indicator[data-status=saved]').waitFor();
+  await page.reload();
+  await page.locator(':text-is("准备读书分享会"):visible').first().waitFor();
+  assert.match(await page.title(),/创宇宙/);
+  await page.screenshot({path:join(out,'02-task-reloaded.png'),fullPage:true});
+  result.steps.push('new task saved and retained after browser refresh');
+  await page.goto(origin+'/#/welcome');
+  await page.locator('.welcome-brand').waitFor();
+  assert.equal(await page.locator('.welcome-brand strong').innerText(),'创宇宙');
+  await page.screenshot({path:join(out,'03-welcome.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  await page.screenshot({path:join(out,'04-welcome-mobile.png'),fullPage:true});
+  result.mobile=await page.evaluate(()=>({viewport:innerWidth,client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
+  assert(result.mobile.scroll<=result.mobile.client);
+  result.steps.push('welcome brand and 390px viewport without horizontal overflow');
+  assert.deepEqual(errors,[]);result.pageErrors=errors;result.status='passed';
+}catch(e){result.status='failed';result.failure=String(e);process.exitCode=1;}
+finally{
+  await browser?.close();await app.close();result.ownedServerStopped=!app.server.listening;
+  writeFileSync(join(out,'result-'+Date.now()+'.json'),JSON.stringify(result,null,2),{flag:'wx'});
+  console.log(JSON.stringify(result));
+}

@@ -1,0 +1,11 @@
+{
+  "kind": "fresh browser context, synthetic account, package code",
+  "modelRequests": 0,
+  "steps": [
+    "normal UI initialization; new blank account",
+    "apply full module template using UI"
+  ],
+  "status": "failed",
+  "failure": "TimeoutError: locator.waitFor: Timeout 12000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('准备读书分享会', { exact: true }).first() to be visible\u001b[22m\n\u001b[2m    27 × locator resolved to hidden <span class=\"cv-stack-title\">准备读书分享会</span>\u001b[22m\n",
+  "ownedServerStopped": true
+}

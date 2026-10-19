@@ -1,0 +1,18 @@
+{
+  "kind": "fresh browser context, synthetic account, package code",
+  "modelRequests": 0,
+  "steps": [
+    "normal UI initialization; new blank account",
+    "apply full module template using UI",
+    "new task saved and retained after browser refresh",
+    "welcome brand and 390px viewport without horizontal overflow"
+  ],
+  "mobile": {
+    "viewport": 390,
+    "client": 390,
+    "scroll": 390
+  },
+  "pageErrors": [],
+  "status": "passed",
+  "ownedServerStopped": true
+}
