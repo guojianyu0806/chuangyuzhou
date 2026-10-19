@@ -1,5 +1,5 @@
 // Cloud adapter boundary. No model credentials belong in this browser application.
-export const VERSION = '0.3.0';
+export const VERSION = '0.3.1';
 export const cloud = {
   connected: false,
   async organizeCourse() { throw new Error('请在服务器部署后连接大模型。当前资料已保存到本机。'); },

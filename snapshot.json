@@ -1,39 +1,31 @@
 {
-  "archive": "0-3-0-20260920-111138.tar.gz",
-  "version": "0.3.0",
-  "archiveSha256": "12d5cb48d24dcfb08467e9423641e8fbcec8b8e36e090b5a6bb64ba59e5edd58",
-  "bytes": 213475,
+  "archive": "0-3-1-20260920-124452.tar.gz",
+  "version": "0.3.1",
+  "archiveSha256": "e470393594984bd591ae84b32d882f3a7eaceb55a00a41f1cc05aa9e1b8aae65",
+  "bytes": 214659,
   "relation": "pre-competition-source-snapshot",
-  "recordedAtUtc": "2026-10-19T13:32:30.336263+00:00",
+  "metadataSha256Matches": true,
+  "recordedAtUtc": "2026-10-19T13:32:34.919814+00:00",
   "kind": "historical-source-snapshot-recorded-now",
   "sourceSubset": "files present in the retained deployment archive, not an entire original workspace",
   "mainBaselinePreserved": "96bdda69beccf77910b92f2699a4726e90b4711d",
   "deltaFromPreviousArchive": {
     "added": [
-      "backend/tests/ledger.test.mjs",
-      "frontend/package.json",
-      "frontend/src/ledger-model.js",
-      "frontend/src/ledger.css",
-      "frontend/src/ledger.js"
+      "deployment/publish-android.py",
+      "frontend/server.mjs"
     ],
-    "deleted": [],
+    "deleted": [
+      "frontend/README.md"
+    ],
     "changed": [
-      "backend/README.md",
       "backend/package.json",
       "backend/server.mjs",
-      "backend/store.mjs",
-      "backend/tests/server.test.mjs",
       "deployment/README.md",
-      "frontend/README.md",
-      "frontend/index.html",
+      "deployment/workbench-ip.caddy",
+      "frontend/icon.svg",
+      "frontend/package.json",
       "frontend/src/app.js",
-      "frontend/src/backup.js",
-      "frontend/src/canvas.css",
-      "frontend/src/canvas.js",
-      "frontend/src/cloud.js",
-      "frontend/src/icons.js",
-      "frontend/src/services.js",
-      "frontend/src/workspace-model.js"
+      "frontend/src/services.js"
     ]
   }
 }

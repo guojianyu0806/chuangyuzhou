@@ -11,5 +11,14 @@ https://203.195.191.239 {
         -Server
         X-Robots-Tag "noindex, nofollow, noarchive"
     }
-    reverse_proxy 127.0.0.1:4180
+    handle_path /apps/* {
+        root * /opt/shiguang/mobile
+        @apk path *.apk
+        header @apk Content-Type application/vnd.android.package-archive
+        header Cache-Control "no-cache"
+        file_server
+    }
+    handle {
+        reverse_proxy 127.0.0.1:4180
+    }
 }
