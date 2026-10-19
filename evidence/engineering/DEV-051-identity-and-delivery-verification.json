@@ -1,0 +1,42 @@
+{
+  "headBefore": "c8f17ca66edeafad28e7ba7c6a259b8953e516f6",
+  "reachableTextBlobsInspected": 1078,
+  "historicalBlobsMatchingBroadPattern": 155,
+  "scanScope": "All refs reachable before this correction; unique UTF-8-decoded md, txt, json, mjs, py blobs and commit subjects; broad wording search, not a security scan.",
+  "findings": [
+    "Current README and package notice could imply two projects.",
+    "Earlier narrative reports used own-project reuse wording.",
+    "Historical import and isolation commits describe real file operations and are compatible with the same-project explanation."
+  ],
+  "correction": "Same-project rename and continuous development; append current explanation and supersede frozen v1 delivery with v2.",
+  "sourceFilesVerified": 296,
+  "applicationCodeChanges": false,
+  "packageChangedFiles": [
+    "README.md",
+    "RELEASE-CHANGES.json",
+    "SOURCE-MANIFEST.json",
+    "SOURCE-NOTICE.md"
+  ],
+  "oldArtifactsUnchanged": {
+    "delivery\\2026-10-19_创宇宙正式提交_v1\\.gitattributes": "d573c6c667f2992cf4289e5520e4f2a3ca34181d28b6b170027a1be50e7572db",
+    "delivery\\2026-10-19_创宇宙正式提交_v1\\README.md": "30b758aca668131498b425b2757d7e09908fe66552c709c020a27fd686e1162a",
+    "delivery\\2026-10-19_创宇宙正式提交_v1\\SHA256SUMS.txt": "b1c10a8416934f1a2754163a24dda7a9c0d90ad71df7f1be0c845234e69b866d",
+    "delivery\\2026-10-19_创宇宙正式提交_v1\\创宇宙_技术文档_正式提交版_v1.pdf": "bc1433225ecf17ccea9a696f0b58e2493d073fd52ce71d09730d2feb61199705",
+    "delivery\\2026-10-19_创宇宙正式提交_v1\\创宇宙_源码_正式提交版_v1.zip": "1ec8fabc592472f612c298016545152b7e3f65dae083d2218adb89ebfb6f60b3",
+    "delivery\\2026-10-19_创宇宙正式提交_v1\\提交前核查报告.md": "68b411c0c4965e15956dd28a742a432628bee914174ca55ebe79da05599cee8e",
+    "delivery\\2026-10-19_创宇宙网盘提交_v1\\README.md": "30b758aca668131498b425b2757d7e09908fe66552c709c020a27fd686e1162a",
+    "delivery\\2026-10-19_创宇宙网盘提交_v1\\“创宇宙”正式提交视频.mp4": "ab2816d9bab7a6ce9196575b1d95619a094d8386761dfb235130eafba233ae81",
+    "delivery\\2026-10-19_创宇宙网盘提交_v1\\作品链接.txt": "2641737dd46a7efc176521d7fc79996353bdf0eea6af372477e4b18beb0e5ce1",
+    "delivery\\2026-10-19_创宇宙网盘提交_v1\\创宇宙_AI开发过程证据_提交附件_v1.zip": "63dbca1b18ca042758e26dc881b1d800d9c00a1d0a596f03886f29d1a5cb3bcd",
+    "delivery\\2026-10-19_创宇宙网盘提交_v1\\创宇宙_技术文档_正式提交版_v1.pdf": "bc1433225ecf17ccea9a696f0b58e2493d073fd52ce71d09730d2feb61199705",
+    "delivery\\2026-10-19_创宇宙网盘提交_v1\\创宇宙_源码_正式提交版_v1.zip": "1ec8fabc592472f612c298016545152b7e3f65dae083d2218adb89ebfb6f60b3"
+  },
+  "pdfPages": 9,
+  "gitHistoryRewritten": false,
+  "earlySnapshotsRetrospective": true,
+  "notPerformed": [
+    "Contest submission",
+    "Netdisk upload",
+    "New model requests"
+  ]
+}

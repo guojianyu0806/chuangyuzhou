@@ -1,0 +1,470 @@
+{
+  "sourceCommit": "9c567d7d3c3a069fe681723f1aa9cbc350407d0f",
+  "changes": [
+    {
+      "path": "README.md",
+      "sourcePath": "delivery/DEV-031/template/README.md",
+      "gitBlob": "43cc1fa96a4105403322ace9ace90847ed3eeedf",
+      "sourceSha256": "ab855446d1fb1805da850e4ee62339d920b010c4d94408fb7a93da6aab332516",
+      "bytes": 8566,
+      "sha256": "b75025b0b312800b0fa4fb0c3e7eb60755154ac5c19b386f7dfdd0243d24f3e2",
+      "reasons": [
+        "new reviewer-facing README",
+        "clarify same-project rename and continuous development"
+      ]
+    },
+    {
+      "path": "SOURCE-NOTICE.md",
+      "sourcePath": "delivery/DEV-031/template/SOURCE-NOTICE.md",
+      "gitBlob": "ef83bb5662351c2c53d1ca36ce337b44a392f16f",
+      "sourceSha256": "43fdb7adebbff7b40361e795b7eea6c436ef79182e63cd005d7a5a9f3ff95b85",
+      "bytes": 1610,
+      "sha256": "ef1f2996646291b2744c29f833ecaac495dfdad5be0ca8bc2910599a891cb35d",
+      "reasons": [
+        "current provenance and scope notice",
+        "clarify same-project rename and continuous development"
+      ]
+    },
+    {
+      "path": "启动创宇宙.cmd",
+      "sourcePath": "delivery/DEV-031/template/启动工作台.cmd",
+      "gitBlob": "40a68de25680a39b87292c3fcc3e168c806475b6",
+      "sourceSha256": "0613ff7596f9a78e4ef9cf33dfa39617d8dd71d198655d42914d75237a0708bc",
+      "bytes": 51,
+      "sha256": "0613ff7596f9a78e4ef9cf33dfa39617d8dd71d198655d42914d75237a0708bc",
+      "reasons": [
+        "rename release launcher"
+      ]
+    },
+    {
+      "path": "evidence/provenance/yuzhou-0.15.0-import.json",
+      "sourcePath": "evidence/provenance/yuzhou-0.15.0-import.json",
+      "gitBlob": "b0483154df694f46b7b65420d9c1b4397546c38b",
+      "sourceSha256": "c0a563eae91dabfcfd61bb95af5ca983c7a91269414cdd4cccf677c89e2f9f35",
+      "bytes": 22376,
+      "sha256": "23620f232ad55e1f588282934201bdbda2425b238e7a81d167000be7c2c6df68",
+      "reasons": [
+        "redact machine roots; preserve provenance hashes"
+      ]
+    },
+    {
+      "path": "yuzhou/README.md",
+      "sourcePath": "yuzhou/README.md",
+      "gitBlob": "bf59902faaea58d93454d95d0fd7d941c13f1520",
+      "sourceSha256": "f2c8edb12beee8a7da44557eccb6f9a6488115fd97b539c925cdb8fcf0c40ed9",
+      "bytes": 471,
+      "sha256": "a2c4f8cf688d5497d29bf9d872f1976d404a78b81f7cc23e6502a388e2971e50",
+      "reasons": [
+        "replace stale machine-specific instructions in submission copy"
+      ]
+    },
+    {
+      "path": "yuzhou/backend/README.md",
+      "sourcePath": "yuzhou/backend/README.md",
+      "gitBlob": "29539ac44a9e35705816af085dccbd1864bd74e4",
+      "sourceSha256": "587889b980004bb9c9e131f5b31d55334860e3ac76602cdbe7318ac5b1bcc221",
+      "bytes": 475,
+      "sha256": "7947fa3aee71e3ed0255afbeea8355ef9213fb47358db7afd9c1d539d6cad602",
+      "reasons": [
+        "replace stale machine-specific instructions in submission copy"
+      ]
+    },
+    {
+      "path": "yuzhou/backend/hermes.mjs",
+      "sourcePath": "yuzhou/backend/hermes.mjs",
+      "gitBlob": "1f2120c647c5282fb208608e890d6b2d81e1c4a2",
+      "sourceSha256": "f4af8e7b952ac2d3af9806ffd5f55b380d17430df36a1ab9d74191b62ffcd0e9",
+      "bytes": 58530,
+      "sha256": "3c2ab072c7e2a0f60015369c876a2ef01fe4b9241fc890cec07c8da38c5c407d",
+      "reasons": [
+        "current product display name; preserve internal identifiers"
+      ]
+    },
+    {
+      "path": "yuzhou/backend/tests/extractor.test.mjs",
+      "sourcePath": "yuzhou/backend/tests/extractor.test.mjs",
+      "gitBlob": "a9089d2b45018b31bcb1323396d715c6f5869f07",
+      "sourceSha256": "8844372e1c1096d6e5143c02b228a40813b4f2cd6939ae821f885b937784a035",
+      "bytes": 10336,
+      "sha256": "efad473db50484086a3745ebad8ab73e1269ec61f178253f36126be0d78f4591",
+      "reasons": [
+        "discover only this package optional Python environment"
+      ]
+    },
+    {
+      "path": "yuzhou/deployment/README.md",
+      "sourcePath": "yuzhou/deployment/README.md",
+      "gitBlob": "797037aecd86d413c3a8506593db4a1ee6d94c28",
+      "sourceSha256": "bbe2484925486a39a5b39d2d59c187094b9ad334e839e3064085161c6e494ae2",
+      "bytes": 440,
+      "sha256": "5f41126140c823e15fea96ae4a8833d3f59e5ff56d54dba70173120885081ca5",
+      "reasons": [
+        "replace stale machine-specific instructions in submission copy"
+      ]
+    },
+    {
+      "path": "yuzhou/deployment/activate-release.py",
+      "sourcePath": "yuzhou/deployment/activate-release.py",
+      "gitBlob": "8ee200efc5bf8e9e8821d99e4c12f880196ea5e7",
+      "sourceSha256": "95a598601eba5ea6708de239d8690c346779ae3468d6b9827935793f24fde551",
+      "bytes": 2716,
+      "sha256": "46e1b0b2d740651d0249e3dff0930cee15f33d70f52ce72389582441b2504efa",
+      "reasons": [
+        "redact historical server address; disabled guard unchanged"
+      ]
+    },
+    {
+      "path": "yuzhou/deployment/publish-android.py",
+      "sourcePath": "yuzhou/deployment/publish-android.py",
+      "gitBlob": "a7f3b71b95c2b22bad973744b1e9396e50bb753d",
+      "sourceSha256": "50c5e69e5e5e497f7b06d292b7aba117a83514188c92c496606afb3a50de72c5",
+      "bytes": 3496,
+      "sha256": "1f4a2b1c1368eacb79e7086cab5b3a736c45d0aaa8e7bf06e214bce8fae65a5b",
+      "reasons": [
+        "redact historical server address; disabled guard unchanged"
+      ]
+    },
+    {
+      "path": "yuzhou/deployment/workbench-ip.caddy",
+      "sourcePath": "yuzhou/deployment/workbench-ip.caddy",
+      "gitBlob": "21c3f92d2ce1952df413d1e9dcc6eb4cf29f6c45",
+      "sourceSha256": "0a14928438a1dfaa8b111aa3979bcd277bcd819ea3304eddfdec0b0414efc52a",
+      "bytes": 738,
+      "sha256": "451d10aa4fa454d943c1c223aa4e48038c47ec97106981640ab6eae22585c69a",
+      "reasons": [
+        "redact historical server address; disabled guard unchanged"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/README.md",
+      "sourcePath": "yuzhou/frontend/README.md",
+      "gitBlob": "86cf1e3fff010a2b23f83b29cfceecaf4cbc1259",
+      "sourceSha256": "02489ea9fdc136b669d0eb59fd44094de0d238da5bc41035adfadd2d5d787ffe",
+      "bytes": 476,
+      "sha256": "4c930d8046b27b464d593ac8468983018e603fa7ce2f367b3ede12757636a8a7",
+      "reasons": [
+        "replace stale machine-specific instructions in submission copy"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/index.html",
+      "sourcePath": "yuzhou/frontend/index.html",
+      "gitBlob": "ae3eed72f3873f63edb071fcf109cbc083ce31c4",
+      "sourceSha256": "4601d3277ceb67d641db5dcd58eaa7fc4cb2e9046c3a552843f3a682ea49e41b",
+      "bytes": 2474,
+      "sha256": "c62b5c98d212ce0f906c15080683f2fdeb9bfa64022ca3ac9333c216abf6032e",
+      "reasons": [
+        "current product display name; preserve internal identifiers"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/manifest.webmanifest",
+      "sourcePath": "yuzhou/frontend/manifest.webmanifest",
+      "gitBlob": "87b4a3fb752a26534bdd953879a9974870fba240",
+      "sourceSha256": "29440d34210618a0f17074501b1eb487ed23f2f06faa66ba21721c261eac535e",
+      "bytes": 238,
+      "sha256": "03b9a0d18aa0353caa5ab932aebd00ed24ada91c5747abe61dfcee0c6c877ffd",
+      "reasons": [
+        "current product display name; preserve internal identifiers"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/package.json",
+      "sourcePath": "yuzhou/frontend/package.json",
+      "gitBlob": "4053c7f256bc488643d5d32562530c9b96ed63ae",
+      "sourceSha256": "817817fc991d44f42d971bd2110b8609985a63b0ebe531ded27645a06b7b1941",
+      "bytes": 237,
+      "sha256": "e40310c70dadf7c9a23f4aad7e0a7b0b488983c84d2ebf3c2cc2818591a46acd",
+      "reasons": [
+        "current product display name; preserve internal identifiers"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/src/ai-chat.js",
+      "sourcePath": "yuzhou/frontend/src/ai-chat.js",
+      "gitBlob": "78cb0d3dc136dfac640e792cd9f4b52bbba5af6c",
+      "sourceSha256": "e53da1bf25c063a194e7106f26214456920b5c360ec2a857a9450b3359cb326f",
+      "bytes": 27084,
+      "sha256": "1e3105b8d01dd5f214a131c395634e652a43e44ec0a3f106a796a535168aa366",
+      "reasons": [
+        "current product display name; preserve internal identifiers"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/src/app.js",
+      "sourcePath": "yuzhou/frontend/src/app.js",
+      "gitBlob": "c326e29cfaecd4475095fc73d96370b2a0d689d2",
+      "sourceSha256": "f1f0f37db196d76b79552d84b1bb182407e98753f0646741a06fbbc18170abd4",
+      "bytes": 83954,
+      "sha256": "a15cfe00d93860a81a4f761f2d1b7196239801e80d5dfafaf67e739e426fee04",
+      "reasons": [
+        "current product display name; preserve internal identifiers"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/src/cloud.js",
+      "sourcePath": "yuzhou/frontend/src/cloud.js",
+      "gitBlob": "c96e45b38a0c9bafaaee36410f6c35105ffcebf6",
+      "sourceSha256": "4a61e7f46abe15995496b261f3a05eda451afd0869ab7c9ac461e61af55e04c1",
+      "bytes": 26552,
+      "sha256": "d5001ae2735d32e91d6c056806a3928cbb6589d561450a360ee6fc436864bc56",
+      "reasons": [
+        "current product display name; preserve internal identifiers"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/src/welcome.js",
+      "sourcePath": "yuzhou/frontend/src/welcome.js",
+      "gitBlob": "941ca15b1500b20bfd0c3a99c5cba09308feede1",
+      "sourceSha256": "f1796547c34c967e63cce1bf661addf34a3288db9df337975f3ce01a269eab3e",
+      "bytes": 6684,
+      "sha256": "228403241323088c9159830e368c37557deb8081ee996a0e90409a6ea1d5954f",
+      "reasons": [
+        "current product display name; preserve internal identifiers"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/src/workbench-model.js",
+      "sourcePath": "yuzhou/frontend/src/workbench-model.js",
+      "gitBlob": "1dc4c8fe3579d20d9582370957e9188ba1976a92",
+      "sourceSha256": "392ab07e823cbb672bd84e9d09fadda215fe064a96954a7795729604b2b42bcf",
+      "bytes": 9835,
+      "sha256": "6bc83409cd9cfbad8dab82130d64d0efa44457f47facde76e1f5597a5274404a",
+      "reasons": [
+        "current product display name; preserve internal identifiers"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/ai-cloud.mjs",
+      "sourcePath": "yuzhou/frontend/tests/ai-cloud.mjs",
+      "gitBlob": "c7c2efd65572cf80a302d1f01ae765ab8eba4ca2",
+      "sourceSha256": "826a62a715eb1e4d0c6d14116e2aadec18c67831134ba451ae3e8f9cd5ee557b",
+      "bytes": 11206,
+      "sha256": "bee00efb6b55d06f9e12db4a0f89680ca97393f0ad7a2bd88cb47cc4c57ce9e9",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/ai-integration.mjs",
+      "sourcePath": "yuzhou/frontend/tests/ai-integration.mjs",
+      "gitBlob": "64eb8a58a6491ef9362aa35ef0482dff6878cca7",
+      "sourceSha256": "d5f9ce16941ea8c47fa2b0c05b402fe0cd8b5f159d965f22d2ab8695c7dcd14f",
+      "bytes": 9332,
+      "sha256": "155ce32995f4e18f0dabd68f571cbf9cece8be76eaa146ea9711b1be7e5081a0",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/canvas.mjs",
+      "sourcePath": "yuzhou/frontend/tests/canvas.mjs",
+      "gitBlob": "5e12c7b32ccc7b7eff33830b4c18bed30dec5813",
+      "sourceSha256": "3dff8dc36105d44309b9b6abfcec8671b6845d2d6a0bfe7fb574b68141c568bf",
+      "bytes": 9238,
+      "sha256": "472d259090e2e574f18adb402badd73c350285dcdcc7bac28d3d63032c27cdc6",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/cloud-real.mjs",
+      "sourcePath": "yuzhou/frontend/tests/cloud-real.mjs",
+      "gitBlob": "6495369d2924c64df3316a22459e77078bc42d22",
+      "sourceSha256": "07a518dbf0e06e2562207ccc21175d71b0c9610434aba369cbe941ae1c5f38ba",
+      "bytes": 5430,
+      "sha256": "585b84f271f17d067b2915698dddb2cc7dade7f0f3d9ff2ad2b3d1d2cb50d031",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/cloud.mjs",
+      "sourcePath": "yuzhou/frontend/tests/cloud.mjs",
+      "gitBlob": "13b44b53ecb20904a2f71488ef830eb51ce22ece",
+      "sourceSha256": "99d77633aa510f3ecb4cc946387e60e974aa1afa962e59f3f27757e07a06b9c3",
+      "bytes": 9851,
+      "sha256": "b83260af7d07ec979fe000440566f900ebead9beef40fc31076ee5cb6b0cecc0",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/course-canvas.mjs",
+      "sourcePath": "yuzhou/frontend/tests/course-canvas.mjs",
+      "gitBlob": "d3d581e2525fba813d94fa4272ec1294a2a92479",
+      "sourceSha256": "3502912b5d75e37351859145dfecb47deca435d71ea98eeb94ec073714295823",
+      "bytes": 6438,
+      "sha256": "8d44404bfac010a7d3d5a534207d844b257c32445b226b3bd71db21ae3af475d",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/course-detail-canvas.mjs",
+      "sourcePath": "yuzhou/frontend/tests/course-detail-canvas.mjs",
+      "gitBlob": "b28d07fd8558b8d7f08e0c37dc2b56ebcefff476",
+      "sourceSha256": "7e4ae87bc1def3f7da85561b7cf48da28ca9b6d12a12b8ed3eabcb93d83cf7a2",
+      "bytes": 6949,
+      "sha256": "2876966e8f0f09309499fc3bc4bf3303c6fc89f3868b78974d7370ae7d5bce5d",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/courses.mjs",
+      "sourcePath": "yuzhou/frontend/tests/courses.mjs",
+      "gitBlob": "768c1a734bc7fe37d0995a90f33c0092736ab048",
+      "sourceSha256": "8c8e19a59e652f1feb03d2784f5d4ba470bbae74261c4a46f7da3c63b1addb7d",
+      "bytes": 8264,
+      "sha256": "c0b0e7700074c93410e9a24e9628094c21e96dc1ff32fcc6e117925f6018376d",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/english.mjs",
+      "sourcePath": "yuzhou/frontend/tests/english.mjs",
+      "gitBlob": "7129cf7089e14f516e4fd79fe67243b7808633d9",
+      "sourceSha256": "8a976ba2ab8e8df3ba5d533a0779ccc4d49d548766f8173e595fac88378488fc",
+      "bytes": 8145,
+      "sha256": "fe65342bd978c91d50eb7562b9c678e61df46627d072c6f9ef5cdb9ef51ad856",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/flows.mjs",
+      "sourcePath": "yuzhou/frontend/tests/flows.mjs",
+      "gitBlob": "4bf75bebe70d56e5e54b8320c37970028d5e7f02",
+      "sourceSha256": "868744ff05746bdd71630bda83ff1432aa67fc3f2636281a41774351b6a1178e",
+      "bytes": 6656,
+      "sha256": "91efcb52c50c732b9343310187b91cf596a2fa0366d0e9c704e72974d9efe3de",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/interior.mjs",
+      "sourcePath": "yuzhou/frontend/tests/interior.mjs",
+      "gitBlob": "b38916e38dc243227d51ca0f0c4f6392b2fdfa71",
+      "sourceSha256": "6f3e715d77b331108f2f814c71aa3831386898b8efb8c43133434fd69ba64d40",
+      "bytes": 4680,
+      "sha256": "aff88e43e8f67422503436ced10cdab55e0be302b188a564baf87891c7232f57",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/layout.mjs",
+      "sourcePath": "yuzhou/frontend/tests/layout.mjs",
+      "gitBlob": "d6312da33cd720b6a375a41d4abea4464905a15f",
+      "sourceSha256": "ea950d8dff955284394785bb2d3c009d29b21660425e29ca4389c67c6008fa43",
+      "bytes": 4027,
+      "sha256": "f590ef718825ae4e8c53d1d274eaaeee6e7901baf61b59e9c1eccb3dd8baf186",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/ledger-cloud.mjs",
+      "sourcePath": "yuzhou/frontend/tests/ledger-cloud.mjs",
+      "gitBlob": "d86a63dc93c6bf25b5d3ab8d52073e39d9f65621",
+      "sourceSha256": "f7e0c64a5800ef2eb626507d28cfd297f41b02ca8c5ca3eac5b122322871029b",
+      "bytes": 16477,
+      "sha256": "af518c98289bee35e99ed023f11a49d6e3b3990f8557af3ed588798f11b6e852",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/longpress.mjs",
+      "sourcePath": "yuzhou/frontend/tests/longpress.mjs",
+      "gitBlob": "d70c2e0983d9e8eca70a0a11959a2ac13a92e3db",
+      "sourceSha256": "a0627f1a1e543963c7ecc80a5725f280a08502a4e45b7b413552390d7211bcff",
+      "bytes": 6288,
+      "sha256": "036612aced8160b1afea93be44dfb128f84912171d894840abe9ee05e3470918",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/migration.mjs",
+      "sourcePath": "yuzhou/frontend/tests/migration.mjs",
+      "gitBlob": "ecd9d2b5d93a2bac1065381524b79dc94c8edee5",
+      "sourceSha256": "781035dbc5574860a3494c4a9fd10650b58afbf07fe88b64af468ed0fe6bd832",
+      "bytes": 6540,
+      "sha256": "f95f4f54e43d89ebdb15eddf31771c0f09c26d55e4fd19f0519af29e718939fe",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/navigation.mjs",
+      "sourcePath": "yuzhou/frontend/tests/navigation.mjs",
+      "gitBlob": "6c3c0fde2645743666f635ff0b7a936208adf323",
+      "sourceSha256": "d1fe57c222f1f98f695ce04efabe42568a6ad279ce53550b111a42e5d8c7ea09",
+      "bytes": 3469,
+      "sha256": "c979cd90e1ccf89295de019130c146cce5d3987084b808c6f76dbc00a37270a6",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/spaces.mjs",
+      "sourcePath": "yuzhou/frontend/tests/spaces.mjs",
+      "gitBlob": "c30d4dcf11e4037d32ce8427e6b3587c30a82673",
+      "sourceSha256": "972adf499352a683bfe4833f445921e394da77abccb8c0a8afab485447f556b5",
+      "bytes": 16951,
+      "sha256": "79a4388728f021a013a25bc90d5fb0b19ec90cdde09a47f775ce902d45234675",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/frontend/tests/storage.mjs",
+      "sourcePath": "yuzhou/frontend/tests/storage.mjs",
+      "gitBlob": "72c147bf845eb9d1f3083789e7c9f734c170793d",
+      "sourceSha256": "ecf6ff11cea9720bfd57c31f76cba9ac530f2154f2862a4662636ff3163a29cd",
+      "bytes": 7085,
+      "sha256": "897e8f2a8971ac29195266d35b0c05e7514de9547117bb49a1e00600baced288",
+      "reasons": [
+        "disable legacy browser execution; remove machine dependency paths"
+      ]
+    },
+    {
+      "path": "yuzhou/mobile/README.md",
+      "sourcePath": "yuzhou/mobile/README.md",
+      "gitBlob": "5e2b546b2cdd198fd907e2ad8c6ff99f7e3c87d3",
+      "sourceSha256": "39a5fe7f8dd8a4d11b27b9bc39776d63df3290f3b32c5b29056fde391e7b44a0",
+      "bytes": 436,
+      "sha256": "09a3deb8f7b7fedc77ad7cadf40d2d4988e48815bd0a8918ee3effef61ee6bbd",
+      "reasons": [
+        "replace stale machine-specific instructions in submission copy"
+      ]
+    },
+    {
+      "path": "yuzhou/mobile/android/app/src/main/res/values/strings.xml",
+      "sourcePath": "yuzhou/mobile/android/app/src/main/res/values/strings.xml",
+      "gitBlob": "1c76a10253b63121540f5e4ed90a6a1cdddd33fc",
+      "sourceSha256": "4e33246e777cb655aa0d9bc802a3b011b027861daf29eb200dc08c46d6e490b1",
+      "bytes": 111,
+      "sha256": "03cd23f8a5ba5af33ba1e770908b75822195a3ade122826f23c0fc15cd12f04b",
+      "reasons": [
+        "current product display name; preserve internal identifiers"
+      ]
+    }
+  ],
+  "activeSourceModified": false,
+  "release": "2026-10-19-submit-v2",
+  "documentationCorrection": {
+    "statement": "“宇宙”是同一项目的早期名称，后更名为“创宇宙”并持续迭代。",
+    "previousRelease": "v1",
+    "applicationCodeChanged": false,
+    "files": [
+      "README.md",
+      "SOURCE-NOTICE.md"
+    ],
+    "gitHistoryRewritten": false
+  }
+}
