@@ -1,5 +1,6 @@
 /* Free-position workspace canvas. Persisted coordinates are independent of viewport size. */
 import {formatMoney,localDate,selectEntries,summarizeEntries} from './ledger-model.js';
+import {CARD_PRESENTATIONS,normalizePresentation,normalizeStackPointer,stackMetrics,stackLayout} from './card-layouts.js';
 const PRESETS = {
   ai:      { x:36, y:40, w:540, h:380, color:'#B3A0FF', title:'AI 收件台', icon:'sparkles', label:'把零散，变有序。' },
   courses: { x:612, y:40, w:310, h:272, color:'#AE88FF', title:'课程空间', icon:'book', label:'让知识，连成线。' },
@@ -47,6 +48,7 @@ export function ensureCanvas(state, presets = PRESETS) {
   const v=canvas.view;
   canvas.view={x:clamp(finite(v?.x,0),-150000,150000),y:clamp(finite(v?.y,0),-150000,150000),zoom:clamp(finite(v?.zoom,1),.3,1.6)};
   canvas.snap=canvas.snap!==false;
+  canvas.stackPointer=normalizeStackPointer(canvas.stackPointer);
   return canvas;
 }
 
@@ -63,6 +65,7 @@ export function zoomAt(view,zoom,point) {
 
 export function mountCanvas(ctx, collection) {
   const {root,state,save,icon,esc,toast,modal,go}=ctx;
+  const itemById=new Map((collection?.items||state.spaces||[]).map(item=>[item.id,item]));
   const presets=collection?Object.fromEntries(collection.items.map((item,index)=>[item.id,{...item,x:36+(index%3)*380,y:40+Math.floor(index/3)*366,w:340,h:330,label:item.subtitle||''}])):PRESETS;
   const addedCard=collection?.layout?.initialized?collection.items.find(item=>!collection.layout.cards?.some(card=>card.id===item.id)):null;
   if(collection&&collection.layout?.cards?.length){
@@ -77,14 +80,16 @@ export function mountCanvas(ctx, collection) {
   const canvas=collection?ensureCanvas({canvas:collection.layout,spaces:[]},presets):ensureCanvas(state);
   const collectionText=(key,item,fallback)=>typeof collection?.[key]==='function'?collection[key](item):collection?.[key]??fallback;
   let alive=true,editing=false,spaceHeld=false,interaction=null,suppressClickUntil=0,saveTimer=0,composerCleanup=null,raf=0,dragDepth=new Map();
-  const pointers=new Map();
-  let presentation=['canvas','list'].includes(canvas.presentation)?canvas.presentation:(matchMedia('(max-width:680px)').matches?'list':'canvas');
-  const visibleCards=()=>canvas.cards.filter(c=>collection?collection.items.some(item=>item.id===c.id&&(!collection.matches||collection.matches(item))):(presets[c.id]||state.spaces.some(s=>s.id===c.id&&!s.archived)));
+  const pointers=new Map(),cardElements=new Map();
+  let presentation=normalizePresentation(canvas.presentation,matchMedia('(max-width:680px)').matches?'list':'canvas');
+  let stackRaf=0,stackReady=false,stackFocus=0,stackDrag=null,lastStackPointer=0;
+  const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)');
+  const visibleCards=()=>canvas.cards.filter(c=>collection?itemById.has(c.id)&&(!collection.matches||collection.matches(itemById.get(c.id))):(presets[c.id]||itemById.has(c.id)&&!itemById.get(c.id).archived));
   const dataFor=card=>{
-    if(collection){const item=collection.items.find(item=>item.id===card.id);return {...item,color:color(card.color||item?.color),label:item?.subtitle||''};}
+    if(collection){const item=itemById.get(card.id);return {...item,color:color(card.color||item?.color),label:item?.subtitle||''};}
     const preset=presets[card.id];
     if(preset)return {...preset,color:color(card.color||preset.color),id:card.id};
-    const space=state.spaces.find(s=>s.id===card.id);
+    const space=itemById.get(card.id);
     return {...space,color:color(space?.color||card.color),icon:space?.icon||'folder',label:space?.description||'文件、笔记和事务，都有自己的位置。'};
   };
   const persist=()=>{if(!alive)return false;try{save();return true;}catch{return false;/* App save handler explains quota or concurrent-window errors. */}};
@@ -99,12 +104,14 @@ export function mountCanvas(ctx, collection) {
   root.innerHTML=`<section class="space-desktop ${collection?.hideHeader?'cv-nested':''}" aria-labelledby="canvas-title">
     <header class="cv-pagehead"><div><div class="cv-eyebrow"><span></span> ${esc(collection?.eyebrow||'YOUR PERSONAL UNIVERSE')}</div><h1 id="canvas-title">${esc(collection?.title||'我的空间')}<span class="cv-title-dot">.</span></h1><p>${esc(collection?.description||'把日常铺开，让每一件事都有位置。')}</p></div><div class="cv-head-actions"><button class="cv-button cv-edit-toggle" type="button" data-cv="edit" aria-label="整理桌面" title="整理桌面" aria-pressed="false">${icon('edit',17)}<span>整理桌面</span></button><button class="cv-button cv-create" type="button" data-cv="create" ${collection?.createLabel===false?'hidden':''}>${icon('plus',19)}<span>${esc(collection?.createLabel||'新建空间')}</span></button></div></header>
     ${collection?.toolbar||''}
-    <div class="cv-toolbar"><div class="cv-view-tabs" role="group" aria-label="空间展示方式"><button type="button" data-cv="canvas" aria-pressed="${presentation==='canvas'}">${gridIcon}<span>自由画布</span></button><button type="button" data-cv="list" aria-pressed="${presentation==='list'}">${icon('list',18)}<span>卡片列表</span></button></div><span class="cv-help">长按卡片，轻弹后拖动 · 拖空白处漫游</span>${!collection&&state.spaces.some(s=>s.archived)?`<button class="cv-archives" type="button" data-cv="archives">${icon('archive',15)}<span>已归档 ${state.spaces.filter(s=>s.archived).length}</span></button>`:''}<button class="cv-snap" type="button" data-cv="snap" aria-pressed="${canvas.snap}" title="拖动时吸附到网格">${icon('target',16)}<span>网格吸附</span></button><button class="cv-help-button" type="button" data-cv="help" aria-label="画布使用帮助">${icon('info',19)}</button></div>
-    <div class="cv-viewport ${presentation==='list'?'is-list':''}" tabindex="0" aria-label="工作区画布，可拖动背景平移；使用下方按钮缩放"><div class="cv-world"></div><div class="cv-pan-hint" aria-hidden="true"><span>你的空间，不止这一屏</span><span>拖动探索 ${icon('arrow-right',15)}</span></div><div class="cv-edit-message" hidden>${dragIcon}<span>拖动卡片排位置 · 拖右下角改大小 · 点菜单换颜色</span></div></div>
+    <div class="cv-toolbar"><div class="cv-view-tabs" role="group" aria-label="空间展示方式">${[['canvas','自由画布'],['list','自适应'],['grid-2','两列'],['grid-3','三列'],['stack','堆叠']].map(([id,label])=>`<button type="button" data-cv="${id}" aria-pressed="${presentation===id}">${id==='canvas'?gridIcon:id==='stack'?icon('layers',18):id==='list'?icon('list',18):gridIcon}<span>${label}</span></button>`).join('')}</div><span class="cv-help">长按卡片，轻弹后拖动 · 拖空白处漫游</span>${!collection&&state.spaces.some(s=>s.archived)?`<button class="cv-archives" type="button" data-cv="archives">${icon('archive',15)}<span>已归档 ${state.spaces.filter(s=>s.archived).length}</span></button>`:''}<button class="cv-snap" type="button" data-cv="snap" aria-pressed="${canvas.snap}" title="拖动时吸附到网格">${icon('target',16)}<span>网格吸附</span></button><button class="cv-help-button" type="button" data-cv="help" aria-label="画布使用帮助">${icon('info',19)}</button></div>
+    <div class="cv-viewport" tabindex="0" aria-label="工作区卡片"><div class="cv-stack-scroll"><div class="cv-world"></div></div><div class="cv-stack-focusline" aria-hidden="true" hidden></div><aside class="cv-stack-rail" aria-label="堆叠展开位置" hidden><button class="cv-stack-pointer" type="button" role="slider" aria-label="上下拖动，调节卡片展开位置" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">${icon('chevron-right',22)}</button><span class="cv-stack-readout" aria-hidden="true"></span></aside><div class="cv-stack-controls" hidden><span>滑动卡片 · 拖动左侧指针展开</span><button type="button" data-cv="stack-prev" aria-label="上一张卡片">${icon('arrow-left',17)}</button><button type="button" data-cv="stack-next" aria-label="下一张卡片">${icon('arrow-right',17)}</button></div><div class="cv-pan-hint" aria-hidden="true"><span>你的空间，不止这一屏</span><span>拖动探索 ${icon('arrow-right',15)}</span></div><div class="cv-edit-message" hidden>${dragIcon}<span>拖动卡片排位置 · 拖右下角改大小 · 点菜单换颜色</span></div></div>
     <footer class="cv-statusbar"><span class="cv-save-state"><span></span><span data-cv-status>布局自动保存在本机</span></span><div class="cv-zoom-controls" role="group" aria-label="画布视图"><button type="button" data-cv="zoom-out" aria-label="缩小画布">−</button><button type="button" data-cv="reset-zoom" class="cv-zoom-number" title="还原为100%">100%</button><button type="button" data-cv="zoom-in" aria-label="放大画布">+</button><i></i><button type="button" data-cv="fit" title="让所有卡片进入视野" aria-label="适应全部卡片">${fitIcon}</button><button type="button" data-cv="home" title="回到起始位置" aria-label="回到画布中心">${icon('home',18)}</button></div><button class="cv-home-link" ${collection?'hidden':''} type="button" data-cv="ai">${icon('sparkles',15)}<span>交给 AI 整理</span>${icon('arrow-right',14)}</button></footer>
     <div class="sr-only" role="status" aria-live="polite" data-cv-live></div>
   </section>`;
   const section=root.querySelector('.space-desktop'),viewport=root.querySelector('.cv-viewport'),world=root.querySelector('.cv-world'),live=root.querySelector('[data-cv-live]');
+  const stackScroll=viewport.querySelector('.cv-stack-scroll'),stackRail=viewport.querySelector('.cv-stack-rail'),stackPointer=viewport.querySelector('.cv-stack-pointer'),stackLine=viewport.querySelector('.cv-stack-focusline'),stackControls=viewport.querySelector('.cv-stack-controls');
+  section.querySelector('.cv-statusbar').append(stackControls);
   if(!collection){
     const header=section.querySelector('.cv-pagehead');
     header.insertBefore(section.querySelector('.cv-toolbar'),header.querySelector('.cv-head-actions'));
@@ -132,14 +139,17 @@ export function mountCanvas(ctx, collection) {
   }
 
   function drawCards() {
+    stackReady=false;
+    itemById.clear();for(const item of collection?.items||state.spaces||[])itemById.set(item.id,item);
     composerCleanup?.();composerCleanup=null;
     world.innerHTML=visibleCards().map((card,index)=>{
       const d=dataFor(card);
       return `<article class="cv-card cv-card-${collection?'collection':presets[card.id]?card.id:'custom'} ${card.h<260?'cv-compact':''} ${card.h<330?'cv-short':''}" data-card="${esc(card.id)}" style="--card-color:${color(d.color)};--card-fill:${canvasCardFill(d.color)};--card-order:${index};width:${card.w}px;height:${card.h}px;transform:translate(${card.x}px,${card.y}px)" tabindex="0" aria-label="${esc(d.title)}，按Enter打开">
-      <header class="cv-card-head"><span class="cv-space-symbol">${safeIcon(d.icon,20)}</span><span class="cv-card-top-label">${collection?esc(collectionText('cardLabel',d,'内容卡片')):card.id==='ai'?'AI 收件台':presets[card.id]?'预置空间':'自建空间'}</span><button type="button" class="cv-drag" data-cv="drag" title="拖动卡片；方向键移动" aria-label="拖动${esc(d.title)}卡片，或使用方向键调整位置">${dragIcon}</button><button type="button" class="cv-card-menu" data-cv="card-menu" title="卡片设置" aria-label="设置${esc(d.title)}卡片">${icon('more',19)}</button></header>
+      <header class="cv-card-head"><span class="cv-space-symbol">${safeIcon(d.icon,20)}</span><span class="cv-stack-title">${esc(d.title)}</span><span class="cv-card-top-label">${collection?esc(collectionText('cardLabel',d,'内容卡片')):card.id==='ai'?'AI 收件台':presets[card.id]?'预置空间':'自建空间'}</span><button type="button" class="cv-drag" data-cv="drag" title="拖动卡片；方向键移动" aria-label="拖动${esc(d.title)}卡片，或使用方向键调整位置">${dragIcon}</button><button type="button" class="cv-card-menu" data-cv="card-menu" title="卡片设置" aria-label="设置${esc(d.title)}卡片">${icon('more',19)}</button></header>
       <div class="cv-card-body">${cardContent(card)}</div><footer class="cv-card-foot"><span>${esc(collectionText('footLabel',d,card.id==='ai'?'收集 → 整理 → 归位':card.id==='ledger'?'按日期记录 · 按项目汇总':'拖入文件，直接收进这里'))}</span><button type="button" data-cv="enter" aria-label="进入${esc(d.title)}">${esc(collectionText('enterLabel',d,card.id==='ai'?'打开收件台':'进入空间'))}${icon('arrow-right',17)}</button></footer>
       <button class="cv-resize" type="button" data-cv="resize" title="拖动调整大小；方向键微调" aria-label="调整${esc(d.title)}卡片大小">${resizeIcon}</button><div class="cv-drop-overlay">${icon('upload',34)}<strong>松手，放入${esc(d.title)}</strong><span>文件保存在本机</span></div></article>`;
     }).join('');
+    cardElements.clear();for(const element of world.querySelectorAll('[data-card]'))cardElements.set(element.dataset.card,element);
     const host=world.querySelector('[data-ai-host]');
     if(host&&ctx.mountAIComposer)composerCleanup=ctx.mountAIComposer(host);
     else if(host)host.innerHTML=`<button type="button" class="cv-ai-fallback" data-cv="ai">${icon('plus',20)}输入想法、拖入文件，交给 AI 整理${icon('arrow-right',20)}</button><p class="cv-ai-connection">AI 尚未连接，内容可以先保存。</p>`;
@@ -154,17 +164,83 @@ export function mountCanvas(ctx, collection) {
 
   function applyView() {
     if(!alive)return;
-    const v=canvas.view;
-    world.style.transform=presentation==='list'?'':`translate(${v.x}px,${v.y}px) scale(${v.zoom})`;
+    const v=canvas.view,free=presentation==='canvas',stack=presentation==='stack',grid=presentation.startsWith('grid-');
+    world.style.transform=free?`translate(${v.x}px,${v.y}px) scale(${v.zoom})`:'';
     viewport.style.setProperty('--dot-size',`${32*v.zoom}px`);
     viewport.style.setProperty('--dot-x',`${v.x}px`);
     viewport.style.setProperty('--dot-y',`${v.y}px`);
     section.querySelector('.cv-zoom-number').textContent=`${Math.round(v.zoom*100)}%`;
-    section.classList.toggle('is-list-mode',presentation==='list');
-    viewport.classList.toggle('is-list',presentation==='list');
-    section.querySelectorAll('.cv-zoom-controls button').forEach(button=>button.disabled=presentation==='list');
-    section.querySelector('[data-cv="snap"]').disabled=presentation==='list';
-    section.querySelector('.cv-edit-toggle').disabled=presentation==='list';
+    section.classList.toggle('is-list-mode',!free);
+    section.classList.toggle('is-grid-mode',grid);
+    section.classList.toggle('is-stack-mode',stack);
+    viewport.classList.toggle('is-list',presentation==='list'||grid);
+    viewport.classList.toggle('is-grid',grid);
+    viewport.classList.toggle('is-grid-2',presentation==='grid-2');
+    viewport.classList.toggle('is-grid-3',presentation==='grid-3');
+    viewport.classList.toggle('is-stack',stack);
+    section.querySelectorAll('.cv-zoom-controls button').forEach(button=>button.disabled=!free);
+    section.querySelector('[data-cv="snap"]').disabled=!free;
+    section.querySelector('.cv-edit-toggle').disabled=!free;
+    stackRail.hidden=stackLine.hidden=stackControls.hidden=!stack;
+    viewport.setAttribute('aria-label',stack?'堆叠卡片，滑动浏览；拖动左侧指针调整展开位置':free?'工作区画布，可拖动背景平移；使用下方按钮缩放':'工作区卡片网格');
+    if(stack){
+      if(!stackReady){
+        const metrics=getStackMetrics();world.style.height=`${metrics.worldHeight}px`;
+        stackScroll.scrollTop=metrics.padding+stackFocus*metrics.step-metrics.pointerY;
+        stackReady=true;
+      }
+      paintStack();
+    }else{
+      world.style.height='';
+      for(const card of visibleCards()){
+        const el=cardEl(card.id);if(!el)continue;
+        placeCard(card);el.style.zIndex='';el.style.removeProperty('--stack-open');el.classList.remove('is-stack-focused');el.removeAttribute('aria-current');
+        el.setAttribute('aria-label',`${dataFor(card).title}，按Enter打开`);
+        el.querySelectorAll('.cv-card-body,.cv-card-foot,.cv-card-menu').forEach(node=>node.inert=false);
+      }
+    }
+  }
+  function getStackMetrics(){return stackMetrics({width:viewport.clientWidth,height:viewport.clientHeight,count:visibleCards().length,pointer:canvas.stackPointer});}
+  function requestStackPaint(){if(!alive||presentation!=='stack'||stackRaf)return;stackRaf=requestAnimationFrame(()=>{stackRaf=0;paintStack();});}
+  function paintStack(){
+    if(!alive||presentation!=='stack')return;
+    const cards=visibleCards(),geometry=stackLayout({width:viewport.clientWidth,height:viewport.clientHeight,count:cards.length,pointer:canvas.stackPointer,scrollTop:stackScroll.scrollTop});
+    stackFocus=geometry.focus;
+    world.style.height=`${geometry.worldHeight}px`;
+    stackPointer.style.top=`${geometry.railY}px`;stackLine.style.top=`${geometry.pointerY}px`;
+    stackPointer.setAttribute('aria-valuenow',String(Math.round(canvas.stackPointer*100)));
+    const title=cards[geometry.activeIndex]?dataFor(cards[geometry.activeIndex]).title:'';
+    stackPointer.setAttribute('aria-valuetext',`${Math.round(canvas.stackPointer*100)}%${title?'，展开'+title:''}`);
+    stackRail.querySelector('.cv-stack-readout').textContent=cards.length?`${geometry.activeIndex+1} / ${cards.length}`:'0 / 0';
+    stackPointer.disabled=!cards.length;
+    stackControls.querySelector('[data-cv="stack-prev"]').disabled=geometry.activeIndex<=0;
+    stackControls.querySelector('[data-cv="stack-next"]').disabled=!cards.length||geometry.activeIndex>=cards.length-1;
+    cards.forEach((card,index)=>{
+      const el=cardEl(card.id),p=geometry.cards[index];if(!el||!p)return;
+      const focused=index===geometry.activeIndex;
+      el.style.width=`${geometry.cardWidth}px`;el.style.height=`${geometry.cardHeight}px`;
+      el.style.transform=`translate(${p.x}px,${p.y}px) rotate(${reducedMotion.matches?0:p.rotate}deg) scale(${reducedMotion.matches?1:p.scale})`;
+      el.style.zIndex=String(p.z);el.style.setProperty('--stack-open',p.openness);
+      el.classList.toggle('is-stack-focused',focused);
+      if(focused)el.setAttribute('aria-current','true');else el.removeAttribute('aria-current');
+      el.querySelectorAll('.cv-card-body,.cv-card-foot,.cv-card-menu').forEach(node=>node.inert=!focused);
+      el.setAttribute('aria-label',`${dataFor(card).title}，按Enter${focused?'打开':'展开'}`);
+    });
+  }
+  function selectStack(index){
+    if(presentation!=='stack'||!visibleCards().length)return;
+    const m=getStackMetrics(),i=clamp(index,0,visibleCards().length-1);
+    stackScroll.scrollTo({top:m.padding+i*m.step-m.pointerY,behavior:reducedMotion.matches?'instant':'smooth'});
+    requestStackPaint();
+  }
+  function stackPointerValue(event){const r=stackRail.getBoundingClientRect();return normalizeStackPointer((event.clientY-r.top)/Math.max(1,r.height));}
+  function finishStackPointer(event){
+    if(!stackDrag||event&&event.pointerId!==stackDrag.id)return false;
+    const drag=stackDrag;stackDrag=null;
+    if(event?.type==='pointercancel')canvas.stackPointer=drag.original;
+    else if(canvas.stackPointer!==drag.original){markCustomized();persist();}
+    if(stackPointer.hasPointerCapture(drag.id))stackPointer.releasePointerCapture(drag.id);
+    section.classList.remove('is-stack-adjusting');requestStackPaint();return true;
   }
   function fitAll() {
     const b=canvasBounds(visibleCards()),r=viewport.getBoundingClientRect();
@@ -182,8 +258,9 @@ export function mountCanvas(ctx, collection) {
     const r=viewport.getBoundingClientRect();
     canvas.view=zoomAt(canvas.view,canvas.view.zoom*factor,{x:r.width/2,y:r.height/2});applyView();delayedSave();
   }
-  function cardEl(id) {return [...world.querySelectorAll('[data-card]')].find(el=>el.dataset.card===id);}
+  function cardEl(id) {return cardElements.get(id);}
   function placeCard(card) {
+    if(presentation==='stack'){requestStackPaint();return;}
     const el=cardEl(card.id);if(!el)return;
     el.style.transform=`translate(${card.x}px,${card.y}px)`;el.style.width=`${card.w}px`;el.style.height=`${card.h}px`;
     el.classList.toggle('cv-compact',card.h<260);el.classList.toggle('cv-short',card.h<330);
@@ -207,15 +284,19 @@ export function mountCanvas(ctx, collection) {
   function onClick(event) {
     if(Date.now()<suppressClickUntil&&event.target.closest('.cv-viewport')){event.preventDefault();event.stopPropagation();return;}
     const button=event.target.closest('[data-cv]');
+    const stackCard=event.target.closest('[data-card]');
+    if(presentation==='stack'&&stackCard&&!stackCard.classList.contains('is-stack-focused')){selectStack(visibleCards().findIndex(c=>c.id===stackCard.dataset.card));return;}
     if(button){
       const action=button.dataset.cv,el=button.closest('[data-card]'),card=canvas.cards.find(c=>c.id===el?.dataset.card);
       if(action==='create')return ctx.createSpace?.();
       if(action==='edit')return setEditing(!editing);
-      if(action==='canvas'||action==='list'){
-        presentation=action;canvas.presentation=action;markCustomized();if(action==='list')setEditing(false);
+      if(CARD_PRESENTATIONS.includes(action)){
+        if(interaction)finish({type:'pointercancel',pointerId:interaction.id});finishStackPointer({type:'pointercancel',pointerId:stackDrag?.id});
+        presentation=action;canvas.presentation=action;stackReady=false;markCustomized();if(action!=='canvas')setEditing(false);
         section.querySelectorAll('.cv-view-tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.cv===action)));
         applyView();persist();return;
       }
+      if(action==='stack-prev'||action==='stack-next')return selectStack(Math.round(stackFocus)+(action==='stack-prev'?-1:1));
       if(action==='snap'){canvas.snap=!canvas.snap;markCustomized();button.setAttribute('aria-pressed',String(canvas.snap));persist();return;}
       if(action==='zoom-in')return scaleView(1.15);
       if(action==='zoom-out')return scaleView(1/1.15);
@@ -240,7 +321,16 @@ export function mountCanvas(ctx, collection) {
   }
 
   function begin(event) {
-    if(presentation==='list')return;
+    if(presentation==='stack'){
+      lastStackPointer=Date.now();
+      if(!stackDrag&&event.isPrimary!==false&&event.button===0&&event.target.closest('.cv-stack-rail')&&visibleCards().length){
+        event.preventDefault();stackPointer.focus({preventScroll:true});
+        stackDrag={id:event.pointerId,original:canvas.stackPointer};stackPointer.setPointerCapture(event.pointerId);
+        canvas.stackPointer=stackPointerValue(event);section.classList.add('is-stack-adjusting');requestStackPaint();
+      }
+      return;
+    }
+    if(presentation!=='canvas')return;
     if(event.button!==0&&event.button!==1)return;
     if(event.target.closest('input,textarea,select,[contenteditable="true"],[data-ai-host]')&&!spaceHeld&&event.button!==1)return;
     const el=event.target.closest('[data-card]'),action=event.target.closest('[data-cv]')?.dataset.cv;
@@ -273,6 +363,7 @@ export function mountCanvas(ctx, collection) {
     if(type==='move'||type==='resize'){el.classList.add('is-positioned');event.preventDefault();}
   }
   function move(event) {
+    if(stackDrag&&stackDrag.id===event.pointerId){event.preventDefault();canvas.stackPointer=stackPointerValue(event);requestStackPaint();return;}
     if(pointers.has(event.pointerId))pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
     const i=interaction;if(!i)return;
     if(i.type==='pinch'){
@@ -303,6 +394,7 @@ export function mountCanvas(ctx, collection) {
     event.preventDefault();
   }
   function finish(event,clearPointers=true) {
+    if(stackDrag&&finishStackPointer(event))return;
     const i=interaction;
     if(clearPointers&&event)pointers.delete(event.pointerId);
     if(!i)return;
@@ -325,7 +417,9 @@ export function mountCanvas(ctx, collection) {
     if(i.moved||i.held||i.type==='press')suppressClickUntil=Date.now()+350;
     i.el?.classList.remove('is-positioned','is-pressing','is-longpress-lifted');viewport.classList.remove('is-panning','is-positioning');interaction=null;
     for(const id of cancelledPointers)if(viewport.hasPointerCapture(id))viewport.releasePointerCapture(id);
-    if(i.id!==undefined&&viewport.hasPointerCapture(i.id))viewport.releasePointerCapture(i.id);
+    // A one-finger gesture hands its capture to the pinch; releasing it here would
+    // dispatch a delayed lostpointercapture and cancel the newly started pinch.
+    if(clearPointers&&i.id!==undefined&&viewport.hasPointerCapture(i.id))viewport.releasePointerCapture(i.id);
     if(event&&viewport.hasPointerCapture(event.pointerId))viewport.releasePointerCapture(event.pointerId);
     if(event?.type==='pointerup'&&!i.moved&&i.type==='press')ctx.enterCard?.(i.card.id,i.el);
   }
@@ -339,6 +433,16 @@ export function mountCanvas(ctx, collection) {
   }
   function keydown(event) {
     if(event.target.closest('input,textarea,select,[contenteditable="true"]')||document.querySelector('dialog[open]'))return;
+    if(presentation==='stack'){
+      if(event.target===stackPointer&&['ArrowUp','ArrowDown','Home','End'].includes(event.key)){
+        event.preventDefault();canvas.stackPointer=normalizeStackPointer(event.key==='Home'?0:event.key==='End'?1:canvas.stackPointer+(event.key==='ArrowUp'?-.04:.04));markCustomized();persist();requestStackPaint();return;
+      }
+      if((event.target===viewport||event.target.matches('.cv-card'))&&['ArrowUp','ArrowDown','Home','End'].includes(event.key)){
+        event.preventDefault();selectStack(event.key==='Home'?0:event.key==='End'?visibleCards().length-1:Math.round(stackFocus)+(event.key==='ArrowUp'?-1:1));return;
+      }
+      if(event.key==='Enter'&&event.target.matches('.cv-card')&&!event.target.classList.contains('is-stack-focused')){event.preventDefault();selectStack(visibleCards().findIndex(c=>c.id===event.target.dataset.card));return;}
+      if(event.key==='Escape'&&stackDrag){finishStackPointer({type:'pointercancel',pointerId:stackDrag.id});return;}
+    }
     if(event.code==='Space'&&section.contains(event.target)&&presentation==='canvas'){spaceHeld=true;viewport.classList.add('can-pan');event.preventDefault();}
     const target=event.target.closest('[data-card]'),card=canvas.cards.find(c=>c.id===target?.dataset.card),action=event.target.closest('[data-cv]')?.dataset.cv;
     if(card&&['drag','resize'].includes(action)&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)&&presentation==='canvas'){
@@ -348,11 +452,12 @@ export function mountCanvas(ctx, collection) {
     }
     if(event.key==='Enter'&&target===event.target){event.preventDefault();ctx.enterCard?.(card.id,target);}
     if(event.key==='Escape'){if(interaction)finish({type:'pointercancel',pointerId:interaction.id});setEditing(false);spaceHeld=false;viewport.classList.remove('can-pan');pointers.clear();}
-    if(event.target===viewport&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){event.preventDefault();canvas.view.x+=event.key==='ArrowRight'?-60:event.key==='ArrowLeft'?60:0;canvas.view.y+=event.key==='ArrowDown'?-60:event.key==='ArrowUp'?60:0;applyView();delayedSave();}
+    if(presentation==='canvas'&&event.target===viewport&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){event.preventDefault();canvas.view.x+=event.key==='ArrowRight'?-60:event.key==='ArrowLeft'?60:0;canvas.view.y+=event.key==='ArrowDown'?-60:event.key==='ArrowUp'?60:0;applyView();delayedSave();}
   }
   function keyup(event) {if(event.code==='Space'){spaceHeld=false;viewport.classList.remove('can-pan');}}
-  function blur(){spaceHeld=false;viewport.classList.remove('can-pan');if(interaction)finish({type:'pointercancel',pointerId:interaction.id});pointers.clear();}
-  function lostCapture(event){if(interaction?.id===event.pointerId)finish({type:'pointercancel',pointerId:event.pointerId});}
+  function blur(){spaceHeld=false;viewport.classList.remove('can-pan');if(interaction)finish({type:'pointercancel',pointerId:interaction.id});if(stackDrag)finishStackPointer({type:'pointercancel',pointerId:stackDrag.id});pointers.clear();}
+  function lostCapture(event){if(stackDrag?.id===event.pointerId)finishStackPointer({type:'pointercancel',pointerId:event.pointerId});if(interaction?.id===event.pointerId||interaction?.type==='pinch')finish({type:'pointercancel',pointerId:event.pointerId});}
+  function stackFocusIn(event){if(presentation==='stack'&&Date.now()-lastStackPointer>600&&event.target.matches('.cv-card'))selectStack(visibleCards().findIndex(c=>c.id===event.target.dataset.card));}
   function contextMenu(event){if(presentation==='canvas'&&event.target.closest('[data-card]')&&!event.target.closest('input,textarea,select,[contenteditable="true"],[data-ai-host]'))event.preventDefault();}
   function fileDrag(event) {
     if(collection?.canDrop===false)return;
@@ -383,9 +488,10 @@ export function mountCanvas(ctx, collection) {
     canvas.view.y=(bounds.height-card.h*canvas.view.zoom)/2-card.y*canvas.view.zoom;
     applyView();persist();
   }
-  const onResize=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(applyView);};
+  const onResize=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{if(presentation==='stack')stackReady=false;applyView();});};
   const resizeObserver=new ResizeObserver(onResize);resizeObserver.observe(viewport);
   section.addEventListener('click',onClick);
+  stackScroll.addEventListener('scroll',requestStackPaint,{passive:true});section.addEventListener('focusin',stackFocusIn);
   viewport.addEventListener('pointerdown',begin);
   viewport.addEventListener('pointermove',move);
   viewport.addEventListener('pointerup',finish);
@@ -398,8 +504,10 @@ export function mountCanvas(ctx, collection) {
   window.addEventListener('blur',blur);
   viewport.addEventListener('dragenter',fileDrag);viewport.addEventListener('dragover',fileDrag);viewport.addEventListener('dragleave',fileDrag);viewport.addEventListener('drop',drop);
   const dispose=()=>{
+    if(stackDrag)finishStackPointer({type:'pointercancel',pointerId:stackDrag.id});
     if(interaction)finish({type:'pointercancel',pointerId:interaction.id});
-    if(saveTimer){clearTimeout(saveTimer);persist();}alive=false;cancelAnimationFrame(raf);clearTimeout(section._cvStatusTimer);resizeObserver.disconnect();composerCleanup?.();pointers.clear();
+    if(saveTimer){clearTimeout(saveTimer);persist();}alive=false;cancelAnimationFrame(raf);cancelAnimationFrame(stackRaf);clearTimeout(section._cvStatusTimer);resizeObserver.disconnect();composerCleanup?.();pointers.clear();
+    stackScroll.removeEventListener('scroll',requestStackPaint);section.removeEventListener('focusin',stackFocusIn);
     section.removeEventListener('click',onClick);viewport.removeEventListener('pointerdown',begin);viewport.removeEventListener('pointermove',move);viewport.removeEventListener('pointerup',finish);viewport.removeEventListener('pointercancel',finish);viewport.removeEventListener('wheel',wheel);section.removeEventListener('keydown',keydown);window.removeEventListener('keyup',keyup);window.removeEventListener('blur',blur);
     viewport.removeEventListener('dragenter',fileDrag);viewport.removeEventListener('dragover',fileDrag);viewport.removeEventListener('dragleave',fileDrag);viewport.removeEventListener('drop',drop);
     viewport.removeEventListener('lostpointercapture',lostCapture);viewport.removeEventListener('contextmenu',contextMenu);

@@ -195,7 +195,8 @@ function canvas(value, label = '主页画布') {
     const view = object(value.view, '画布视角');
     result.view = {x: finite(view.x, '画布视角横坐标'), y: finite(view.y, '画布视角纵坐标'), zoom: finite(view.zoom, '画布缩放', .3, 1.6)};
   }
-  if (value.presentation !== undefined) result.presentation = choice(value.presentation, ['canvas','list'], '画布展示方式');
+  if (value.presentation !== undefined) result.presentation = choice(value.presentation, ['canvas','list','grid-2','grid-3','stack'], '画布展示方式');
+  if (value.stackPointer !== undefined) result.stackPointer = finite(value.stackPointer, '堆叠指针位置', 0, 1);
   return optionalFields(value, result, ['modifiedAt'], ['customized']);
 }
 function word(value) {
