@@ -1,6 +1,7 @@
 import {previewOrganizedContent} from './ai-organizer.js';
 import {cloudAIEnabled,jobFor,jobWorking,startAIJob,watchAIJobs} from './ai-cloud.js';
 import {ensureConversation} from './ai-conversation-model.js';
+import {formatMoney,parseAmount} from './ledger-model.js';
 
 export function mountConversationPage(ctx,spaceId,helpers){
   const {root,state,esc,icon,toast,save,go,uid}=ctx;
@@ -30,10 +31,25 @@ export function mountConversationPage(ctx,spaceId,helpers){
     });
   };
   const requestNow=()=>state.aiRequests.find(r=>r.id===active);
-  const visit=target=>{if(target.startsWith('space:'))go('space',target.slice(6));else if(target.startsWith('course:'))go('courses',target.slice(7));else go(target,target==='english'?'materials':'');};
+  const ledgerTarget=target=>target==='ledger'||target?.startsWith('ledger:');
+  const visit=target=>{if(target==='ledger')go('ledger','daily');else if(target.startsWith('ledger:'))go('ledger',target.slice(7));else if(target.startsWith('space:'))go('space',target.slice(6));else if(target.startsWith('course:'))go('courses',target.slice(7));else go(target,target==='english'?'materials':'');};
+  const money=cents=>`¥${formatMoney(cents)}`;
+  const ledgerSummary=actions=>{
+    const entries=actions.filter(a=>a.ledger);if(!entries.length)return '';
+    const sum=income=>entries.filter(a=>(a.type==='新增收入')===income).reduce((total,a)=>total+a.amountCents,0);
+    return `<div class="ai-chat-ledger-summary" aria-label="本次记账汇总"><div><span>本次支出</span><strong>${money(sum(false))}</strong></div><div><span>本次收入</span><strong>${money(sum(true))}</strong></div><div><span>待记入</span><strong>${entries.length}<small> 笔</small></strong></div></div>`;
+  };
+  const ledgerDetails=a=>`<div class="ai-chat-ledger-amount ${a.type==='新增收入'?'income':'expense'}"><strong>${a.type==='新增收入'?'+':'−'}${money(a.amountCents)}</strong><span>${esc(a.category)}</span></div><dl class="ai-chat-ledger-meta"><div><dt>日期</dt><dd>${esc(a.date)}</dd></div>${typeof a.includeInTotal==='boolean'?`<div><dt>总账</dt><dd>${a.includeInTotal?'计入总账单':'项目独立核算 · 不计入总账'}</dd></div>`:''}<div><dt>备注</dt><dd>${esc(a.content||'无')}</dd></div></dl>`;
+  const pastLedgerHTML=p=>{
+    if(!p.ledgerEntries?.length)return '';
+    try{
+      const actions=p.ledgerEntries.map(e=>({ledger:true,type:e.type==='income'?'新增收入':'新增支出',amountCents:parseAmount(e.amount),date:e.date,category:e.category,content:e.note}));
+      return `${ledgerSummary(actions)}<p class="ai-chat-ledger-history-target">账本：${esc(destinationLabel(state,p.destinationId))}</p><div class="ai-chat-ledger-history">${actions.map(a=>`<section>${ledgerDetails(a)}</section>`).join('')}</div>`;
+    }catch{return '<p>这轮记账方案格式已变化，请以最新审核单为准。</p>';}
+  };
   const proposalHTML=p=>{
     let actions;try{actions=previewOrganizedContent(state,active,p);}catch(error){return `<div class="ai-chat-proposal"><strong>方案需要调整</strong><p>${esc(error.message)}</p><button class="btn" data-chat="revise">继续对话</button></div>`;}
-    return `<section class="ai-chat-proposal" aria-label="行动审核单"><header><span>${icon('shield',18)}待你审核 · 尚未执行</span><strong>行动目标：${esc(p.title)}</strong></header><p>${esc(p.summary)}</p>${p.reason?`<p class="ai-chat-review-reason">方案依据：${esc(p.reason)}</p>`:''}<h3 class="ai-chat-review-title">确认后将执行 ${actions.length} 项操作</h3><ol class="ai-chat-actions">${actions.map((a,i)=>`<li><div class="ai-chat-action-heading"><b>${i+1}</b><span>${esc(a.type)} → ${esc(a.destination)}</span></div><strong>${esc(a.title)}</strong>${a.priority?`<p>日期：${esc(a.date||'未设日期')} · 优先级：${esc(a.priority)}</p>`:''}${a.content?`<details open><summary>查看完整内容</summary><div class="ai-chat-note">${esc(a.content)}</div></details>`:''}${a.fileName?`<p>原始附件：${esc(a.fileName)}</p>`:''}</li>`).join('')}</ol>${p.warnings.length?`<p class="ai-chat-warning">需要核对：<br>${p.warnings.map(esc).join('<br>')}</p>`:''}<footer><button class="btn primary" data-chat="confirm" ${busy?'disabled':''}>${icon('check-circle',16)}${busy?'正在执行…':'确认执行这 '+actions.length+' 项操作'}</button><button class="btn" data-chat="revise">继续修改方案</button><span>仅执行上面列出的新增操作。继续发送消息会使本方案失效，需重新审核。</span></footer></section>`;
+    return `<section class="ai-chat-proposal" aria-label="行动审核单"><header><span>${icon('shield',18)}待你审核 · 尚未执行</span><strong>行动目标：${esc(p.title)}</strong></header>${ledgerSummary(actions)}<p>${esc(p.summary)}</p>${p.reason?`<p class="ai-chat-review-reason">方案依据：${esc(p.reason)}</p>`:''}<h3 class="ai-chat-review-title">确认后将执行 ${actions.length} 项操作</h3><ol class="ai-chat-actions">${actions.map((a,i)=>`<li><div class="ai-chat-action-heading"><b>${i+1}</b><span>${esc(a.type)} → ${esc(a.destination)}</span></div>${a.ledger?ledgerDetails(a):`<strong>${esc(a.title)}</strong>${a.priority?`<p>日期：${esc(a.date||'未设日期')} · 优先级：${esc(a.priority)}</p>`:''}${a.content?`<details open><summary>查看完整内容</summary><div class="ai-chat-note">${esc(a.content)}</div></details>`:''}${a.fileName?`<p>原始附件：${esc(a.fileName)}</p>`:''}`}</li>`).join('')}</ol>${actions.length&&actions.every(a=>a.ledger)&&requestNow()?.files?.length?'<p class="ai-chat-ledger-files-note">原始账单附件保留在这段对话中，方便核对。</p>':''}${p.warnings.length?`<p class="ai-chat-warning">需要核对：<br>${p.warnings.map(esc).join('<br>')}</p>`:''}<footer><button class="btn primary" data-chat="confirm" ${busy?'disabled':''}>${icon('check-circle',16)}${busy?'正在执行…':'确认执行这 '+actions.length+' 项操作'}</button><button class="btn" data-chat="revise">继续修改方案</button><span>仅执行上面列出的新增操作。继续发送消息会使本方案失效，需重新审核。</span></footer></section>`;
   };
   function render(){
     if(!alive)return;
@@ -48,7 +64,7 @@ export function mountConversationPage(ctx,spaceId,helpers){
       if(!request)thread.innerHTML=`<div class="ai-chat-welcome"><span>${icon('message',30)}</span><h2>不必一次说完整。</h2><p>先自由聊聊你的想法，我会追问缺少的信息。目标明确后，我会列出行动审核单；你检查并点击「确认执行」，才会改动工作区。</p></div>`;
       else {
         const messages=request.conversation?.messages||[{role:'user',text:request.text||'请看看这些附件。'}];
-        thread.innerHTML=`<div class="ai-chat-thread-heading"><h2>${esc(request.text?.slice(0,55)||'附件对话')}</h2>${request.conversation?.parentRequestId?'<span>接着上次的话题</span>':''}</div><div class="ai-chat-messages" role="log" aria-label="对话记录">${messages.map(m=>`<article class="ai-chat-message ${m.role}"><span>${m.role==='user'?'你':'宇宙 AI'}</span><div>${esc(m.text)}</div>${m.proposal?`<details class="ai-chat-past-proposal"><summary>查看这一轮方案</summary><div><strong>${esc(m.proposal.title)}</strong><p>${esc(m.proposal.summary)}</p>${m.proposal.notes.map(n=>`<h4>${esc(n.title)}</h4><p>${esc(n.content)}</p>`).join('')}${m.proposal.tasks.length?`<ul>${m.proposal.tasks.map(t=>`<li>${esc(t.title)}${t.date?' · '+esc(t.date):''}</li>`).join('')}</ul>`:''}</div></details>`:''}</article>`).join('')}</div>${request.files?.length?`<details class="ai-chat-files"><summary>${request.files.length} 个对话附件</summary>${request.files.map(f=>`<button data-chat="download" data-file="${esc(f.id)}">${icon('file',16)}${esc(f.name)}${icon('download',16)}</button>`).join('')}</details>`:''}${request.status==='waiting_model'&&request.conversation?.proposal?proposalHTML(request.conversation.proposal):''}${request.status==='filed'?`<div class="ai-chat-receipt"><strong>${icon('check-circle',18)}已执行 ${request.receipt?.items?.length||0} 项操作 · ${esc(request.receipt?.destinationLabel||'工作区')}</strong><p>这次对话和原始附件已保留。</p><ul class="ai-chat-executed">${(request.receipt?.items||[]).map(item=>`<li>${esc(item.type)} · ${esc(item.title)}</li>`).join('')}</ul><div><button class="btn primary" data-chat="visit">打开工作区</button><button class="btn" data-chat="continue">接着聊</button>${ctx.undoRoute?'<button class="text-btn" data-chat="undo">撤销本次归档</button>':''}</div></div>`:request.status==='cancelled'?'<div class="ai-chat-receipt"><p>对话已暂停，消息和附件仍保留。</p><button class="btn" data-chat="restore">恢复对话</button></div>':''}`;
+        thread.innerHTML=`<div class="ai-chat-thread-heading"><h2>${esc(request.text?.slice(0,55)||'附件对话')}</h2>${request.conversation?.parentRequestId?'<span>接着上次的话题</span>':''}</div><div class="ai-chat-messages" role="log" aria-label="对话记录">${messages.map(m=>`<article class="ai-chat-message ${m.role}"><span>${m.role==='user'?'你':'宇宙 AI'}</span><div>${esc(m.text)}</div>${m.proposal?`<details class="ai-chat-past-proposal"><summary>查看这一轮方案</summary><div><strong>${esc(m.proposal.title)}</strong><p>${esc(m.proposal.summary)}</p>${pastLedgerHTML(m.proposal)}${m.proposal.notes.map(n=>`<h4>${esc(n.title)}</h4><p>${esc(n.content)}</p>`).join('')}${m.proposal.tasks.length?`<ul>${m.proposal.tasks.map(t=>`<li>${esc(t.title)}${t.date?' · '+esc(t.date):''}</li>`).join('')}</ul>`:''}</div></details>`:''}</article>`).join('')}</div>${request.files?.length?`<details class="ai-chat-files"><summary>${request.files.length} 个对话附件</summary>${request.files.map(f=>`<button data-chat="download" data-file="${esc(f.id)}">${icon('file',16)}${esc(f.name)}${icon('download',16)}</button>`).join('')}</details>`:''}${request.status==='waiting_model'&&request.conversation?.proposal?proposalHTML(request.conversation.proposal):''}${request.status==='filed'?`<div class="ai-chat-receipt"><strong>${icon('check-circle',18)}已执行 ${request.receipt?.items?.length||0} 项操作 · ${esc(request.receipt?.destinationLabel||'工作区')}</strong><p>这次对话和原始附件已保留。</p><ul class="ai-chat-executed">${(request.receipt?.items||[]).map(item=>`<li>${esc(item.type)} · ${esc(item.title)}</li>`).join('')}</ul><div><button class="btn primary" data-chat="visit">${ledgerTarget(request.receipt?.destinationId)?'打开账本':'打开工作区'}</button><button class="btn" data-chat="continue">接着聊</button>${ctx.undoRoute?'<button class="text-btn" data-chat="undo">撤销本次归档</button>':''}</div></div>`:request.status==='cancelled'?'<div class="ai-chat-receipt"><p>对话已暂停，消息和附件仍保留。</p><button class="btn" data-chat="restore">恢复对话</button></div>':''}`;
         requestAnimationFrame(()=>{if(!alive)return;const review=thread.querySelector('.ai-chat-proposal');if(review)thread.scrollTop+=review.getBoundingClientRect().top-thread.getBoundingClientRect().top;else thread.scrollTop=thread.scrollHeight;});
       }
     }
@@ -62,7 +78,7 @@ export function mountConversationPage(ctx,spaceId,helpers){
     }
     const needsReply=request?.status==='waiting_model'&&(!request.conversation||request.conversation.messages.at(-1)?.role==='user');
     status.innerHTML=`${message?`<p>${esc(message)}</p>`:''}${needsReply&&cloudAIEnabled(ctx)&&!working?`<button class="btn" data-chat="retry" ${busy?'disabled':''}>${icon('refresh',16)}${job?.status==='failed'?'重试这一轮':'让 AI 回复'}</button>`:''}`;
-    if(request?.status==='waiting_model'&&!working&&!request.conversation?.proposal)status.insertAdjacentHTML('beforeend','<button class="text-btn ai-chat-manual" data-chat="manual">直接归档原文</button>');
+    if(request?.status==='waiting_model'&&!working&&!request.conversation?.proposal&&!ledgerTarget(request.targetId))status.insertAdjacentHTML('beforeend','<button class="text-btn ai-chat-manual" data-chat="manual">直接归档原文</button>');
     const nextComposer=request&&request.status!=='waiting_model'?'closed':request?.id||'new';
     if(nextComposer!==composerKey){
       disposeComposer?.();composer.innerHTML='';composerKey=nextComposer;
@@ -93,7 +109,7 @@ export function mountConversationPage(ctx,spaceId,helpers){
       if(action==='revise'){composer.querySelector('textarea')?.focus();toast('在输入框里告诉我哪里需要调整，发送后会重新生成审核单。');return;}
       if(action==='retry'){await startAIJob(ctx,request);render();return;}
       if(action==='manual'){
-        ctx.modal({title:'直接归档原文',body:`<p>保存你发送过的文字和全部附件。</p><label class="field">归档到<select name="destination">${destinations(state).filter(d=>d.id!=='auto').map(d=>`<option value="${esc(d.id)}" ${d.id===(request.targetId==='auto'?'inbox':request.targetId)?'selected':''}>${esc(d.title)}</option>`).join('')}</select></label>`,submitLabel:'确认归档原文',onSubmit:async form=>{
+        ctx.modal({title:'直接归档原文',body:`<p>保存你发送过的文字和全部附件。</p><label class="field">归档到<select name="destination">${destinations(state).filter(d=>d.id!=='auto'&&!ledgerTarget(d.id)).map(d=>`<option value="${esc(d.id)}" ${d.id===(request.targetId==='auto'?'inbox':request.targetId)?'selected':''}>${esc(d.title)}</option>`).join('')}</select></label>`,submitLabel:'确认归档原文',onSubmit:async form=>{
           const text=request.conversation?.messages.filter(m=>m.role==='user').map(m=>m.text).join('\n\n')||request.text;
           await ctx.routeContent({text,files:request.files||[],targetId:String(form.get('destination')),requestId:request.id});render();
         }});return;

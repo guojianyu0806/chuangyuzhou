@@ -22,6 +22,18 @@
 .ai-chat-main .ai-compose-live:empty{display:none}
 .ai-chat-page .ai-chat-main .ai-compose-footer{padding-top:8px}
 .ai-chat-page .ai-chat-main .ai-attachment-chips{max-height:74px;overflow-y:auto;overscroll-behavior:contain}
+.ai-chat-ledger-summary{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;margin-top:14px;white-space:normal}
+.ai-chat-ledger-summary>div{min-width:0;border:1px solid #a7d9cb;border-radius:11px;background:#fff;padding:10px}
+.ai-chat-ledger-summary span{display:block;color:#46776e;font-size:11px;margin-bottom:4px}
+.ai-chat-ledger-summary strong{display:block;font-size:19px;line-height:1.35;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;color:#25554d}
+.ai-chat-ledger-summary strong small{font-size:11px;display:inline;color:inherit}
+.ai-chat-ledger-amount{display:flex;gap:10px;align-items:baseline;justify-content:space-between;flex-wrap:wrap;white-space:normal}
+.ai-chat-ledger-amount strong{font-size:24px;line-height:1.4;font-variant-numeric:tabular-nums;color:#9a4d24;overflow-wrap:anywhere}
+.ai-chat-ledger-amount.income strong{color:#21766b}.ai-chat-ledger-amount>span{font-size:12px;color:#3a605b;overflow-wrap:anywhere}
+.ai-chat-ledger-meta{display:grid;gap:7px;margin:10px 0 0;font-size:12px;line-height:1.7;white-space:normal}
+.ai-chat-ledger-meta>div{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px}.ai-chat-ledger-meta dt{color:#668278}.ai-chat-ledger-meta dd{margin:0;overflow-wrap:anywhere;white-space:pre-wrap;color:#355c53}
+.ai-chat-ledger-history{display:grid;gap:8px;margin-top:10px;white-space:normal}.ai-chat-ledger-history>section{padding:10px;border:1px solid #d6c9e6;border-radius:9px;background:#f8f5fc}.ai-chat-ledger-history .ai-chat-ledger-amount strong{font-size:19px}.ai-chat-ledger-history-target{white-space:normal}
+@media(max-width:760px){.ai-chat-ledger-summary{gap:5px;margin-top:10px}.ai-chat-ledger-summary>div{padding:7px 6px;border-radius:8px}.ai-chat-ledger-summary span{font-size:10px}.ai-chat-ledger-summary strong{font-size:16px}.ai-chat-ledger-amount strong{font-size:22px}.ai-chat-ledger-meta{font-size:11px;gap:5px}}
 
 @media(max-width:1000px) and (min-width:761px){
  .ai-chat-heading{margin-bottom:12px}.ai-chat-heading h1{font-size:25px}

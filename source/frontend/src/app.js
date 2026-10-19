@@ -396,7 +396,7 @@ function render(){
   if(route==='space')cleanupView=mountSpace(view,subroute);
   if(route==='courses')cleanupView=mountCourses(view,subroute);
   if(route==='english')cleanupView=mountEnglish(view,subroute);
-  if(route==='ledger')cleanupView=mountLedger(view);
+  if(route==='ledger')cleanupView=mountLedger(view,subroute);
   if(route==='calendar')cleanupView=mountCalendar(view);
   if(route==='timetable')cleanupView=mountTimetable(view);
   if(route==='tasks')renderTasks();if(route==='inbox')renderInbox();if(route==='review')renderReview();if(route==='settings')renderSettings();

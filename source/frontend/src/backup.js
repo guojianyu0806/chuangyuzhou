@@ -2,7 +2,7 @@ import {validateCalendar} from './calendar-model.js';
 import {validateConversation} from './ai-conversation-model.js';
 // Pure backup validation and additive merging. No browser storage or file writes.
 import {validateOrganizedProposal} from './ai-organizer.js';
-import {validateLedger} from './ledger-model.js';
+import {validateLedger,validateLedgerEntry} from './ledger-model.js';
 import {validateTimetable, mergeTimetables} from './timetable-model.js';
 import {isRecordColor, assignRecordColor} from './creation-colors.js';
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
@@ -143,14 +143,14 @@ function space(value) {
 }
 function destination(value) {
   const result = identifier(value, '目标工作区');
-  if (!['auto','english','inbox','tasks'].includes(result) && !/^(space|course):[^\s]+$/.test(result)) fail('目标工作区');
+  if (!['auto','english','inbox','tasks','ledger'].includes(result) && !/^(space|course|ledger):[^\s]+$/.test(result)) fail('目标工作区');
   return result;
 }
 function aiRevision(value) {
   return {text: text(value.text, 'AI 请求修订内容'), targetId: destination(value.targetId ?? 'auto'), savedAt: text(value.savedAt, 'AI 请求修订时间')};
 }
 function receiptItem(value) {
-  const collection = choice(value.collection, ['notes','files','tasks','captures'], '归档集合', undefined);
+  const collection = choice(value.collection, ['notes','files','tasks','captures','ledgerEntries'], '归档集合', undefined);
   if (!collection) fail('归档集合');
   const result = {
     id: identifier(value.id, '归档条目编号'), type: text(value.type, '归档条目类型'), title: text(value.title, '归档条目名称'),
@@ -159,8 +159,9 @@ function receiptItem(value) {
   if (result.snapshot) {
     let parsed;
     try { parsed = JSON.parse(result.snapshot); } catch { fail('归档撤回快照'); }
-    const normalized = ({notes:note,files:courseFile,tasks:task,captures:capture}[collection])(object(parsed, '归档撤回快照'));
+    const normalized = ({notes:note,files:courseFile,tasks:task,captures:capture,ledgerEntries:validateLedgerEntry}[collection])(object(parsed, '归档撤回快照'));
     if (normalized.id !== result.id) fail('归档快照编号');
+    if (collection === 'ledgerEntries' && (result.containerId !== (normalized.projectId ? `ledger:${normalized.projectId}` : 'ledger') || !normalized.sourceRequestId)) fail('记账归档快照');
     result.snapshot = JSON.stringify(normalized);
   }
   return result;

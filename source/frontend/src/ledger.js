@@ -15,7 +15,7 @@ function monthRange() {
 }
 function initialView() { return { ...monthRange(), scope:'daily', projectId: 'all', type: 'all', archived: false, query: '', group: 'date', limit: 80 }; }
 
-export function mountLedger(ctx) {
+export function mountLedger(ctx, destination='') {
   initializeLedger(ctx.state);
   const { root, state, esc, icon } = ctx;
   const viewOwner = ctx.cloud || state;
@@ -23,6 +23,13 @@ export function mountLedger(ctx) {
   const ownerViews = views.get(viewOwner);
   if (!ownerViews.has(state.mode)) ownerViews.set(state.mode, initialView());
   const view = ownerViews.get(state.mode);view.scope ||= 'daily';
+  // A receipt opens its own account across all dates. Cloud refreshes keep any
+  // filters subsequently chosen by the user while they remain on this page.
+  if(destination!==view.routeTarget){
+    if(destination==='daily')Object.assign(view,{scope:'daily',projectId:'all',start:'',end:'',type:'all',query:'',archived:false,limit:80});
+    else if(destination&&state.ledger.projects.some(p=>p.id===destination))Object.assign(view,{scope:'projects',projectId:destination,start:'',end:'',type:'all',query:'',archived:false,limit:80});
+    view.routeTarget=destination;
+  }
   let mounted = true;
   if (view.projectId !== 'all' && view.projectId && !state.ledger.projects.some(p => p.id === view.projectId)) view.projectId = 'all';
   const money = cents => `¥${formatMoney(cents)}`;
@@ -135,6 +142,11 @@ export function mountLedger(ctx) {
     const { ledgerAction: action, id } = button.dataset;
     run(() => {
       if (action === 'add-entry') openEntry();
+      if (action === 'ai-entry') {
+        const project=view.scope==='projects'&&state.ledger.projects.find(p=>p.id===view.projectId&&!p.archived);
+        try{sessionStorage.removeItem('yuzhou-active-ai-'+state.mode);}catch{}
+        ctx.go('ai',project?`ledger:${project.id}`:view.scope==='daily'?'ledger':'auto');
+      }
       if (action === 'add-project') openProject();
       if (action === 'manage-projects') manageProjects();
       if (action === 'edit-entry') openEntry(state.ledger.entries.find(e => e.id === id));
@@ -182,7 +194,7 @@ export function mountLedger(ctx) {
       ${entries.length ? [...groupEntries].map(([key, items]) => groupMarkup(key, items, allGroupEntries.get(key))).join('') : `<div class="ledger-empty">${icon('wallet', 30)}<h3>${view.archived ? '没有符合筛选的归档账目' : '这里还没有账目'}</h3><p>${state.ledger.entries.length ? '可以调整日期、项目或收支筛选。' : '从今天的一顿饭，或一个新项目开始。'}</p>${view.archived ? '' : `<button class="btn primary" data-ledger-action="add-entry">${icon('plus', 16)}记一笔</button>`}</div>`}
       ${entries.length > view.limit ? `<button class="btn ledger-more" data-ledger-action="more">再显示 ${Math.min(80, entries.length - view.limit)} 笔 · 共 ${entries.length} 笔</button>` : ''}</section>`;
   }
-  root.innerHTML = `<div class="ledger-page interior-page"><header class="ledger-head"><div><h1>${icon('wallet', 25)}记账</h1><p>日常零钱单独记，项目收支自由决定是否计入总账。</p></div><div class="ledger-head-actions"><button class="btn" data-ledger-action="add-project">${icon('layers', 16)}新建项目</button><button class="btn primary" data-ledger-action="add-entry">${icon('plus', 17)}记一笔</button></div></header>
+  root.innerHTML = `<div class="ledger-page interior-page"><header class="ledger-head"><div><h1>${icon('wallet', 25)}记账</h1><p>日常零钱单独记，项目收支自由决定是否计入总账。</p></div><div class="ledger-head-actions"><button class="btn" data-ledger-action="ai-entry">${icon('sparkles',16)}AI 记账</button><button class="btn" data-ledger-action="add-project">${icon('layers', 16)}新建项目</button><button class="btn primary" data-ledger-action="add-entry">${icon('plus', 17)}记一笔</button></div></header>
     <nav class="ledger-account-tabs" aria-label="账本统计范围">${[['daily','日常零钱'],['projects','项目账本'],['total','总账单']].map(([id,label])=>`<button data-ledger-scope="${id}" aria-pressed="${view.scope===id}">${icon(id==='daily'?'wallet':id==='projects'?'layers':'chart',17)}${label}</button>`).join('')}</nav>
     <section class="ledger-filters" aria-label="账目筛选"><div class="ledger-filter-top"><div class="ledger-quick-dates" role="group" aria-label="快捷日期"><button data-ledger-period="month">本月</button><button data-ledger-period="today">今天</button><button data-ledger-period="all">全部日期</button></div><label class="ledger-archived"><input type="checkbox" data-ledger-filter="archived" ${view.archived ? 'checked' : ''}>查看归档账目</label></div>
     <div class="ledger-filter-fields"><label>开始日期<input type="date" data-ledger-filter="start" aria-label="开始日期" value="${esc(view.start)}" min="1900-01-01" max="9999-12-31"></label><label>结束日期<input type="date" data-ledger-filter="end" aria-label="结束日期" value="${esc(view.end)}" min="1900-01-01" max="9999-12-31"></label><label data-ledger-project-filter ${view.scope!=='projects'?'hidden':''}>项目<select data-ledger-filter="projectId" aria-label="筛选项目">${projectOptions(view.projectId, true)}</select></label><label>收支<select data-ledger-filter="type" aria-label="筛选收支"><option value="all" ${view.type === 'all' ? 'selected' : ''}>全部收支</option><option value="expense" ${view.type === 'expense' ? 'selected' : ''}>支出</option><option value="income" ${view.type === 'income' ? 'selected' : ''}>收入</option></select></label><label class="ledger-query">搜索<input type="search" data-ledger-filter="query" aria-label="搜索分类或备注" placeholder="分类或备注" maxlength="200" value="${esc(view.query)}"></label></div><p class="ledger-range-error" data-ledger-range-error role="status"></p></section><div data-ledger-content aria-live="polite"></div></div>`;
@@ -227,5 +239,5 @@ export function mountLedger(ctx) {
   }
   root.addEventListener('click', click); root.addEventListener('input', updateFilter); root.addEventListener('change', updateFilter);
   drawContent(); markPeriod();
-  return () => { mounted = false; root.removeEventListener('click', click); root.removeEventListener('input', updateFilter); root.removeEventListener('change', updateFilter); };
+  return () => { mounted = false;if(!location.hash.startsWith('#/ledger'))delete view.routeTarget; root.removeEventListener('click', click); root.removeEventListener('input', updateFilter); root.removeEventListener('change', updateFilter); };
 }

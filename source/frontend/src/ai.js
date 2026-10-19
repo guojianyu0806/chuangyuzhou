@@ -19,6 +19,8 @@ function destinations(state) {
     { id: 'auto', title: '由 AI 判断归属', group: '自动整理' },
     ...(state.spaces || []).filter(s => !s.archived).map(s => ({ id: `space:${s.id}`, title: s.title, group: '我的工作区' })),
     ...(state.courses || []).filter(s => !s.archived).map(s => ({ id: `course:${s.id}`, title: s.title, group: '课程空间' })),
+    { id: 'ledger', title: '记账 · 日常零钱', matchTitle: '日常零钱', group: '记账项目' },
+    ...(state.ledger?.projects || []).filter(p => !p.archived).map(p => ({ id: `ledger:${p.id}`, title: `记账 · ${p.title}`, matchTitle: p.title, group: '记账项目' })),
     { id: 'english', title: '六级空间', group: '常用空间' },
     { id: 'inbox', title: '收集箱', group: '常用空间' },
     { id: 'tasks', title: '备忘与待办', group: '常用空间' }
@@ -86,7 +88,7 @@ async function downloadAttachment(ctx, file) {
 
 function matchedDestinations(state, text) {
   if (!text.trim()) return [];
-  return destinations(state).filter(d => d.id !== 'auto' && d.title.length >= 2 && text.toLowerCase().includes(d.title.toLowerCase())).slice(0, 3);
+  return destinations(state).filter(d => {const title=d.matchTitle||d.title;return d.id !== 'auto' && title.length >= 2 && text.toLowerCase().includes(title.toLowerCase());}).slice(0, 3);
 }
 
 /** Mount a standalone composer inside a canvas card, or inside the AI page. */

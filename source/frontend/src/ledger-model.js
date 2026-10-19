@@ -74,17 +74,23 @@ export function validateLedger(input) {
       ...(value.includeInTotal === undefined ? {} : {includeInTotal:flag(value.includeInTotal, '项目总账设置')})};
   });
   const projectIds = new Set(projects.map(project => project.id));
-  const entries = records(input.entries, '记录', value => {
+  const entries = records(input.entries, '记录', value => validateLedgerEntry(value, projectIds));
+  return {version:1, currency:'CNY', projects, entries};
+}
+
+/** Also used for immutable AI receipts; project membership is checked on write. */
+export function validateLedgerEntry(value, projectIds = null) {
+    if (!object(value)) fail('记账记录格式无效。');
     if (!['income', 'expense'].includes(value.type)) fail('记账收支类型无效。');
     if (!Number.isSafeInteger(value.amountCents) || value.amountCents <= 0 || value.amountCents > MAX_AMOUNT_CENTS) fail('记账金额须为有效的正数，精确到分。');
     if (!isValidDate(value.date)) fail('请输入真实有效的记账日期。');
-    if (typeof value.projectId !== 'string' || (value.projectId !== '' && !projectIds.has(value.projectId))) fail('记账记录对应的项目不存在。');
+    if (typeof value.projectId !== 'string' || (value.projectId !== '' && projectIds && !projectIds.has(value.projectId))) fail('记账记录对应的项目不存在。');
+    if (value.projectId) identifier(value.projectId, '项目编号');
     return {id:identifier(value.id, '记录编号'), type:value.type, amountCents:value.amountCents, date:value.date,
       category:text(value.category, '分类', 80, true), projectId:value.projectId, note:text(value.note, '备注', 2000),
       archived:flag(value.archived, '记录归档状态'), createdAt:timestamp(value.createdAt), updatedAt:timestamp(value.updatedAt),
-      ...(value.example === undefined ? {} : {example:flag(value.example, '示例标记')})};
-  });
-  return {version:1, currency:'CNY', projects, entries};
+      ...(value.example === undefined ? {} : {example:flag(value.example, '示例标记')}),
+      ...(value.sourceRequestId === undefined ? {} : {sourceRequestId:identifier(value.sourceRequestId, 'AI 请求编号')})};
 }
 
 export function initializeLedger(state) {

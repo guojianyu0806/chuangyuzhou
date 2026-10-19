@@ -92,6 +92,7 @@ export async function undoRoute(ctx, receipt, requestId) {
     let list;
     if(item.collection==='tasks')list=ctx.state.tasks;
     else if(item.collection==='captures')list=ctx.state.captures;
+    else if(item.collection==='ledgerEntries')list=ctx.state.ledger?.entries;
     else{
       const isSpace=item.containerId?.startsWith('space:');
       const container=(isSpace?ctx.state.spaces:ctx.state.courses).find(s=>s.id===item.containerId?.slice(isSpace?6:7));

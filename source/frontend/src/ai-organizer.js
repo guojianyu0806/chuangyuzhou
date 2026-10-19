@@ -1,6 +1,7 @@
 // Shared by the private-cloud worker and browser. Only these records can be
 // created by an AI proposal; model output never becomes executable code.
 import {assignRecordColor} from './creation-colors.js';
+import {parseAmount,formatMoney,isValidDate,validateLedger} from './ledger-model.js';
 export function validateOrganizedProposal(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('AI 整理结果格式不正确。');
   const string = (v, max, required = false) => {
@@ -8,7 +9,7 @@ export function validateOrganizedProposal(value) {
     return v.trim();
   };
   const destinationId = string(value.destinationId, 256, true);
-  if (!['english', 'inbox', 'tasks'].includes(destinationId) && !/^(space|course):[^\s]+$/.test(destinationId)) throw new Error('AI 返回了无效的工作区。');
+  if (!['english', 'inbox', 'tasks', 'ledger'].includes(destinationId) && !/^(space|course|ledger):[^\s]+$/.test(destinationId)) throw new Error('AI 返回了无效的工作区。');
   if (!Array.isArray(value.notes) || value.notes.length > 30 || !Array.isArray(value.tasks) || value.tasks.length > 50) throw new Error('AI 整理条目数量无效。');
   const notes = value.notes.map(n => ({
     title: string(n.title, 240, true), content: string(n.content, 120000, true),
@@ -20,7 +21,20 @@ export function validateOrganizedProposal(value) {
     return { title: string(t.title, 240, true), description: string(t.description ?? '', 12000), date, priority: t.priority === 'high' ? 'high' : 'normal' };
   });
   const warnings = Array.isArray(value.warnings) && value.warnings.length <= 30 ? value.warnings.map(w => string(w, 2000)) : [];
-  return {title: string(value.title, 240, true), summary: string(value.summary ?? '', 30000), destinationId, notes, tasks, reason: string(value.reason ?? '', 5000), warnings};
+  const isLedger = destinationId === 'ledger' || destinationId.startsWith('ledger:');
+  let ledgerEntries;
+  if (value.ledgerEntries !== undefined || isLedger) {
+    if (!Array.isArray(value.ledgerEntries) || value.ledgerEntries.length > 100 || (isLedger && !value.ledgerEntries.length)) throw new Error('AI 记账明细须包含 1 至 100 笔账目。');
+    if ((!isLedger && value.ledgerEntries.length) || (isLedger && (notes.length || tasks.length))) throw new Error('记账与笔记、待办须分开审核执行。');
+    ledgerEntries = value.ledgerEntries.map(entry => {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry) || !['expense','income'].includes(entry.type)) throw new Error('AI 返回了无效的收支类型。');
+      const amount = formatMoney(parseAmount(entry.amount)).replaceAll(',', '');
+      if (!isValidDate(entry.date)) throw new Error('AI 返回了无效的记账日期。');
+      if (!Array.isArray(entry.sourceIds) || !entry.sourceIds.length || entry.sourceIds.length > 40) throw new Error('AI 账目缺少原文来源。');
+      return {type:entry.type,amount,date:entry.date,category:string(entry.category,80,true),note:string(entry.note??'',2000),sourceIds:[...new Set(entry.sourceIds.map(id=>string(id,128,true)))]};
+    });
+  }
+  return {title: string(value.title, 240, true), summary: string(value.summary ?? '', 30000), destinationId, notes, tasks, reason: string(value.reason ?? '', 5000), warnings, ...(ledgerEntries === undefined ? {} : {ledgerEntries})};
 }
 
 export function applyOrganizedContent(state, requestId, input, {uid = () => crypto.randomUUID(), now = new Date().toISOString()} = {}) {
@@ -39,6 +53,24 @@ export function applyOrganizedContent(state, requestId, input, {uid = () => cryp
   const files = request.files || [];
   const sourceNames = new Map(files.flatMap(f => [[f.blobId, f.name], [f.id, f.name]]));
   sourceNames.set('input', '用户原文');
+  if (target === 'ledger' || target.startsWith('ledger:')) {
+    const projectId = target === 'ledger' ? '' : target.slice(7);
+    const ledger = state.ledger || {version:1,currency:'CNY',projects:[],entries:[]};
+    const project = projectId ? ledger.projects.find(p=>p.id===projectId && !p.archived) : null;
+    if (projectId && !project) throw new Error('目标记账项目已归档或不存在，请重新选择。');
+    const newEntries = proposal.ledgerEntries.map(entry => {
+      if (entry.sourceIds.some(id=>!sourceNames.has(id))) throw new Error('AI 账目引用了一份不存在的原文件。');
+      return {id:uid(),type:entry.type,amountCents:parseAmount(entry.amount),date:entry.date,category:entry.category,projectId,note:entry.note,archived:false,createdAt:now,updatedAt:now,sourceRequestId:requestId};
+    });
+    // Validate every row and the complete ledger before committing any changes.
+    const nextLedger = validateLedger({...ledger,entries:[...newEntries,...ledger.entries]});
+    const receipt = {destinationId:target,destinationLabel:`记账 · ${project?.title || '日常零钱'}`,createdAt:now,engine:'hermes',items:nextLedger.entries.slice(0,newEntries.length).map(entry=>({id:entry.id,type:'账目',title:`${entry.type==='expense'?'支出':'收入'} ¥${formatMoney(entry.amountCents)} · ${entry.category}`,collection:'ledgerEntries',containerId:target,snapshot:JSON.stringify(entry)}))};
+    state.ledger = nextLedger;
+    Object.assign(request,{status:'filed',aiStatus:'succeeded',aiProposal:proposal,receipt,updatedAt:now});
+    delete request.aiError;
+    state.updatedAt = now;
+    return receipt;
+  }
   for (const note of proposal.notes) {
     if (note.sourceIds.some(id => !sourceNames.has(id))) throw new Error('AI 引用了一份不存在的原文件，结果已保留供检查。');
   }
@@ -88,6 +120,10 @@ export function previewOrganizedContent(state,requestId,input){
   const receipt=applyOrganizedContent(copy,requestId,input,{uid:()=>`review-${++sequence}`});
   return receipt.items.map(item=>{
     const record=JSON.parse(item.snapshot);
+    if(item.collection==='ledgerEntries') {
+      const project=state.ledger?.projects.find(p=>p.id===record.projectId);
+      return {ledger:true,type:record.type==='expense'?'新增支出':'新增收入',title:record.category,destination:`记账 · ${project?.title||'日常零钱'}`,content:record.note,date:record.date,priority:'',fileName:'',amountCents:record.amountCents,category:record.category,includeInTotal:!project||project.includeInTotal!==false};
+    }
     const container=item.containerId.startsWith('space:')?state.spaces?.find(s=>s.id===item.containerId.slice(6)):item.containerId.startsWith('course:')?state.courses?.find(c=>c.id===item.containerId.slice(7)):null;
     const destination=container?.title||(item.collection==='tasks'?'备忘与待办':record.category==='英语'?'收集箱 · 六级资料':'收集箱');
     return {type:item.collection==='files'||record.blobId?'保存原文件':item.collection==='tasks'?'新增待办':item.collection==='notes'?'新增笔记':'新增整理记录',title:item.title,destination,content:record.content||record.text||record.description||'',date:record.date||'',priority:item.collection==='tasks'?(record.priority==='high'?'重要':'普通'):'',fileName:record.name||record.fileName||''};
