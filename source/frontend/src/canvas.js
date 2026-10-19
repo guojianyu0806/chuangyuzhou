@@ -95,7 +95,7 @@ export function mountCanvas(ctx, collection) {
   const gridIcon='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>';
 
   root.innerHTML=`<section class="space-desktop ${collection?.hideHeader?'cv-nested':''}" aria-labelledby="canvas-title">
-    <header class="cv-pagehead"><div><div class="cv-eyebrow"><span></span> ${esc(collection?.eyebrow||'YOUR PERSONAL UNIVERSE')}</div><h1 id="canvas-title">${esc(collection?.title||'我的空间')}<span class="cv-title-dot">.</span></h1><p>${esc(collection?.description||'把日常铺开，让每一件事都有位置。')}</p></div><div class="cv-head-actions"><button class="cv-button cv-edit-toggle" type="button" data-cv="edit" aria-pressed="false">${icon('edit',17)}<span>整理桌面</span></button><button class="cv-button cv-create" type="button" data-cv="create" ${collection?.createLabel===false?'hidden':''}>${icon('plus',19)}<span>${esc(collection?.createLabel||'新建空间')}</span></button></div></header>
+    <header class="cv-pagehead"><div><div class="cv-eyebrow"><span></span> ${esc(collection?.eyebrow||'YOUR PERSONAL UNIVERSE')}</div><h1 id="canvas-title">${esc(collection?.title||'我的空间')}<span class="cv-title-dot">.</span></h1><p>${esc(collection?.description||'把日常铺开，让每一件事都有位置。')}</p></div><div class="cv-head-actions"><button class="cv-button cv-edit-toggle" type="button" data-cv="edit" aria-label="整理桌面" title="整理桌面" aria-pressed="false">${icon('edit',17)}<span>整理桌面</span></button><button class="cv-button cv-create" type="button" data-cv="create" ${collection?.createLabel===false?'hidden':''}>${icon('plus',19)}<span>${esc(collection?.createLabel||'新建空间')}</span></button></div></header>
     ${collection?.toolbar||''}
     <div class="cv-toolbar"><div class="cv-view-tabs" role="group" aria-label="空间展示方式"><button type="button" data-cv="canvas" aria-pressed="${presentation==='canvas'}">${gridIcon}<span>自由画布</span></button><button type="button" data-cv="list" aria-pressed="${presentation==='list'}">${icon('list',18)}<span>卡片列表</span></button></div><span class="cv-help">长按卡片，轻弹后拖动 · 拖空白处漫游</span>${!collection&&state.spaces.some(s=>s.archived)?`<button class="cv-archives" type="button" data-cv="archives">${icon('archive',15)}<span>已归档 ${state.spaces.filter(s=>s.archived).length}</span></button>`:''}<button class="cv-snap" type="button" data-cv="snap" aria-pressed="${canvas.snap}" title="拖动时吸附到网格">${icon('target',16)}<span>网格吸附</span></button><button class="cv-help-button" type="button" data-cv="help" aria-label="画布使用帮助">${icon('info',19)}</button></div>
     <div class="cv-viewport ${presentation==='list'?'is-list':''}" tabindex="0" aria-label="工作区画布，可拖动背景平移；使用下方按钮缩放"><div class="cv-world"></div><div class="cv-pan-hint" aria-hidden="true"><span>你的空间，不止这一屏</span><span>拖动探索 ${icon('arrow-right',15)}</span></div><div class="cv-edit-message" hidden>${dragIcon}<span>拖动卡片排位置 · 拖右下角改大小 · 点菜单换颜色</span></div></div>
@@ -103,6 +103,10 @@ export function mountCanvas(ctx, collection) {
     <div class="sr-only" role="status" aria-live="polite" data-cv-live></div>
   </section>`;
   const section=root.querySelector('.space-desktop'),viewport=root.querySelector('.cv-viewport'),world=root.querySelector('.cv-world'),live=root.querySelector('[data-cv-live]');
+  if(!collection){
+    const header=section.querySelector('.cv-pagehead');
+    header.insertBefore(section.querySelector('.cv-toolbar'),header.querySelector('.cv-head-actions'));
+  }
   if(collection?.hideHeader){
     section.querySelector('.cv-toolbar').append(section.querySelector('.cv-head-actions'));
     section.querySelector('.cv-pagehead').hidden=true;

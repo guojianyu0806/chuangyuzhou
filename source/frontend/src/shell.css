@@ -63,3 +63,46 @@
  .space-shell .english-main-tabs{overflow-x:auto;flex-wrap:nowrap}.space-shell .english-main-tab{white-space:nowrap;flex-shrink:0}
 }
 @media(prefers-reduced-motion:reduce){.space-shell .sidebar{transition:none}}
+
+/* The home canvas gets a compact command row and the remaining window height. */
+.space-shell.on-canvas .topbar{height:52px;gap:18px}
+.space-shell.on-canvas .mode-banner{min-height:26px;padding-top:2px;padding-bottom:2px}
+.space-shell.on-canvas #main{padding-top:12px}
+.space-shell.on-canvas .cv-pagehead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px 24px;margin-bottom:12px;padding:0;flex:none}
+.space-shell.on-canvas .cv-pagehead>div:first-child{min-width:0}
+.space-shell.on-canvas .cv-eyebrow,.space-shell.on-canvas .cv-pagehead p{display:none}
+.space-shell.on-canvas .cv-pagehead h1{font-size:24px;line-height:1.25;letter-spacing:-.6px;white-space:nowrap}
+.space-shell.on-canvas .cv-title-dot{margin-left:2px}
+.space-shell.on-canvas .cv-head-actions{gap:8px;padding-top:0}
+.space-shell.on-canvas .cv-button{min-height:40px;padding:0 13px;border-radius:11px}
+.space-shell.on-canvas .cv-toolbar{min-width:0;min-height:40px;margin-bottom:0;gap:8px}
+.space-shell.on-canvas .cv-view-tabs{padding:2px;border-radius:11px}
+.space-shell.on-canvas .cv-view-tabs button{min-height:32px;padding:0 10px}
+.space-shell.on-canvas .cv-snap,.space-shell.on-canvas .cv-archives{min-height:40px}
+.space-shell.on-canvas .cv-toolbar .cv-help-button{width:40px;min-width:40px;height:40px;display:grid}
+.space-shell.on-canvas:has(.cv-viewport:not(.is-list)) .app-main{height:100dvh;display:flex;flex-direction:column}
+.space-shell.on-canvas:has(.cv-viewport:not(.is-list)) .app-main>:is(.topbar,.mode-banner,.cloud-sync-banner){flex-shrink:0}
+.space-shell.on-canvas:has(.cv-viewport:not(.is-list)) #main{display:flex;flex-direction:column;flex:1 0 auto;width:100%;min-height:0;margin:0}
+.space-shell.on-canvas:has(.cv-viewport:not(.is-list)) #main>.space-desktop{display:flex;flex-direction:column;flex:1;min-height:0}
+.space-shell.on-canvas .cv-viewport:not(.is-list){height:auto;min-height:300px;max-height:none;flex:1 0 300px}
+.space-shell.on-canvas .cv-statusbar{flex:none}
+@media(max-width:1100px){
+ .space-shell.on-canvas .cv-pagehead{grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;margin-bottom:10px}
+ .space-shell.on-canvas .cv-toolbar{grid-row:2;grid-column:1/-1}
+ .space-shell.on-canvas .cv-head-actions{grid-row:1;grid-column:2}
+}
+@media(max-width:760px){
+ .space-shell.on-canvas .topbar{height:56px;gap:10px}
+ .space-shell.on-canvas #main{padding-top:12px}
+ .space-shell.on-canvas .cv-pagehead{gap:6px 8px}
+ .space-shell.on-canvas .cv-pagehead h1{font-size:22px}
+ .space-shell.on-canvas .cv-head-actions .cv-button{min-height:44px;padding:0 11px}
+ .space-shell.on-canvas .cv-head-actions .cv-edit-toggle{width:44px;min-width:44px;padding:0}
+ .space-shell.on-canvas .cv-toolbar{gap:4px;min-height:44px}
+ .space-shell.on-canvas .cv-view-tabs button{min-height:44px;padding:0 9px}
+ .space-shell.on-canvas .cv-snap,.space-shell.on-canvas .cv-archives{min-height:44px}
+ .space-shell.on-canvas .cv-snap{width:44px;justify-content:center}
+ .space-shell.on-canvas .cv-snap>span{display:none}
+ .space-shell.on-canvas .cv-toolbar .cv-help-button{width:44px;min-width:44px;height:44px}
+ .space-shell.on-canvas .cv-help{display:none}
+}
