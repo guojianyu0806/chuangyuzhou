@@ -1,0 +1,47 @@
+*** Begin Patch
+*** Update File: C:/Users/g2806/Desktop/工作台/frontend/src/app.js
+@@
+ let route='home',subroute='',filter='all';
+ let cleanupView=null;
++let lastStored=localStorage.getItem(key(mode));
+@@
+ function save(){
+   state.updatedAt=new Date().toISOString();
++  if(localStorage.getItem(key(mode))!==lastStored){
++    const recoveryKey=`lumi-recovery-${mode}-${Date.now()}-${uid()}`;
++    try{localStorage.setItem(recoveryKey,JSON.stringify(state));}catch{}
++    modal({title:'另一个窗口有更新',body:'<p>为保留另一个窗口的新记录，本次没有覆盖保存。本窗口的改动已留在恢复副本中，可先导出，再加载最新内容。</p><div class="row" style="margin-top:20px"><button class="btn" type="button" id="export-conflict">导出本窗口改动</button><button class="btn primary" type="button" data-action="reload-latest">加载最新内容</button></div>'});
++    dialog.querySelector('#export-conflict').onclick=()=>exportBackup(state);
++    const error=new Error('检测到另一窗口的更新，请先加载最新内容。');error.name='StorageConflictError';throw error;
++  }
+   try{localStorage.setItem(key(mode),JSON.stringify(state));}catch(error){toast('本机保存失败，请立即导出数据备份。');throw error;}
++  lastStored=localStorage.getItem(key(mode));
+   updateShellCounts();
+ }
+@@
+-async function exportBackup(){
++async function exportBackup(dataState=state){
+   try{
+     toast('正在打包当前空间与附件…');
+-    const fileIds=new Set();function scan(value){if(value&&typeof value==='object'){for(const [k,v] of Object.entries(value)){if(typeof v==='string'&&/blobId|fileId|audioId/i.test(k))fileIds.add(v);else if(typeof v==='object')scan(v);}}}scan(state);
+-    const files=[];for(const id of fileIds){const blob=await getFile(id);if(blob){const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob);});files.push({id,type:blob.type,data});}}
+-    download(new Blob([JSON.stringify({format:'lumi-backup',version:1,exportedAt:new Date().toISOString(),state,files},null,2)],{type:'application/json'}),`拾光-${mode==='demo'?'示例':'个人'}-备份-${today()}.json`);toast('备份已导出，附件已一并打包。');
++    const fileIds=new Set();function scan(value){if(value&&typeof value==='object'){for(const [k,v] of Object.entries(value)){if(typeof v==='string'&&/blobId|fileId|audioId/i.test(k))fileIds.add(v);else if(typeof v==='object')scan(v);}}}scan(dataState);
++    const files=[];for(const id of fileIds){const blob=await getFile(id);if(!blob)throw new Error('有附件在本机存储中缺失，请重新添加原件后再导出完整备份。');const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob);});files.push({id,type:blob.type,data});}
++    const backupBlob=new Blob([JSON.stringify({format:'lumi-backup',version:1,exportedAt:new Date().toISOString(),state:dataState,files},null,2)],{type:'application/json'});
++    if(backupBlob.size>512*1024*1024)throw new Error('完整备份超过本地界面版 512 MB 上限，请先逐份下载附件，并在服务器接入后使用云端备份。');
++    download(backupBlob,`拾光-${dataState.mode==='demo'?'示例':'个人'}-备份-${today()}.json`);toast('备份已导出，附件已一并打包。');
+@@
+-    const file=data.get('file');if(!file?.size||file.size>160*1024*1024)throw new Error('请选择小于 160 MB 的拾光 JSON 备份。');
++    const file=data.get('file');if(!file?.size||file.size>512*1024*1024)throw new Error('请选择小于 512 MB 的拾光 JSON 备份。');
+@@
+-function switchWorkspace(){mode=mode==='demo'?'personal':'demo';localStorage.setItem('lumi-mode',mode);state=load(mode);ctx.state=state;filter='all';shell();go('home');render();toast(mode==='personal'?'这是你的独立空间，从第一条记录开始。':'已进入示例工作区。');}
++function switchWorkspace(){mode=mode==='demo'?'personal':'demo';localStorage.setItem('lumi-mode',mode);state=load(mode);lastStored=localStorage.getItem(key(mode));ctx.state=state;filter='all';shell();go('home');render();toast(mode==='personal'?'这是你的独立空间，从第一条记录开始。':'已进入示例工作区。');}
+@@
+   if(action==='switch-workspace')switchWorkspace();
++  if(action==='reload-latest'){closeModal();state=load(mode);lastStored=localStorage.getItem(key(mode));ctx.state=state;shell();render();toast('已加载最新记录，未提交的表单草稿仍然保留。');}
+@@
+-window.addEventListener('storage',event=>{if(event.key===key(mode)){toast('另一个窗口已修改此空间，刷新页面可加载最新记录。');}});
++window.addEventListener('storage',event=>{if(event.key===key(mode)){const banner=document.querySelector('.mode-banner');if(banner)banner.innerHTML=`${icon('refresh',15)}<span>另一个窗口已更新此空间。</span><button data-action="reload-latest">加载最新内容 ${icon('arrow-right',14)}</button>`;}});
++window.addEventListener('unhandledrejection',event=>{if(event.reason?.name==='StorageConflictError')event.preventDefault();});
+*** End Patch

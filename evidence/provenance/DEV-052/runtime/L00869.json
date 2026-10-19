@@ -1,0 +1,25 @@
+{
+  "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+  "sourceLine": 869,
+  "timestampUtc": "2026-09-20T02:10:14.011Z",
+  "timestampBeijing": "2026-09-20T10:10:14.011000+08:00",
+  "sourceRecordSha256": "a5e69c2b83023db4310bb0bb352084cfdf94c1574370426b13a83cc83516d269",
+  "commands": [
+    "powershell.exe -NoProfile -File .\\frontend\\start.ps1 -NoOpen"
+  ],
+  "result": {
+    "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "sourceLine": 872,
+    "timestampUtc": "2026-09-20T02:10:16.069Z",
+    "timestampBeijing": "2026-09-20T10:10:16.069000+08:00",
+    "sourceRecordSha256": "d3a3af0e7098b39889e8fdb1a7175271432875e216b2af9786f3384293d71463"
+  },
+  "capturedResults": [
+    {
+      "exitCode": 1,
+      "processStillRunning": false,
+      "output": "The term 'C:\\Users\\g2806\\Desktop\\工作台\\frontend\\start.ps1' is not recognized as the name of a cmdlet, function, script fi\r\nle, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and\r\n try again.\r\n    + CategoryInfo          : ObjectNotFound: (C:\\Users\\g2806\\...ntend\\start.ps1:String) [], ParentContainsErrorRecord \r\n   Exception\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\n"
+    }
+  ],
+  "verificationScope": "Observed historical output; not rerun now."
+}

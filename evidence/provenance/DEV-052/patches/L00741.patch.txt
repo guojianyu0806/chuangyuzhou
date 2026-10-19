@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: C:/Users/g2806/Desktop/工作台/frontend/src/app.js
+@@
+ let state=load(mode);
++const baselines=new WeakMap([[state,lastStored]]);
+@@
+-function save(){
+-  state.updatedAt=new Date().toISOString();
+-  if(localStorage.getItem(key(mode))!==lastStored){
+-    const recoveryKey=`lumi-recovery-${mode}-${Date.now()}-${uid()}`;
+-    try{localStorage.setItem(recoveryKey,JSON.stringify(state));}catch{}
++function save(target=state){
++  target.updatedAt=new Date().toISOString();
++  const targetMode=target.mode;
++  if(localStorage.getItem(key(targetMode))!==baselines.get(target)){
++    const recoveryKey=`lumi-recovery-${targetMode}-${Date.now()}-${uid()}`;
++    try{localStorage.setItem(recoveryKey,JSON.stringify(target));}catch{}
+@@
+-    dialog.querySelector('#export-conflict').onclick=()=>exportBackup(state);
++    dialog.querySelector('#export-conflict').onclick=()=>exportBackup(target);
+@@
+-  try{localStorage.setItem(key(mode),JSON.stringify(state));}catch(error){toast('本机保存失败，请立即导出数据备份。');throw error;}
+-  lastStored=localStorage.getItem(key(mode));
+-  updateShellCounts();
++  try{localStorage.setItem(key(targetMode),JSON.stringify(target));}catch(error){toast('本机保存失败，请立即导出数据备份。');throw error;}
++  const stored=localStorage.getItem(key(targetMode));baselines.set(target,stored);
++  if(target===state){lastStored=stored;updateShellCounts();}
+@@
+   ctx.state=state;
++  const viewState=state;ctx.save=()=>save(viewState);
+*** End Patch

@@ -1,0 +1,25 @@
+{
+  "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+  "sourceLine": 914,
+  "timestampUtc": "2026-09-20T02:12:16.150Z",
+  "timestampBeijing": "2026-09-20T10:12:16.150000+08:00",
+  "sourceRecordSha256": "18512be528c7a36271fe5b8ede44a501fec9e50b2f74966b14a61f7d680ad9e5",
+  "commands": [
+    "$workbenchListenerBefore = Get-NetTCPConnection -LocalPort 4173 -State Listen -ErrorAction Stop; $workbenchOwnerBefore = $workbenchListenerBefore.OwningProcess; node .\\frontend\\launch.mjs --no-open; $workbenchListenerAfter = Get-NetTCPConnection -LocalPort 4173 -State Listen -ErrorAction Stop; $workbenchPage = Invoke-WebRequest -Uri 'http://127.0.0.1:4173/' -TimeoutSec 5; [pscustomobject]@{Status=$workbenchPage.StatusCode;ProcessId=$workbenchListenerAfter.OwningProcess;ReusedExistingProcess=($workbenchOwnerBefore -eq $workbenchListenerAfter.OwningProcess);HasTitle=($workbenchPage.Content -match '个人工作台')}; Get-ChildItem -LiteralPath frontend -Filter 'start*' | Select-Object Name; Get-Content frontend/.gitignore"
+  ],
+  "result": {
+    "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "sourceLine": 917,
+    "timestampUtc": "2026-09-20T02:12:19.663Z",
+    "timestampBeijing": "2026-09-20T10:12:19.663000+08:00",
+    "sourceRecordSha256": "293107956e5092607046b8518f12b24a1c2606b9b54a4bbbc97ef2e4a67bc062"
+  },
+  "capturedResults": [
+    {
+      "exitCode": 0,
+      "processStillRunning": false,
+      "output": "Workbench is ready: http://127.0.0.1:4173\nIt runs in the background. You may close this launcher.\n\r\nStatus ProcessId ReusedExistingProcess HasTitle\r\n------ --------- --------------------- --------\r\n   200      4116                  True     True\r\n                                               \r\n.finesse/\r\n.runtime/\r\nnode_modules/\r\n*.log\r\ntest-results/\r\nplaywright-report/\r\n\r\n"
+    }
+  ],
+  "verificationScope": "Observed historical output; not rerun now."
+}

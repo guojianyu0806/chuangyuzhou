@@ -1,0 +1,25 @@
+{
+  "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+  "sourceLine": 904,
+  "timestampUtc": "2026-09-20T02:12:02.127Z",
+  "timestampBeijing": "2026-09-20T10:12:02.127000+08:00",
+  "sourceRecordSha256": "3a2ff57331d42650f1ece08bf004a0533ce1a91366f564dcf2cb0f9c1b20351e",
+  "commands": [
+    "node --check launch.mjs; node launch.mjs --no-open"
+  ],
+  "result": {
+    "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "sourceLine": 908,
+    "timestampUtc": "2026-09-20T02:12:03.246Z",
+    "timestampBeijing": "2026-09-20T10:12:03.246000+08:00",
+    "sourceRecordSha256": "abae56a88ca937d647667b07b93d2a527c8e88e2828c6d9d96a6c662fa5fd5f6"
+  },
+  "capturedResults": [
+    {
+      "exitCode": 0,
+      "processStillRunning": false,
+      "output": "Workbench is ready: http://127.0.0.1:4173\nIt runs in the background. You may close this launcher.\n"
+    }
+  ],
+  "verificationScope": "Observed historical output; not rerun now."
+}

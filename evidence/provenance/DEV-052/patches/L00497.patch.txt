@@ -1,0 +1,159 @@
+*** Begin Patch
+*** Add File: C:/Users/g2806/Desktop/工作台/frontend/src/app.js
++import {icon} from './icons.js';
++import {escapeHTML as esc,putFile,getFile,download,VERSION} from './services.js';
++import {seedCourses,mountCourses} from './courses.js';
++import {seedEnglish,mountEnglish} from './english.js';
++
++const uid=()=>crypto.randomUUID();
++const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
++const dayOffset=(days)=>{const d=new Date();d.setDate(d.getDate()+days);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
++const dateLabel=value=>value?new Date(value+'T12:00:00').toLocaleDateString('zh-CN',{month:'short',day:'numeric'}):'未设日期';
++const key=mode=>`lumi-workspace-v1-${mode}`;
++let mode=localStorage.getItem('lumi-mode')||'demo';
++if(!['demo','personal'].includes(mode))mode='demo';
++let route='home',subroute='',filter='all';
++const nav=[['home','home','今日'],['courses','book','课程空间'],['english','graduation','六级计划'],['inbox','inbox','收集箱'],['tasks','check-circle','备忘与待办'],['review','chart','学习回顾']];
++function seed(mode){
++  const demo=mode==='demo';
++  return {schema:1,mode,profile:{name:'同学',major:'软件工程',provider:'deepseek'},courses:demo?seedCourses():[],english:seedEnglish(demo),tasks:demo?[
++    {id:uid(),title:'复习栈与队列，补充一道应用题',date:today(),priority:'high',category:'课程',done:false,source:'示例 · 数据结构',createdAt:new Date().toISOString()},
++    {id:uid(),title:'完成一篇六级阅读练习',date:today(),priority:'normal',category:'英语',done:false,source:'示例 · 六级计划',createdAt:new Date().toISOString()},
++    {id:uid(),title:'整理软件工程小组讨论的思路',date:today(),priority:'normal',category:'个人',done:false,source:'示例 · 手动记录',createdAt:new Date().toISOString()},
++    {id:uid(),title:'把操作系统课件放进课程空间',date:today(),priority:'normal',category:'课程',done:true,completedAt:new Date().toISOString(),source:'示例 · 手动记录',createdAt:new Date().toISOString()}
++  ]:[],captures:demo?[
++    {id:uid(),text:'栈和递归的关系：函数调用时，局部变量和返回地址是怎么被保存的？下次复习补一个调用栈的例子。',category:'学习灵感',tags:'数据结构',archived:false,createdAt:new Date().toISOString()},
++    {id:uid(),text:'六级写作可以积累表达因果、转折的句子，按使用场景整理，比单独背词更容易用起来。',category:'英语',tags:'写作',archived:false,createdAt:new Date().toISOString()},
++    {id:uid(),text:'小组项目待讨论：先明确用户故事，再画核心页面流程。',category:'备忘',tags:'软件工程',archived:false,createdAt:new Date().toISOString()}
++  ]:[],updatedAt:new Date().toISOString()};
++}
++function load(mode){
++  const raw=localStorage.getItem(key(mode));
++  if(raw){try{const data=JSON.parse(raw);if(data.schema===1&&Array.isArray(data.courses)&&Array.isArray(data.tasks)&&Array.isArray(data.captures)&&data.english&&data.profile)return {...data,mode};}catch{}}
++  return seed(mode);
++}
++let state=load(mode);
++function toast(message,action){
++  const el=document.createElement('div');el.className='toast';
++  el.innerHTML=`${icon('check-circle',18)}<span>${esc(message)}</span>${action?'<button type="button">撤销</button>':''}`;
++  if(action)el.querySelector('button').onclick=()=>{action();el.remove();};
++  document.querySelector('#toasts').append(el);setTimeout(()=>el.remove(),action?9000:4500);
++}
++function save(){
++  state.updatedAt=new Date().toISOString();
++  try{localStorage.setItem(key(mode),JSON.stringify(state));}catch(error){toast('本机保存失败，请立即导出数据备份。');throw error;}
++  updateShellCounts();
++}
++const dialog=document.querySelector('#modal');
++let modalReturnFocus;
++function closeModal(){dialog.close();dialog.innerHTML='';modalReturnFocus?.focus?.();}
++function modal({title,body,submitLabel='保存',onSubmit}){
++  if(dialog.open)dialog.close();
++  modalReturnFocus=document.activeElement;
++  dialog.innerHTML=`<form class="modal-form"><header class="modal-head"><h2 id="modal-title">${esc(title)}</h2><button type="button" class="icon-btn" data-close aria-label="关闭">${icon('close')}</button></header><div class="modal-body">${body}</div>${onSubmit?`<footer class="modal-foot"><span class="muted small">修改保存在本机</span><button type="button" class="btn" data-close>取消</button><button type="submit" class="btn primary">${esc(submitLabel)}</button></footer>`:''}</form>`;
++  dialog.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModal);
++  const form=dialog.querySelector('form');
++  const draftId=`lumi-draft-${mode}-${title}-${Array.from(form.elements).map(x=>x.value).join('|').slice(0,200)}`;
++  if(onSubmit){
++    try{const draft=JSON.parse(localStorage.getItem(draftId)||'null');if(draft){for(const el of form.elements){if(el.name&&el.type!=='file'&&draft[el.name]!==undefined){if(el.type==='checkbox')el.checked=!!draft[el.name];else el.value=draft[el.name];}}}}catch{}
++    form.oninput=()=>{const draft={};for(const el of form.elements){if(el.name&&el.type!=='file')draft[el.name]=el.type==='checkbox'?el.checked:el.value;}try{localStorage.setItem(draftId,JSON.stringify(draft));}catch{}};
++  }
++  form.onsubmit=async event=>{
++    event.preventDefault();if(!onSubmit)return;
++    const btn=form.querySelector('button[type=submit]');btn.disabled=true;
++    try{const result=await onSubmit(new FormData(form),form);if(result!==false){localStorage.removeItem(draftId);if(dialog.open&&dialog.querySelector('form')===form)closeModal();}}catch(error){toast(error.message||'保存失败，请重试。');}finally{if(btn.isConnected)btn.disabled=false;}
++  };
++  dialog.showModal();
++  const input=form.querySelector('input:not([type=file]),textarea,select');if(input)setTimeout(()=>input.focus(),50);
++}
++dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeModal();}});
++dialog.addEventListener('cancel',()=>{modalReturnFocus?.focus?.();});
++const ctx={root:null,state,save,esc,icon,toast,modal,closeModal,go,uid,putFile,getFile,download,dateLabel};
++
++function shell(){
++  document.querySelector('#app').innerHTML=`
++  <aside class="sidebar"><a href="#/home" class="brand"><img src="./icon.svg" alt="" width="39" height="39"><span>拾光<small>LUMI SPACE</small></span></a>
++  <button class="workspace-switch" data-action="switch-workspace"><span class="workspace-avatar">${mode==='demo'?'L':'我'}</span><span><strong>${mode==='demo'?'示例工作区':'我的工作台'}</strong><small>${esc(state.profile.major)} · CET-6</small></span>${icon('chevron-down',16)}</button>
++  <span class="nav-caption">我的空间</span><nav class="primary-nav" aria-label="主导航">${nav.map(([id,i,label])=>`<a href="#/${id}" data-nav="${id}">${icon(i)}<span>${label}</span><b data-count="${id}"></b></a>`).join('')}</nav>
++  <div class="sidebar-bottom"><div class="cloud-card"><span class="status-dot"></span><strong>在这里，慢慢积累。</strong><p>你的笔记、灵感和每一次进步<br>都有自己的位置。</p><button data-go="settings">${icon('cloud',16)} 云端尚未连接 ${icon('arrow-right',15)}</button></div><a class="settings-link" href="#/settings">${icon('settings')}<span>偏好与连接</span></a><button class="profile" data-go="settings"><span class="avatar">${esc(state.profile.name.slice(0,1))}</span><span><strong>${esc(state.profile.name)}</strong><small>个人学习空间</small></span>${icon('more')}</button></div></aside>
++  <div class="app-main"><header class="topbar"><div class="breadcrumb"><span class="mobile-brand"><img src="./icon.svg" alt="拾光" width="28" height="28"></span><span class="desktop-label">我的工作台</span><span class="slash desktop-label">/</span><strong id="current-page">今日</strong></div><button class="search-trigger" data-action="search">${icon('search',17)}<span>搜索笔记、课程、待办…</span><kbd>Ctrl K</kbd></button><div class="topbar-actions"><button class="sync-indicator" data-go="settings"><span class="status-dot"></span><span>仅本机保存</span></button><button class="icon-btn" data-action="notifications" aria-label="通知">${icon('bell')}</button><button class="avatar small-avatar" data-go="settings" aria-label="个人设置">${esc(state.profile.name.slice(0,1))}</button></div></header>
++  <div class="mode-banner ${mode==='personal'?'personal-banner':''}">${icon(mode==='demo'?'layers':'shield',15)}<span>${mode==='demo'?'当前为示例工作区，内容用于体验界面。':'个人空间 · 数据保存在当前浏览器，云端连接后可跨设备同步。'}</span><button data-action="switch-workspace">${mode==='demo'?'进入我的工作台':'查看示例'} ${icon('arrow-right',14)}</button></div>
++  <main id="main" tabindex="-1"></main><footer class="page-footer"><span>一点一滴，都是你的积累。</span><span>拾光 v${VERSION} · 本地界面版</span></footer></div>
++  <nav class="bottom-nav" aria-label="移动导航">${nav.slice(0,4).map(([id,i,label])=>`<a href="#/${id}" data-nav="${id}">${icon(i,21)}<span>${id==='courses'?'课程':id==='english'?'六级':label}</span></a>`).join('')}<button data-action="more">${icon('more',21)}<span>更多</span></button></nav>
++  <button class="assistant-fab" data-action="assistant" aria-label="打开学习助手">${icon('sparkles',22)}<span>学习助手</span></button>`;
++  ctx.root=document.querySelector('#main');
++  updateShellCounts();
++}
++function updateShellCounts(){
++  for(const [id,count] of [['inbox',state.captures.filter(x=>!x.archived).length],['tasks',state.tasks.filter(x=>!x.done&&!x.archived).length]]){
++    const el=document.querySelector(`[data-count="${id}"]`);if(el)el.textContent=count||'';
++  }
++}
++function go(page,id=''){const hash=`#/${page}${id?'/'+encodeURIComponent(id):''}`;if(location.hash===hash)render();else location.hash=hash;}
++function pageHead(title,description,action=''){return `<div class="page-head"><div><h1>${title}</h1><p>${description}</p></div>${action}</div>`;}
++function empty(title,description,action=''){return `<div class="empty-state"><span class="empty-symbol">${icon('layers',30)}</span><h3>${title}</h3><p>${description}</p>${action}</div>`;}
++const button=(label,action,i='plus',primary=false)=>`<button class="btn ${primary?'primary':''}" data-action="${action}">${icon(i,17)}${label}</button>`;
++function taskRow(t){return `<div class="task-row ${t.done?'is-done':''}"><button class="task-check" data-action="toggle-task" data-id="${esc(t.id)}" aria-label="${t.done?'取消完成':'完成'}：${esc(t.title)}" aria-pressed="${t.done}">${t.done?icon('check',15):''}</button><button class="task-text" data-action="edit-task" data-id="${esc(t.id)}"><strong>${esc(t.title)}</strong><span>${esc(t.source||'手动记录')}${t.date?`<i>·</i>${dateLabel(t.date)}`:''}</span></button><span class="task-category ${t.category==='英语'?'pink':t.category==='课程'?'violet':'cyan'}">${esc(t.category||'个人')}</span>${t.priority==='high'?'<span class="priority-dot" title="优先处理"></span>':''}<button class="icon-btn row-edit" data-action="edit-task" data-id="${esc(t.id)}" aria-label="编辑待办">${icon('more',18)}</button></div>`;}
++function renderHome(){
++  const pending=state.tasks.filter(x=>!x.done&&!x.archived);
++  const todays=state.tasks.filter(x=>!x.archived&&x.date===today());
++  const completed=todays.filter(x=>x.done).length;
++  const current=state.courses[0];const totalNotes=state.courses.reduce((a,c)=>a+(c.notes?.length||0),0);
++  const weekdays=['日','一','二','三','四','五','六'];
++  ctx.root.innerHTML=`
++  ${pageHead(`准备好，拾起今天的灵感。<span class="greeting-spark">✳</span>`,`把学习与生活放在一起，一件一件，慢慢做好。`,`<button class="btn primary" data-action="add-task">${icon('plus',18)} 新建待办</button>`)}
++  <div class="home-meta"><span>${new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'})}</span><span class="divider-dot"></span><span>${esc(state.profile.major)}</span><span class="pill subtle">${mode==='demo'?'示例内容':'个人空间'}</span></div>
++  <div class="dashboard-grid"><div class="dashboard-left">
++    <section class="continue-card"><div class="continue-copy"><span class="eyebrow">${icon('book',15)} ${current?'继续探索你的课程':'属于你的学习空间'}</span><h2>${current?esc(current.title):'让知识，<br>在这里连接。'}</h2><p>${current?'从一个概念出发，把知识点串成自己的理解。':'放进第一份课件，为每门课留一个专属位置。'}</p><button class="btn ink" data-go="courses" ${current?`data-sub="${esc(current.id)}"`:''}>${current?'进入课程空间':'创建第一门课程'} ${icon('arrow-right',17)}</button></div><div class="knowledge-art" aria-hidden="true"><span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><div class="art-note back-note"><i></i><i></i><i></i></div><div class="art-note front-note"><span>${icon('code',25)}</span><b>ideas<br>into knowledge.</b><i></i><i></i></div><span class="art-plus">+</span><span class="art-dot"></span></div><div class="continue-footer"><span>${state.courses.length} 门课程</span><span>${totalNotes} 篇笔记</span><span>保持好奇，持续生长 ${icon('arrow-right',14)}</span></div></section>
++    <section class="panel today-panel"><div class="section-head"><div><h2>今天，专注这几件事 <span class="count">${todays.length}</span></h2><p>${todays.length?`已完成 ${completed} / ${todays.length} 件，按自己的节奏来。`:'从一件小事开始，也很好。'}</p></div><button class="text-btn" data-go="tasks">全部待办 ${icon('arrow-right',16)}</button></div><div class="week-strip">${Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7)+i);const selected=d.toDateString()===new Date().toDateString();return `<div class="week-day ${selected?'current':''}"><span>周${weekdays[d.getDay()]}</span><b>${d.getDate()}</b><i></i></div>`;}).join('')}</div><div class="task-list">${todays.length?todays.slice(0,4).map(taskRow).join(''):empty('今天还没有安排','留一点空间给新的想法，也可以先记下待办。',button('记一件事','add-task'))}</div><button class="add-line" data-action="add-task">${icon('plus',17)} 添加一个小目标</button></section>
++  </div><div class="dashboard-right">
++    <section class="quick-card"><div class="section-head"><h2>${icon('bolt',19)} 灵感速记</h2><span>先记下来，再慢慢整理</span></div><form id="quick-form"><label class="sr-only" for="quick-text">灵感速记</label><textarea id="quick-text" name="text" maxlength="12000" placeholder="脑海里闪过的念头、课堂上的疑问，或者一件怕忘记的小事…">${esc(localStorage.getItem(`lumi-quick-${mode}`)||'')}</textarea><div class="quick-bottom"><button type="button" class="icon-btn" data-action="capture-file" aria-label="添加附件">${icon('plus',19)}</button><span>保存在收集箱</span><button class="btn compact ink" type="submit">收好 ${icon('arrow-right',15)}</button></div></form></section>
++    <section class="english-home"><div class="english-label"><span class="pill">CET-6</span>${icon('graduation',27)}</div><h2>每天一点，<br>离目标更近一点。</h2><p>${state.english.plan?.dailyMinutes?`你的每日计划 · ${esc(state.english.plan.dailyMinutes)} 分钟`:'你的六级计划，按自己的节奏开始。'}</p><div class="english-home-links"><button data-go="english">${icon('book',17)} 词汇练习</button><button data-go="english">${icon('file',17)} 阅读训练</button></div><button class="text-btn" data-go="english">进入六级空间 ${icon('arrow-right',17)}</button></section>
++    <section class="inbox-peek panel"><div class="section-head"><h2>待整理的碎片</h2><button class="icon-btn" data-go="inbox" aria-label="查看收集箱">${icon('arrow-right',17)}</button></div>${state.captures.filter(x=>!x.archived).slice(0,2).map(c=>`<button class="peek-row" data-action="edit-capture" data-id="${esc(c.id)}"><span class="peek-icon">${icon('file',17)}</span><span><strong>${esc(c.text.slice(0,38)||c.fileName||'附件')}</strong><small>${esc(c.tags||c.category)} · 待整理</small></span></button>`).join('')||'<p class="muted">随手记下的想法，会出现在这里。</p>'}</section>
++  </div></div>
++  <section class="home-courses"><div class="section-head"><div><h2>我的课程空间</h2><p>每门课，都有一片独立的知识天地。</p></div><button class="text-btn" data-go="courses">查看全部 ${icon('arrow-right',17)}</button></div><div class="home-course-grid">${state.courses.slice(0,3).map((c,i)=>`<button class="mini-course" data-go="courses" data-sub="${esc(c.id)}"><span class="course-symbol ${['violet','cyan','pink'][i%3]}">${icon(['code','layers','cloud'][i%3],25)}</span><span><strong>${esc(c.title)}</strong><small>${c.files?.length||0} 份资料 · ${c.notes?.length||0} 篇笔记</small></span>${icon('arrow-right',18)}</button>`).join('')||`<button class="mini-course add-course" data-go="courses">${icon('plus',24)}<span><strong>创建第一门课程</strong><small>课件、笔记与知识点，放在一起</small></span></button>`}</div></section>`;
++  ctx.root.querySelector('#quick-form').onsubmit=e=>{e.preventDefault();const input=e.target.elements.text;if(!input.value.trim()){input.focus();toast('先写下一点内容吧。');return;}addCapture(input.value.trim());localStorage.removeItem(`lumi-quick-${mode}`);render();};
++  ctx.root.querySelector('#quick-text').oninput=e=>{localStorage.setItem(`lumi-quick-${mode}`,e.target.value);};
++  ctx.root.onclick=handleMain;
++}
++
++function taskDialog(id){
++  const task=state.tasks.find(x=>x.id===id);
++  modal({title:task?'编辑待办':'记下一件事',body:`<label class="field">要做什么<input name="title" required maxlength="160" placeholder="例如：复习二叉树的遍历" value="${esc(task?.title||'')}"></label><div class="form-grid"><label class="field">安排日期<input name="date" type="date" value="${esc(task?.date??today())}"></label><label class="field">分类<select name="category">${['个人','课程','英语'].map(c=>`<option ${task?.category===c?'selected':''}>${c}</option>`).join('')}</select></label></div><label class="field">优先级<select name="priority"><option value="normal">按计划进行</option><option value="high" ${task?.priority==='high'?'selected':''}>优先处理</option></select></label><label class="field">补充说明<textarea name="description" rows="3" maxlength="5000" placeholder="保留一点上下文…">${esc(task?.description||'')}</textarea></label>${task?`<p class="muted small">来源：${esc(task.source||'手动记录')}</p><button class="btn danger" type="button" data-archive-task="${esc(task.id)}">${icon('archive',16)} 归档此项</button>`:''}`,onSubmit:data=>{const values={title:data.get('title').trim(),date:data.get('date'),category:data.get('category'),priority:data.get('priority'),description:data.get('description').trim()};if(!values.title){toast('请填写待办内容。');return false;}if(task)Object.assign(task,values);else state.tasks.unshift({id:uid(),...values,done:false,source:'手动记录',createdAt:new Date().toISOString()});save();render();toast(task?'待办已更新':'已经记下，按自己的节奏来。');}});
++  const archive=dialog.querySelector('[data-archive-task]');if(archive)archive.onclick=()=>{task.archived=true;save();closeModal();render();toast('待办已归档',()=>{task.archived=false;save();render();});};
++}
++function renderTasks(){
++  const tasks=state.tasks.filter(t=>filter==='archived'?t.archived:!t.archived&&(filter==='all'||filter==='today'&&t.date===today()||filter==='pending'&&!t.done||filter==='done'&&t.done));
++  const all=state.tasks.filter(t=>!t.archived),pending=all.filter(t=>!t.done),done=all.filter(t=>t.done);
++  ctx.root.innerHTML=pageHead('给每件事，一个着落。','把要做的事写下来，让脑海轻一点。',button('新建待办','add-task','plus',true))+`<div class="task-summary"><div><span class="summary-icon violet">${icon('list',23)}</span><span><b>${pending.length}</b><small>等待完成</small></span></div><div><span class="summary-icon cyan">${icon('sun',23)}</span><span><b>${all.filter(t=>t.date===today()&&!t.done).length}</b><small>今日安排</small></span></div><div><span class="summary-icon pink">${icon('check-circle',23)}</span><span><b>${done.length}</b><small>已经完成</small></span></div></div><section class="panel"><div class="toolbar"><div class="tabs">${[['all','全部'],['today','今天'],['pending','待完成'],['done','已完成'],['archived','已归档']].map(([f,l])=>`<button class="tab ${filter===f?'active':''}" data-action="filter" data-filter="${f}">${l}</button>`).join('')}</div><span class="muted small">${tasks.length} 件事项</span></div>${tasks.length?`<div class="task-list full-list">${tasks.map(t=>t.archived?`<div class="task-row"><span class="muted">${icon('archive')}</span><span class="task-text">${esc(t.title)}</span><button class="btn compact" data-action="restore-task" data-id="${esc(t.id)}">恢复</button></div>`:taskRow(t)).join('')}</div>`:empty('这里暂时没有事项','把挂在心上的事写下来，就能从容地开始。',button('添加待办','add-task'))}</section><div class="gentle-note">${icon('coffee',18)} 完成得快或慢，都没关系。你可以随时调整安排。</div>`;
++  ctx.root.onclick=handleMain;
++}
++
++function addCapture(text,extra={}){state.captures.unshift({id:uid(),text,category:'备忘',tags:'',archived:false,createdAt:new Date().toISOString(),...extra});save();toast('已经放进收集箱。');}
++function captureDialog(id){
++  const c=state.captures.find(x=>x.id===id);
++  modal({title:c?'编辑碎片':'收集一个想法',body:`<label class="field">内容<textarea name="text" rows="6" required maxlength="12000" placeholder="文字、链接，或一段聊天里需要记住的事…">${esc(c?.text||'')}</textarea></label><div class="form-grid"><label class="field">分类<select name="category">${['备忘','学习灵感','英语','链接','消息摘录'].map(k=>`<option ${c?.category===k?'selected':''}>${k}</option>`).join('')}</select></label><label class="field">标签<input name="tags" maxlength="60" placeholder="例如：数据结构" value="${esc(c?.tags||'')}"></label></div>${c?.fileName?`<p class="muted">附件：${esc(c.fileName)}（仅本机保存）</p>`:''}`,onSubmit:data=>{const values={text:data.get('text').trim(),category:data.get('category'),tags:data.get('tags').trim()};if(!values.text){toast('请先填写内容。');return false;}if(c){Object.assign(c,values);save();toast('内容已更新。');}else addCapture(values.text,values);render();}});
++}
++function renderInbox(){
++  const captures=state.captures.filter(c=>filter==='archived'?c.archived:!c.archived&&(filter==='all'||c.category===filter));
++  ctx.root.innerHTML=pageHead('灵感，先放在这里。','课堂上的一句话、偶然看到的链接、还没整理好的想法。',`<div class="row">${button('添加附件','capture-file','upload')}${button('随手记','add-capture','plus',true)}</div>`)+`<div class="inbox-notice">${icon('sparkles',21)}<div><strong>先收集，再连接。</strong><span>接入大模型后，可自动提取重点、建议分类和待办。目前可以手动整理。</span></div><button class="text-btn" data-action="assistant">了解助手 ${icon('arrow-right',16)}</button></div><div class="toolbar inbox-toolbar"><div class="tabs">${[['all','全部碎片'],['学习灵感','学习灵感'],['英语','英语'],['备忘','备忘'],['archived','已归档']].map(([f,l])=>`<button class="tab ${filter===f?'active':''}" data-action="filter" data-filter="${f}">${l}</button>`).join('')}</div><span class="muted small">${captures.length} 条记录</span></div><div class="capture-grid">${captures.map((c,i)=>`<article class="capture-card ${['capture-lilac','capture-aqua','capture-pink','capture-plain'][i%4]}"><header><span class="chip">${icon(c.category==='链接'?'link':c.category==='消息摘录'?'message':'file',14)}${esc(c.category)}</span><button class="icon-btn" data-action="edit-capture" data-id="${esc(c.id)}" aria-label="编辑碎片">${icon('edit',17)}</button></header><p>${esc(c.text)}</p>${c.fileName?`<button class="attachment" data-action="download-capture" data-id="${esc(c.id)}">${icon('file',17)}${esc(c.fileName)} ${icon('download',15)}</button>`:''}${c.tags?`<span class="capture-tag"># ${esc(c.tags)}</span>`:''}<footer><span>${new Date(c.createdAt).toLocaleDateString('zh-CN',{month:'short',day:'numeric'})}</span><button class="text-btn" data-action="capture-task" data-id="${esc(c.id)}">转为待办</button><button class="icon-btn" data-action="archive-capture" data-id="${esc(c.id)}" aria-label="${c.archived?'恢复':'归档'}碎片">${icon(c.archived?'refresh':'archive',17)}</button></footer></article>`).join('')}</div>${!captures.length?empty('为下一次灵感，留一个位置。','写点什么，或保存一份资料。',button('记下第一个想法','add-capture')):''}`;
++  ctx.root.onclick=handleMain;
++}
++function captureFile(){
++  modal({title:'收集一份附件',body:'<label class="field">选择文件<input name="file" type="file" required></label><p class="muted small">原件存入当前浏览器，单文件最大 40 MB。文件内容不会上传或自动解析。</p><label class="field">补充说明<textarea name="text" rows="3" maxlength="12000" placeholder="这份资料值得记住的地方…"></textarea></label>',submitLabel:'放入收集箱',onSubmit:async data=>{const file=data.get('file');if(!file?.size){toast('请选择非空文件。');return false;}const blobId=await putFile(file);addCapture(data.get('text').trim()||file.name,{blobId,fileName:file.name,fileType:file.type,category:'备忘'});render();}});
++}
++async function handleMain(event){
++  const b=event.target.closest('[data-action]');if(!b)return;const id=b.dataset.id;const action=b.dataset.action;
++  if(action==='add-task')taskDialog();
++  if(action==='edit-task')taskDialog(id);
++  if(action==='toggle-task'){const task=state.tasks.find(x=>x.id===id);task.done=!task.done;task.completedAt=task.done?new Date().toISOString():null;save();render();toast(task.done?'又完成一件事。':'已放回待办。');}
++  if(action==='restore-task'){state.tasks.find(x=>x.id===id).archived=false;save();render();}
++  if(action==='filter'){filter=b.dataset.filter;render();}
++  if(action==='add-capture')captureDialog();
++  if(action==='edit-capture')captureDialog(id);
++  if(action==='capture-file')captureFile();
++  if(action==='archive-capture'){const c=state.captures.find(x=>x.id===id);c.archived=!c.archived;save();render();toast(c.archived?'碎片已归档。':'碎片已恢复。',()=>{c.archived=!c.archived;save();render();});}
++  if(action==='capture-task'){const c=state.captures.find(x=>x.id===id);if(state.tasks.some(t=>t.captureId===id&&!t.archived)){toast('这条碎片已经有对应待办。');return;}state.tasks.unshift({id:uid(),title:c.text.slice(0,100),description:c.text,category:c.category==='英语'?'英语':'个人',date:'',priority:'normal',done:false,source:`收集箱 · ${c.category}`,captureId:id,createdAt:new Date().toISOString()});save();toast('已转为待办，日期留待你安排。');}
++  if(action==='download-capture'){try{const c=state.captures.find(x=>x.id===id);const blob=await getFile(c.blobId);if(!blob)throw new Error('附件不在这个浏览器中，请重新添加。');download(blob,c.fileName);}catch(error){toast(error.message);}}
++}
+*** End Patch

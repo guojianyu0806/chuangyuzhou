@@ -1,0 +1,55 @@
+*** Begin Patch
+*** Add File: C:/Users/g2806/Desktop/工作台/frontend/.gitignore
++.finesse/
++node_modules/
++*.log
++test-results/
++playwright-report/
+*** Add File: C:/Users/g2806/Desktop/工作台/frontend/.finesse/log.json
++[
++  {
++    "date": "2026-09-20",
++    "page": "lumi-personal-workspace",
++    "register": "product",
++    "shell": "light sidebar on desktop; bottom tabs on mobile",
++    "axes": {
++      "palette": "lilac paper with violet, cyan, pink and lime highlights",
++      "type": "system Chinese sans with clear heading contrast",
++      "layout": "weighted dashboard, document reader, practice workspace",
++      "engine": "feedback transitions only",
++      "material": "notebook and highlighter"
++    },
++    "dials": { "soul": 7, "spectacle": 3, "density": 7 },
++    "brief": "软件工程学生的私人学习工作台；两台Windows电脑、vivo手机和平板；浅色霓虹；云端接入待服务器就绪",
++    "verification": "40 responsive page/width combinations; course, English, task, capture and attachment flows checked in isolated browser contexts"
++  }
++]
+*** Update File: C:/Users/g2806/Desktop/工作台/frontend/README.md
+@@
+-## 当前数据范围
++## 已实现的界面和操作
++
++- 今日：继续课程、当日待办、灵感速记与六级快捷入口。
++- 课程空间：课程创建、资料上传与下载、TXT／图片／PDF 预览、笔记编辑、旧版修订记录、Markdown 导出及课程助教偏好。
++- 六级计划：目标设置、词汇卡片、原创阅读练习及本地判分、错题本、听力音频、写作／翻译草稿、学习时长记录。
++- 收集箱：文字、链接、消息摘录、附件、分类、归档及转为待办。
++- 备忘与待办：新增、编辑、完成、日期安排、分类、优先级、归档与恢复。
++- 学习回顾：根据当前空间的实际记录统计完成事项、笔记和学习时长。
++- 偏好与连接：个人资料、模型服务偏好、连接状态、完整备份导入导出、窗口冲突恢复副本、版本检查。
++- 全局搜索：按 `Ctrl+K` 搜索课程、笔记、待办和碎片。
++
++## 当前数据范围
+@@
+ - 示例内容与个人数据分开管理。示例只用于体验页面，不代表已经导入了你的真实课件或完成了真实 AI 整理。
++- 单个附件上限为 40 MB；完整 JSON 备份上限为 512 MB。导出包含附件原件，缺失原件时会报错，不会把不完整备份提示为成功。导入只补充缺少的记录；已有文字保留，冲突的英语草稿另存到收集箱。
++- 多窗口检测到另一窗口有更新时，会阻止旧记录覆盖，并把本窗口改动保留为恢复副本；可在“偏好与连接”导出恢复副本后再导入合并。
+@@
+-本地界面项目位于 `C:\Users\g2806\Desktop\工作台\frontend`，不覆盖原有调研方案 `C:\Users\g2806\Desktop\工作台\.workbench\spec.md`。后续发布与资料备份需要另外实现；修改程序文件不会自动为浏览器中的个人资料建立备份。
++本地界面项目位于 `C:\Users\g2806\Desktop\工作台\frontend`，不覆盖原有调研方案 `C:\Users\g2806\Desktop\工作台\.workbench\spec.md`。后续服务器发布与自动云端备份需要另外实现；修改程序文件不会自动为浏览器中的个人资料建立备份。
++
++## 验证
++
++`tests/backup.test.mjs` 使用 Node.js 内置测试库，运行 `node --test tests/backup.test.mjs`。
++
++其余 `tests/*.mjs` 是浏览器回归测试，使用当前电脑 Codex 自带的 Playwright 与 Edge，运行时创建隔离浏览器空间，不操作你的日常浏览器数据。它们覆盖课程、英语、主要流程、存储保护和 320／375／414／768／1440 像素页面布局。测试脚本需要本地服务已启动。
+*** End Patch

@@ -1,0 +1,25 @@
+{
+  "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+  "sourceLine": 786,
+  "timestampUtc": "2026-09-19T16:09:37.254Z",
+  "timestampBeijing": "2026-09-20T00:09:37.254000+08:00",
+  "sourceRecordSha256": "ab64b2e9ba98a15e64edf4ea0719530b596d9c6a680c4f97b583ac865e48929b",
+  "commands": [
+    "node --check frontend/src/app.js; node frontend/tests/flows.mjs; node frontend/tests/backup.test.mjs"
+  ],
+  "result": {
+    "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "sourceLine": 790,
+    "timestampUtc": "2026-09-19T16:09:45.368Z",
+    "timestampBeijing": "2026-09-20T00:09:45.368000+08:00",
+    "sourceRecordSha256": "66643a80efde0c008776fdc2ecabe80be650c9af574a72cb21090a2b12ff7c7e"
+  },
+  "capturedResults": [
+    {
+      "exitCode": 0,
+      "processStillRunning": false,
+      "output": "PASS demo opens and personal starts empty\nPASS add, edit, complete task and reload\nPASS workspace mode isolation\nPASS capture becomes exactly one task\nPASS upload text attachment, reload, download preserved bytes\nPASS export includes task, capture and original attachment\nPASS import backup into fresh context, repeat import, retrieve attachment\nPASS all primary flows with isolated browser contexts.\n✔ real example seed passes validation and unsafe course colors are normalized (5.3527ms)\n✔ nested import adds missing notes, files, revisions while preserving current title/content (4.5096ms)\n✔ new records merge by ID without overwriting existing tasks or captures (1.0896ms)\n✔ English drafts restore into empty fields and conflicts become labelled captures only once (2.4812ms)\n✔ English plan restores missing/zero values without overwriting filled values (0.4393ms)\n✔ builtin vocabulary status restores new cards but respects current studied status (0.3952ms)\n✔ English records, attempts, audio, reading answers and results survive restore (1.0098ms)\n✔ invalid root, nested record types, dangerous IDs, duplicate IDs and numeric fields reject (1.1842ms)\n✔ only base64 data URL attachments under the size limit are accepted (81.5379ms)\n✔ prototype-shaped unknown properties never reach normalized records (0.718ms)\nℹ tests 10\nℹ suites 0\nℹ pass 10\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 111.5969\n"
+    }
+  ],
+  "verificationScope": "Observed historical output; not rerun now."
+}

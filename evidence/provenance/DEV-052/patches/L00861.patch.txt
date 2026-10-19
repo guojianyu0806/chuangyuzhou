@@ -1,0 +1,77 @@
+*** Begin Patch
+*** Update File: C:/Users/g2806/Desktop/工作台/frontend/start.cmd
+@@
+-where node >nul 2>nul
+-if errorlevel 1 (
+-  echo Node.js was not found. Please install Node.js before starting the workbench.
+-  pause
+-  exit /b 1
+-)
+-echo Starting the local workbench...
+-node server.mjs
++powershell.exe -NoProfile -File "%~dp0start.ps1"
+*** Add File: C:/Users/g2806/Desktop/工作台/frontend/start.ps1
++param([switch]$NoOpen)
++$ErrorActionPreference = 'Stop'
++$workbenchUrl = 'http://127.0.0.1:4173'
++$workbenchRoot = $PSScriptRoot
++
++function Test-WorkbenchReady {
++    try {
++        $health = Invoke-RestMethod -Uri "$workbenchUrl/api/health" -TimeoutSec 2
++        return ($health.status -eq 'ok' -and $health.mode -eq 'local-ui' -and $health.version -eq '0.1.0' -and $health.backendConfigured -eq $false)
++    } catch { return $false }
++}
++
++try {
++    if (-not (Test-WorkbenchReady)) {
++        $nodeCommand = Get-Command node -ErrorAction SilentlyContinue
++        if (-not $nodeCommand) { throw 'Node.js was not found. Please install Node.js before starting the workbench.' }
++        $runtimeDirectory = Join-Path $workbenchRoot '.runtime'
++        New-Item -ItemType Directory -Path $runtimeDirectory -Force | Out-Null
++        $runStamp = Get-Date -Format 'yyyyMMdd-HHmmss-fff'
++        $outLog = Join-Path $runtimeDirectory "$runStamp.stdout.log"
++        $errLog = Join-Path $runtimeDirectory "$runStamp.stderr.log"
++        $previousHost = $env:HOST
++        $previousPort = $env:PORT
++        try {
++            $env:HOST = '127.0.0.1'
++            $env:PORT = '4173'
++            $workbenchProcess = Start-Process -FilePath $nodeCommand.Source -ArgumentList 'server.mjs' -WorkingDirectory $workbenchRoot -WindowStyle Hidden -RedirectStandardOutput $outLog -RedirectStandardError $errLog -PassThru
++        } finally {
++            $env:HOST = $previousHost
++            $env:PORT = $previousPort
++        }
++        $ready = $false
++        for ($attempt = 0; $attempt -lt 30; $attempt++) {
++            if (Test-WorkbenchReady) { $ready = $true; break }
++            $workbenchProcess.Refresh()
++            if ($workbenchProcess.HasExited) { break }
++            Start-Sleep -Milliseconds 150
++        }
++        if (-not $ready) {
++            $detail = if (Test-Path -LiteralPath $errLog) { Get-Content -LiteralPath $errLog -Raw } else { '' }
++            throw "Workbench did not become ready. See $errLog. $detail"
++        }
++    }
++    Write-Output "Workbench is ready: $workbenchUrl"
++    Write-Output 'The server runs in the background. Closing this launcher will not stop it.'
++    if (-not $NoOpen) { Start-Process $workbenchUrl }
++} catch {
++    Write-Error $_ -ErrorAction Continue
++    exit 1
++}
+*** Update File: C:/Users/g2806/Desktop/工作台/frontend/.gitignore
+@@
+ .finesse/
++.runtime/
+*** Update File: C:/Users/g2806/Desktop/工作台/frontend/README.md
+@@
+-也可以双击本目录的 `start.cmd`。看到终端输出地址后，在浏览器打开：
++推荐双击本目录的 `start.cmd`：它会检查服务状态，必要时在独立后台进程中启动服务，确认可访问后自动打开浏览器；重复运行会复用已启动的服务。
++
++访问地址：
+@@
+-使用期间保持终端窗口打开，按 `Ctrl+C` 停止。服务不会自动打开浏览器。
++使用 `start.cmd` 启动后，可以关闭启动窗口。电脑重启后需再次双击启动；日志在本目录 `.runtime` 中。直接运行 `npm start` 或 `node server.mjs` 则需要保持对应终端打开，按 `Ctrl+C` 停止。
+*** End Patch

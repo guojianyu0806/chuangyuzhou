@@ -1,0 +1,25 @@
+{
+  "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+  "sourceLine": 562,
+  "timestampUtc": "2026-09-19T15:59:40.331Z",
+  "timestampBeijing": "2026-09-19T23:59:40.331000+08:00",
+  "sourceRecordSha256": "e82c94048231947a6d6dae8b505104d4e8c74a32f37330c0b5cf4a1314189999",
+  "commands": [
+    "node server.mjs"
+  ],
+  "result": {
+    "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "sourceLine": 565,
+    "timestampUtc": "2026-09-19T15:59:50.533Z",
+    "timestampBeijing": "2026-09-19T23:59:50.533000+08:00",
+    "sourceRecordSha256": "176e4b08c7962ffd32be352ad7e9fee125a5235095e6b2ca24a0e2a1520462b2"
+  },
+  "capturedResults": [
+    {
+      "exitCode": null,
+      "processStillRunning": true,
+      "output": "Workbench 0.1.0 (local UI): http://127.0.0.1:4173\nKeep this window open. Press Ctrl+C to stop.\n"
+    }
+  ],
+  "verificationScope": "Observed historical output; not rerun now."
+}

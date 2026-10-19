@@ -1,0 +1,31 @@
+{
+  "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+  "sourceLine": 933,
+  "timestampUtc": "2026-09-20T02:13:16.991Z",
+  "timestampBeijing": "2026-09-20T10:13:16.991000+08:00",
+  "sourceRecordSha256": "1744aca681425ec4c95491af5179ddf40295dae344ce95e65d576ece6d65973e",
+  "commands": [
+    "cmd.exe /c .\\start.cmd",
+    "$pageStatus = Invoke-WebRequest -Uri 'http://127.0.0.1:4173/' -TimeoutSec 5; [pscustomobject]@{Status=$pageStatus.StatusCode;ListeningProcess=(Get-NetTCPConnection -LocalPort 4173 -State Listen).OwningProcess;LauncherExists=(Test-Path -LiteralPath frontend/launch.mjs)}"
+  ],
+  "result": {
+    "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "sourceLine": 937,
+    "timestampUtc": "2026-09-20T02:13:20.929Z",
+    "timestampBeijing": "2026-09-20T10:13:20.929000+08:00",
+    "sourceRecordSha256": "c1bad1b8284b9621c5cb14dd71c77ab6055b09037fd39a9ece48663205a42e0f"
+  },
+  "capturedResults": [
+    {
+      "exitCode": 0,
+      "processStillRunning": false,
+      "output": "Workbench is ready: http://127.0.0.1:4173\nIt runs in the background. You may close this launcher.\n"
+    },
+    {
+      "exitCode": 0,
+      "processStillRunning": false,
+      "output": "\r\nStatus ListeningProcess LauncherExists\r\n------ ---------------- --------------\r\n   200             4116           True\r\n\r\n"
+    }
+  ],
+  "verificationScope": "Observed historical output; not rerun now."
+}

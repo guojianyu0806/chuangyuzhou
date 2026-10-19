@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: C:/Users/g2806/Desktop/工作台/frontend/src/app.js
+@@
+ document.addEventListener('click',e=>{
++  if(e.target.closest('.skip-link')){e.preventDefault();ctx.root.focus();return;}
+@@
+-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();searchDialog();}if(e.key==='Escape')closeAssistant();});
++document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();closeAssistant();searchDialog();}if(e.key==='Escape')closeAssistant();const drawer=document.querySelector('#ai-drawer');if(e.key==='Tab'&&!drawer.hidden){const items=[...drawer.querySelectorAll('button,a,input,textarea,select')].filter(el=>!el.disabled);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}});
+@@
+-window.addEventListener('error',e=>{console.error(e.error);});
++window.addEventListener('error',e=>{if(e.error?.name==='StorageConflictError')e.preventDefault();else console.error(e.error);});
+*** End Patch

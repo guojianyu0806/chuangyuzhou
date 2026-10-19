@@ -1,0 +1,25 @@
+{
+  "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+  "sourceLine": 883,
+  "timestampUtc": "2026-09-20T02:10:56.359Z",
+  "timestampBeijing": "2026-09-20T10:10:56.359000+08:00",
+  "sourceRecordSha256": "a7225a2c41c20922d17c716a1ba1debea2ea9ac6d46f2d60885cb4688249b431",
+  "commands": [
+    "@'\nparam([switch]$NoOpen)\n$ErrorActionPreference = 'Stop'\n$workbenchUrl = 'http://127.0.0.1:4173'\nfunction Test-WorkbenchReady {\n    try {\n        $health = Invoke-RestMethod -Uri \"$workbenchUrl/api/health\" -TimeoutSec 2\n        return ($health.status -eq 'ok' -and $health.mode -eq 'local-ui' -and $health.version -eq '0.1.0' -and $health.backendConfigured -eq $false)\n    } catch { return $false }\n}\ntry {\n    if (-not (Test-WorkbenchReady)) {\n        $nodeCommand = Get-Command node -ErrorAction Stop\n        $runtimeDirectory = Join-Path $PSScriptRoot '.runtime'\n        New-Item -ItemType Directory -Path $runtimeDirectory -Force | Out-Null\n        $runStamp = Get-Date -Format 'yyyyMMdd-HHmmss-fff'\n        $outLog = Join-Path $runtimeDirectory \"$runStamp.stdout.log\"\n        $errLog = Join-Path $runtimeDirectory \"$runStamp.stderr.log\"\n        $previousHost = $env:HOST\n        $previousPort = $env:PORT\n        try {\n            $env:HOST = '127.0.0.1'\n            $env:PORT = '4173'\n            $workbenchProcess = Start-Process -FilePath $nodeCommand.Source -ArgumentList 'server.mjs' -WorkingDirectory $PSScriptRoot -WindowStyle Hidden -RedirectStandardOutput $outLog -RedirectStandardError $errLog -PassThru\n        } finally {\n            $env:HOST = $previousHost\n            $env:PORT = $previousPort\n        }\n        $ready = $false\n        for ($attempt = 0; $attempt -lt 30; $attempt++) {\n            if (Test-WorkbenchReady) { $ready = $true; break }\n            $workbenchProcess.Refresh()\n            if ($workbenchProcess.HasExited) { break }\n            Start-Sleep -Milliseconds 150\n        }\n        if (-not $ready) {\n            $detail = if (Test-Path -LiteralPath $errLog) { Get-Content -LiteralPath $errLog -Raw } else { '' }\n            throw \"Workbench did not become ready. See $errLog. $detail\"\n        }\n    }\n    Write-Output \"Workbench is ready: $workbenchUrl\"\n    Write-Output 'The server runs in the background. Closing this launcher will not stop it.'\n    if (-not $NoOpen) { Start-Process $workbenchUrl }\n} catch {\n    Write-Error $_ -ErrorAction Continue\n    exit 1\n}\n'@ | Set-Content -LiteralPath .\\frontend\\start.ps1 -Encoding ascii\nGet-Item -LiteralPath .\\frontend\\start.ps1 | Select-Object FullName,Length\npowershell.exe -NoProfile -File .\\frontend\\start.ps1 -NoOpen"
+  ],
+  "result": {
+    "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "sourceLine": 886,
+    "timestampUtc": "2026-09-20T02:10:57.414Z",
+    "timestampBeijing": "2026-09-20T10:10:57.414000+08:00",
+    "sourceRecordSha256": "c7872d88f3ffd394805c2eaa09d97070c6dea547391d91be782487bb7a811489"
+  },
+  "capturedResults": [
+    {
+      "exitCode": 1,
+      "processStillRunning": false,
+      "output": "\r\nThe term 'C:\\Users\\g2806\\Desktop\\工作台\\frontend\\start.ps1' is not recognized as the name of a cmdlet, function, script fi\r\nle, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and\r\n try again.\r\n    + CategoryInfo          : ObjectNotFound: (C:\\Users\\g2806\\...ntend\\start.ps1:String) [], ParentContainsErrorRecord \r\n   Exception\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\nFullName                                         Length\r\n--------                                         ------\r\nC:\\Users\\g2806\\Desktop\\工作台\\frontend\\start.ps1   2109\r\n\r\n"
+    }
+  ],
+  "verificationScope": "Observed historical output; not rerun now."
+}

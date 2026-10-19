@@ -1,0 +1,589 @@
+{
+  "schemaVersion": 1,
+  "product": "创宇宙",
+  "identity": "“宇宙”是同一项目的早期名称，后更名为“创宇宙”并持续迭代。",
+  "recordedAtUtc": "2026-10-19T16:13:52.343232+00:00",
+  "kind": "selected-historical-development-and-startup-evidence",
+  "source": {
+    "log": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "prefixThroughLine": 995,
+    "prefixBytes": 5486095,
+    "prefixSha256": "e420f5b36f89b7c381f94952214cd99c7e6f34d8dbc74d14ba0716a1062ececf",
+    "readOnly": true
+  },
+  "patches": [
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 133,
+      "timestampUtc": "2026-09-19T15:15:54.643Z",
+      "timestampBeijing": "2026-09-19T23:15:54.643000+08:00",
+      "sourceRecordSha256": "d3d6bcf62ef1d827f5b8af67f0adf5ed50bcb4c9002a3046873f38afa9d93316",
+      "patchPartInCall": 1,
+      "path": "patches/L00133.patch.txt",
+      "bytes": 28411,
+      "sha256": "872b9c38e0cd90e1a3d6b9a0a420996a188d1e06a24890fa7c1916383145d673",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/.workbench/spec.md"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 136,
+        "timestampUtc": "2026-09-19T15:15:54.696Z",
+        "timestampBeijing": "2026-09-19T23:15:54.696000+08:00",
+        "sourceRecordSha256": "e0fedc9e44649593aada0b2b2b629c77d2de1b3048801e49509d8744cd283799"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 487,
+      "timestampUtc": "2026-09-19T15:44:16.166Z",
+      "timestampBeijing": "2026-09-19T23:44:16.166000+08:00",
+      "sourceRecordSha256": "1feaee51e724c21f7429906bda56f88600f6f7081c781cffcf8d1694a9547828",
+      "patchPartInCall": 1,
+      "path": "patches/L00487.patch.txt",
+      "bytes": 7073,
+      "sha256": "a891cd7d7a3145cebf3b470dabc0224c00a6ae504b32c4ef16df9a08440e3984",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/index.html",
+        "C:/Users/g2806/Desktop/工作台/frontend/icon.svg",
+        "C:/Users/g2806/Desktop/工作台/frontend/manifest.webmanifest",
+        "C:/Users/g2806/Desktop/工作台/frontend/src/services.js",
+        "C:/Users/g2806/Desktop/工作台/frontend/src/icons.js"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 490,
+        "timestampUtc": "2026-09-19T15:44:16.264Z",
+        "timestampBeijing": "2026-09-19T23:44:16.264000+08:00",
+        "sourceRecordSha256": "72e27f413b3ff6263cbfc518f3fb9cb056132bce671c6a9c31a593cf074f7d9b"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 497,
+      "timestampUtc": "2026-09-19T15:48:38.009Z",
+      "timestampBeijing": "2026-09-19T23:48:38.009000+08:00",
+      "sourceRecordSha256": "eebd2a93fb13cc738fe4a470bcb8a3fd344740157277ec19bdd43b4cc484cf5f",
+      "patchPartInCall": 1,
+      "path": "patches/L00497.patch.txt",
+      "bytes": 28076,
+      "sha256": "10fe257503acaba53f6469b45b2962696a309908ba2040fba5f5e69ccfebfe49",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/src/app.js"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 500,
+        "timestampUtc": "2026-09-19T15:48:38.142Z",
+        "timestampBeijing": "2026-09-19T23:48:38.142000+08:00",
+        "sourceRecordSha256": "8303b188bffedd641c6e2863c975299d262ae5487d378c981068b0d363b4161c"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 508,
+      "timestampUtc": "2026-09-19T15:51:19.094Z",
+      "timestampBeijing": "2026-09-19T23:51:19.094000+08:00",
+      "sourceRecordSha256": "99435f0ea9e2adf01ccf1e86684158c98e840281d850c3574316b04e305d863a",
+      "patchPartInCall": 1,
+      "path": "patches/L00508.patch.txt",
+      "bytes": 18336,
+      "sha256": "a61e1e293476a70923d7d1766f98050dbe4d41f5e43ecd62771e313c1446425a",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/src/app.js"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 511,
+        "timestampUtc": "2026-09-19T15:51:19.164Z",
+        "timestampBeijing": "2026-09-19T23:51:19.164000+08:00",
+        "sourceRecordSha256": "f930bdd88141ad3dffc8f69a6492fbae8083593c0078bf069b752eafd463543e"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 524,
+      "timestampUtc": "2026-09-19T15:58:16.258Z",
+      "timestampBeijing": "2026-09-19T23:58:16.258000+08:00",
+      "sourceRecordSha256": "00e3d46ad5dc034aa845b34da7c1932baacc33231f485e512ab93a88649b5f60",
+      "patchPartInCall": 1,
+      "path": "patches/L00524.patch.txt",
+      "bytes": 42471,
+      "sha256": "4783e6ef800f6dc0a3467e6c07696aa466a925d937d04c1814678f1f30d7aece",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/src/app.css"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 527,
+        "timestampUtc": "2026-09-19T15:58:16.348Z",
+        "timestampBeijing": "2026-09-19T23:58:16.348000+08:00",
+        "sourceRecordSha256": "49d2a899c8dea6c92bb14a1cb3c247e60d0012af95ffe45275554b30a81562f5"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 562,
+      "timestampUtc": "2026-09-19T15:59:40.331Z",
+      "timestampBeijing": "2026-09-19T23:59:40.331000+08:00",
+      "sourceRecordSha256": "e82c94048231947a6d6dae8b505104d4e8c74a32f37330c0b5cf4a1314189999",
+      "patchPartInCall": 1,
+      "path": "patches/L00562.patch.txt",
+      "bytes": 1249,
+      "sha256": "ec8fe619d25f458ed4ebe379e748b8f1af8c4fbcaeadaba8098c92e95a8a2e6c",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/src/app.js",
+        "C:/Users/g2806/Desktop/工作台/frontend/src/icons.js"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 565,
+        "timestampUtc": "2026-09-19T15:59:50.533Z",
+        "timestampBeijing": "2026-09-19T23:59:50.533000+08:00",
+        "sourceRecordSha256": "176e4b08c7962ffd32be352ad7e9fee125a5235095e6b2ca24a0e2a1520462b2"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 662,
+      "timestampUtc": "2026-09-19T16:04:11.059Z",
+      "timestampBeijing": "2026-09-20T00:04:11.059000+08:00",
+      "sourceRecordSha256": "f4e014a360fd525fa502edef2472517d349bbc82ee571430f353e4823f9676b2",
+      "patchPartInCall": 1,
+      "path": "patches/L00662.patch.txt",
+      "bytes": 5234,
+      "sha256": "a0797b9feec5833b2039c59411d2770d790c7a111dcf364677d11de3a9004be9",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/src/app.js"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 665,
+        "timestampUtc": "2026-09-19T16:04:11.118Z",
+        "timestampBeijing": "2026-09-20T00:04:11.118000+08:00",
+        "sourceRecordSha256": "fc8f80899a56ba02c9a739decafd37e9fc054acc5a651f3f2a9499cd5acc00a3"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 677,
+      "timestampUtc": "2026-09-19T16:05:01.345Z",
+      "timestampBeijing": "2026-09-20T00:05:01.345000+08:00",
+      "sourceRecordSha256": "84196e431645094256213c107317ead9802682776e22a4bd7fa4fb22fca8c81a",
+      "patchPartInCall": 1,
+      "path": "patches/L00677.patch.txt",
+      "bytes": 1805,
+      "sha256": "c0d3e5194f02fd56f23a08d735c600da183bc3e9e29f6e6d56795dfa7a418ca7",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/src/app.js"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 681,
+        "timestampUtc": "2026-09-19T16:05:02.308Z",
+        "timestampBeijing": "2026-09-20T00:05:02.308000+08:00",
+        "sourceRecordSha256": "ff0c7781dd7f728fe71314ba43aad47148de4f077a4e512a95075904deea08b9"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 696,
+      "timestampUtc": "2026-09-19T16:06:15.375Z",
+      "timestampBeijing": "2026-09-20T00:06:15.375000+08:00",
+      "sourceRecordSha256": "a5a025de1bb1c7d099db85c96f2bea4fc8cd0fad61802d7363b78eb509a11e61",
+      "patchPartInCall": 1,
+      "path": "patches/L00696-01.patch.txt",
+      "bytes": 1074,
+      "sha256": "131826468466d2f494b4da5ff75721a5569e05af15570e46e6c8d2f8b8a690e7",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/index.html",
+        "C:/Users/g2806/Desktop/工作台/frontend/src/app.js"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 701,
+        "timestampUtc": "2026-09-19T16:06:16.243Z",
+        "timestampBeijing": "2026-09-20T00:06:16.243000+08:00",
+        "sourceRecordSha256": "6f93d63e34ec7bf5a91a861f95e8fd9d21d781988d42f3bc7a34574bf186d996"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 696,
+      "timestampUtc": "2026-09-19T16:06:15.375Z",
+      "timestampBeijing": "2026-09-20T00:06:15.375000+08:00",
+      "sourceRecordSha256": "a5a025de1bb1c7d099db85c96f2bea4fc8cd0fad61802d7363b78eb509a11e61",
+      "patchPartInCall": 2,
+      "path": "patches/L00696-02.patch.txt",
+      "bytes": 1398,
+      "sha256": "ed62677801600a499b0f0a2570e52ec24d4276171704f40caf957746119ac06a",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/src/app.css"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 701,
+        "timestampUtc": "2026-09-19T16:06:16.243Z",
+        "timestampBeijing": "2026-09-20T00:06:16.243000+08:00",
+        "sourceRecordSha256": "6f93d63e34ec7bf5a91a861f95e8fd9d21d781988d42f3bc7a34574bf186d996"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 741,
+      "timestampUtc": "2026-09-19T16:08:07.999Z",
+      "timestampBeijing": "2026-09-20T00:08:07.999000+08:00",
+      "sourceRecordSha256": "cdbbe0ad43b49e9d58d3eeff8216808d1502496b10b2886597845fadef73348f",
+      "patchPartInCall": 1,
+      "path": "patches/L00741.patch.txt",
+      "bytes": 1539,
+      "sha256": "4565154059d01e09bb589d9186cb5ea30535530826d88ef910d408d4ee1285e9",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/src/app.js"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 745,
+        "timestampUtc": "2026-09-19T16:08:08.821Z",
+        "timestampBeijing": "2026-09-20T00:08:08.821000+08:00",
+        "sourceRecordSha256": "b027778d63a6cd916f5133ca2f8011787fe7781828a4c3ba42305921642ad4a6"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 786,
+      "timestampUtc": "2026-09-19T16:09:37.254Z",
+      "timestampBeijing": "2026-09-20T00:09:37.254000+08:00",
+      "sourceRecordSha256": "ab64b2e9ba98a15e64edf4ea0719530b596d9c6a680c4f97b583ac865e48929b",
+      "patchPartInCall": 1,
+      "path": "patches/L00786.patch.txt",
+      "bytes": 3735,
+      "sha256": "edfe97e0d869a1431cb6a9e94685018c9d7a514ecce7010619dcd4a84d6f15b9",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/src/app.js"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 790,
+        "timestampUtc": "2026-09-19T16:09:45.368Z",
+        "timestampBeijing": "2026-09-20T00:09:45.368000+08:00",
+        "sourceRecordSha256": "66643a80efde0c008776fdc2ecabe80be650c9af574a72cb21090a2b12ff7c7e"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 795,
+      "timestampUtc": "2026-09-19T16:10:36.907Z",
+      "timestampBeijing": "2026-09-20T00:10:36.907000+08:00",
+      "sourceRecordSha256": "156192ef73053d672376a032fb304e61f73a07f0c31cd5381c17178210cecbaf",
+      "patchPartInCall": 1,
+      "path": "patches/L00795.patch.txt",
+      "bytes": 3807,
+      "sha256": "54409629534d877ed767c6b918cf89b56b9e36b330eb4e48032f556db0a3746c",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/.gitignore",
+        "C:/Users/g2806/Desktop/工作台/frontend/.finesse/log.json",
+        "C:/Users/g2806/Desktop/工作台/frontend/README.md"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 798,
+        "timestampUtc": "2026-09-19T16:10:36.982Z",
+        "timestampBeijing": "2026-09-20T00:10:36.982000+08:00",
+        "sourceRecordSha256": "da8aa12d71d7178a65bfc5e69d00c336784972bbf7f1442699ada84e6092bea8"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 806,
+      "timestampUtc": "2026-09-19T16:11:09.529Z",
+      "timestampBeijing": "2026-09-20T00:11:09.529000+08:00",
+      "sourceRecordSha256": "8ef84aec1ed02b229befd13fcfbad0dc966d49f9e7d45dfb5e69352a27ece0bf",
+      "patchPartInCall": 1,
+      "path": "patches/L00806.patch.txt",
+      "bytes": 1176,
+      "sha256": "d75455fa816e87f56d9be64b64d6e5ccc491f077dfed59389f04d2abe8920c5b",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/src/app.js"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 810,
+        "timestampUtc": "2026-09-19T16:11:19.186Z",
+        "timestampBeijing": "2026-09-20T00:11:19.186000+08:00",
+        "sourceRecordSha256": "e0ad914b83e93339c65df8ebc15892620c93e7440de87ec0c31f1d73727fda0a"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 847,
+      "timestampUtc": "2026-09-20T02:09:15.465Z",
+      "timestampBeijing": "2026-09-20T10:09:15.465000+08:00",
+      "sourceRecordSha256": "96510e5d95e6bc8c2df278ec7dda82c1ff99bed3622ad3939571b8dfaa9ccb2b",
+      "patchPartInCall": 1,
+      "path": "patches/L00847.patch.txt",
+      "bytes": 3569,
+      "sha256": "6d0c075b3bbf12a94d2ccf0cc74d7bd5e1db490c397d7452bc5d4b532ebd883a",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/start.cmd",
+        "C:/Users/g2806/Desktop/工作台/frontend/start.ps1",
+        "C:/Users/g2806/Desktop/工作台/frontend/.gitignore",
+        "C:/Users/g2806/Desktop/工作台/frontend/README.md"
+      ],
+      "observedState": "attempt_failed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 850,
+        "timestampUtc": "2026-09-20T02:09:16.127Z",
+        "timestampBeijing": "2026-09-20T10:09:16.127000+08:00",
+        "sourceRecordSha256": "4e4d78ebc375c7c03c2fee6e7fcb68b0490c1d406f5a955a4be06a9733d64991"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 861,
+      "timestampUtc": "2026-09-20T02:10:08.237Z",
+      "timestampBeijing": "2026-09-20T10:10:08.237000+08:00",
+      "sourceRecordSha256": "c3d837fe3cb8b331e1ac975c1d5b91e2fd8b50161bead8eea984cf12434f6e0a",
+      "patchPartInCall": 1,
+      "path": "patches/L00861.patch.txt",
+      "bytes": 3572,
+      "sha256": "d435e0cb0601f70390f8b4f818fe5f0135b9750c8536e0a8094bda7a95098ab8",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/start.cmd",
+        "C:/Users/g2806/Desktop/工作台/frontend/start.ps1",
+        "C:/Users/g2806/Desktop/工作台/frontend/.gitignore",
+        "C:/Users/g2806/Desktop/工作台/frontend/README.md"
+      ],
+      "observedState": "attempt_not_sufficient_later_script_missing",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 865,
+        "timestampUtc": "2026-09-20T02:10:09.853Z",
+        "timestampBeijing": "2026-09-20T10:10:09.853000+08:00",
+        "sourceRecordSha256": "13dd3a104ab730d2b1cf4fd993e07950041ab5e66a3b7001e9440663293981ee"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 904,
+      "timestampUtc": "2026-09-20T02:12:02.127Z",
+      "timestampBeijing": "2026-09-20T10:12:02.127000+08:00",
+      "sourceRecordSha256": "3a2ff57331d42650f1ece08bf004a0533ce1a91366f564dcf2cb0f9c1b20351e",
+      "patchPartInCall": 1,
+      "path": "patches/L00904.patch.txt",
+      "bytes": 2386,
+      "sha256": "be92b1673ad18f884c7f6a5885829884a06f1a35a17f0b60f22ca182a1798bcb",
+      "fileOperations": [
+        "C:/Users/g2806/Desktop/工作台/frontend/start.cmd",
+        "C:/Users/g2806/Desktop/工作台/frontend/launch.mjs"
+      ],
+      "observedState": "tool_call_completed",
+      "result": {
+        "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+        "sourceLine": 908,
+        "timestampUtc": "2026-09-20T02:12:03.246Z",
+        "timestampBeijing": "2026-09-20T10:12:03.246000+08:00",
+        "sourceRecordSha256": "abae56a88ca937d647667b07b93d2a527c8e88e2828c6d9d96a6c662fa5fd5f6"
+      },
+      "scope": "Original patch text; selected root-conversation operation, not a runnable release."
+    }
+  ],
+  "messages": [
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 9,
+      "timestampUtc": "2026-09-19T15:07:59.227Z",
+      "timestampBeijing": "2026-09-19T23:07:59.227000+08:00",
+      "sourceRecordSha256": "bdb1d0a67c445613d2f78cbf474c0eb7ce07fb7ddbda309d7b43852e2bcd5c5d",
+      "path": "messages/L00009.txt",
+      "sha256": "42698b5176c046784773673227ff4773f2eca588feec4eb24007fceacbd46468",
+      "extraction": "Verbatim user text; ambient UI context removed only where explicitly delimited."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 171,
+      "timestampUtc": "2026-09-19T15:20:56.133Z",
+      "timestampBeijing": "2026-09-19T23:20:56.133000+08:00",
+      "sourceRecordSha256": "d6ae1378098ac145a0e12c7a13e33d0825ca60147927eb38560ef1c0b490d74a",
+      "path": "messages/L00171.txt",
+      "sha256": "5f1b4477177deef7082e9beba2527aeafd4e9e27abbdb47e8e22868fc2900301",
+      "extraction": "Verbatim user text; ambient UI context removed only where explicitly delimited."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 419,
+      "timestampUtc": "2026-09-19T15:38:27.259Z",
+      "timestampBeijing": "2026-09-19T23:38:27.259000+08:00",
+      "sourceRecordSha256": "d1a1b6f5409bfd5e5820757982716769381a5805e80820233cbbcf1bfa67406f",
+      "path": "messages/L00419.txt",
+      "sha256": "7c5c21bdaa213446fdb292f732a79b8f59e07d76a2f464b5129775d80f7a7280",
+      "extraction": "Verbatim user text; ambient UI context removed only where explicitly delimited."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 834,
+      "timestampUtc": "2026-09-20T02:08:06.520Z",
+      "timestampBeijing": "2026-09-20T10:08:06.520000+08:00",
+      "sourceRecordSha256": "6446df66d7aa69a0f35e20ee60160d663185c78176838b89185360ff1dc662ea",
+      "path": "messages/L00834.txt",
+      "sha256": "5f4c348ca5645be9c138283d66c95808987aaca93d739f5e421c2db039012b8b",
+      "extraction": "Verbatim user text; ambient UI context removed only where explicitly delimited."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 948,
+      "timestampUtc": "2026-09-20T05:34:22.592Z",
+      "timestampBeijing": "2026-09-20T13:34:22.592000+08:00",
+      "sourceRecordSha256": "c5f64535729de73a78a5ec77e20c163e2e294643b0047193ef09f63c6a0da651",
+      "path": "messages/L00948.txt",
+      "sha256": "bddeb0d20f51a0f231ad0c8834dd372a087472f5eda448d9ef0f015bfd19fe6c",
+      "extraction": "Verbatim user text; ambient UI context removed only where explicitly delimited."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 960,
+      "timestampUtc": "2026-09-20T05:35:25.023Z",
+      "timestampBeijing": "2026-09-20T13:35:25.023000+08:00",
+      "sourceRecordSha256": "45ab9cb39a2c4d494eaff2151ef22382b02030a1d9dee043808afe97a2daea6c",
+      "path": "messages/L00960.txt",
+      "sha256": "f0ae3eb6a219db71a85576420eb16099c3a0f14df4c49cc41b6ad0e8221022b9",
+      "extraction": "Verbatim user text; ambient UI context removed only where explicitly delimited."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 970,
+      "timestampUtc": "2026-09-20T05:36:44.096Z",
+      "timestampBeijing": "2026-09-20T13:36:44.096000+08:00",
+      "sourceRecordSha256": "c1a4d4a4aa853b941ef794dd53439705fe807ac591234f3dc919070e940e4a27",
+      "path": "messages/L00970.txt",
+      "sha256": "44e46bbb7982e2c64bac243cf7fcc97732151b2908247f93f3d67fe04e82ed90",
+      "extraction": "Verbatim user text; ambient UI context removed only where explicitly delimited."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 985,
+      "timestampUtc": "2026-09-20T05:39:51.283Z",
+      "timestampBeijing": "2026-09-20T13:39:51.283000+08:00",
+      "sourceRecordSha256": "6ac1d9ee776681c02810f4a65d6bc828e0d39addde5fa826590ce3e64c1015f8",
+      "path": "messages/L00985.txt",
+      "sha256": "c14936f25ca92a9fa956237d316982bfb0d2eb5cb6fca0c0a4379e9fc7f4960f",
+      "extraction": "Verbatim user text; ambient UI context removed only where explicitly delimited."
+    },
+    {
+      "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "sourceLine": 995,
+      "timestampUtc": "2026-09-20T05:40:56.699Z",
+      "timestampBeijing": "2026-09-20T13:40:56.699000+08:00",
+      "sourceRecordSha256": "f0fecf4bda666b815f66650df4455ce2e7c7e0960b6722ea647d9614a814f656",
+      "path": "messages/L00995.txt",
+      "sha256": "411c630567b97f49fc46f5912b0d4cdac14640bee062fe25d24229b543984e2e",
+      "extraction": "Verbatim user text; ambient UI context removed only where explicitly delimited."
+    }
+  ],
+  "runtimeRecords": [
+    {
+      "path": "runtime/L00562.json",
+      "callLine": 562,
+      "resultLine": 565,
+      "sha256": "80f3d59768c0854637f3bf4254b99a6076d92ba92bb563a1a63bcf2e71101709"
+    },
+    {
+      "path": "runtime/L00786.json",
+      "callLine": 786,
+      "resultLine": 790,
+      "sha256": "e529953d1a18155debc805217631058df1e55552bcbbde4df868ce406b9e37a1"
+    },
+    {
+      "path": "runtime/L00806.json",
+      "callLine": 806,
+      "resultLine": 810,
+      "sha256": "2d960c3915c5dbf0b5b08956a6350bab81e60d4f4a420e3e7042f3cd0e06b74c"
+    },
+    {
+      "path": "runtime/L00847.json",
+      "callLine": 847,
+      "resultLine": 850,
+      "sha256": "600b22321a47a41388985093546d08e634071f3ed36c6982aea06c7cc8655dd0"
+    },
+    {
+      "path": "runtime/L00869.json",
+      "callLine": 869,
+      "resultLine": 872,
+      "sha256": "8a0456cc29efb155578639333062b38f996fb82bb601511eaaef48d8dd7443cc"
+    },
+    {
+      "path": "runtime/L00883.json",
+      "callLine": 883,
+      "resultLine": 886,
+      "sha256": "64ddb5f51ffb753b6d1dfd3cbd1356f90031acf0d8160b91a4d10a943c57e336"
+    },
+    {
+      "path": "runtime/L00890.json",
+      "callLine": 890,
+      "resultLine": 893,
+      "sha256": "dcb4926cb02c2f3a8e8318d671c0d4a8e4e7456d1d0991e323370dc91850ca53"
+    },
+    {
+      "path": "runtime/L00897.json",
+      "callLine": 897,
+      "resultLine": 900,
+      "sha256": "cc961efbee844ed6d3c0e234d5115572a122b020bf4b383323947c1c2f872a97"
+    },
+    {
+      "path": "runtime/L00904.json",
+      "callLine": 904,
+      "resultLine": 908,
+      "sha256": "057059da3ec6fa6561395112f55fbc38e92419010ba107d2d0c373344f14d0c2"
+    },
+    {
+      "path": "runtime/L00914.json",
+      "callLine": 914,
+      "resultLine": 917,
+      "sha256": "a7a659bb8fd5988d8f1ee40c86dd97227b9c7fb2581c2cd67bcbbe9240cf4368"
+    },
+    {
+      "path": "runtime/L00933.json",
+      "callLine": 933,
+      "resultLine": 937,
+      "sha256": "2b5876e3329f542304837bd11bcb14b3620fc9606225ac76e087154bc5993d43"
+    }
+  ],
+  "limitations": [
+    "Selected original parent-conversation records only; historical subagent file creation is not fully exported.",
+    "No complete runnable 0.1.0 source snapshot or original early Git commits recovered.",
+    "Historical commands were archived as text and were not executed.",
+    "A startup banner and HTTP checks do not prove all features, cloud sync or real model behavior.",
+    "Git supplement commits use current actual dates; source-event dates remain metadata."
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+  "sourceLine": 847,
+  "timestampUtc": "2026-09-20T02:09:15.465Z",
+  "timestampBeijing": "2026-09-20T10:09:15.465000+08:00",
+  "sourceRecordSha256": "96510e5d95e6bc8c2df278ec7dda82c1ff99bed3622ad3939571b8dfaa9ccb2b",
+  "commands": [],
+  "result": {
+    "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "sourceLine": 850,
+    "timestampUtc": "2026-09-20T02:09:16.127Z",
+    "timestampBeijing": "2026-09-20T10:09:16.127000+08:00",
+    "sourceRecordSha256": "4e4d78ebc375c7c03c2fee6e7fcb68b0490c1d406f5a955a4be06a9733d64991"
+  },
+  "capturedResults": [
+    {
+      "toolError": "Script error:\napply_patch verification failed: Failed to find expected lines in C:\\Users\\g2806\\Desktop\\工作台\\frontend\\start.cmd:\nwhere node >nul 2>nul\nif errorlevel 1 (\n  echo Node.js was not found. Please install Node.js before starting the workbench.\n  pause\n  exit /b 1\n)\n\necho Starting the local workbench...\nnode server.mjs\nif errorlevel 1 pause\nendlocal"
+    }
+  ],
+  "verificationScope": "Observed historical output; not rerun now."
+}

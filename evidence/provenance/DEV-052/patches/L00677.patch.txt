@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: C:/Users/g2806/Desktop/工作台/frontend/src/app.js
+@@
+-  ctx.root.querySelector('#profile-form').onsubmit=e=>{e.preventDefault();const data=new FormData(e.target);const name=data.get('name').trim(),major=data.get('major').trim();if(!name||!major){toast('称呼和专业不能留空。');return;}state.profile.name=name;state.profile.major=major;save();shell();render();toast('个人资料已保存。');};
++  const recoveryKeys=Object.keys(localStorage).filter(k=>k.startsWith(`lumi-recovery-${mode}-`));
++  if(recoveryKeys.length){const recoveryButton=document.createElement('button');recoveryButton.className='btn full';recoveryButton.textContent=`查看窗口冲突恢复副本（${recoveryKeys.length}）`;ctx.root.querySelector('[data-action=import]').after(recoveryButton);recoveryButton.onclick=()=>{modal({title:'窗口改动恢复副本',body:'<p class="muted">这些记录因另一窗口有新内容而未覆盖保存。可以导出后，通过导入功能补充到当前空间。</p><div id="recovery-list" class="stack" style="margin-top:20px"></div>'});const list=dialog.querySelector('#recovery-list');for(const key of recoveryKeys){try{const data=JSON.parse(localStorage.getItem(key));const b=document.createElement('button');b.className='btn';b.textContent=`导出 ${new Date(data.updatedAt).toLocaleString('zh-CN')} 的副本`;b.onclick=()=>exportBackup(data);list.append(b);}catch{}}};}
++  ctx.root.querySelector('#profile-form').onsubmit=e=>{e.preventDefault();const data=new FormData(e.target);const name=data.get('name').trim(),major=data.get('major').trim();if(!name||!major){toast('称呼和专业不能留空。');return;}state.profile.name=name;state.profile.major=major;save();shell();render();toast('个人资料已保存。');};
+*** End Patch

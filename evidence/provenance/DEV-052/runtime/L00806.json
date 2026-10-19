@@ -1,0 +1,25 @@
+{
+  "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+  "sourceLine": 806,
+  "timestampUtc": "2026-09-19T16:11:09.529Z",
+  "timestampBeijing": "2026-09-20T00:11:09.529000+08:00",
+  "sourceRecordSha256": "8ef84aec1ed02b229befd13fcfbad0dc966d49f9e7d45dfb5e69352a27ece0bf",
+  "commands": [
+    "node --check frontend/src/app.js; node frontend/tests/storage.mjs; node 'C:\\Users\\g2806\\.codex\\skills\\finesse-ui\\scripts\\detect.mjs' --json frontend/index.html frontend/src/app.css frontend/src/courses.css frontend/src/english.css | ConvertFrom-Json | Select-Object p0"
+  ],
+  "result": {
+    "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "sourceLine": 810,
+    "timestampUtc": "2026-09-19T16:11:19.186Z",
+    "timestampBeijing": "2026-09-20T00:11:19.186000+08:00",
+    "sourceRecordSha256": "e0ad914b83e93339c65df8ebc15892620c93e7440de87ec0c31f1d73727fda0a"
+  },
+  "capturedResults": [
+    {
+      "exitCode": 0,
+      "processStillRunning": false,
+      "output": "PASS stale tab cannot overwrite A; B changes preserved in a recovery copy\nPASS conflict changes exported; latest shared state reloads successfully\nPASS reimport of recovery backup merges A and B without losing either\nPASS settings exposes and exports retained recovery copies\nPASS missing IndexedDB attachment rejects full backup with explicit error and no download\nALL STORAGE REGRESSIONS PASSED\n\r\np0\r\n--\r\n 0\r\n\r\n"
+    }
+  ],
+  "verificationScope": "Observed historical output; not rerun now."
+}

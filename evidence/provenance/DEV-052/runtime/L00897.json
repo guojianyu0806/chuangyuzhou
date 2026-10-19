@@ -1,0 +1,25 @@
+{
+  "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+  "sourceLine": 897,
+  "timestampUtc": "2026-09-20T02:11:16.797Z",
+  "timestampBeijing": "2026-09-20T10:11:16.797000+08:00",
+  "sourceRecordSha256": "2b496b2ab795963c993cf11e5e2af562b753ba59ed40cb88282d1c4e4112f87b",
+  "commands": [
+    "Test-Path -LiteralPath .\\frontend\\start.ps1; Get-ChildItem -LiteralPath .\\frontend -Filter 'start*' | Select-Object Name,Length; Get-Date"
+  ],
+  "result": {
+    "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "sourceLine": 900,
+    "timestampUtc": "2026-09-20T02:11:17.451Z",
+    "timestampBeijing": "2026-09-20T10:11:17.451000+08:00",
+    "sourceRecordSha256": "7d6b713bb0212c51c29dc1ec642d048d3efe835d96c22cd557394ddedd7ef152"
+  },
+  "capturedResults": [
+    {
+      "exitCode": 0,
+      "processStillRunning": false,
+      "output": "False\r\n\r\nName      Length\r\n----      ------\r\nstart.cmd    113\r\n               1\r\n\r\n"
+    }
+  ],
+  "verificationScope": "Observed historical output; not rerun now."
+}

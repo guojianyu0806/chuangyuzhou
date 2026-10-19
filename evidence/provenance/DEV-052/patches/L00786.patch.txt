@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: C:/Users/g2806/Desktop/工作台/frontend/src/app.js
+@@
+ import {seedEnglish,mountEnglish} from './english.js';
++import {validateBackup,mergeBackup} from './backup.js';
+@@
+ function importBackup(){
+-  modal({title:'导入拾光备份',body:'<p class="muted">导入到当前空间，仅补充不存在的条目。相同编号的已有内容会保留。个人资料与六级计划保持当前设置。</p><label class="field">备份文件<input type="file" name="file" accept=".json,application/json" required></label>',submitLabel:'导入数据',onSubmit:async data=>{
++  modal({title:'导入拾光备份',body:'<p class="muted">导入到当前空间，补充缺少的课程、笔记、记录与未设置的计划。已有文字会保留，内容不同的英语草稿会另存到收集箱。单份备份上限 512 MB。</p><label class="field">备份文件<input type="file" name="file" accept=".json,application/json" required></label>',submitLabel:'导入数据',onSubmit:async data=>{
+@@
+-    if(backup.format!=='lumi-backup'||backup.version!==1||!backup.state||!['courses','tasks','captures'].every(k=>Array.isArray(backup.state[k]))||!Array.isArray(backup.files))throw new Error('备份格式不兼容，请选择由拾光导出的文件。');
+-    let count=0;const additions={};for(const k of ['courses','tasks','captures']){additions[k]=backup.state[k].filter(x=>x&&typeof x.id==='string'&&!state[k].some(y=>y.id===x.id));for(const x of additions[k]){if(k==='courses'&&(!x.title||!Array.isArray(x.notes)||!Array.isArray(x.files)))throw new Error('备份中有无效课程。');if(k==='tasks'&&typeof x.title!=='string')throw new Error('备份中有无效待办。');if(k==='captures'&&typeof x.text!=='string')throw new Error('备份中有无效碎片。');}}
+-    for(const file of backup.files){if(typeof file.id!=='string'||typeof file.data!=='string'||!file.data.startsWith('data:'))throw new Error('附件格式无效。');if(!await getFile(file.id)){const parts=file.data.split(',');if(parts.length!==2||!parts[0].endsWith(';base64'))throw new Error('附件编码无效。');const raw=atob(parts[1]);if(raw.length>40*1024*1024)throw new Error('备份内单个附件超过 40 MB。');await putFile(new Blob([Uint8Array.from(raw,c=>c.charCodeAt(0))],{type:file.type||'application/octet-stream'}),file.id);}}
+-    for(const k of ['courses','tasks','captures']){state[k].push(...additions[k]);count+=additions[k].length;}
+-    for(const k of ['sessions','words','mistakes']){if(Array.isArray(backup.state.english?.[k])&&Array.isArray(state.english[k]))for(const item of backup.state.english[k])if(item?.id&&!state.english[k].some(x=>x.id===item.id)){state.english[k].push(item);count++;}}
+-    save();render();toast(`已补充 ${count} 条记录，已有内容保持原样。`);
++    backup=validateBackup(backup);
++    const refs=new Set();function collect(value){if(value&&typeof value==='object')for(const [k,v] of Object.entries(value)){if(typeof v==='string'&&/blobId|fileId|audioId/i.test(k))refs.add(v);else if(typeof v==='object')collect(v);}}collect(backup.state);
++    const available=new Set(backup.files.map(f=>f.id));for(const id of refs)if(!available.has(id)&&!await getFile(id))throw new Error('备份缺少附件原件，无法完整恢复，请选择完整备份。');
++    for(const file of backup.files){if(!await getFile(file.id)){const raw=atob(file.data.slice(file.data.indexOf(',')+1));await putFile(new Blob([Uint8Array.from(raw,c=>c.charCodeAt(0))],{type:file.type}),file.id);}}
++    const merged=mergeBackup(state,backup);Object.assign(state,merged.state);
++    save();render();toast(`已补充 ${merged.count} 条记录，已有内容保持原样。`);
+*** End Patch

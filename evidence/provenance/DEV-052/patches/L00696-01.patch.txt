@@ -1,0 +1,18 @@
+*** Begin Patch
+*** Update File: C:/Users/g2806/Desktop/工作台/frontend/index.html
+@@
+-  <aside id="ai-drawer" class="ai-drawer" aria-label="学习助手" hidden></aside>
++  <aside id="ai-drawer" class="ai-drawer" role="dialog" aria-modal="true" aria-label="学习助手" hidden></aside>
+*** Update File: C:/Users/g2806/Desktop/工作台/frontend/src/app.js
+@@
+-function assistant(){
++function closeAssistant(){document.querySelector('#ai-drawer').hidden=true;document.querySelector('#app').inert=false;}
++function assistant(){
+@@
+   drawer.hidden=false;
++  document.querySelector('#app').inert=true;
+@@
+   document.querySelectorAll('[data-nav]').forEach(a=>{a.classList.toggle('active',a.dataset.nav===route);if(a.dataset.nav===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
++  document.querySelector('.bottom-nav [data-action=more]')?.classList.toggle('active',['tasks','review','settings'].includes(route));
++  document.querySelector('.search-trigger')?.setAttribute('aria-label','搜索笔记、课程、待办');
+*** End Patch

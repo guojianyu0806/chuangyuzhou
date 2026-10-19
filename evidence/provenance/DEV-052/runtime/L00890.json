@@ -1,0 +1,25 @@
+{
+  "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+  "sourceLine": 890,
+  "timestampUtc": "2026-09-20T02:11:06.136Z",
+  "timestampBeijing": "2026-09-20T10:11:06.136000+08:00",
+  "sourceRecordSha256": "4e6ab05c9145aaa78299b01ef3e5f2f1ff0a1eaf1c41eb83aaf2791d6015a45c",
+  "commands": [
+    "powershell.exe -NoProfile -File .\\start.ps1 -NoOpen"
+  ],
+  "result": {
+    "sourceLog": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "sourceLine": 893,
+    "timestampUtc": "2026-09-20T02:11:06.787Z",
+    "timestampBeijing": "2026-09-20T10:11:06.787000+08:00",
+    "sourceRecordSha256": "9c0bd5be6b378d273ec1967e2c36c88bb65506dfde73e37e742920f9e8b893e6"
+  },
+  "capturedResults": [
+    {
+      "exitCode": 1,
+      "processStillRunning": false,
+      "output": "The argument '.\\start.ps1' to the -File parameter does not exist. Provide the path to an existing '.ps1' file as an argument to the -File parameter.\r\nWindows PowerShell\r\nCopyright (C) Microsoft Corporation. All rights reserved.\r\n\r\n"
+    }
+  ],
+  "verificationScope": "Observed historical output; not rerun now."
+}
