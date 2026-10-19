@@ -1,40 +1,20 @@
 {
-  "archive": "0-5-0-20260920-132545.tar.gz",
+  "archive": "0-5-0-20260920-132747.tar.gz",
   "version": "0.5.0",
-  "archiveSha256": "92b390c87b650715a12ed4802f689db304bae812cada62d6693cef00f8297451",
-  "bytes": 239844,
+  "archiveSha256": "0b356ec7fecfac3cdd32f7e94eec2c2b18c71dd5dff722aaf312e15885ec0fd2",
+  "bytes": 240198,
   "relation": "pre-competition-source-snapshot",
   "metadataSha256Matches": true,
-  "recordedAtUtc": "2026-10-19T13:32:39.672540+00:00",
+  "recordedAtUtc": "2026-10-19T13:32:43.471772+00:00",
   "kind": "historical-source-snapshot-recorded-now",
   "sourceSubset": "files present in the retained deployment archive, not an entire original workspace",
   "mainBaselinePreserved": "96bdda69beccf77910b92f2699a4726e90b4711d",
   "deltaFromPreviousArchive": {
-    "added": [
-      "backend/tests/timetable-import.test.mjs",
-      "backend/tests/timetable.test.mjs",
-      "deployment/import-timetable.mjs",
-      "frontend/src/timetable-model.js",
-      "frontend/src/timetable.css",
-      "frontend/src/timetable.js"
-    ],
+    "added": [],
     "deleted": [],
     "changed": [
-      "backend/package.json",
-      "backend/server.mjs",
-      "backend/store.mjs",
-      "backend/tests/server.test.mjs",
-      "deployment/README.md",
-      "frontend/index.html",
-      "frontend/package.json",
-      "frontend/server.mjs",
-      "frontend/src/app.js",
-      "frontend/src/backup.js",
-      "frontend/src/canvas.js",
-      "frontend/src/cloud.js",
-      "frontend/src/icons.js",
-      "frontend/src/services.js",
-      "frontend/src/workspace-model.js"
+      "backend/tests/timetable-import.test.mjs",
+      "deployment/import-timetable.mjs"
     ]
   }
 }

@@ -1,8 +1,8 @@
 /** Import an explicitly supplied private timetable without changing any other workspace data. */
 import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
-import {pathToFileURL} from 'node:url';
 import {createStore} from '../backend/store.mjs';
+import {isCliEntry} from '../backend/is-cli.mjs';
 import {mergeTimetables,validateTimetable} from '../frontend/src/timetable-model.js';
 
 export function importTimetable(store,input,{dryRun=false}={}) {
@@ -23,7 +23,7 @@ export function importTimetable(store,input,{dryRun=false}={}) {
   }
 }
 
-if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){
+if(isCliEntry(import.meta.url)){
   const args=process.argv.slice(2),dataIndex=args.indexOf('--data-dir'),fileIndex=args.indexOf('--file');
   if(dataIndex<0||fileIndex<0||!args[dataIndex+1]||!args[fileIndex+1])throw new Error('Usage: --data-dir <private-data-dir> --file <private-timetable.json> [--dry-run]');
   const input=JSON.parse(readFileSync(resolve(args[fileIndex+1]),'utf8'));
