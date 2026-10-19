@@ -30,3 +30,9 @@
 /* Collection boards reuse the same gestures and geometry on every inner page. */
 .cv-nested .cv-pagehead{justify-content:flex-end;margin:0 0 10px}.cv-nested .cv-pagehead>div:first-child{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.cv-nested .cv-head-actions{padding-top:0}.cv-empty{position:relative;z-index:1;display:grid;place-content:center;justify-items:center;gap:12px;min-height:290px;max-width:520px;margin:45px auto;padding:30px;border:2px dashed #ad96d7;background:#fcfaffed;border-radius:24px;color:#514367;cursor:default;text-align:center;user-select:text}.cv-empty p{font-size:13px;line-height:1.8}.cv-empty .empty-state{padding:12px}.cv-viewport.is-list .cv-empty{margin:15px auto;min-height:230px}.cv-empty button{min-height:44px}.cv-nested .cv-viewport{height:500px;min-height:360px}.cv-nested .cv-viewport.is-list{height:auto;min-height:0}.cv-card-foot>button{min-height:36px}.cv-nested.is-list-mode .cv-head-actions:has(.cv-create[hidden]){display:none}
 @media(max-width:760px){.cv-nested .cv-viewport:not(.is-list){height:460px}.cv-empty{margin:25px 15px;padding:22px}.cv-nested .cv-pagehead{margin-bottom:8px}}
+
+.cv-ledger-total{display:grid;gap:3px;margin-top:auto;padding-top:8px;min-width:0}.cv-ledger-total>span{font-size:11px;color:#654020}.cv-ledger-total>strong{font:700 28px/1.15 var(--font-mono,monospace);letter-spacing:-1px;overflow-wrap:anywhere}.cv-card-ledger .cv-space-counts{padding-top:7px}.cv-card-ledger.cv-compact .cv-card-copy>p{display:none}.cv-card-ledger.cv-compact .cv-ledger-total>strong{font-size:21px}.cv-card-ledger.cv-compact .cv-ledger-total{gap:1px;padding-top:3px}.cv-card-ledger.cv-compact .cv-space-counts{padding-top:3px}
+
+.cv-card-ledger .cv-card-kicker,.cv-card-ledger .cv-card-copy>p{display:none}.cv-card-ledger.cv-compact .cv-space-counts{display:none}.is-list .cv-card-ledger .cv-space-counts{display:flex}
+
+.cv-card.cv-compact .cv-card-body{margin-top:5px}

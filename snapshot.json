@@ -1,25 +1,39 @@
 {
-  "archive": "0-2-2-20260920-105436.tar.gz",
-  "version": "0.2.2",
-  "archiveSha256": "a3d5cfa2d20d1d0673e44d96d6a836f9c5582b0f5f53cd4b2f4758c5a15dacab",
-  "bytes": 199057,
+  "archive": "0-3-0-20260920-111138.tar.gz",
+  "version": "0.3.0",
+  "archiveSha256": "12d5cb48d24dcfb08467e9423641e8fbcec8b8e36e090b5a6bb64ba59e5edd58",
+  "bytes": 213475,
   "relation": "pre-competition-source-snapshot",
-  "recordedAtUtc": "2026-10-19T13:32:25.651908+00:00",
+  "recordedAtUtc": "2026-10-19T13:32:30.336263+00:00",
   "kind": "historical-source-snapshot-recorded-now",
   "sourceSubset": "files present in the retained deployment archive, not an entire original workspace",
   "mainBaselinePreserved": "96bdda69beccf77910b92f2699a4726e90b4711d",
   "deltaFromPreviousArchive": {
-    "added": [],
+    "added": [
+      "backend/tests/ledger.test.mjs",
+      "frontend/package.json",
+      "frontend/src/ledger-model.js",
+      "frontend/src/ledger.css",
+      "frontend/src/ledger.js"
+    ],
     "deleted": [],
     "changed": [
       "backend/README.md",
       "backend/package.json",
       "backend/server.mjs",
+      "backend/store.mjs",
       "backend/tests/server.test.mjs",
+      "deployment/README.md",
       "frontend/README.md",
+      "frontend/index.html",
+      "frontend/src/app.js",
+      "frontend/src/backup.js",
+      "frontend/src/canvas.css",
       "frontend/src/canvas.js",
+      "frontend/src/cloud.js",
+      "frontend/src/icons.js",
       "frontend/src/services.js",
-      "frontend/src/shell.css"
+      "frontend/src/workspace-model.js"
     ]
   }
 }

@@ -1,11 +1,13 @@
 /* Free-position workspace canvas. Persisted coordinates are independent of viewport size. */
+import {formatMoney,localDate,selectEntries,summarizeEntries} from './ledger-model.js';
 const PRESETS = {
   ai:      { x:36, y:40, w:540, h:380, color:'#B3A0FF', title:'AI 收件台', icon:'sparkles', label:'把零散，变有序。' },
   courses: { x:612, y:40, w:310, h:272, color:'#AE88FF', title:'课程空间', icon:'book', label:'让知识，连成线。' },
   english: { x:958, y:76, w:320, h:344, color:'#D8F649', title:'六级随身练', icon:'graduation', label:'碎片时间，也能向前。' },
   inbox:   { x:36, y:456, w:268, h:238, color:'#FF9CCE', title:'灵感收集箱', icon:'inbox', label:'先接住每一个想法。' },
   tasks:   { x:612, y:348, w:310, h:272, color:'#63E6DC', title:'备忘与待办', icon:'check-circle', label:'把事情，一件件做好。' },
-  review:  { x:958, y:456, w:320, h:238, color:'#9DC5FF', title:'生活回顾', icon:'chart', label:'看见日常中的每一步。' }
+  review:  { x:958, y:456, w:320, h:238, color:'#9DC5FF', title:'生活回顾', icon:'chart', label:'看见日常中的每一步。' },
+  ledger:  { x:958, y:730, w:320, h:272, color:'#FFBC7C', title:'记账', icon:'wallet', label:'每一笔，都有去处。' }
 };
 const COLORS=['#AE88FF','#63E6DC','#D8F649','#FF9CCE','#9DC5FF','#FFBC7C','#B3A0FF','#B4E6B9'];
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
@@ -33,7 +35,7 @@ export function ensureCanvas(state, presets = PRESETS) {
     let card=canvas.cards.find(c=>c.id===def.id);
     if(!card){
       const overlaps=c=>def.x<c.x+c.w+16&&def.x+def.w+16>c.x&&def.y<c.y+c.h+16&&def.y+def.h+16>c.y;
-      if(!presets[def.id]&&canvas.cards.some(overlaps)){def.x=36;def.y=Math.max(...canvas.cards.map(c=>finite(c.y,0)+finite(c.h,250)))+36;}
+      if((!presets[def.id]||def.id==='ledger')&&canvas.cards.some(overlaps)){def.x=36;def.y=Math.max(...canvas.cards.map(c=>finite(c.y,0)+finite(c.h,250)))+36;}
       card={id:def.id,x:def.x,y:def.y,w:def.w,h:def.h,color:def.color};canvas.cards.push(card);
     }
     card.x=clamp(finite(card.x,def.x),-100000,100000);
@@ -116,6 +118,10 @@ export function mountCanvas(ctx, collection) {
     if(collection?.renderCard)return collection.renderCard(card,dataFor(card));
     const d=dataFor(card),courseCount=state.courses?.length||0,taskCount=(state.tasks||[]).filter(t=>!t.done&&!t.archived).length,captureCount=(state.captures||[]).filter(c=>!c.archived).length;
     if(card.id==='ai')return `<div class="cv-ai-title"><span class="cv-ai-orbit" aria-hidden="true">${icon('sparkles',29)}</span><div><h2>有什么事，交给我。</h2><p>发给 AI，再归入你的空间。</p></div></div><div class="cv-ai-host" data-ai-host></div>`;
+    if(card.id==='ledger'){
+      const month=localDate().slice(0,7),last=localDate(new Date(Number(month.slice(0,4)),Number(month.slice(5)),0)),totals=summarizeEntries(selectEntries(state.ledger||{entries:[],projects:[]},{start:month+'-01',end:last}));
+      return `<div class="cv-card-copy"><span class="cv-card-kicker">YOUR DAILY LEDGER</span><h2>记账</h2><p>${esc(d.label)}</p></div><div class="cv-ledger-total"><span>本月支出${state.mode==='demo'?' · 示例':''}</span><strong>¥${formatMoney(totals.expenseCents)}</strong></div><div class="cv-space-counts"><span>${totals.count} 笔收支</span><span>日期 · 项目</span></div>`;
+    }
     if(card.id==='courses')return `<div class="cv-card-copy"><span class="cv-card-kicker">LEARNING SPACE</span><h2>课程空间</h2><p>${esc(d.label)}</p></div><div class="cv-course-art" aria-hidden="true"><span>${icon('code',26)}</span><span>${icon('file',25)}</span><span>${icon('book',29)}</span></div><div class="cv-card-detail"><strong>${courseCount}</strong><span>门课程，持续积累</span></div>`;
     if(card.id==='english')return `<div class="cv-card-copy"><span class="cv-card-kicker">CET–6 / EVERY LITTLE STEP</span><h2>每天一点，<br>离六级更近。</h2></div><div class="cv-english-word" aria-hidden="true">KEEP<br><span>GOING</span><b>↗</b></div><div class="cv-english-actions"><button type="button" data-cv="vocabulary">${icon('book',16)}背单词</button><button type="button" data-cv="reading">${icon('play',15)}随时刷题</button></div>`;
     if(card.id==='tasks')return `<div class="cv-card-copy"><span class="cv-card-kicker">ONE THING AT A TIME</span><h2>备忘与待办</h2><p>${esc(d.label)}</p></div><div class="cv-task-lines">${(state.tasks||[]).filter(t=>!t.done&&!t.archived).slice(0,2).map(t=>`<div><span></span><span>${esc(t.title)}</span></div>`).join('')||'<div><span></span><span>想到的事情，随手记在这里</span></div>'}</div><div class="cv-card-detail"><strong>${taskCount}</strong><span>件待办</span></div>`;
@@ -131,7 +137,7 @@ export function mountCanvas(ctx, collection) {
       const d=dataFor(card);
       return `<article class="cv-card cv-card-${collection?'collection':presets[card.id]?card.id:'custom'} ${card.h<260?'cv-compact':''} ${card.h<330?'cv-short':''}" data-card="${esc(card.id)}" style="--card-color:${color(d.color)};--card-fill:${canvasCardFill(d.color)};--card-order:${index};width:${card.w}px;height:${card.h}px;transform:translate(${card.x}px,${card.y}px)" tabindex="0" aria-label="${esc(d.title)}，按Enter打开">
       <header class="cv-card-head"><span class="cv-space-symbol">${safeIcon(d.icon,20)}</span><span class="cv-card-top-label">${collection?esc(collectionText('cardLabel',d,'内容卡片')):card.id==='ai'?'AI 收件台':presets[card.id]?'预置空间':'自建空间'}</span><button type="button" class="cv-drag" data-cv="drag" title="拖动卡片；方向键移动" aria-label="拖动${esc(d.title)}卡片，或使用方向键调整位置">${dragIcon}</button><button type="button" class="cv-card-menu" data-cv="card-menu" title="卡片设置" aria-label="设置${esc(d.title)}卡片">${icon('more',19)}</button></header>
-      <div class="cv-card-body">${cardContent(card)}</div><footer class="cv-card-foot"><span>${esc(collectionText('footLabel',d,card.id==='ai'?'收集 → 整理 → 归位':'拖入文件，直接收进这里'))}</span><button type="button" data-cv="enter" aria-label="进入${esc(d.title)}">${esc(collectionText('enterLabel',d,card.id==='ai'?'打开收件台':'进入空间'))}${icon('arrow-right',17)}</button></footer>
+      <div class="cv-card-body">${cardContent(card)}</div><footer class="cv-card-foot"><span>${esc(collectionText('footLabel',d,card.id==='ai'?'收集 → 整理 → 归位':card.id==='ledger'?'按日期记录 · 按项目汇总':'拖入文件，直接收进这里'))}</span><button type="button" data-cv="enter" aria-label="进入${esc(d.title)}">${esc(collectionText('enterLabel',d,card.id==='ai'?'打开收件台':'进入空间'))}${icon('arrow-right',17)}</button></footer>
       <button class="cv-resize" type="button" data-cv="resize" title="拖动调整大小；方向键微调" aria-label="调整${esc(d.title)}卡片大小">${resizeIcon}</button><div class="cv-drop-overlay">${icon('upload',34)}<strong>松手，放入${esc(d.title)}</strong><span>文件保存在本机</span></div></article>`;
     }).join('');
     const host=world.querySelector('[data-ai-host]');
@@ -353,6 +359,7 @@ export function mountCanvas(ctx, collection) {
     if(![...(event.dataTransfer?.types||[])].includes('Files'))return;
     event.preventDefault();if(event.dataTransfer)event.dataTransfer.dropEffect='copy';
     const el=event.target.closest('[data-card]');
+    if(!collection&&el?.dataset.card==='ledger'){if(event.dataTransfer)event.dataTransfer.dropEffect='none';return;}
     if(event.type==='dragenter'&&el){dragDepth.set(el,(dragDepth.get(el)||0)+1);el.classList.add('is-drop-target');}
     if(event.type==='dragleave'&&el){const depth=(dragDepth.get(el)||1)-1;dragDepth.set(el,depth);if(depth<=0)el.classList.remove('is-drop-target');}
   }

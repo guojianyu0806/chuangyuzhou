@@ -3,6 +3,7 @@ import { mkdirSync, chmodSync, existsSync, linkSync, unlinkSync } from 'node:fs'
 import { resolve, join } from 'node:path';
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
+import { validateLedger } from '../frontend/src/ledger-model.js';
 
 const scrypt = promisify(scryptCallback);
 export const MAX_STATE_BYTES = 12 * 1024 * 1024;
@@ -86,6 +87,10 @@ export function validateWorkspace(state) {
     if (state.aiDraft.files !== undefined) recordList(state.aiDraft.files, ['id', 'blobId', 'name']);
   }
   for (const key of ['words', 'sessions', 'mistakes', 'attempts']) if (state.english[key] !== undefined) recordList(state.english[key]);
+  if (state.ledger !== undefined) {
+    try { validateLedger(state.ledger); }
+    catch { throw new ApiError(400, 'invalid_ledger'); }
+  }
   const serialized = JSON.stringify(state);
   if (Buffer.byteLength(serialized) > MAX_STATE_BYTES) throw new ApiError(413, 'workspace_too_large');
   return { serialized, blobs };
@@ -158,6 +163,12 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
       return transaction(() => {
         const current = db.prepare('SELECT revision,state,updated_at FROM workspace WHERE id=1').get();
         if (current.revision !== baseRevision) throw new ApiError(409, 'revision_conflict', { revision: current.revision });
+        // Older clients may discard fields they do not recognize when importing backups.
+        // Require a refresh instead of accepting a workspace that would erase a populated ledger.
+        if (state.ledger === undefined && current.state) {
+          const previousLedger = JSON.parse(current.state).ledger;
+          if (previousLedger?.entries?.length || previousLedger?.projects?.length) throw new ApiError(409, 'workspace_update_required');
+        }
         const missing = [...blobs].filter(id => !fileInfo(id) || !existsSync(filePath(id)));
         if (missing.length) throw new ApiError(409, 'missing_files', { fileIds: missing.slice(0, 100) });
         const updatedAt = new Date(now()).toISOString(); const revision = baseRevision + 1;

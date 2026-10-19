@@ -1,5 +1,6 @@
 // Pure backup validation and additive merging. No browser storage or file writes.
 import {validateOrganizedProposal} from './ai-organizer.js';
+import {validateLedger} from './ledger-model.js';
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
 const DRAFT_TYPES = ['writing', 'translation', 'listening'];
 const PRACTICE_TYPES = ['reading', 'writing', 'translation', 'listening', 'vocabulary'];
@@ -271,6 +272,7 @@ function workspace(value) {
     english: english(value.english), updatedAt: text(value.updatedAt, '工作区更新时间'),
   };
   if (value.spaces !== undefined) result.spaces = records(value.spaces, space, '自建工作区');
+  if (value.ledger !== undefined) result.ledger = validateLedger(value.ledger);
   if (value.aiRequests !== undefined) result.aiRequests = records(value.aiRequests, aiRequest, 'AI 收件记录');
   if (value.aiDraft !== undefined) result.aiDraft = aiDraft(value.aiDraft);
   if (value.canvas !== undefined) result.canvas = canvas(value.canvas);
@@ -341,6 +343,12 @@ export function mergeBackup(current, incoming) {
   if (source.spaces) mergeRecords(state.spaces ||= [], source.spaces, mergeContainer);
   mergeRecords(state.tasks, source.tasks);
   mergeRecords(state.captures, source.captures);
+  if (source.ledger) {
+    state.ledger ||= {version:1, currency:'CNY', projects:[], entries:[]};
+    mergeRecords(state.ledger.projects, source.ledger.projects);
+    mergeRecords(state.ledger.entries, source.ledger.entries);
+    state.ledger = validateLedger(state.ledger);
+  }
   if (source.aiRequests) mergeRecords(state.aiRequests ||= [], source.aiRequests, (existing, item) => {
     mergeRecords(existing.files ||= [], item.files);
     const revisions = existing.revisions ||= [];
