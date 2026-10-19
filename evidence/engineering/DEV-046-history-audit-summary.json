@@ -1,0 +1,35 @@
+{
+  "auditHead": "96bdda69beccf77910b92f2699a4726e90b4711d",
+  "formalCommitCount": 188,
+  "formalObjects": 2610,
+  "formalBlobCount": 1406,
+  "formalImageCount": 96,
+  "formalAudioCount": 0,
+  "allLocalRefObjects": 2629,
+  "allLocalRefBlobCount": 1413,
+  "excludedCheckpointRefs": 4,
+  "excludedAudioObjects": 3,
+  "confirmedLiveSecrets": 0,
+  "credentialCandidatesReviewed": 182,
+  "imageOcrFailures": 0,
+  "imageVisualReview": "96 screenshots via 8 contact sheets; model settings screenshot separately reviewed",
+  "pdfTextsScanned": 2,
+  "archiveMembersScanned": 297,
+  "privateRuntimeRead": false,
+  "rawSecretValuesLogged": false,
+  "published": false,
+  "repositoryCreated": false,
+  "authenticationState": "No GitHub accounts listed by Git Credential Manager; browser reached sign-in page then control timed out; connector lacks create-repository capability",
+  "metadataRequiringPublicationDecision": [
+    "Author contact metadata",
+    "Historical local machine paths",
+    "Historical server address"
+  ],
+  "sourceCommitHashesRewritten": false,
+  "backupSha256": "4e016bfc8e8360f19b5bd61ef5957c629e21e6830ba8dac0e86dfac8ddaebe2c",
+  "limitations": [
+    "Pattern and OCR scans can miss unknown secret formats",
+    "No external security or competition eligibility certification",
+    "No anonymous remote access check because no repository has been created"
+  ]
+}

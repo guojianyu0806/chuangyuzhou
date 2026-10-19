@@ -1,0 +1,112 @@
+{
+  "auditedAtUtc": "2026-10-19T14:14:13.051908+00:00",
+  "refs": {
+    "main": "b702571aa384509243b0fec84a2994276a1f143a",
+    "codex/yuzhou-historical-snapshots": "8d3b22714badc7abc532f09e04f1fc02efdf4780"
+  },
+  "commitCounts": {
+    "main": 191,
+    "codex/yuzhou-historical-snapshots": 25
+  },
+  "publicReachableObjects": {
+    "commit": 216,
+    "tree": 1208,
+    "blob": 1839
+  },
+  "objectsScanned": 2055,
+  "original188CommitBaselinePreserved": true,
+  "baselineAudit": {
+    "credentialCandidatesReviewed": 182,
+    "screenshotsOcrAndVisuallyReviewed": 96,
+    "pdfTextsScanned": 2,
+    "zipMembersScanned": 297
+  },
+  "newBinaryMedia": [],
+  "publicAudioCount": 0,
+  "signatureCandidates": [
+    {
+      "object": "53b4e7fb4fcdcba05d634c2defbff4f34da39c9a",
+      "path": "app/tests/domain.test.mjs",
+      "kind": "credential-url",
+      "alreadyAuditedIn188CommitBaseline": true,
+      "fixtureContext": true,
+      "candidateSha256": "fbddae166ead16d1dd67736b19403ab1ac0095e344f663573848af911a7ce273"
+    },
+    {
+      "object": "372bfd02619606b4d1a6618fa67e72f3ce755345",
+      "path": "app/tests/provider.test.mjs",
+      "kind": "bearer-literal",
+      "alreadyAuditedIn188CommitBaseline": true,
+      "fixtureContext": true,
+      "candidateSha256": "ff52476c6261e405b838213f7d1c36e3975ca32bbb2c7250a00705379081562b"
+    },
+    {
+      "object": "7006309c7a99faf001683b1d2a61e750c4159db0",
+      "path": "submission/创宇宙-v1/yuzhou/backend/tests/deepseek.test.mjs",
+      "kind": "bearer-literal",
+      "alreadyAuditedIn188CommitBaseline": true,
+      "fixtureContext": true,
+      "candidateSha256": "a0d14755d59292464b4bdecef61f643710a0714a54cdc74e2ae5a94059209787"
+    },
+    {
+      "object": "f20cba7dafcfe43674b3e100eacb27cb16aa398c",
+      "path": "submission/创宇宙-v1/yuzhou/frontend/tests/competitions-model.test.mjs",
+      "kind": "credential-url",
+      "alreadyAuditedIn188CommitBaseline": true,
+      "fixtureContext": true,
+      "candidateSha256": "ec25b8fa54a9d7a878a86e6f38233af24d5d27d184b396136d6d7f0251d33c19"
+    },
+    {
+      "object": "ecfec257eb1477be93dbf747df9ee8a2e0d4acca",
+      "path": "submission/创宇宙-v1/yuzhou/frontend/tests/custom-blocks.test.mjs",
+      "kind": "credential-url",
+      "alreadyAuditedIn188CommitBaseline": true,
+      "fixtureContext": true,
+      "candidateSha256": "093866188144b0216fb125431572e8ac2df8980dfeeb6ebeb3d9f3987d1e4c1d"
+    },
+    {
+      "object": "cc2cb93767123ebbd454989d7ba51667e88dae0a",
+      "path": "submission/创宇宙-v1/yuzhou/frontend/tests/workspace-actions-competitions.test.mjs",
+      "kind": "credential-url",
+      "alreadyAuditedIn188CommitBaseline": true,
+      "fixtureContext": true,
+      "candidateSha256": "093866188144b0216fb125431572e8ac2df8980dfeeb6ebeb3d9f3987d1e4c1d"
+    },
+    {
+      "object": "8bcd7d09fc3854efc5331cc1b9609c9cfc834086",
+      "path": "yuzhou/frontend/tests/custom-blocks.test.mjs",
+      "kind": "credential-url",
+      "alreadyAuditedIn188CommitBaseline": true,
+      "fixtureContext": true,
+      "candidateSha256": "093866188144b0216fb125431572e8ac2df8980dfeeb6ebeb3d9f3987d1e4c1d"
+    },
+    {
+      "object": "f8b4c9bcaa4829870e7863860de6d146f40077bd",
+      "path": "yuzhou/frontend/tests/custom-blocks.test.mjs",
+      "kind": "credential-url",
+      "alreadyAuditedIn188CommitBaseline": true,
+      "fixtureContext": true,
+      "candidateSha256": "093866188144b0216fb125431572e8ac2df8980dfeeb6ebeb3d9f3987d1e4c1d"
+    },
+    {
+      "object": "b68f97c7ba08c5b17d2a79ca226a69256f054a54",
+      "path": "yuzhou/frontend/tests/custom-blocks.test.mjs",
+      "kind": "credential-url",
+      "alreadyAuditedIn188CommitBaseline": true,
+      "fixtureContext": true,
+      "candidateSha256": "093866188144b0216fb125431572e8ac2df8980dfeeb6ebeb3d9f3987d1e4c1d"
+    }
+  ],
+  "unresolvedNewSignatureCandidates": 0,
+  "formalSourceCopyByteVerified": 297,
+  "originalShaRewritten": false,
+  "authorizedHistoricalMetadataRetained": true,
+  "checkpointRefsSelectedForPublication": false,
+  "gitMirrorUsed": false,
+  "remotePublicationPerformedByThisScript": false,
+  "limitations": [
+    "Pattern scans do not cover every possible secret encoding.",
+    "Original personal metadata and server address remain under explicit user authorization.",
+    "Snapshot history remains retrospective; no claim of official competition approval."
+  ]
+}
