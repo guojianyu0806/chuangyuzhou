@@ -1,0 +1,318 @@
+*** Begin Patch
+*** Add File: C:/Users/g2806/Desktop/工作台/.workbench/spec.md
++---
++name: 个人学习工作台
++version: 0.1
++status: 调研与产品初稿，尚未实现或部署
++date: 2026-09-19
++domain: system
++subject: 个人学习与事务条目
++purpose: 把课程材料、零散记录与收到的事项整理成可追溯的学习笔记和下一步任务。
++user: 软件工程专业学生，准备六级，自己在两台 Windows 电脑和 vivo 手机、平板上使用。
++roles:
++  - { name: 本人, opens_daily: true, does: 收集资料、学习课程与英语、处理自己的待办 }
++surface: both
++primary_surface: 电脑与平板用于研读，手机用于随手收集和查看今日事项
++devices: [Windows电脑一, Windows电脑二, vivo X100s, vivo Pad3 Pro]
++deployment_preference: 私人云端，电脑关机后仍可访问
++structure: { primary: pipeline, secondary: registry }
++moment: 课后整理资料、开始自习时看今日任务、收到事项时随手保存；具体作息未设定。
++dials: { cadence: 8, input: 3, depth: 8 }
++hook:
++  text: "今天有 3 件待办 · 2 份资料已整理待查看 · 六级有 1 项练习待完成"
++  example_only: true
++  shape: imperative
++  fields:
++    - name: today_task_count
++      writes: derived
++      source: Task.status、Task.due_at、Task.scheduled_date，由用户操作或已保存的任务规则产生
++      when: 任务变更及每日日期切换时
++      day_one: 先记一件事，或上传一份课程资料。
++      disconnected: 标出上次同步时间，离线数据不称为最新。
++    - name: unseen_note_count
++      writes: derived
++      source: Note.created_at、Note.viewed_at、AIJob.status；生成成功并落库才计数
++      when: 整理任务完成或用户打开笔记时
++      day_one: 上传一份课件，整理结果会出现在这里。
++      disconnected: 正在处理与失败分开显示；不把处理中算成完成。
++    - name: english_task_count
++      writes: derived
++      source: EnglishPlan与对应Task；计划未设置时不显示虚构练习数量
++      when: 用户保存计划、系统按计划排程、用户完成任务时
++      day_one: 你正在准备六级；安排每日时长后可生成计划，也可先开始一次练习。
++      disconnected: 保留上次已同步的计划并标注时间，不自动重排未同步记录。
++cold_start:
++  day_1: 上传第一份课程 PPT 或 PDF，我会保留原件并整理一份带来源的学习笔记。
++  day_2: 若已有资料，显示真实处理结果及继续阅读入口；若尚未上传，继续保留上传入口。
++  day_7: 仅汇总真实完成记录与待查看结果；数据不足时说明可从哪一步开始。
++  re_entry: 直接从今天继续；历史任务可重新安排，不要求补打卡。
++home:
++  - 今日真实待办、待查看笔记与六级任务摘要；空数据时用首次上传引导替代
++  - 现在先做：按明确截止时间和用户优先级排序的最多三件事
++  - 继续学习：最近课程与上次读到的位置
++  - 六级小卡：下一项练习或设置计划入口
++  - 新整理结果与随手收集入口
++channels:
++  - name: 今日
++    type: today
++    weight: primary
++    does: 看今天最需要处理的事项，继续上次学习，查看新生成的结果。
++    pages:
++      - { level: L1, shows: 一条行动摘要、优先任务清单、继续学习区和六级卡片, actions: [开始任务, 完成, 延后, 随手记] }
++  - name: 课程空间
++    type: knowledge
++    weight: regular
++    does: 按课程投喂课件与笔记，查看整理结果，带着原文向课程助教提问。
++    pages:
++      - { level: L1, shows: 课程卡片与最近更新，不预置为真实课程, actions: [新建课程, 上传资料, 搜索] }
++      - { level: L2, shows: 单门课程的章节目录、原资料、笔记与问答面板, actions: [整理本章, 问助教, 导出笔记] }
++      - { level: L3, shows: 原文页与笔记对照，显示引用位置和笔记版本, actions: [纠正, 生成新版本, 标记疑问, 转为待办] }
++  - name: 六级计划
++    type: tool
++    weight: regular
++    does: 按目标、时间和实际练习结果安排六级学习，积累错题并调整后续任务。
++    pages:
++      - { level: L1, shows: 今日练习清单与周计划，未设置时显示轻量设置入口, actions: [设置计划, 开始练习, 重新安排] }
++      - { level: L2, shows: 阅读、听力、词汇、写作或翻译练习及错因分析, actions: [提交答案, 查看解析, 加入复习] }
++  - name: 收集箱
++    type: record
++    weight: regular
++    does: 保存文字、截图、文件和链接，由 AI 自动分类、提炼并建立关联。
++    pages:
++      - { level: L1, shows: 顶部快速输入与按时间排列的收集流，可筛选待整理或已归档, actions: [粘贴, 上传, 批量整理, 搜索] }
++      - { level: L2, shows: 原始内容、分类依据、相关课程、提取出的任务草稿, actions: [更正分类, 采用待办, 撤销归档] }
++  - name: 备忘与待办
++    type: record
++    weight: regular
++    does: 记临时想法，按今日、稍后和已完成处理事项，并追溯事项来源。
++    pages:
++      - { level: L1, shows: 分组清单，备忘可保持无截止日期, actions: [快速新增, 完成, 延后, 筛选] }
++      - { level: L2, shows: 任务内容、截止时间、原消息或课程来源与修改记录, actions: [编辑, 确认日期, 转为备忘] }
++  - name: 学习回顾
++    type: review
++    weight: occasional
++    does: 根据真实练习与任务记录回看本周学习，找出需要再练的知识点。
++    pages:
++      - { level: L1, shows: 本周完成摘要、错因分布和下周建议, actions: [查看来源, 调整下周计划] }
++utility_entry: 头像菜单中的模型、同步、导出与设置；AI助手随当前课程或页面打开。
++mobile_navigation: 今日、课程、六级、收集、更多；更多含备忘待办、学习回顾和设置。
++entities:
++  - name: Workspace
++    fields: [id, title, kind, syllabus, assistant_rules, profile_version]
++    written_by: { id: system, title: user, kind: user, syllabus: user, assistant_rules: user, profile_version: system }
++    relations: [Workspace 1-n Material, Workspace 1-n Note, Workspace 1-n Task]
++  - name: Material
++    fields: [id, workspace_id, input_type, original_content_ref, source_metadata, extracted_content_ref, page_map, suggested_tags, accepted_tags, processing_status]
++    written_by: { id: system, workspace_id: user, input_type: system, original_content_ref: system, source_metadata: system, extracted_content_ref: system, page_map: system, suggested_tags: integration, accepted_tags: system, processing_status: system }
++    relations: [Material n-1 Workspace, Material 1-n Note, Material 1-n AIJob]
++  - name: Note
++    fields: [id, workspace_id, source_ids, content, citations, version, parent_version_id, viewed_at, review_flags]
++    written_by: { id: system, workspace_id: system, source_ids: system, content: integration, citations: integration, version: system, parent_version_id: system, viewed_at: system, review_flags: system }
++    relations: [Note n-1 Workspace, Note n-n Material]
++  - name: Task
++    fields: [id, workspace_id, title, status, due_at, scheduled_date, priority, source_ref, date_evidence, needs_confirmation]
++    written_by: { id: system, workspace_id: system, title: user_or_integration, status: user_or_system, due_at: user_or_integration, scheduled_date: user_or_system, priority: user, source_ref: system, date_evidence: integration, needs_confirmation: system }
++    relations: [Task n-1 Workspace, Task n-1 Material_or_Practice_optional]
++  - name: EnglishPlan
++    fields: [id, exam_level, exam_date, target_score, baseline, daily_minutes, preferences, confirmed_plan]
++    written_by: { id: system, exam_level: user, exam_date: user, target_score: user, baseline: user_or_derived, daily_minutes: user, preferences: user, confirmed_plan: user_or_system }
++    relations: [EnglishPlan 1-n Practice, EnglishPlan 1-n Task]
++  - name: Practice
++    fields: [id, plan_id, skill, source_ref, question_ref, answer, result, error_tags, completed_at, next_review_at]
++    written_by: { id: system, plan_id: system, skill: system, source_ref: system, question_ref: system, answer: user, result: system_or_integration, error_tags: integration, completed_at: system, next_review_at: derived }
++    relations: [Practice n-1 EnglishPlan]
++  - name: AIJob
++    fields: [id, input_refs, workflow, prompt_version, provider, model, status, output_refs, usage, error, idempotency_key]
++    written_by: { id: system, input_refs: system, workflow: system, prompt_version: system, provider: system, model: system, status: system, output_refs: system, usage: integration, error: system, idempotency_key: system }
++    relations: [AIJob n-n Material, AIJob 1-n Note]
++  - name: Profile
++    fields: [id, major, preferred_language, review_preferences, model_preferences, automation_rules]
++    written_by: { id: system, major: user, preferred_language: user, review_preferences: user, model_preferences: user, automation_rules: user }
++    relations: [Profile 1-n Workspace, Profile 1-n EnglishPlan]
++entity_common_fields:
++  fields: [owner_id, created_at, updated_at, revision]
++  written_by: { owner_id: system, created_at: system, updated_at: system, revision: system }
++  notes: 用户修改AI内容时保存新修订；integration字段须经程序校验后写入，原始资料保持不变。
++depends_on:
++  - { field: AI生成与用量, source: 用户提供的DeepSeek或火山方舟API, exists_today: false, until_then: 可收集和阅读资料；生成入口明确提示尚未配置模型 }
++  - { field: 四端同步, source: 尚未部署的私人后端与数据库, exists_today: false, until_then: 当前只是规划，不显示已同步标识 }
++  - { field: 微信与QQ消息, source: 选择性导入及后续可用连接器, exists_today: false, until_then: 支持用户主动导入；不显示已连接或全部消息已覆盖 }
++  - { field: 六级每日任务, source: 尚未设置的每日时长与目标, exists_today: false, until_then: 保留六级身份，可先做练习，不生成虚构倒计时或固定时长 }
++mvp: [今日, 课程空间, 六级计划基础版, 收集箱, 备忘与待办]
++first_vertical_slice: 收集一份课程资料，生成带页码笔记，形成一条待办，并在另一台设备读到它。
++later: [学习回顾增强, QQ群机器人, Android通知摘要试验, 可靠性通过实测后的系统通知, 完整离线能力]
++visual:
++  direction: 亮色霓虹，浅色阅读空间加高饱和强调色
++  background: "#F7F8FF"
++  surface: "#FFFFFF"
++  text: "#1C2240"
++  accents: ["#00D6D6", "#7950F2", "#FF4FA3", "#D5F542"]
++  usage: 青色用于收集入口，紫色用于AI，粉色用于英语，黄绿用于完成状态；所有状态同时带文字或图标。
++  layout: 桌面左侧导航与中央内容区；课程详情可开右侧助教；平板双栏；手机单栏和底部导航。
++  reading: 正文使用深色，不用荧光色承载长文；发光仅用于选中态和短暂反馈，尊重减少动效设置。
++seam: { type: none, why: 个人使用，不设计商业化模块 }
++excluded:
++  - 自动代发或回复微信QQ消息：用户明确限定只读查看与汇总。
++  - 把AI推断的考点或日期伪装成已确认事实。
++deferred: []
++open_details: [六级目标分数与考试日期, 每日可用英语时长, 本学期具体课程, 云服务预算, vivo设备实际浏览器与系统版本]
++---
++
++# 个人学习工作台：调研与产品初稿 V0.1
++
++本稿整理于2026年9月19日。当前交付是公开资料调研和可继续开发的产品定义，尚未生成实际工作台、连接API、读取聊天记录或部署云服务。
++
++## 已确认的需求
++
++- 本人使用，两台Windows电脑、vivo X100s手机、vivo Pad3 Pro平板。
++- 采用私人云端方案，电脑关机后手机和平板仍可使用。
++- 软件工程专业，当前备考六级；每日英语时长之后再定，不预设分数或考试日期。
++- 可提供DeepSeek、豆包等国产模型API，用于整理碎片、课程资料和待办。
++- 按课程投喂PPT、课堂笔记，生成重点和学习笔记；不同课程有独立上下文与助教规则。
++- 包含英语规划、备忘录，并探索微信QQ只读消息汇总；不能自动回复或代发。
++- 源码可持续修改，发布后其他设备能收到站内更新提示并更新。
++- 视觉为霓虹色彩、亮色为主。
++
++## 网上现有的几种形态
++
++以下是界面与组织方式的参考，不等于已经选定要安装这些产品。
++
++| 形态 | 实例与原始页面 | 主要呈现方式 | 本项目可借鉴之处 |
++| --- | --- | --- | --- |
++| 入口仪表盘 | [Homepage](https://gethomepage.dev/) | 应用入口、分组卡片、服务状态和小组件 | 首页的快速入口与分组；课程整理能力需要另行实现 |
++| 学习看板 | [Notion学生工作台模板](https://www.notion.com/templates/category/student-dashboards) | 课程、作业、考试与日程放在一个总览里 | 以今日任务和课程为入口，适合学生日常使用 |
++| 文档与白板 | [AFFiNE](https://affine.pro/) | 文档、白板与数据库组合 | 原文、笔记和知识结构之间快速切换 |
++| 关联知识库 | [Obsidian](https://obsidian.md/) | 本地笔记、双向链接、知识图谱与画布 | 笔记可追溯和关联；首版无需先建设复杂图谱 |
++| 碎片时间流 | [Memos](https://usememos.com/) | 快速输入、按时间排列、标签与检索 | 手机随手保存，之后再整理，减少录入负担 |
++
++官方界面参考：[Homepage演示图](https://gethomepage.dev/assets/homepage_demo_clip.webp)、[AFFiNE文档界面](https://affine.pro/overview/Write.jpg)、[Memos项目截图](https://raw.githubusercontent.com/usememos/.github/refs/heads/main/assets/demo.png)。截图只作为参考，没有复制这些产品的完整界面，也没有下载或安装产品。
++
++建议组合为“学习看板首页＋按课程组织的知识库＋碎片收集箱”。总体外观自行设计，不受现成模板主题限制。首版重点是从上传材料走到可用笔记和任务的完整过程。
++
++## 每天怎么用
++
++课后在电脑上进入某门课程，拖入课件和笔记。工作台保留原件，显示真实的处理进度，整理完成后给出章节重点、疑难点、代码解释和复习问题。晚上在平板打开同一课程，继续阅读原文与整理笔记，点引用可以回到资料来源。
++
++收到“周五前交作业”这样的消息时，先把文字或截图放进收集箱。AI提取作业名称、截止时间和来源，明确的信息生成任务草稿；日期缺少参照或语义不明确时标为待确认。手机首页显示已保存的待办，用户可以完成或重新安排。
++
++六级区依据实际设置和练习结果安排后续任务。尚未确定每天学多久时，保留“开始一次练习”和“稍后设置计划”，不会强行分配每天60分钟或编造考试倒计时。
++
++首页示例为“今天有3件待办·2份资料已整理待查看·六级有1项练习待完成”。这些数仅用于说明界面，实际使用必须由真实数据产生。首次打开显示上传引导，不能把演示数字混入个人数据。
++
++## 课程助教应该怎样工作
++
++“提前调教”先做成课程规则、笔记模板、学习者信息和资料检索，不预设需要训练或微调模型。工作台负责保存这些信息，每次请求选取相关内容传给模型。DeepSeek官方说明多轮对话接口是无状态的，需要应用自行传入历史上下文。[DeepSeek多轮对话](https://api-docs.deepseek.com/guides/multi_round_chat/)
++
++每门课程保留一份可修改的助教说明：课程名、教材或教学大纲、章节结构、老师明确强调的内容、用户已确认的更正、输出格式与解释深度。模型知识用于解释时应注明“补充说明”，与课件原文结论区分。
++
++软件工程方向的默认笔记模板建议包含：
++
++1. 本章解决的问题和核心概念。
++2. 概念关系、适用条件与容易混淆的点。
++3. 算法、代码、公式或图示的逐步解释，保留原始代码与单位。
++4. 例题、测试输入或边界情况；只有真实执行过的代码才能称为“已运行验证”。
++5. 老师明确标注的重点，以及单独标识的AI建议复习点。
++6. 用户笔记中的疑问、原资料冲突或无法确认之处。
++7. 3—5个复习问题及其原文页码。
++
++处理路径：上传原件→提取可选文字→必要时将页面转图并识别→按课程和章节保存→检索原文片段→生成笔记→校验引用与结构→保存新版本。
++
++PPT中的图、代码截图、扫描页和手写内容不能只靠纯文本抽取。解析质量不足的页要显示待核对，允许对照原页修正。引用必须对应真实文件和位置，避免模型编造页码。
++
++截至本次调研，DeepSeek已提供Files API，但官方列出的文件格式是JPEG、PNG、GIF、WebP图片，不能直接当作完整PPT/PDF解析与知识库服务。[上传文件文档](https://api-docs.deepseek.com/zh-cn/api/create-file/)
++
++豆包可以通过火山方舟接入；工具调用需要工作台实际执行功能。文档解析也可以使用独立的火山知识库服务，其文档列出PPT整页解析和图片OCR等能力，是否采用及费用需要实现阶段再选定。[方舟工具调用](https://www.volcengine.com/docs/82379/1958524?lang=zh)、[知识库文档解析](https://www.volcengine.com/docs/84313/1254457?lang=zh)
++
++## 自动整理的具体范围
++
++自动执行低影响且可撤销的操作：识别资料类型、生成摘要、建议标签、按已保存的规则归类、建立关联、生成待办草稿。保留原件、来源和处理记录。低把握的归类进入待整理区；相同文件或消息的重复输入应去重。
++
++用户修改过的笔记不被后台静默覆盖；重新整理生成新修订，允许比较和恢复。模型只返回受限制的操作建议，后端负责校验后保存。资料里的文字不能改变系统规则，消息中出现指令也不应触发代发或其它外部动作。
++
++API密钥存于服务端，不出现在网页源码或浏览器存储。失败任务显示原因并允许重试；记录调用量，避免重复点击造成重复处理与计费。输入材料由已选模型服务处理，设置中说明实际使用的服务和数据范围。
++
++## 六级区的基础功能
++
++首次设置仅需逐步补充：目标考试、可用时间、已有成绩或自测结果、个人薄弱项。已确定exam_level=CET-6，其他值允许为空。
++
++首版支持周计划、今日练习、错题与复习安排，覆盖词汇、阅读、听力、写作、翻译。根据用户实际完成和错因调整，错过一天不要求补齐整个旧计划。听力材料需要用户提供或来自有使用权限的资源；AI生成练习必须标明来源属性，不能冒充历年真题或官方评分。
++
++写作和翻译反馈应显示原句、修改建议与原因。对主观题提供参考评价；不把模型分数展示为官方成绩预测。四六级考试日期只有在用户输入或实施时核实官方信息后才显示倒计时。
++
++## 微信与QQ能接到什么程度
++
++| 路径 | 本次核实的范围 | 本项目安排 |
++| --- | --- | --- |
++| 个人微信全部私聊与群聊 | 未找到面向个人账号全量聊天同步的官方通用接口 | 不承诺首版实现全账号读取 |
++| 微信公众账号 | 接收发给公众账号的消息，并非个人微信所有会话 | 可评估作为用户主动投递入口 |
++| 企业微信会话存档 | 需要企业配置范围，涉及成员告知及外部联系人同意 | 与个人微信账号需求分开，不视为直接替代 |
++| QQ官方机器人 | 目前已有群消息全量模式，覆盖机器人所在且具备启用条件的群；单聊是发给机器人的消息 | 后续评估指定学习群，不能视为全账号或历史会话同步 |
++| Android通知监听 | 原生应用获授权后能收到通知事件；只有通知实际包含的信息 | 后续在vivo实测，可做通知摘要；普通网页不能直接调用原生通知监听服务 |
++| 文字、截图、文件导入 | 工作台自主实现，不依赖全账号聊天接口 | 首版采用，保留来源并提取待办 |
++
++依据：[QQ群消息全量模式](https://bot.q.qq.com/wiki/develop/api-v2/autogen/event/group_message_create.html)、[QQ单聊消息事件](https://bot.q.qq.com/wiki/develop/api-v2/autogen/event/c2c_message_create.html)、[微信接收普通消息](https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Receiving_standard_messages.html)、[企业微信使用前帮助](https://developer.work.weixin.qq.com/document/path/91361)、[Android通知监听服务](https://developer.android.com/reference/android/service/notification/NotificationListenerService)。
++
++消息入口只读，不提供自动回复或发送工具。导入消息后的截止日期保留原句和消息时间；“下周五”如果缺少消息日期，就不能假定相对于今天。第一版不会显示“你没有遗漏任何消息”这样的全量覆盖结论。
++
++## 四台设备如何共用与更新
++
++推荐形态是响应式网页，配合可用时的PWA桌面入口。四台设备使用同一账户和同一后端数据；PWA本身不是数据库同步方案。Windows上的Edge支持将PWA作为应用安装。[Microsoft说明](https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/ux)
++
++vivo手机和平板以浏览器访问为基础保障。桌面入口、独立窗口与系统通知取决于实际浏览器、系统和网络；无GMS等环境下不应统一承诺完整WebAPK安装体验。[MDN安装支持](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable#browser_support)
++
++三件事分别实现：
++
++- 数据同步：上传笔记、修改任务后写入云端，另一设备联网时获取变更。每次更新带记录版本；冲突保留双方修订，避免覆盖另一端未同步的文字。界面区分本机已保存、待同步、已同步和失败。
++- 功能更新：本地源码修改→验证→发布到同一网址→客户端检查版本→显示新版本提示→保存草稿后刷新。需要处理旧页面缓存与后端兼容，并保留部署回滚能力。[PWA更新机制](https://web.dev/learn/pwa/update)
++- 系统通知：关闭网页后的推送依赖权限、浏览器、网络与平台推送服务。首版承诺站内通知、打开及恢复前台时检查更新；后台必达通知要等两台vivo实机验证后再决定实现方式。[MDN后台与推送](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Offline_and_background_operation)
++
++因此，“电脑改完，手机和平板更新”需要发布步骤；仅修改电脑上的源码文件不会让远端页面自动改变。拟选国内可访问的云部署，具体服务商、预算和域名另行确定，本次不创建云资源。
++
++云端保存应用数据、资料和处理任务；电脑关机不会影响已部署服务。个人身份验证、资料私有访问、备份和Markdown等通用格式导出属于首版基础能力。云服务与模型调用有持续成本，本次没有选择付费套餐或估算未经核实的价格。
++
++## 亮色霓虹的界面方向
++
++浅紫白背景与白色内容纸面占主要面积；青、紫、粉和少量荧光黄绿用于导航、按钮、分区标题和状态。长篇笔记采用深色文字，引用标记有清楚的下划线或按钮形态。选中课程或完成一次整理时可以出现短暂柔光，不做持续闪烁背景。
++
++电脑：首页左侧导航，中央优先任务与课程内容；课程页可打开右侧助教。平板：课程目录可收起，正文和原页双栏对照。手机：今日、课程、六级、收集、更多五个底部入口；收集按钮易于单手触达，阅读页把对话与原文切换成独立视图。
++
++页面示意（布局说明，非已实现界面）：
++
++```text
++个人学习工作台                          搜索   随手收集   账户
++今日          今天的待办与新整理结果
++课程空间      ┌──────────────────┬──────────────┐
++六级计划      │ 现在先做          │ 六级下一步     │
++收集箱        │ 清楚的事项与截止时间│ 依据个人计划   │
++备忘与待办    ├──────────────────┴──────────────┤
++学习回顾      │ 继续上次课程 / 新生成的带来源笔记    │
++              └─────────────────────────────────┘
++```
++
++## 建设顺序与验收
++
++1. 先完成一个闭环：上传一份课程资料→生成带真实来源的笔记→保存一条待办→另一设备能读取。用用户真实的少量课件验证解析，特别检查代码截图、图表和公式。
++2. 首个完整可用版本纳入六级基础规划、备忘录、碎片自动分类、站内更新提示与草稿保护。可用时间未设置时六级区仍能进入练习。
++3. 再增加周回顾、指定QQ群机器人，以及经过实测的Android通知摘要或系统推送。消息连接器不阻塞学习功能上线。
++
++验收以真实操作为准：Windows两端和vivo两端实际打开；跨设备保存与读取；编辑冲突不会丢稿；应用更新保留草稿；引用能回到原页；模型失败能重试；未经连接的消息源不会显示已接入；未配置英语计划不显示假任务或假倒计时。
++
++## 已经想过但暂未纳入
++
++第一阶段不设计商业化、多用户团队权限、复杂知识图谱、全量私人聊天抓取或自动代发。Android原生壳仅在实际通知和系统整合需求出现时再评估。这里是建议的阶段安排，只有“消息只读”是用户明确的功能限制，其余均可在后续讨论中调整。
++
++## 给实现方
++
++- 本文件是产品初稿，不代表功能已经存在，也不代表已授权安装、云部署或账号连接。
++- surface=both表示同一网页适配电脑、手机、平板；先保障浏览器可用，再逐设备核验桌面入口和通知。
++- 按home的顺序组织首页；hook为行动摘要，其中数字必须由hook.fields列出的数据计算。示例数字不得混入个人账户。
++- channels是导航模块，does说明可完成的动作。weight=primary只有“今日”，它是默认首页；学习回顾放到后续增强版本。
++- pages里的L1是模块首页，L2是单项详情，L3只用于课程中具体资料或笔记。按照shows选择清单、时间流、课程卡片或原文对照，不把所有页面都做成数据表。
++- pipeline表示从收集到整理再到使用的状态流转；registry表示资料可检索、可打开详情，不要求首屏一定画成列式看板。
++- entities给出最小概念模型，不是最终数据库迁移脚本。user是用户输入，system是程序产生，integration是外部服务返回，derived是根据已有字段计算；带or的字段须按实际操作记录来源。
++- 模型输出先校验再保存，引用必须指向可验证的资料片段；不能把任意模型返回内容当作数据库指令。
++- 按cold_start设计首次使用和回访。depends_on尚未接入的来源不得显示虚假的同步状态或统计。
++- 明确显示AI处理状态、同步状态、最近同步时间。服务端保存API密钥，用户能导出原件、笔记及任务数据。
++- 按visual实现浅色霓虹；正文必须易读，手机不横向滚动，输入框不被键盘遮住，所有状态有非颜色提示。
++- 后续修改需求文档时遵守用户版本管理规则：要求新版本则另存；要求直接修改则只改指定文件；意图不清时先询问。
+*** End Patch

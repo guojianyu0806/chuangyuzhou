@@ -1,0 +1,14 @@
+{
+  "verifiedAtUtc": "2026-10-19T13:34:55.375729+00:00",
+  "snapshotCommitsVerified": 25,
+  "sourceFileVersionsByteVerified": 1620,
+  "initialPatchesVerified": 6,
+  "originalMainCommitsPreserved": 188,
+  "branchHasNoManufacturedMainAncestry": true,
+  "allSupplementaryCommitDatesAreCurrent": true,
+  "earliestSupplementaryCommitDate": "2026-10-19T13:32:13Z",
+  "latestSupplementaryCommitDate": "2026-10-19T13:33:24Z",
+  "archiveToManifestFileMatches": 94,
+  "archiveToOriginalGitSourceContentMatchesIgnoringLineEndings": 94,
+  "publicUploadPerformed": false
+}

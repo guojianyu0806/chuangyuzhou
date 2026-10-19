@@ -1,0 +1,795 @@
+[
+  {
+    "index": 1,
+    "commit": "c6a5781ae17d08aa57ceb909f9e7b6f19a1a7090",
+    "tree": "388ed58ba815a0a6598e4ea727725d6dea8ac573",
+    "archive": "0-2-0-20260920-084259.tar.gz",
+    "version": "0.2.0",
+    "recordedAtUtc": "2026-10-19T13:32:13.398461+00:00",
+    "archiveSha256": "1d3ece7ead64a6a06dae3a1502d4054fb076c8c4a032d08be174569186d59272",
+    "fileCount": 42,
+    "delta": {
+      "added": [
+        "backend/README.md",
+        "backend/backup.mjs",
+        "backend/extract.py",
+        "backend/hermes.mjs",
+        "backend/hermes_runner.py",
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/store.mjs",
+        "backend/tests/backup.test.mjs",
+        "backend/tests/extract_test.py",
+        "backend/tests/hermes.test.mjs",
+        "backend/tests/server.test.mjs",
+        "deployment/activate-release.py",
+        "deployment/prepare-server.py",
+        "deployment/shiguang.service",
+        "deployment/workbench-ip.caddy",
+        "frontend/icon.svg",
+        "frontend/index.html",
+        "frontend/manifest.webmanifest",
+        "frontend/package.json",
+        "frontend/src/ai-cloud.js",
+        "frontend/src/ai-organizer.js",
+        "frontend/src/ai.css",
+        "frontend/src/ai.js",
+        "frontend/src/app.css",
+        "frontend/src/app.js",
+        "frontend/src/backup.js",
+        "frontend/src/canvas.css",
+        "frontend/src/canvas.js",
+        "frontend/src/cloud.css",
+        "frontend/src/cloud.js",
+        "frontend/src/courses.css",
+        "frontend/src/courses.js",
+        "frontend/src/english.css",
+        "frontend/src/english.js",
+        "frontend/src/icons.js",
+        "frontend/src/interior.css",
+        "frontend/src/services.js",
+        "frontend/src/shell.css",
+        "frontend/src/spaces.css",
+        "frontend/src/spaces.js",
+        "frontend/src/workspace-model.js"
+      ],
+      "deleted": [],
+      "changed": []
+    }
+  },
+  {
+    "index": 2,
+    "commit": "564d83835d7ff366d923fabe2f40f3ab16c23eaa",
+    "tree": "571a35ad0c06eab16a757a7747db4551ce924542",
+    "archive": "0-2-0-20260920-085122.tar.gz",
+    "version": "0.2.0",
+    "recordedAtUtc": "2026-10-19T13:32:19.108465+00:00",
+    "archiveSha256": "b821ce88b16247eb8f9d6a691d83ed8f01ad3c6e4db060fd595b9cd0080d8bc7",
+    "fileCount": 45,
+    "delta": {
+      "added": [
+        "backend/is-cli.mjs",
+        "backend/tests/cli-symlink.test.mjs",
+        "deployment/README.md",
+        "frontend/README.md"
+      ],
+      "deleted": [
+        "frontend/package.json"
+      ],
+      "changed": [
+        "backend/backup.mjs",
+        "backend/server.mjs",
+        "frontend/src/app.js",
+        "frontend/src/cloud.js"
+      ]
+    }
+  },
+  {
+    "index": 3,
+    "commit": "f4368e7f3627cb9c69cb0cfc591dd0f2732d7770",
+    "tree": "f3bc3fba3954aba3d2f8960dbb790bb6c15b57c6",
+    "archive": "0-2-0-20260920-085429.tar.gz",
+    "version": "0.2.0",
+    "recordedAtUtc": "2026-10-19T13:32:20.978066+00:00",
+    "archiveSha256": "1a852b36075d27c75d469c094576eb4ca7750f0cfd3cc63d39b612803caaf373",
+    "fileCount": 45,
+    "delta": {
+      "added": [],
+      "deleted": [],
+      "changed": [
+        "backend/server.mjs",
+        "backend/tests/server.test.mjs",
+        "deployment/README.md"
+      ]
+    }
+  },
+  {
+    "index": 4,
+    "commit": "1611ee11e54a82e59de6d1b638d6a6406c8205de",
+    "tree": "2af93e89e265900b65127755658c3b63fdb21231",
+    "archive": "0-2-1-20260920-104247.tar.gz",
+    "version": "0.2.1",
+    "recordedAtUtc": "2026-10-19T13:32:22.329809+00:00",
+    "archiveSha256": "bd97b3cd8bbbfdf797affbd6cafd3ef6beef4f265f41e811be817cc6a0b03c5d",
+    "fileCount": 45,
+    "delta": {
+      "added": [],
+      "deleted": [],
+      "changed": [
+        "backend/README.md",
+        "backend/backup.mjs",
+        "backend/hermes.mjs",
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/tests/cli-symlink.test.mjs",
+        "backend/tests/server.test.mjs",
+        "deployment/README.md",
+        "deployment/shiguang.service",
+        "frontend/README.md",
+        "frontend/icon.svg",
+        "frontend/index.html",
+        "frontend/manifest.webmanifest",
+        "frontend/src/app.js",
+        "frontend/src/cloud.js",
+        "frontend/src/services.js"
+      ]
+    }
+  },
+  {
+    "index": 5,
+    "commit": "60f1ad5127f0cc331d997752e0c7c5889c0d432a",
+    "tree": "936fa5769c23548038887c27a5d366a3014c9368",
+    "archive": "0-2-2-20260920-105436.tar.gz",
+    "version": "0.2.2",
+    "recordedAtUtc": "2026-10-19T13:32:25.651908+00:00",
+    "archiveSha256": "a3d5cfa2d20d1d0673e44d96d6a836f9c5582b0f5f53cd4b2f4758c5a15dacab",
+    "fileCount": 45,
+    "delta": {
+      "added": [],
+      "deleted": [],
+      "changed": [
+        "backend/README.md",
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/tests/server.test.mjs",
+        "frontend/README.md",
+        "frontend/src/canvas.js",
+        "frontend/src/services.js",
+        "frontend/src/shell.css"
+      ]
+    }
+  },
+  {
+    "index": 6,
+    "commit": "8d642b17e7f1e80a1cfbd956701d2230a8535f90",
+    "tree": "9d2b4bfbc529cb542c60be03dd0d91c2b03f9ce4",
+    "archive": "0-3-0-20260920-111138.tar.gz",
+    "version": "0.3.0",
+    "recordedAtUtc": "2026-10-19T13:32:30.336263+00:00",
+    "archiveSha256": "12d5cb48d24dcfb08467e9423641e8fbcec8b8e36e090b5a6bb64ba59e5edd58",
+    "fileCount": 50,
+    "delta": {
+      "added": [
+        "backend/tests/ledger.test.mjs",
+        "frontend/package.json",
+        "frontend/src/ledger-model.js",
+        "frontend/src/ledger.css",
+        "frontend/src/ledger.js"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/README.md",
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/store.mjs",
+        "backend/tests/server.test.mjs",
+        "deployment/README.md",
+        "frontend/README.md",
+        "frontend/index.html",
+        "frontend/src/app.js",
+        "frontend/src/backup.js",
+        "frontend/src/canvas.css",
+        "frontend/src/canvas.js",
+        "frontend/src/cloud.js",
+        "frontend/src/icons.js",
+        "frontend/src/services.js",
+        "frontend/src/workspace-model.js"
+      ]
+    }
+  },
+  {
+    "index": 7,
+    "commit": "0c05c999e4fd06b12878fce6468d79c402a96c0e",
+    "tree": "4611cf3959cb4b714fafc5501944671d1a4059ba",
+    "archive": "0-3-1-20260920-124452.tar.gz",
+    "version": "0.3.1",
+    "recordedAtUtc": "2026-10-19T13:32:34.919814+00:00",
+    "archiveSha256": "e470393594984bd591ae84b32d882f3a7eaceb55a00a41f1cc05aa9e1b8aae65",
+    "fileCount": 51,
+    "delta": {
+      "added": [
+        "deployment/publish-android.py",
+        "frontend/server.mjs"
+      ],
+      "deleted": [
+        "frontend/README.md"
+      ],
+      "changed": [
+        "backend/package.json",
+        "backend/server.mjs",
+        "deployment/README.md",
+        "deployment/workbench-ip.caddy",
+        "frontend/icon.svg",
+        "frontend/package.json",
+        "frontend/src/app.js",
+        "frontend/src/services.js"
+      ]
+    }
+  },
+  {
+    "index": 8,
+    "commit": "e9a59ad5bc69e6bff8f9b43debe1791854f5bc2c",
+    "tree": "25845005dbae9c57ddd7eb46dcc22480d6416fc7",
+    "archive": "0-4-0-20260920-130941.tar.gz",
+    "version": "0.4.0",
+    "recordedAtUtc": "2026-10-19T13:32:37.109438+00:00",
+    "archiveSha256": "09ea5cc007343f84986bd41e314bd722de60bb1fb61a218c76def293de2c720d",
+    "fileCount": 53,
+    "delta": {
+      "added": [
+        "backend/tests/canvas-layout.test.mjs",
+        "frontend/src/card-layouts.js"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/package.json",
+        "backend/server.mjs",
+        "deployment/README.md",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/backup.js",
+        "frontend/src/canvas.css",
+        "frontend/src/canvas.js",
+        "frontend/src/services.js"
+      ]
+    }
+  },
+  {
+    "index": 9,
+    "commit": "7a341ada7bcb2b83bff036ae7828be4782bce036",
+    "tree": "023efb3bdb674e4bfdc23cd34b80a5687c0b26f7",
+    "archive": "0-5-0-20260920-132545.tar.gz",
+    "version": "0.5.0",
+    "recordedAtUtc": "2026-10-19T13:32:39.672540+00:00",
+    "archiveSha256": "92b390c87b650715a12ed4802f689db304bae812cada62d6693cef00f8297451",
+    "fileCount": 59,
+    "delta": {
+      "added": [
+        "backend/tests/timetable-import.test.mjs",
+        "backend/tests/timetable.test.mjs",
+        "deployment/import-timetable.mjs",
+        "frontend/src/timetable-model.js",
+        "frontend/src/timetable.css",
+        "frontend/src/timetable.js"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/store.mjs",
+        "backend/tests/server.test.mjs",
+        "deployment/README.md",
+        "frontend/index.html",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/app.js",
+        "frontend/src/backup.js",
+        "frontend/src/canvas.js",
+        "frontend/src/cloud.js",
+        "frontend/src/icons.js",
+        "frontend/src/services.js",
+        "frontend/src/workspace-model.js"
+      ]
+    }
+  },
+  {
+    "index": 10,
+    "commit": "3a01c6ac7bda4e78b64b52f37c1ad5098555e69b",
+    "tree": "b61186c081c7966ac59077d94f2b9d9d13b5f4be",
+    "archive": "0-5-0-20260920-132747.tar.gz",
+    "version": "0.5.0",
+    "recordedAtUtc": "2026-10-19T13:32:43.471772+00:00",
+    "archiveSha256": "0b356ec7fecfac3cdd32f7e94eec2c2b18c71dd5dff722aaf312e15885ec0fd2",
+    "fileCount": 59,
+    "delta": {
+      "added": [],
+      "deleted": [],
+      "changed": [
+        "backend/tests/timetable-import.test.mjs",
+        "deployment/import-timetable.mjs"
+      ]
+    }
+  },
+  {
+    "index": 11,
+    "commit": "bcb51a751ebc69ec0847ee6f7fc90d24483a8ce4",
+    "tree": "f3c9a773596fc0583fdf0e4d4b1c6fc349008df5",
+    "archive": "0-6-0-20260920-134843.tar.gz",
+    "version": "0.6.0",
+    "recordedAtUtc": "2026-10-19T13:32:44.796005+00:00",
+    "archiveSha256": "6189faf342b20481b1c43728478ee4e87ed5bc96aa61dbb45cb2341c366ad759",
+    "fileCount": 63,
+    "delta": {
+      "added": [
+        "frontend/src/dream.css",
+        "frontend/src/dream.js",
+        "frontend/src/fullscreen.css",
+        "frontend/src/fullscreen.js"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/package.json",
+        "backend/server.mjs",
+        "deployment/README.md",
+        "frontend/index.html",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/app.js",
+        "frontend/src/backup.js",
+        "frontend/src/canvas.css",
+        "frontend/src/canvas.js",
+        "frontend/src/services.js"
+      ]
+    }
+  },
+  {
+    "index": 12,
+    "commit": "c33f93dff5c1faf1c9a3ebf5f5e22e4400765cc5",
+    "tree": "ccd2a4f7c4517eaca6588d33a5ec2e306225b7a6",
+    "archive": "0-7-0-20260920-143816.tar.gz",
+    "version": "0.7.0",
+    "recordedAtUtc": "2026-10-19T13:32:47.438278+00:00",
+    "archiveSha256": "75f24ed7854396445c1cac309d536fe674ca199565711c6b3fb98710e78bea68",
+    "fileCount": 65,
+    "delta": {
+      "added": [
+        "frontend/src/creation-colors.js",
+        "frontend/src/updates.css"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/package.json",
+        "backend/server.mjs",
+        "deployment/README.md",
+        "frontend/index.html",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/ai-organizer.js",
+        "frontend/src/app.js",
+        "frontend/src/backup.js",
+        "frontend/src/canvas.js",
+        "frontend/src/courses.js",
+        "frontend/src/dream.css",
+        "frontend/src/dream.js",
+        "frontend/src/ledger.js",
+        "frontend/src/services.js",
+        "frontend/src/spaces.js",
+        "frontend/src/timetable.js",
+        "frontend/src/workspace-model.js"
+      ]
+    }
+  },
+  {
+    "index": 13,
+    "commit": "67aa6522cdfbb7c26bed86ba3a042af90da95bb9",
+    "tree": "35e5599e356148aa9d4bcd1daa826a3ec12c07ad",
+    "archive": "0-7-1-20260920-150236.tar.gz",
+    "version": "0.7.1",
+    "recordedAtUtc": "2026-10-19T13:32:50.597803+00:00",
+    "archiveSha256": "509406379b339637c93a3d47fb713351d4f4da86ee97bc694b0f92ca9a369b28",
+    "fileCount": 66,
+    "delta": {
+      "added": [
+        "frontend/src/canvas-controls.css"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/package.json",
+        "backend/server.mjs",
+        "deployment/README.md",
+        "frontend/index.html",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/app.js",
+        "frontend/src/canvas.js",
+        "frontend/src/services.js",
+        "frontend/src/shell.css"
+      ]
+    }
+  },
+  {
+    "index": 14,
+    "commit": "a8877aeb319f895392052f2fe04b10d39a70c97c",
+    "tree": "5213e78e03259788ea81f67d579683c8ecaea240",
+    "archive": "0-7-2-20260920-150902.tar.gz",
+    "version": "0.7.2",
+    "recordedAtUtc": "2026-10-19T13:32:52.793391+00:00",
+    "archiveSha256": "7abd4d510d0f96b41e940a87c3b85ad1653d2be84b435139ff9dce0b9765e692",
+    "fileCount": 66,
+    "delta": {
+      "added": [],
+      "deleted": [],
+      "changed": [
+        "backend/package.json",
+        "backend/server.mjs",
+        "deployment/README.md",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/app.js",
+        "frontend/src/services.js"
+      ]
+    }
+  },
+  {
+    "index": 15,
+    "commit": "4608f0780d6453a227b188f83daa0f7470e0fe21",
+    "tree": "6db631435f1bc8ae2e0daebfa9deaaf8147a86e7",
+    "archive": "0-8-0-20260920-153220.tar.gz",
+    "version": "0.8.0",
+    "recordedAtUtc": "2026-10-19T13:32:54.627401+00:00",
+    "archiveSha256": "d0f28170d540b63829703587e3afa805989d44f51e7a0cb040ff67f47b9b5a0c",
+    "fileCount": 69,
+    "delta": {
+      "added": [
+        "frontend/src/ai-chat.css",
+        "frontend/src/ai-chat.js",
+        "frontend/src/ai-conversation-model.js"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/hermes.mjs",
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/store.mjs",
+        "backend/tests/hermes.test.mjs",
+        "backend/tests/server.test.mjs",
+        "deployment/README.md",
+        "frontend/index.html",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/ai-cloud.js",
+        "frontend/src/ai.js",
+        "frontend/src/app.js",
+        "frontend/src/backup.js",
+        "frontend/src/canvas.js",
+        "frontend/src/services.js"
+      ]
+    }
+  },
+  {
+    "index": 16,
+    "commit": "ff661e37ec3034b123a13a5cab2e2c7211451782",
+    "tree": "e5c8b11796e15bd6b2c35e21cfdaac7f3ee92fc8",
+    "archive": "0-9-0-20260920-154630.tar.gz",
+    "version": "0.9.0",
+    "recordedAtUtc": "2026-10-19T13:32:57.592700+00:00",
+    "archiveSha256": "6bd1cebf2c42cacf11cba603db0aaad0d053930ae05a1d5340143eda63424084",
+    "fileCount": 72,
+    "delta": {
+      "added": [
+        "frontend/src/calendar-model.js",
+        "frontend/src/calendar.css",
+        "frontend/src/calendar.js"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/store.mjs",
+        "backend/tests/server.test.mjs",
+        "frontend/index.html",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/app.js",
+        "frontend/src/backup.js",
+        "frontend/src/canvas.js",
+        "frontend/src/cloud.js",
+        "frontend/src/services.js",
+        "frontend/src/workspace-model.js"
+      ]
+    }
+  },
+  {
+    "index": 17,
+    "commit": "43c248330106f8d00a5410edfeba3268f067b0f0",
+    "tree": "3a12b7db10f37b93782d73589c3431e6aaa078a4",
+    "archive": "0-9-1-20260921-030247.tar.gz",
+    "version": "0.9.1",
+    "recordedAtUtc": "2026-10-19T13:33:00.557572+00:00",
+    "archiveSha256": "014ee997a0da56aa486d00dc84386ee1ac179d40d189734dbde66c0ea9e12283",
+    "fileCount": 72,
+    "delta": {
+      "added": [],
+      "deleted": [],
+      "changed": [
+        "backend/hermes.mjs",
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/tests/hermes.test.mjs",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/ai-chat.css",
+        "frontend/src/ai-chat.js",
+        "frontend/src/ai-organizer.js",
+        "frontend/src/ai.js",
+        "frontend/src/services.js"
+      ]
+    }
+  },
+  {
+    "index": 18,
+    "commit": "5a701493731f913a008d39e937c8835649730329",
+    "tree": "d393d2ce52f1980414c361af6b0a5de1c6a28e82",
+    "archive": "0-10-0-20260921-052303.tar.gz",
+    "version": "0.10.0",
+    "recordedAtUtc": "2026-10-19T13:33:02.857263+00:00",
+    "archiveSha256": "b553725a3c7cd404d2a816294f25dbfaf15d5b9430c35788d528ac26292c9b49",
+    "fileCount": 72,
+    "delta": {
+      "added": [],
+      "deleted": [],
+      "changed": [
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/store.mjs",
+        "backend/tests/ledger.test.mjs",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/ai-chat.css",
+        "frontend/src/ai-chat.js",
+        "frontend/src/backup.js",
+        "frontend/src/canvas.js",
+        "frontend/src/ledger-model.js",
+        "frontend/src/ledger.css",
+        "frontend/src/ledger.js",
+        "frontend/src/services.js"
+      ]
+    }
+  },
+  {
+    "index": 19,
+    "commit": "31ff9b5bb46c04a0af8d245d593fd752d01d8e1c",
+    "tree": "45399992364f1ceebf8856638f82114111f4ac85",
+    "archive": "0-11-0-20260921-103006.tar.gz",
+    "version": "0.11.0",
+    "recordedAtUtc": "2026-10-19T13:33:05.508349+00:00",
+    "archiveSha256": "cf0353c4eadf438f9b4de5b7d8b4013b7d51e0c8dab0560420c79c3507fa74b9",
+    "fileCount": 72,
+    "delta": {
+      "added": [],
+      "deleted": [],
+      "changed": [
+        "backend/hermes.mjs",
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/tests/hermes.test.mjs",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/ai-chat.css",
+        "frontend/src/ai-chat.js",
+        "frontend/src/ai-organizer.js",
+        "frontend/src/ai.js",
+        "frontend/src/app.js",
+        "frontend/src/backup.js",
+        "frontend/src/ledger-model.js",
+        "frontend/src/ledger.css",
+        "frontend/src/ledger.js",
+        "frontend/src/services.js",
+        "frontend/src/workspace-model.js"
+      ]
+    }
+  },
+  {
+    "index": 20,
+    "commit": "1a65e3dc8f3a0f815503eb3fe58c34d3a0e6fd9f",
+    "tree": "0e44baf3ef2936ebb4d6b5395ad9b15a74a2745f",
+    "archive": "0-11-1-20260921-111337.tar.gz",
+    "version": "0.11.1",
+    "recordedAtUtc": "2026-10-19T13:33:08.726137+00:00",
+    "archiveSha256": "cc4eb0a95cd76428fa9ebdd7e2cfaef7fa7794e089b1ee4ae5f2e523e88587d7",
+    "fileCount": 73,
+    "delta": {
+      "added": [
+        "backend/tests/hermes_runner_test.py"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/hermes.mjs",
+        "backend/hermes_runner.py",
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/tests/hermes.test.mjs",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/ai-chat.js",
+        "frontend/src/services.js"
+      ]
+    }
+  },
+  {
+    "index": 21,
+    "commit": "3931a7b853ce6c876312a9e152d21a556d17fa45",
+    "tree": "22c2553afd05f141d2d08a0b8e7e5581c38e35af",
+    "archive": "0-12-0-20260921-120021.tar.gz",
+    "version": "0.12.0",
+    "recordedAtUtc": "2026-10-19T13:33:11.160476+00:00",
+    "archiveSha256": "7b4e4d2d95e16b3a6750cd9246626197b5c7d6c9581e52164b7d7d3fb21e2a9c",
+    "fileCount": 79,
+    "delta": {
+      "added": [
+        "backend/tests/workspace-ai.test.mjs",
+        "backend/tests/workspace-queries.test.mjs",
+        "backend/workspace-queries.mjs",
+        "frontend/src/workspace-actions-core.js",
+        "frontend/src/workspace-actions-study.js",
+        "frontend/src/workspace-actions.js"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/hermes.mjs",
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/tests/hermes.test.mjs",
+        "backend/tests/timetable-import.test.mjs",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/ai-chat.css",
+        "frontend/src/ai-chat.js",
+        "frontend/src/ai-organizer.js",
+        "frontend/src/ai.js",
+        "frontend/src/app.js",
+        "frontend/src/backup.js",
+        "frontend/src/canvas.js",
+        "frontend/src/courses.css",
+        "frontend/src/courses.js",
+        "frontend/src/english.css",
+        "frontend/src/english.js",
+        "frontend/src/services.js",
+        "frontend/src/spaces.js",
+        "frontend/src/workspace-model.js"
+      ]
+    }
+  },
+  {
+    "index": 22,
+    "commit": "17d8f351af9a798f9582928b316635df9aa88d7b",
+    "tree": "7f10dad4be5c58c69d7a6b6bdfd8833a9eb4da54",
+    "archive": "0-13-0-20260922-130751.tar.gz",
+    "version": "0.13.0",
+    "recordedAtUtc": "2026-10-19T13:33:15.755695+00:00",
+    "archiveSha256": "dbf4deef8c6f18d4534929f6ac62ef93e61ae275a991701aca5d93c949237213",
+    "fileCount": 85,
+    "delta": {
+      "added": [
+        "backend/tests/fitness-persistence.test.mjs",
+        "backend/tests/fitness-queries.test.mjs",
+        "frontend/src/fitness-model.js",
+        "frontend/src/fitness.css",
+        "frontend/src/fitness.js",
+        "frontend/src/workspace-actions-fitness.js"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/hermes.mjs",
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/store.mjs",
+        "backend/workspace-queries.mjs",
+        "frontend/index.html",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/ai-chat.js",
+        "frontend/src/app.js",
+        "frontend/src/backup.js",
+        "frontend/src/cloud.js",
+        "frontend/src/services.js",
+        "frontend/src/spaces.js",
+        "frontend/src/workspace-actions-core.js",
+        "frontend/src/workspace-actions.js"
+      ]
+    }
+  },
+  {
+    "index": 23,
+    "commit": "89c17a426327eeeed21a535b5afc387f1636a99a",
+    "tree": "0adc1a05896dfd850dd670b3ffc840476e02ca47",
+    "archive": "0-13-1-20260923-033135.tar.gz",
+    "version": "0.13.1",
+    "recordedAtUtc": "2026-10-19T13:33:19.544513+00:00",
+    "archiveSha256": "598c43e5c913354d3558891e243444ec7585ed99e7f9c188b1efba272e720407",
+    "fileCount": 86,
+    "delta": {
+      "added": [
+        "frontend/src/timetable-display.js"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/package.json",
+        "backend/server.mjs",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/services.js",
+        "frontend/src/timetable.css",
+        "frontend/src/timetable.js"
+      ]
+    }
+  },
+  {
+    "index": 24,
+    "commit": "944021cdcd99272b505bba1fb7f4abff11bb0ced",
+    "tree": "aaabf25690eead5ff02fd154dff44e3365a84a40",
+    "archive": "0-14-0-20261008-114119.tar.gz",
+    "version": "0.14.0",
+    "recordedAtUtc": "2026-10-19T13:33:21.526554+00:00",
+    "archiveSha256": "ab815c03cf62c1fa569410749312899e382a1d1c30a48ab9407a89ba69c1c49d",
+    "fileCount": 92,
+    "delta": {
+      "added": [
+        "backend/tests/competitions-ai.test.mjs",
+        "backend/tests/competitions-persistence.test.mjs",
+        "frontend/src/competitions-model.js",
+        "frontend/src/competitions.css",
+        "frontend/src/competitions.js",
+        "frontend/src/workspace-actions-competitions.js"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/hermes.mjs",
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/store.mjs",
+        "backend/workspace-queries.mjs",
+        "frontend/index.html",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/ai-chat.js",
+        "frontend/src/app.js",
+        "frontend/src/backup.js",
+        "frontend/src/canvas.js",
+        "frontend/src/cloud.js",
+        "frontend/src/services.js",
+        "frontend/src/workspace-actions.js"
+      ]
+    }
+  },
+  {
+    "index": 25,
+    "commit": "8d3b22714badc7abc532f09e04f1fc02efdf4780",
+    "tree": "4dbf8e0407d15981552a3a104b9ba93045bd337f",
+    "archive": "0-15-0-20261008-123114.tar.gz",
+    "version": "0.15.0",
+    "recordedAtUtc": "2026-10-19T13:33:24.793781+00:00",
+    "archiveSha256": "1652fb66560a86ad5a91129ec350df02f13d3f955b4fd8d52054207f22a797f0",
+    "fileCount": 94,
+    "delta": {
+      "added": [
+        "backend/tests/calendar-links-query.test.mjs",
+        "frontend/src/calendar-links.js"
+      ],
+      "deleted": [],
+      "changed": [
+        "backend/hermes.mjs",
+        "backend/package.json",
+        "backend/server.mjs",
+        "backend/workspace-queries.mjs",
+        "frontend/package.json",
+        "frontend/server.mjs",
+        "frontend/src/app.js",
+        "frontend/src/calendar.css",
+        "frontend/src/calendar.js",
+        "frontend/src/canvas.js",
+        "frontend/src/services.js"
+      ]
+    }
+  }
+]

@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: C:/Users/g2806/Desktop/工作台/frontend/src/app.js
+@@
+ let route='home',subroute='',filter='all';
++let cleanupView=null;
+@@
+ function render(){
++  cleanupView?.();cleanupView=null;
+@@
+-  ctx.root.onclick=null;ctx.root.onchange=null;ctx.root.oninput=null;
++  ctx.root.onclick=null;ctx.root.onchange=null;ctx.root.oninput=null;ctx.root.ondragover=null;ctx.root.ondragleave=null;ctx.root.ondrop=null;
+@@
+-  if(route==='home')renderHome();if(route==='courses')mountCourses(ctx,subroute);if(route==='english')mountEnglish(ctx);if(route==='tasks')renderTasks();if(route==='inbox')renderInbox();if(route==='review')renderReview();if(route==='settings')renderSettings();
++  if(route==='home')renderHome();if(route==='courses')cleanupView=mountCourses(ctx,subroute);if(route==='english')cleanupView=mountEnglish(ctx);if(route==='tasks')renderTasks();if(route==='inbox')renderInbox();if(route==='review')renderReview();if(route==='settings')renderSettings();
+*** Update File: C:/Users/g2806/Desktop/工作台/frontend/src/icons.js
+@@
+ const paths={
++info:'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0 M12 11v6 M12 7h.01',
++globe:'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0 M3 12h18 M12 3c-5 5-5 13 0 18 M12 3c5 5 5 13 0 18',
+*** End Patch

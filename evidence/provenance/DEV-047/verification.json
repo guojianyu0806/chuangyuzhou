@@ -1,0 +1,385 @@
+{
+  "recordedAtUtc": "2026-10-19T13:32:05.043737+00:00",
+  "kind": "retrospective-provenance-supplement",
+  "originalGitFound": false,
+  "originalGitPathsChecked": [
+    "C:\\Users\\g2806\\Desktop\\工作台\\.git",
+    "C:\\Users\\g2806\\Desktop\\工作台\\frontend\\.git",
+    "C:\\Users\\g2806\\Desktop\\工作台\\backend\\.git",
+    "C:\\Users\\g2806\\Desktop\\工作台\\deployment\\.git",
+    "C:\\Users\\g2806\\Desktop\\工作台\\mobile\\.git"
+  ],
+  "originalGitCommandEvidence": [
+    {
+      "log": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "line": 2960,
+      "timestamp": "2026-09-20T08:46:48.509Z",
+      "recordSha256": "ba91e4966a9ff38de2108e21da214f090008ff0d5ac4939a8d933de3f0045790",
+      "excerpt": "git status --short",
+      "excerptOnly": true
+    },
+    {
+      "log": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "line": 2963,
+      "timestamp": "2026-09-20T08:46:49.296Z",
+      "recordSha256": "3ed9e1ed6986b16aa32d661c59cb79c60f70baf2cbcffd585d81c373812c6a47",
+      "excerpt": "fatal: not a git repository (or any of the parent directories): .git",
+      "excerptOnly": true
+    },
+    {
+      "log": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "line": 5368,
+      "timestamp": "2026-09-20T13:06:20.744Z",
+      "recordSha256": "be8aaed50601f68f527d7a97e0b6aedc2f707493a72baad930c57d85cfc1600e",
+      "excerpt": "git status --short",
+      "excerptOnly": true
+    },
+    {
+      "log": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+      "line": 5371,
+      "timestamp": "2026-09-20T13:06:21.434Z",
+      "recordSha256": "dc432d321da451fc8913398c1828685f20c9e0e38583b1fa5a3dc5dfcd05005c",
+      "excerpt": "fatal: not a git repository (or any of the parent directories): .git",
+      "excerptOnly": true
+    }
+  ],
+  "executedGitCallsInTwoOriginalChats": {
+    "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl": [
+      {
+        "line": 2960,
+        "verb": "status"
+      },
+      {
+        "line": 5368,
+        "verb": "status"
+      }
+    ],
+    "rollout-2026-09-29T14-31-14-01a0ebdc-3ec7-77f2-b13f-5e9af99ba8aa.jsonl": []
+  },
+  "mainHeadUnchanged": "96bdda69beccf77910b92f2699a4726e90b4711d",
+  "mainCommitCountUnchanged": 188,
+  "branch": "codex/yuzhou-historical-snapshots",
+  "branchTip": "8d3b22714badc7abc532f09e04f1fc02efdf4780",
+  "snapshotCommitCount": 25,
+  "archiveCount": 28,
+  "postForkPersonalReleasesExcluded": 3,
+  "archiveUniqueSourceBlobsScanned": 373,
+  "strongCredentialSignatureMatches": 0,
+  "reviewedAssignmentCandidates": [
+    {
+      "blobSha256": "b6735672c344b10022aab8d0e56b4abc50456f48158d8d0d4f4702641212d9ad",
+      "path": "frontend/src/cloud.js",
+      "line": 6,
+      "classification": "ui-error-message-map"
+    },
+    {
+      "blobSha256": "b6735672c344b10022aab8d0e56b4abc50456f48158d8d0d4f4702641212d9ad",
+      "path": "frontend/src/cloud.js",
+      "line": 182,
+      "classification": "ui-form-attribute"
+    },
+    {
+      "blobSha256": "a4da9a2837a5a1cc2f38d4e38cbe30b2df5e4bc616e7ee5fbf30adce7c500f1d",
+      "path": "backend/tests/backup.test.mjs",
+      "line": 19,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "c77e256f9df99b8f63e9d8844e1dbe2ca00d4b4c640ad00f79c73dc52723ec23",
+      "path": "backend/tests/hermes.test.mjs",
+      "line": 28,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "c77e256f9df99b8f63e9d8844e1dbe2ca00d4b4c640ad00f79c73dc52723ec23",
+      "path": "backend/tests/hermes.test.mjs",
+      "line": 52,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "a96d8da8f1af51f30c156204197873ab663a17969dac04b02df8593e06f858ae",
+      "path": "backend/tests/server.test.mjs",
+      "line": 11,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "a96d8da8f1af51f30c156204197873ab663a17969dac04b02df8593e06f858ae",
+      "path": "backend/tests/server.test.mjs",
+      "line": 13,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "3fb19401bf188c7f1649f9c73b022c109e3f417511b5e883dd1c45616fb05960",
+      "path": "frontend/src/cloud.js",
+      "line": 6,
+      "classification": "ui-error-message-map"
+    },
+    {
+      "blobSha256": "3fb19401bf188c7f1649f9c73b022c109e3f417511b5e883dd1c45616fb05960",
+      "path": "frontend/src/cloud.js",
+      "line": 193,
+      "classification": "ui-form-attribute"
+    },
+    {
+      "blobSha256": "b6ab62f2e3fee2782cee155d0560cb5f380865d334819db660a034571b7dd284",
+      "path": "backend/tests/server.test.mjs",
+      "line": 11,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "b6ab62f2e3fee2782cee155d0560cb5f380865d334819db660a034571b7dd284",
+      "path": "backend/tests/server.test.mjs",
+      "line": 13,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "628bf256b16276c0c1e6ae960b9e08d447b891318d891ae8c0e5bd0c3336acf5",
+      "path": "frontend/src/cloud.js",
+      "line": 6,
+      "classification": "ui-error-message-map"
+    },
+    {
+      "blobSha256": "628bf256b16276c0c1e6ae960b9e08d447b891318d891ae8c0e5bd0c3336acf5",
+      "path": "frontend/src/cloud.js",
+      "line": 193,
+      "classification": "ui-form-attribute"
+    },
+    {
+      "blobSha256": "ed4cf7afbfcf8f3562c0311e55b220584d8a3242eef20252c9587088d214203f",
+      "path": "backend/tests/server.test.mjs",
+      "line": 11,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "ed4cf7afbfcf8f3562c0311e55b220584d8a3242eef20252c9587088d214203f",
+      "path": "backend/tests/server.test.mjs",
+      "line": 13,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "2034f85d175a09b84ce099ff6f82820b64392aa1fcfd10891e89be3f931d2764",
+      "path": "backend/tests/server.test.mjs",
+      "line": 11,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "2034f85d175a09b84ce099ff6f82820b64392aa1fcfd10891e89be3f931d2764",
+      "path": "backend/tests/server.test.mjs",
+      "line": 13,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "52b30291c9b22f86eed794d2918649d7ad25f0b778468431f75a80c9a86a4bba",
+      "path": "frontend/src/cloud.js",
+      "line": 6,
+      "classification": "ui-error-message-map"
+    },
+    {
+      "blobSha256": "52b30291c9b22f86eed794d2918649d7ad25f0b778468431f75a80c9a86a4bba",
+      "path": "frontend/src/cloud.js",
+      "line": 195,
+      "classification": "ui-form-attribute"
+    },
+    {
+      "blobSha256": "9eaa851ea876fd9598bac95e1bdd0abb6c5d5d01091bc32bd8756d8b9625d22e",
+      "path": "backend/tests/server.test.mjs",
+      "line": 11,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "9eaa851ea876fd9598bac95e1bdd0abb6c5d5d01091bc32bd8756d8b9625d22e",
+      "path": "backend/tests/server.test.mjs",
+      "line": 13,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "614c99072bbf0046ac49a0b3b39c0ba2fb3971e5a7993bcd6d82c55f0ed28eac",
+      "path": "frontend/src/cloud.js",
+      "line": 6,
+      "classification": "ui-error-message-map"
+    },
+    {
+      "blobSha256": "614c99072bbf0046ac49a0b3b39c0ba2fb3971e5a7993bcd6d82c55f0ed28eac",
+      "path": "frontend/src/cloud.js",
+      "line": 195,
+      "classification": "ui-form-attribute"
+    },
+    {
+      "blobSha256": "51aa03f8cce21e85249cac25081e8480855758c045b18afdee8d6b939c9cc83a",
+      "path": "backend/tests/server.test.mjs",
+      "line": 11,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "51aa03f8cce21e85249cac25081e8480855758c045b18afdee8d6b939c9cc83a",
+      "path": "backend/tests/server.test.mjs",
+      "line": 14,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "0ca0eed1007cdcaa1f113fa9da01c676083917c565de08c0ebda225e0de85fde",
+      "path": "backend/tests/hermes.test.mjs",
+      "line": 62,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "0ca0eed1007cdcaa1f113fa9da01c676083917c565de08c0ebda225e0de85fde",
+      "path": "backend/tests/hermes.test.mjs",
+      "line": 86,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "0bf280bbf1f90867908b8184630e94dc9b98437faaf528135b1efd933c135a35",
+      "path": "backend/tests/server.test.mjs",
+      "line": 11,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "0bf280bbf1f90867908b8184630e94dc9b98437faaf528135b1efd933c135a35",
+      "path": "backend/tests/server.test.mjs",
+      "line": 14,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "ca84ad174edae87a95df2ce3b14f045618c7f66173469a4535fa6b05f947e490",
+      "path": "frontend/src/cloud.js",
+      "line": 6,
+      "classification": "ui-error-message-map"
+    },
+    {
+      "blobSha256": "ca84ad174edae87a95df2ce3b14f045618c7f66173469a4535fa6b05f947e490",
+      "path": "frontend/src/cloud.js",
+      "line": 195,
+      "classification": "ui-form-attribute"
+    },
+    {
+      "blobSha256": "6bf0ce94bdaf347852f0d159fcb305f3b7747035ad24ab9355ff137b98879668",
+      "path": "backend/tests/server.test.mjs",
+      "line": 11,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "6bf0ce94bdaf347852f0d159fcb305f3b7747035ad24ab9355ff137b98879668",
+      "path": "backend/tests/server.test.mjs",
+      "line": 14,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "3acfb752efd63c5df6e24583fa6ee34f57129125bb409eb0e466c46eca66012d",
+      "path": "backend/tests/hermes.test.mjs",
+      "line": 69,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "3acfb752efd63c5df6e24583fa6ee34f57129125bb409eb0e466c46eca66012d",
+      "path": "backend/tests/hermes.test.mjs",
+      "line": 93,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "a4eb25bb0a08dc5c590620ef49577c9977ac57f921f61d3c3f1a464412aa34db",
+      "path": "backend/tests/hermes.test.mjs",
+      "line": 328,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "a4eb25bb0a08dc5c590620ef49577c9977ac57f921f61d3c3f1a464412aa34db",
+      "path": "backend/tests/hermes.test.mjs",
+      "line": 352,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "6db17d3f47710839fc90e2c17030f1e22313ff242184c5045243f096c9d0d50d",
+      "path": "backend/tests/hermes.test.mjs",
+      "line": 328,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "6db17d3f47710839fc90e2c17030f1e22313ff242184c5045243f096c9d0d50d",
+      "path": "backend/tests/hermes.test.mjs",
+      "line": 411,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "31524ca116312448233b77acecc4993ec1bec0ee509f519d8f3e98a3feb1b6b2",
+      "path": "backend/tests/hermes.test.mjs",
+      "line": 327,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "31524ca116312448233b77acecc4993ec1bec0ee509f519d8f3e98a3feb1b6b2",
+      "path": "backend/tests/hermes.test.mjs",
+      "line": 410,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "c4f8a01384fdda46101bf88ec0e9c88d597df916742d1341e25199a162ce53fc",
+      "path": "backend/tests/workspace-ai.test.mjs",
+      "line": 18,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "c4f8a01384fdda46101bf88ec0e9c88d597df916742d1341e25199a162ce53fc",
+      "path": "backend/tests/workspace-ai.test.mjs",
+      "line": 29,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "c4f8a01384fdda46101bf88ec0e9c88d597df916742d1341e25199a162ce53fc",
+      "path": "backend/tests/workspace-ai.test.mjs",
+      "line": 29,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "c4f8a01384fdda46101bf88ec0e9c88d597df916742d1341e25199a162ce53fc",
+      "path": "backend/tests/workspace-ai.test.mjs",
+      "line": 30,
+      "classification": "synthetic-test-value"
+    },
+    {
+      "blobSha256": "e5a840ea7217c91043179cd18dc3e328e9a0683984bb303d60681523173d6aa7",
+      "path": "frontend/src/cloud.js",
+      "line": 6,
+      "classification": "ui-error-message-map"
+    },
+    {
+      "blobSha256": "e5a840ea7217c91043179cd18dc3e328e9a0683984bb303d60681523173d6aa7",
+      "path": "frontend/src/cloud.js",
+      "line": 196,
+      "classification": "ui-form-attribute"
+    },
+    {
+      "blobSha256": "ed301e90e26a0f50325cc22a28b9bed4aa1bf1c47796f02a7a8dbc3b3de5f65f",
+      "path": "frontend/src/cloud.js",
+      "line": 6,
+      "classification": "ui-error-message-map"
+    },
+    {
+      "blobSha256": "ed301e90e26a0f50325cc22a28b9bed4aa1bf1c47796f02a7a8dbc3b3de5f65f",
+      "path": "frontend/src/cloud.js",
+      "line": 197,
+      "classification": "ui-form-attribute"
+    },
+    {
+      "blobSha256": "fa0488bff3b4b7a85d883e20ef623dd167afcda328feec7a977347f354258e09",
+      "path": "backend/tests/competitions-ai.test.mjs",
+      "line": 66,
+      "classification": "synthetic-test-value"
+    }
+  ],
+  "initialPatchCount": 6,
+  "publicUserMessagesSelected": 9,
+  "archiveToImportManifestExactFileMatches": 94,
+  "manifestFileCount": 150,
+  "importGitExactFileMatches": 118,
+  "archiveToImportGitLineEndingOnlyDifferences": 31,
+  "limitations": [
+    "No original early Git commits recovered; supplementary commits have current dates.",
+    "Archive snapshots contain deployment source subsets, not every intermediate edit or complete workspaces.",
+    "Selected initial patches are excerpts and do not reconstruct a tested complete first release.",
+    "Local files and chat record hashes support traceability, not independently trusted creation timestamps.",
+    "Secret signature scanning and candidate review cannot guarantee absence of every secret format.",
+    "Competition acceptance of retrospective records has not been confirmed.",
+    "No source archive execution, service restart, model request or public upload performed."
+  ]
+}

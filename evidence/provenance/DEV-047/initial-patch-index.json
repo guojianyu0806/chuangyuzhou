@@ -1,0 +1,56 @@
+[
+  {
+    "log": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "line": 133,
+    "timestamp": "2026-09-19T15:15:54.643Z",
+    "recordSha256": "d3d6bcf62ef1d827f5b8af67f0adf5ed50bcb4c9002a3046873f38afa9d93316",
+    "path": "initial-patches/00133.patch.txt",
+    "sha256": "872b9c38e0cd90e1a3d6b9a0a420996a188d1e06a24890fa7c1916383145d673",
+    "scope": "selected initial patch; not a complete conversation or a complete runnable release"
+  },
+  {
+    "log": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "line": 487,
+    "timestamp": "2026-09-19T15:44:16.166Z",
+    "recordSha256": "1feaee51e724c21f7429906bda56f88600f6f7081c781cffcf8d1694a9547828",
+    "path": "initial-patches/00487.patch.txt",
+    "sha256": "a891cd7d7a3145cebf3b470dabc0224c00a6ae504b32c4ef16df9a08440e3984",
+    "scope": "selected initial patch; not a complete conversation or a complete runnable release"
+  },
+  {
+    "log": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "line": 497,
+    "timestamp": "2026-09-19T15:48:38.009Z",
+    "recordSha256": "eebd2a93fb13cc738fe4a470bcb8a3fd344740157277ec19bdd43b4cc484cf5f",
+    "path": "initial-patches/00497.patch.txt",
+    "sha256": "10fe257503acaba53f6469b45b2962696a309908ba2040fba5f5e69ccfebfe49",
+    "scope": "selected initial patch; not a complete conversation or a complete runnable release"
+  },
+  {
+    "log": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "line": 508,
+    "timestamp": "2026-09-19T15:51:19.094Z",
+    "recordSha256": "99435f0ea9e2adf01ccf1e86684158c98e840281d850c3574316b04e305d863a",
+    "path": "initial-patches/00508.patch.txt",
+    "sha256": "a61e1e293476a70923d7d1766f98050dbe4d41f5e43ecd62771e313c1446425a",
+    "scope": "selected initial patch; not a complete conversation or a complete runnable release"
+  },
+  {
+    "log": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "line": 524,
+    "timestamp": "2026-09-19T15:58:16.258Z",
+    "recordSha256": "00e3d46ad5dc034aa845b34da7c1932baacc33231f485e512ab93a88649b5f60",
+    "path": "initial-patches/00524.patch.txt",
+    "sha256": "4783e6ef800f6dc0a3467e6c07696aa466a925d937d04c1814678f1f30d7aece",
+    "scope": "selected initial patch; not a complete conversation or a complete runnable release"
+  },
+  {
+    "log": "rollout-2026-09-19T23-07-16-01a0ba35-1686-7b31-b2cd-2ee676a266b1.jsonl",
+    "line": 562,
+    "timestamp": "2026-09-19T15:59:40.331Z",
+    "recordSha256": "e82c94048231947a6d6dae8b505104d4e8c74a32f37330c0b5cf4a1314189999",
+    "path": "initial-patches/00562.patch.txt",
+    "sha256": "ec8fe619d25f458ed4ebe379e748b8f1af8c4fbcaeadaba8098c92e95a8a2e6c",
+    "scope": "selected initial patch; not a complete conversation or a complete runnable release"
+  }
+]
