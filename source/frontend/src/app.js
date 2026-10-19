@@ -114,6 +114,11 @@ function makeContext(){
   local.routeContent=payload=>routeContent(local,payload);
   local.undoRoute=(receipt,id)=>undoRoute(local,receipt,id);
   local.openDestination=id=>openDestination(local,id);
+  local.openTask=id=>{
+    if(state!==viewState)return;
+    if(!viewState.tasks.some(task=>task.id===id)){toast('这条待办已不存在，请刷新后重试。');return;}
+    taskDialog(id);
+  };
   local.mountAIComposer=host=>mountAIComposer(local,host);
   local.dropOnCard=(id,files)=>dropOnCard(local,id,files);
   local.enterCard=async(id,element)=>{

@@ -1,4 +1,5 @@
 import {eventsOnDate} from './calendar-model.js';
+import {projectCalendarLinks} from './calendar-links.js';
 import {summarizeCompetitions} from './competitions-model.js';
 /* Free-position workspace canvas. Persisted coordinates are independent of viewport size. */
 import {formatMoney,localDate,selectEntries,summarizeEntries} from './ledger-model.js';
@@ -173,7 +174,7 @@ export function mountCanvas(ctx, collection) {
       return `<div class="cv-card-copy"><span class="cv-card-kicker">YOUR DAILY LEDGER</span><h2>记账</h2><p>${esc(d.label)}</p></div><div class="cv-ledger-total"><span>本月总账支出${state.mode==='demo'?' · 示例':''}</span><strong>¥${formatMoney(totals.expenseCents)}</strong></div><div class="cv-space-counts"><span>${totals.count} 笔收支</span><span>日期 · 项目</span></div>`;
     }
     if(card.id==='calendar'){
-      const events=eventsOnDate(state.calendar||{events:[]},localDate());
+      const day=localDate(),events=[...eventsOnDate(state.calendar||{events:[]},day),...projectCalendarLinks(state).filter(event=>event.startDate<=day&&event.endDate>=day)];
       return `<div class="cv-card-copy"><span class="cv-card-kicker">MAKE ROOM FOR WHAT MATTERS</span><h2>日历</h2><p>${esc(d.label)}</p></div><div class="cv-space-counts"><span>今天 ${events.length} 条安排</span></div><p>${esc(events[0]?.title||'点击日期，安排你的下一件事。')}</p>`;
     }
     if(card.id==='timetable'){

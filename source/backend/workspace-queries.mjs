@@ -4,12 +4,13 @@ import {selectEntries,summarizeEntries,formatMoney,isValidDate} from '../fronten
 import {entriesForWeek,weekForDate,dateForWeek,periodTime} from '../frontend/src/timetable-model.js';
 import {selectFitnessEntries,summarizeFitness,fitnessRange} from '../frontend/src/fitness-model.js';
 import {competitionToday,deadlineStatus,summarizeCompetitions,competitionProgress} from '../frontend/src/competitions-model.js';
+import {projectCalendarLinks} from '../frontend/src/calendar-links.js';
 
 export const WORKSPACE_QUERY_CAPABILITIES=[
  {kind:'search',label:'搜索工作台',description:'entity可省略；text关键词；可筛containerId、archived(false默认/true/all)、done；offset默认0，limit默认20最多50；返回真实编号和分页总数。'},
  {kind:'get',label:'读取记录详情',description:'必须entity、id；note/file/timetableEntry用containerId区分；返回完整内容（超长会注明截断）。'},
  {kind:'ledger.summary',label:'计算收支',description:'scope:total默认(遵守项目总账设置)/daily/projects/all；projectId指定已有项目；start/end为YYYY-MM-DD；groupBy:category/project/date；程序计算精确到分，默认不含归档账目。'},
- {kind:'calendar.range',label:'查询日历安排',description:'start和end为YYYY-MM-DD；查询与范围交叠的事件；可kindFilter:plan/mark/note、done、archived。'},
+ {kind:'calendar.range',label:'查询日历与关联事项',description:'start和end为YYYY-MM-DD；默认汇总日历原安排、带日期的备忘待办、比赛节点与任务、六级考试日期。可source:all/calendar/tasks/competitions/english、kindFilter:plan/mark/note（筛全部来源：待办/比赛任务/六级为plan，比赛节点为mark）、done、archived(false默认/true/all)。归档只查询日历原安排，关联来源只显示未归档父子；不含学期课表、账单或运动学习日志。返回真实entity/id/containerId用于修改源记录；containerId为空时在后续查询/行动里省略该字段。display为只读日期展示，不可拿display.id当行动编号。'},
  {kind:'timetable.week',label:'查询一周课表',description:'termId可省略使用当前学期；week为整数或date为YYYY-MM-DD；返回当周课程、实际日期、作息时间。'},
  {kind:'english.status',label:'查询六级学习情况',description:'start/end可选，返回计划、词汇掌握统计、错题数和程序计算的学习时长，不编造学习记录。'},
  {kind:'fitness.summary',label:'计算运动统计',description:'spaceId必填真实空间id，只计算该空间；start/end可选YYYY-MM-DD，或用date与period=day|week|month选择完整日/周/月（不能与start/end混用）；archived=false默认/true/all。程序汇总全部匹配记录的次数、分钟、已知公里/千卡及缺失计数，不估算热量，不把null当零，不把计划记作实际运动。'},
@@ -24,10 +25,10 @@ export function validateWorkspaceQueries(value){
  if(!Array.isArray(value)||!value.length||value.length>6)fail('每轮查询须为1至6项。');
  return value.map(q=>{
   if(!object(q)||!WORKSPACE_QUERY_CAPABILITIES.some(c=>c.kind===q.kind))fail('不支持这个工作台查询。');
-  const allowed={search:['entity','text','containerId','archived','done','offset','limit'],get:['entity','id','containerId'],'ledger.summary':['scope','projectId','start','end','groupBy','archived'],'calendar.range':['start','end','kindFilter','done','archived','offset','limit'],'timetable.week':['termId','week','date'],'english.status':['start','end'],'fitness.summary':['spaceId','start','end','date','period','archived'],'competitions.summary':['competitionId'],'file.read':['blobId']}[q.kind];
+  const allowed={search:['entity','text','containerId','archived','done','offset','limit'],get:['entity','id','containerId'],'ledger.summary':['scope','projectId','start','end','groupBy','archived'],'calendar.range':['start','end','kindFilter','source','done','archived','offset','limit'],'timetable.week':['termId','week','date'],'english.status':['start','end'],'fitness.summary':['spaceId','start','end','date','period','archived'],'competitions.summary':['competitionId'],'file.read':['blobId']}[q.kind];
   if(Object.keys(q).some(k=>k!=='kind'&&!allowed.includes(k)))fail('查询包含不支持的字段。');
   const result={kind:q.kind};
-  for(const key of ['entity','text','containerId','id','projectId','spaceId','competitionId','termId','scope','groupBy','kindFilter','blobId','period'])if(q[key]!==undefined)result[key]=text(q[key],key==='text'?300:256,true);
+  for(const key of ['entity','text','containerId','id','projectId','spaceId','competitionId','termId','scope','groupBy','kindFilter','source','blobId','period'])if(q[key]!==undefined)result[key]=text(q[key],key==='text'?300:256,true);
   if(result.entity&&!entities().has(result.entity))fail('查询的记录类型不存在。');
   if(q.kind==='get'&&(!result.entity||!result.id))fail('读取详情需要记录类型和真实编号。');
   if(q.kind==='file.read'&&!result.blobId)fail('请选择已有资料的文件编号。');
@@ -38,6 +39,7 @@ export function validateWorkspaceQueries(value){
   if(q.done!==undefined){if(typeof q.done!=='boolean')fail('完成状态筛选无效。');result.done=q.done;}
   if(q.kind==='calendar.range'&&(!result.start||!result.end))fail('日历查询需要开始和结束日期。');
   if(result.kindFilter&&!['plan','mark','note'].includes(result.kindFilter))fail('日历类型无效。');
+  if(result.source&&!['all','calendar','tasks','competitions','english'].includes(result.source))fail('日历来源无效。');
   if(result.scope&&!['total','daily','projects','all'].includes(result.scope))fail('记账统计范围无效。');
   if(result.groupBy&&!['category','project','date'].includes(result.groupBy))fail('记账分组方式无效。');
   if(q.kind==='fitness.summary'){
@@ -101,8 +103,13 @@ export async function runWorkspaceQuery(state,q,{readFile,now=new Date()}={}){
   return {currency:'CNY',scope,projectId:q.projectId||null,start:q.start||null,end:q.end||null,archived:q.archived??false,totals:money(totals),computedFromAllMatchingEntries:true,groupBy,groups:grouped.slice(0,100),groupCount:grouped.length,groupsTruncated:grouped.length>100,scopeExplanation:scope==='total'?'日常零钱与设置为计入总账的项目；不包含独立核算项目。':scope==='daily'?'只有日常零钱。':scope==='projects'?'项目账目。':'所有账目，包含独立核算项目。'};
  }
  if(q.kind==='calendar.range'){
-  const events=(state.calendar?.events||[]).filter(e=>isArchived(e,q)&&e.startDate<=q.end&&e.endDate>=q.start&&(!q.kindFilter||e.kind===q.kindFilter)&&(q.done===undefined||e.done===q.done)).sort((a,b)=>a.startDate.localeCompare(b.startDate)||a.startTime.localeCompare(b.startTime));
-  return boundQueryResult(paged(events.map(record=>({entity:'calendarEvent',id:record.id,containerId:'',title:record.title,record})),q));
+  const matches=e=>e.startDate<=q.end&&e.endDate>=q.start&&(!q.kindFilter||e.kind===q.kindFilter)&&(q.done===undefined||Boolean(e.done)===q.done);
+  const native=(!q.source||['all','calendar'].includes(q.source))?(state.calendar?.events||[]).filter(e=>isArchived(e,q)&&matches(e)).map(record=>({entity:'calendarEvent',id:record.id,containerId:'',title:record.title,source:'calendar',record,display:record})):[];
+  const links=q.archived===true||q.source==='calendar'?[]:projectCalendarLinks(state).filter(e=>(!q.source||q.source==='all'||e.source===q.source)&&matches(e));
+  const records=links.length?new Map(listWorkspaceRecords(state).map(row=>[`${row.entity}:${row.id}`,row])):new Map();
+  const linked=links.flatMap(display=>{const row=records.get(`${display.entity}:${display.sourceId}`);return row?[{...row,source:display.source,display,linked:true}]:[];});
+  const entries=[...native,...linked].sort((a,b)=>a.display.startDate.localeCompare(b.display.startDate)||(a.display.startTime||'').localeCompare(b.display.startTime||'')||a.title.localeCompare(b.title,'zh-CN'));
+  return boundQueryResult({...paged(entries,q),notice:'关联事项来自原记录，日期或完成状态随来源变化；修改时使用返回的真实entity/id/containerId并经用户确认，containerId为空时省略该字段。手动复制的日历标注是独立副本，可能与关联来源同时显示。归档筛选仅针对日历原安排；已归档关联来源不投影。学期课表保持独立。'});
  }
  if(q.kind==='timetable.week'){
   const term=state.timetable?.terms.find(t=>t.id===(q.termId||state.timetable.activeTermId));if(!term)fail('没有找到学期，请先查询或创建学期。');
