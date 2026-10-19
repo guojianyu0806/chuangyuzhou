@@ -1,0 +1,8 @@
+{
+  "name": "shiguang-private-cloud",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=22.13.0"},
+  "scripts": {"start": "node server.mjs", "test": "node --test tests/*.test.mjs"}
+}

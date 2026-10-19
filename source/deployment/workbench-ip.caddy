@@ -1,0 +1,15 @@
+https://203.195.191.239 {
+    tls {
+        issuer acme {
+            dir https://acme-v02.api.letsencrypt.org/directory
+            profile shortlived
+            disable_tlsalpn_challenge
+        }
+    }
+    encode zstd gzip
+    header {
+        -Server
+        X-Robots-Tag "noindex, nofollow, noarchive"
+    }
+    reverse_proxy 127.0.0.1:4180
+}
