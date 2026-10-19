@@ -1,0 +1,7 @@
+创宇宙 · 开发过程补充
+
+新增0.1.0开发与启动记录，补齐从需求、首次本地界面到修复和后续迭代的阅读路径。
+本目录v3证据ZIP包含此前v2证据内容和本次新记录；不覆盖旧附件。源码正式版v2、作品介绍PDF、README及视频未改。
+网盘请使用 2026-10-20_创宇宙网盘提交_v3 文件夹，其中开发证据附件已升级为v3，其他主要文件与上一版一致。
+GitHub入口：https://github.com/guojianyu0806/chuangyuzhou
+过程入口：https://github.com/guojianyu0806/chuangyuzhou/blob/main/docs/创宇宙-早期开发与Git补录说明-v3.md

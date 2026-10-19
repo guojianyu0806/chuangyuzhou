@@ -8,6 +8,7 @@
 - [下载正式源码 ZIP](delivery/2026-10-19_创宇宙正式提交_v2/创宇宙_源码_正式提交版_v2.zip) · [作品介绍 PDF（含技术说明）](delivery/2026-10-19_创宇宙正式提交_v2/创宇宙_作品介绍文档_正式提交版_v1.pdf)
 - [名称表述与 Git 核查](docs/创宇宙-名称表述与Git核查-v1.md) · [最新文件校验和](delivery/2026-10-19_创宇宙正式提交_v2/SHA256SUMS.txt)
 - [GitHub 发布与无登录访问核验回执](docs/创宇宙-GitHub发布回执-v1.md)
+- [完整开发过程证据附件 v3](delivery/2026-10-20_创宇宙开发过程补充_v1/创宇宙_AI开发过程证据_提交附件_v3.zip)：新增0.1.0需求、建文件、启动和修复记录，保留此前附件内容。
 
 安装 Node.js ≥22.13 后，在仓库根目录执行：
 
@@ -34,9 +35,10 @@ node tools/start.mjs
 
 [项目名称与开发连续性说明](docs/创宇宙-项目名称与开发连续性说明-v1.md)。除本次 GitHub 公开外，本项目此前没有其他公开发表或比赛获奖。作品介绍第7项“若项目是在其他项目基础上优化”不适用。
 
+- [从最初需求到0.1.0启动与修复](evidence/provenance/DEV-052/README.md)：17份原始补丁、9条需求及11组历史运行/验证记录，含失败尝试；与后续版本及真实Git串接阅读。
 - **比赛真实主线 `main`**：保留原有 188 条提交及 SHA，后续说明和发布准备继续以真实当前时间追加。
 - **早期快照补录 `codex/yuzhou-historical-snapshots`**：25 个截至 0.15.0 的旧发布包按顺序补录，所有提交均使用 2026-10-19 实际补录时间。它是版本对照，不是当时已经存在的 Git 历史，不伪接为比赛主线的父提交。
-- [早期来源说明](docs/创宇宙-早期开发与Git补录说明-v2.md) · [25 个快照目录](evidence/provenance/DEV-047/README.md) · [原始导入清单](evidence/provenance/yuzhou-0.15.0-import.json)
+- [早期来源说明](docs/创宇宙-早期开发与Git补录说明-v3.md) · [25 个快照目录](evidence/provenance/DEV-047/README.md) · [原始导入清单](evidence/provenance/yuzhou-0.15.0-import.json)
 - [三条 AI 开发 Prompt 链](evidence/prompt-chains/README.md)：所选主题中的 104 条公开文本、46 条历史提交索引和 10 份关键 diff；范围及缺失附件如实说明。
 - [DEV 阶段记录](evidence/dev/) · [工程验证证据](evidence/engineering/)
 

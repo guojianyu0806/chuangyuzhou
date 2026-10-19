@@ -1,0 +1,18 @@
+{
+  "verifiedAtUtc": "2026-10-19T16:15:59.619817+00:00",
+  "patches": 17,
+  "userMessages": 9,
+  "runtimeRecords": 11,
+  "sourcePrefixVerified": true,
+  "originalSixPatchBytesMatch": true,
+  "scannedPublicFiles": 41,
+  "strongCredentialMatches": 0,
+  "assignmentCandidates": [],
+  "localLinksVerified": 75,
+  "attachmentMembers": 91,
+  "v2AttachmentMembersPreserved": true,
+  "priorFilesUnchanged": 70,
+  "snapshotBranchUnchanged": true,
+  "historicalCodeExecuted": false,
+  "complete010SourceRecovered": false
+}
