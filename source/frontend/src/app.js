@@ -279,7 +279,7 @@ function renderSettings(){
   ctx.root.querySelector('#profile-form').onsubmit=e=>{e.preventDefault();const data=new FormData(e.target);const name=data.get('name').trim(),major=data.get('major').trim();if(!name||!major){toast('称呼和专业不能留空。');return;}state.profile.name=name;state.profile.major=major;save();shell();render();toast('个人资料已保存。');};
   ctx.root.querySelector('#provider').onchange=e=>{state.profile.provider=e.target.value;save();toast('模型偏好已保存，等待服务端连接。');};
   if(cloudClient)renderCloudSettings();
-  ctx.root.onclick=async e=>{const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action;if(a==='export')await exportBackup();if(a==='import')importBackup();if(a==='paste-message'){captureDialog();dialog.querySelector('[name=category]').value='消息摘录';}if(a==='check-update'){try{const res=await fetch('./version.json',{cache:'no-store'});if(!res.ok)throw new Error();const info=await res.json();if(info.version!==VERSION){modal({title:'发现新版本',body:`<p>新版本 ${esc(info.version)} 已准备好。更新会重新加载界面，已保存的数据会保留。</p>`,submitLabel:'保存并刷新',onSubmit:()=>{save();location.reload();}});}else toast(`当前已是本地界面版 v${VERSION}。`);}catch{toast('暂时无法检查更新，请确认本地服务正在运行。');}}};
+  ctx.root.onclick=async e=>{const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action;if(a==='export')await exportBackup();if(a==='import')importBackup();if(a==='paste-message'){captureDialog();dialog.querySelector('[name=category]').value='消息摘录';}if(a==='check-update'){try{const res=await fetch('./version.json',{cache:'no-store'});if(!res.ok)throw new Error();const info=await res.json();if(info.version!==VERSION){modal({title:'发现新版本',body:`<p>新版本 ${esc(info.version)} 已准备好。更新会重新加载界面，已保存的数据会保留。</p>`,submitLabel:'保存并刷新',onSubmit:async()=>{save();if(cloudClient&&mode==='personal')await cloudClient.flush();location.reload();}});}else toast(`当前已是${cloudClient?'私人云端版':'本地界面版'} v${VERSION}。`);}catch{toast(cloudClient?'暂时无法检查更新，请检查网络或服务器连接。':'暂时无法检查更新，请确认本地服务正在运行。');}}};
 }
 async function exportBackup(dataState=state){
   try{
@@ -335,7 +335,7 @@ function render(){
   if(route==='english')cleanupView=mountEnglish(view,subroute);
   if(route==='tasks')renderTasks();if(route==='inbox')renderInbox();if(route==='review')renderReview();if(route==='settings')renderSettings();
   if(route!=='home'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)ctx.root.animate([{opacity:0,transform:'translateY(15px) scale(.985)'},{opacity:1,transform:'none'}],{duration:350,easing:'cubic-bezier(.22,1,.36,1)'});
-  cloudEditing=false;
+  cloudEditing=false;cloudDirtyFields.clear();
   if(cloudClient){updateCloudShell();if(mode==='personal'){
     const textNodes=document.createTreeWalker(ctx.root,NodeFilter.SHOW_TEXT);
     while(textNodes.nextNode()){const item=textNodes.currentNode;if(item.nodeValue==='布局自动保存在本机')item.nodeValue='布局随工作区同步';}
@@ -387,6 +387,7 @@ window.addEventListener('storage',event=>{if(event.key===key(mode)){const banner
 window.addEventListener('unhandledrejection',event=>{if(event.reason?.name==='StorageConflictError')event.preventDefault();});
 window.addEventListener('error',e=>{if(e.error?.name==='StorageConflictError')e.preventDefault();else console.error(e.error);});
 let cloudEditing=false,cloudPointer=false,cloudActivity=0,cloudEditTick=0;
+const cloudDirtyFields=new Set();
 function updateCloudShell(){
   if(!cloudClient)return;
   const indicator=document.querySelector('.sync-indicator');
@@ -428,14 +429,22 @@ function renderCloudSettings(){
   panel.innerHTML=`<span class="connection-symbol">${icon('cloud',36)}</span><h2>每台设备，都在同一个空间。</h2><p class="cloud-account-user">账号：${esc(cloudClient.session.username)}</p><div class="connection-status"><span class="status-dot"></span><span data-cloud-status>${esc(cloudClient.label)}</span></div><p class="small muted">修改先保存在此设备，再同步到你的服务器。发生冲突时，会保留本设备副本供你导出。</p><div class="device-list"><span>Windows 电脑 × 2</span><span>vivo X100s</span><span>vivo Pad3 Pro</span></div><div class="cloud-account-actions"><button class="btn" type="button" data-cloud-sync>立即同步</button><button class="btn" type="button" data-cloud-logout>退出登录</button></div><div class="cloud-recovery-list"></div>`;
   panel.querySelector('[data-cloud-sync]').onclick=()=>cloudClient.flush().then(()=>toast('当前改动已同步。')).catch(error=>toast(error.message));
   panel.querySelector('[data-cloud-logout]').onclick=()=>cloudClient.logout().catch(error=>toast(`暂未退出：${error.message}`));
-  const recovery=Object.keys(localStorage).filter(k=>k.startsWith(cloudClient.recoveryPrefix));
-  for(const entry of recovery.slice(-8).reverse()){try{const snapshot=JSON.parse(localStorage.getItem(entry));const b=document.createElement('button');b.className='btn compact';b.textContent=`导出恢复副本 · ${new Date(snapshot.updatedAt).toLocaleString('zh-CN')}`;b.onclick=()=>exportBackup(snapshot);panel.querySelector('.cloud-recovery-list').append(b);}catch{}}
+  for(const entry of cloudClient.recoveryCopies()){const snapshot=entry.state,b=document.createElement('button');b.className='btn compact';b.textContent=`导出${entry.label} · ${new Date(snapshot.updatedAt).toLocaleString('zh-CN')}`;b.onclick=()=>exportBackup(snapshot);panel.querySelector('.cloud-recovery-list').append(b);}
   const backupNote=ctx.root.querySelector('[data-action=import]')?.nextElementSibling;if(backupNote)backupNote.textContent='可在原本的本地版导出完整备份，再导入这里。导入补充缺少的记录，随后同步到云端。';
   const updateNote=ctx.root.querySelector('[data-action=check-update]')?.nextElementSibling;if(updateNote)updateNote.textContent='检查服务器上的界面版本。更新后，你的云端资料会保留。';
 }
 if(cloudClient){
   cloudClient.subscribe(updateCloudShell);
-  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')){cloudEditing=true;cloudEditTick++;}});
+  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')){cloudDirtyFields.add(event.target);cloudEditing=true;cloudEditTick++;}});
+  document.addEventListener('ai-request-added',event=>{
+    const host=event.target;
+    // A successful composer submission saves and clears only its own draft.
+    // Other open editors, and anything typed after this event, remain protected.
+    if(mode!=='personal'||!host.matches?.('.ai-composer-host')||!ctx.root.contains(host)||!state.aiRequests.some(request=>request.id===event.detail?.id))return;
+    if(state.aiDraft.text||state.aiDraft.files.length||host.querySelector('[name=instruction]')?.value)return;
+    for(const field of cloudDirtyFields)if(!field.isConnected||host.contains(field))cloudDirtyFields.delete(field);
+    cloudEditing=cloudDirtyFields.size>0;
+  });
   document.addEventListener('pointerdown',()=>{cloudPointer=true;cloudActivity=Date.now();});
   document.addEventListener('pointerup',()=>{cloudPointer=false;cloudActivity=Date.now();});
   document.addEventListener('pointercancel',()=>{cloudPointer=false;cloudActivity=Date.now();});

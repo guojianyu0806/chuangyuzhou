@@ -2,11 +2,11 @@ import { DatabaseSync, backup } from 'node:sqlite';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, chmod, lstat, readdir, open, rename, rm, writeFile } from 'node:fs/promises';
 import { resolve, join, dirname, sep } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 import { randomBytes, createHash } from 'node:crypto';
 import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { FILE_ID } from './store.mjs';
+import { isCliEntry } from './is-cli.mjs';
 
 async function privateDirectory(path) { await mkdir(path, { recursive: true, mode: 0o700 }); if (process.platform !== 'win32') await chmod(path, 0o700); }
 async function privateFile(path) { if (process.platform !== 'win32') await chmod(path, 0o600); }
@@ -94,7 +94,7 @@ export async function backupWorkbench({ dataDir, outputDir, now = new Date() }) 
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+if (isCliEntry(import.meta.url)) {
   const args = process.argv.slice(2); const options = {};
   for (let index = 0; index < args.length; index += 2) {
     if (!['--data-dir', '--output-dir'].includes(args[index]) || !args[index + 1]) throw new Error('Usage: node backup.mjs --data-dir PRIVATE_DATA_DIR --output-dir BACKUP_DIR');

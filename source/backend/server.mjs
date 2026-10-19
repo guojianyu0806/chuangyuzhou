@@ -2,11 +2,12 @@ import { createServer } from 'node:http';
 import { createReadStream, createWriteStream, existsSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { unlink } from 'node:fs/promises';
 import { resolve, join, extname, sep } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { randomBytes, createHash } from 'node:crypto';
 import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { ApiError, createStore, digest, secretEqual, hashPassword, verifyPassword, validateCredentials, FILE_ID, MAX_FILE_BYTES, MAX_STATE_BYTES } from './store.mjs';
+import { isCliEntry } from './is-cli.mjs';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 export const VERSION = '0.2.0';
@@ -213,7 +214,7 @@ export async function createWorkbenchServer(options = {}) {
   return { server, store, async close() { if (closed) return; closed = true; await modelService?.close?.(); if (server.listening) await new Promise(resolveClose => { server.close(resolveClose); server.closeIdleConnections(); }); store.close(); } };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+if (isCliEntry(import.meta.url)) {
   const env = process.env;
   let setupToken = env.SETUP_TOKEN || '';
   if (env.SETUP_TOKEN_FILE) {

@@ -43,6 +43,17 @@ export class CloudClient {
   }
   key(mode) {return `${this.prefix}-workspace-${mode}`;}
   draftKey(value) {return `${this.prefix}-draft-${value}`;}
+  recoveryCopies() {
+    const copies=[];
+    const accountPrefix=`lumi-cloud-v1-${this.account}-`;
+    for(const key of Object.keys(localStorage)){
+      if(key.startsWith(this.recoveryPrefix)){const state=read(key);if(state)copies.push({key,state,label:'冲突恢复副本'});}
+      else if(key!==this.cacheKey&&key.startsWith(accountPrefix)&&key.slice(accountPrefix.length).length===41&&key.endsWith('-sync')){
+        const cached=read(key);if(cached?.pending?.state)copies.push({key,state:cached.pending.state,label:'其他窗口未同步副本'});
+      }
+    }
+    return copies.sort((a,b)=>String(b.state.updatedAt).localeCompare(String(a.state.updatedAt)));
+  }
   setMode(mode) {
     this.mode = mode;
     configureFileStore(`${this.scope}${mode==='demo'?'-demo':''}`,mode==='personal'?async id=>{

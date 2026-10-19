@@ -1,0 +1,62 @@
+# 拾光私人云部署记录
+
+目标服务器：腾讯云广州轻量应用服务器 `203.195.191.239`。工作台使用独立的 `shiguang` 系统账号、进程和数据目录。原有 Hermes 网关及配置保留。
+
+## 访问与首次设置
+
+- 访问地址：`https://203.195.191.239/`。云防火墙需允许 TCP 80 和 443；80 用于证书自动验证，443 用于工作台访问。应用后端 4180 只监听服务器回环地址，不需要对公网放通。
+- 首次初始化码保存在本机 `E:\服务器秘钥\拾光首次设置码.txt`。打开该文件，在首次注册页填写码，再自选用户名和至少 12 字符的密码。此文档不包含码或密码。
+- 两台电脑、手机和平板登录同一账号共享资料。旧版 `127.0.0.1:4173` 的浏览器数据保持原样；需要迁移时从旧版设置页导出完整备份，再在云端导入。
+- 在云端“偏好与连接”填写自己的 DeepSeek API 密钥后，AI 才能进行真实推理。默认模型为 `deepseek-flash`；Hermes 使用隔离的、无工具调用权限的任务进程整理资料。
+- 当前没有 Windows 原生安装包、微信小程序、微信/QQ 自动消息读取或扫描件 OCR。
+
+## 目录与服务
+
+| 用途 | 路径或服务 |
+| --- | --- |
+| 代码版本 | `/opt/shiguang/releases/<release-id>/` |
+| 当前版本链接 | `/opt/shiguang/current` |
+| 私有数据 | `/var/lib/shiguang` |
+| 环境配置 | `/etc/shiguang/workbench.env`，0600 |
+| 工作台服务 | `/etc/systemd/system/shiguang.service` |
+| HTTPS 配置 | `/etc/caddy/shiguang/workbench-ip.caddy` |
+| 文档解析环境 | `/opt/shiguang/extract-venv`，pypdf 6.9.1 |
+| 现有 Hermes 库 | `/home/ubuntu/.hermes/hermes-agent`，只读绑定 |
+| 隔离 Hermes 工作目录 | `/var/lib/shiguang/agent-home/.hermes` |
+| 原 Caddy 配置备份 | `/var/backups/shiguang/before-cloud-20260920T083658Z/Caddyfile` |
+
+HTTPS 使用 Let's Encrypt 的 IP 短期证书，交由 Caddy 自动申请和续期。必须保持端口 80 可用于 ACME 验证；实际公网连通与证书状态应通过不忽略证书错误的 HTTPS 请求确认。
+
+工作台服务以最小系统账号运行，代码只读；仅数据目录可写。原 Hermes 服务不会被停止、覆盖或向公网额外开放。模型密钥保存在数据目录私有文件中，不返回给浏览器、不进入命令行或日志。
+
+## 更新与回退
+
+1. 运行相关测试，生成新的唯一 release-id，把 `frontend/`、`backend/`、`deployment/` 的必要文件打包；不要打包 `.runtime`、`.workbench`、密钥、浏览器数据或私有配置。
+2. 上传压缩包并核验 SHA-256。已有版本目录不可覆盖。
+3. 更新前执行在线数据备份（命令如下）。通过 `activate-release.py <archive> <release-id>` 解压到新目录，记录旧链接并原子切换 `current`；然后 `systemctl restart shiguang`。
+4. 检查服务、回环 health、可信公网 HTTPS、登录页资源与会话接口。上线验证失败时将 `current` 原子切回激活记录中的 `previous`，再重启服务；保留失败版本供排查。不要为了回退代码覆盖当前用户数据。
+
+`activate-release.py` 和 `prepare-server.py` 以 root 通过已验证的 SSH 连接执行。首次准备脚本只新增账号/目录并备份代理配置；激活脚本不会替换现有私有配置或数据。原有 Caddyfile 已增加 `import /etc/caddy/shiguang/*.caddy`，原内容保留。
+
+只读检查：
+
+```sh
+systemctl is-active shiguang caddy
+curl -fsS http://127.0.0.1:4180/api/health
+curl -fsS https://203.195.191.239/api/health
+```
+
+## 备份
+
+```sh
+sudo node /opt/shiguang/current/backend/backup.mjs \
+  --data-dir /var/lib/shiguang --output-dir /var/backups/shiguang
+```
+
+每次备份使用新目录，保留历史文件。快照包含一致的 SQLite 在线备份、附件原件及哈希清单、AI 任务与私有模型配置。备份只能私密保存。当前提供手动在线备份工具，尚未设置定时备份或异地备份；同机备份不能应对服务器/磁盘丢失。
+
+恢复时先停止服务并备份现有数据，将快照复制到新的私有数据目录，验证清单和 SQLite，再设置所属用户/权限并切换 `DATA_DIR`。保留原数据与唯一备份，不直接在备份目录运行服务。
+
+## 验证范围
+
+后端测试覆盖账号、精确 Origin/CSRF、私有附件、并发版本冲突、配额、在线备份和后台 AI 归档。浏览器测试覆盖双设备、手机布局、离线恢复、原件下载、AI 页面关闭后完成、失败重试及撤销。隔离测试中的模型输出是 fixture；真实 Hermes 实例通过无推理 probe 验证加载和零工具权限。填写有效 API 密钥前，不能将其视为真实 DeepSeek 调用成功。
