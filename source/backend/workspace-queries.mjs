@@ -3,6 +3,7 @@ import {listWorkspaceRecords,WORKSPACE_ACTION_CAPABILITIES} from '../frontend/sr
 import {selectEntries,summarizeEntries,formatMoney,isValidDate} from '../frontend/src/ledger-model.js';
 import {entriesForWeek,weekForDate,dateForWeek,periodTime} from '../frontend/src/timetable-model.js';
 import {selectFitnessEntries,summarizeFitness,fitnessRange} from '../frontend/src/fitness-model.js';
+import {competitionToday,deadlineStatus,summarizeCompetitions,competitionProgress} from '../frontend/src/competitions-model.js';
 
 export const WORKSPACE_QUERY_CAPABILITIES=[
  {kind:'search',label:'搜索工作台',description:'entity可省略；text关键词；可筛containerId、archived(false默认/true/all)、done；offset默认0，limit默认20最多50；返回真实编号和分页总数。'},
@@ -12,6 +13,7 @@ export const WORKSPACE_QUERY_CAPABILITIES=[
  {kind:'timetable.week',label:'查询一周课表',description:'termId可省略使用当前学期；week为整数或date为YYYY-MM-DD；返回当周课程、实际日期、作息时间。'},
  {kind:'english.status',label:'查询六级学习情况',description:'start/end可选，返回计划、词汇掌握统计、错题数和程序计算的学习时长，不编造学习记录。'},
  {kind:'fitness.summary',label:'计算运动统计',description:'spaceId必填真实空间id，只计算该空间；start/end可选YYYY-MM-DD，或用date与period=day|week|month选择完整日/周/月（不能与start/end混用）；archived=false默认/true/all。程序汇总全部匹配记录的次数、分钟、已知公里/千卡及缺失计数，不估算热量，不把null当零，不把计划记作实际运动。'},
+ {kind:'competitions.summary',label:'查询比赛进度与截止',description:'competitionId可选真实比赛id，否则统计所有进行中的比赛（排除归档/已结束比赛、归档子项）；程序依据查询时真实北京时间计算今天及未来7天临期、逾期节点和任务完成数。无具体时刻节点在北京时间次日零点才逾期。不可传today/date/asOf伪造当前时间。汇总覆盖所有符合条件的记录；明细过多时截断并注明。仅依据已保存信息，不保证官方安排最新。'},
  {kind:'file.read',label:'读取已有资料文字',description:'blobId必须来自已保存或本次对话附件；提取已上传资料文字，不能读取服务器路径或任意网址。'}
 ];
 const fail=message=>{throw new Error(message);};
@@ -22,10 +24,10 @@ export function validateWorkspaceQueries(value){
  if(!Array.isArray(value)||!value.length||value.length>6)fail('每轮查询须为1至6项。');
  return value.map(q=>{
   if(!object(q)||!WORKSPACE_QUERY_CAPABILITIES.some(c=>c.kind===q.kind))fail('不支持这个工作台查询。');
-  const allowed={search:['entity','text','containerId','archived','done','offset','limit'],get:['entity','id','containerId'],'ledger.summary':['scope','projectId','start','end','groupBy','archived'],'calendar.range':['start','end','kindFilter','done','archived','offset','limit'],'timetable.week':['termId','week','date'],'english.status':['start','end'],'fitness.summary':['spaceId','start','end','date','period','archived'],'file.read':['blobId']}[q.kind];
+  const allowed={search:['entity','text','containerId','archived','done','offset','limit'],get:['entity','id','containerId'],'ledger.summary':['scope','projectId','start','end','groupBy','archived'],'calendar.range':['start','end','kindFilter','done','archived','offset','limit'],'timetable.week':['termId','week','date'],'english.status':['start','end'],'fitness.summary':['spaceId','start','end','date','period','archived'],'competitions.summary':['competitionId'],'file.read':['blobId']}[q.kind];
   if(Object.keys(q).some(k=>k!=='kind'&&!allowed.includes(k)))fail('查询包含不支持的字段。');
   const result={kind:q.kind};
-  for(const key of ['entity','text','containerId','id','projectId','spaceId','termId','scope','groupBy','kindFilter','blobId','period'])if(q[key]!==undefined)result[key]=text(q[key],key==='text'?300:256,true);
+  for(const key of ['entity','text','containerId','id','projectId','spaceId','competitionId','termId','scope','groupBy','kindFilter','blobId','period'])if(q[key]!==undefined)result[key]=text(q[key],key==='text'?300:256,true);
   if(result.entity&&!entities().has(result.entity))fail('查询的记录类型不存在。');
   if(q.kind==='get'&&(!result.entity||!result.id))fail('读取详情需要记录类型和真实编号。');
   if(q.kind==='file.read'&&!result.blobId)fail('请选择已有资料的文件编号。');
@@ -51,7 +53,7 @@ export function validateWorkspaceQueries(value){
 // A proposal is bound to the actual domain data it read. Conversation messages,
 // timestamps and unsent drafts change independently and do not invalidate it.
 export function workspaceFingerprint(state){
- const fields=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','fitness','profile','canvas','courseCanvas','boards','ui'];
+ const fields=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','fitness','competitions','profile','canvas','courseCanvas','boards','ui'];
  const data=Object.fromEntries(fields.map(key=>[key,state?.[key]??null]));
  return createHash('sha256').update(JSON.stringify(data)).digest('hex');
 }
@@ -78,7 +80,7 @@ export function boundQueryResult(result,maxChars=36000){
  return {truncated:true,notice:'单条记录过长，请缩小查询范围或直接打开原记录核对。',preview:JSON.stringify(cropValue(result,0,600)).slice(0,maxChars-500)};
 }
 
-export async function runWorkspaceQuery(state,q,{readFile}={}){
+export async function runWorkspaceQuery(state,q,{readFile,now=new Date()}={}){
  if(q.kind==='search'){
   const term=(q.text||'').toLocaleLowerCase('zh-CN');
   const rows=filtered(listWorkspaceRecords(state),q).filter(row=>!term||`${row.title}\n${JSON.stringify(row.record)}`.toLocaleLowerCase('zh-CN').includes(term));
@@ -118,6 +120,18 @@ export async function runWorkspaceQuery(state,q,{readFile}={}){
   const entries=selectFitnessEntries(state.fitness||{version:1,entries:[]},{spaceId:q.spaceId,start:range.start,end:range.end,archived:q.archived??false});
   return {spaceId:q.spaceId,spaceTitle:space.title,start:range.start||null,end:range.end||null,period:q.period||null,archived:q.archived??false,totals:summarizeFitness(entries),computedFromAllMatchingEntries:true,
    units:{minutes:'分钟',distanceKm:'公里',caloriesKcal:'千卡'},notice:'只统计所选空间已保存的真实运动记录。热量与里程仅合计已提供数值，缺失项单列；全部缺失时总量为null，不能解释为零或估算补齐。'};
+ }
+ if(q.kind==='competitions.summary'){
+  const source=state.competitions||{version:1,items:[],milestones:[],tasks:[]};
+  const target=q.competitionId?source.items.find(item=>item.id===q.competitionId):null;
+  if(q.competitionId&&!target)fail('比赛不存在，请先查询确认真实编号。');
+  const data=q.competitionId?{version:1,items:[target],milestones:source.milestones.filter(row=>row.competitionId===q.competitionId),tasks:source.tasks.filter(row=>row.competitionId===q.competitionId)}:source;
+  const active=data.items.filter(item=>!item.archived&&item.status!=='finished'),ids=new Set(active.map(item=>item.id));
+  const deadlines=data.milestones.filter(row=>ids.has(row.competitionId)&&!row.archived&&!row.done).map(row=>({...row,...deadlineStatus(row,now)})).sort((a,b)=>a.sortAt-b.sortAt||a.id.localeCompare(b.id));
+  const progress=active.map(item=>({id:item.id,title:item.title,status:item.status,...competitionProgress(data,item.id)}));
+  return {asOf:new Date(now).toISOString(),today:competitionToday(now),timeZone:'Asia/Shanghai',competitionId:q.competitionId||null,competition:target?{id:target.id,title:target.title,status:target.status,archived:target.archived}:null,
+   totals:summarizeCompetitions(data,{now}),computedFromAllMatchingEntries:true,deadlines:deadlines.slice(0,100),deadlineCount:deadlines.length,deadlinesTruncated:deadlines.length>100,progress:progress.slice(0,100),progressCount:progress.length,progressTruncated:progress.length>100,
+   notice:'统计范围为未归档、未结束的比赛及其未归档节点和任务；临期含今天及未来7天的未完成节点，逾期依据真实北京时间。具体时刻未知时当天不算逾期。总数使用全部匹配记录，明细可能截断。仅依据已保存资料，不能保证官方截止仍有效或代替核对官方通知。'};
  }
  if(q.kind==='file.read'){
   const records=listWorkspaceRecords(state).map(r=>r.record),files=[...records,...(state.aiRequests||[]).flatMap(r=>r.files||[])];

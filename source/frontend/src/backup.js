@@ -6,6 +6,7 @@ import {validateOrganizedProposal} from './ai-organizer.js';
 import {validateLedger,validateLedgerEntry} from './ledger-model.js';
 import {validateTimetable, mergeTimetables} from './timetable-model.js';
 import {validateFitness, mergeFitness} from './fitness-model.js';
+import {validateCompetitions, mergeCompetitions} from './competitions-model.js';
 import {isRecordColor, assignRecordColor} from './creation-colors.js';
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
 const DRAFT_TYPES = ['writing', 'translation', 'listening'];
@@ -297,6 +298,7 @@ function workspace(value) {
     const spaceIds = new Set((result.spaces || []).map(item => item.id));
     if (result.fitness.entries.some(entry => !spaceIds.has(entry.spaceId))) fail('运动记录关联工作区');
   }
+  if (value.competitions !== undefined) result.competitions = validateCompetitions(value.competitions);
   if (value.aiRequests !== undefined) result.aiRequests = records(value.aiRequests, aiRequest, 'AI 收件记录');
   if (value.aiDraft !== undefined) result.aiDraft = aiDraft(value.aiDraft);
   if (value.canvas !== undefined) result.canvas = canvas(value.canvas);
@@ -400,6 +402,12 @@ export function mergeBackup(current, incoming) {
     const knownIds = new Set((state.fitness?.entries || []).map(entry => entry.id));
     state.fitness = mergeFitness(state.fitness, source.fitness);
     count += state.fitness.entries.filter(entry => !knownIds.has(entry.id)).length;
+  }
+  if (source.competitions) {
+    const collections = ['items', 'milestones', 'tasks'];
+    const previousCount = collections.reduce((sum, key) => sum + (state.competitions?.[key]?.length || 0), 0);
+    state.competitions = mergeCompetitions(state.competitions, source.competitions);
+    count += collections.reduce((sum, key) => sum + state.competitions[key].length, 0) - previousCount;
   }
   if (source.aiRequests) mergeRecords(state.aiRequests ||= [], source.aiRequests, (existing, item) => {
     if(item.conversation&&!existing.conversation){existing.conversation=structuredClone(item.conversation);count++;}

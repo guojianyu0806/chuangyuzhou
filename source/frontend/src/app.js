@@ -9,6 +9,7 @@ import {mountAI,mountAIComposer} from './ai.js';
 import {mountLedger} from './ledger.js';
 import {mountTimetable} from './timetable.js';
 import {mountCalendar} from './calendar.js';
+import {mountCompetitions} from './competitions.js';
 import {mountDream} from './dream.js';
 import {assignRecordColor,isRecordColor} from './creation-colors.js';
 import {initializeSpaces,routeContent,undoRoute,openDestination} from './workspace-model.js';
@@ -26,7 +27,7 @@ if(!['demo','personal'].includes(mode))mode='demo';
 let route='home',subroute='',filter='all';
 let cleanupView=null;
 let lastStored=localStorage.getItem(key(mode));
-const nav=[['home','orbit','空间主页'],['ai','sparkles','AI 收件台'],['courses','book','课程空间'],['timetable','timetable','学期课表'],['calendar','calendar','日历'],['english','graduation','六级计划'],['tasks','check-circle','备忘与待办'],['ledger','wallet','记账'],['inbox','inbox','收集箱'],['review','chart','生活回顾']];
+const nav=[['home','orbit','空间主页'],['ai','sparkles','AI 收件台'],['courses','book','课程空间'],['timetable','timetable','学期课表'],['competitions','flag','比赛'],['calendar','calendar','日历'],['english','graduation','六级计划'],['tasks','check-circle','备忘与待办'],['ledger','wallet','记账'],['inbox','inbox','收集箱'],['review','chart','生活回顾']];
 function seed(mode){
   const demo=mode==='demo';
   return {schema:1,mode,profile:{name:'同学',major:'软件工程',provider:'deepseek'},courses:demo?seedCourses():[],english:seedEnglish(demo),tasks:demo?[
@@ -137,6 +138,7 @@ async function dropOnCard(local,id,input){
   if(id==='ledger'){toast('打开记账，点「记一笔」录入金额、日期和项目。');return {saved:0,rejected:files.length};}
   if(id==='calendar'){toast('打开日历，选择日期即可添加计划、标注和注意事项。');return {saved:0,rejected:files.length};}
   if(id==='timetable'){toast('打开学期课表，可查看每周安排并新增或修改课程。');return {saved:0,rejected:files.length};}
+  if(id==='competitions'){toast('请打开比赛记录要求与准备清单；附件可先交给 AI 讨论整理。');return {saved:0,rejected:files.length};}
   if(space){
     const result=await saveSpaceFiles(local,space,files);
     toast(`已保存 ${result.saved} 份文件到「${space.title}」${result.rejected?`，${result.rejected} 份未保存（单文件上限 40 MB）`:''}。`);
@@ -371,6 +373,7 @@ function searchDialog(){
   modal({title:'搜索你的空间',body:`<label class="search-field">${icon('search',20)}<input type="search" id="global-search" autocomplete="off" placeholder="试试课程名、笔记里的词，或一件待办…" aria-label="搜索内容"></label><div id="search-results"><p class="search-hint">输入关键词，找到散落在各处的积累。</p></div>`});
   const input=dialog.querySelector('#global-search');
   const items=[...state.spaces.filter(s=>!s.archived).flatMap(s=>[{title:s.title,desc:'工作区',text:s.description,route:'space',id:s.id},...s.notes.filter(n=>!n.archived).map(n=>({title:n.title,desc:s.title,text:n.content,route:'space',id:s.id}))]),...state.courses.filter(c=>!c.archived).map(c=>({title:c.title,desc:'课程空间',route:'courses',id:c.id})),...state.courses.filter(c=>!c.archived).flatMap(c=>(c.notes||[]).filter(n=>!n.archived).map(n=>({title:n.title||'课程笔记',desc:c.title,text:n.content||n.body||'',route:'courses',id:c.id}))),...state.tasks.filter(t=>!t.archived).map(t=>({title:t.title,desc:'备忘与待办',route:'tasks',taskId:t.id})),...state.captures.filter(c=>!c.archived).map(c=>({title:c.text.slice(0,120),desc:'收集箱',route:'inbox',captureId:c.id}))];
+  items.push(...(state.competitions?.items||[]).filter(c=>!c.archived).map(c=>({title:c.title,desc:'比赛',text:[c.organizer,c.category,c.team,c.requirements,c.notes].join(' '),route:'competitions',id:c.id})));
   input.oninput=()=>{const q=input.value.trim().toLocaleLowerCase();const results=q?items.filter(x=>(x.title+' '+x.text+' '+x.desc).toLocaleLowerCase().includes(q)).slice(0,30):[];dialog.querySelector('#search-results').innerHTML=results.length?results.map((x,i)=>`<button class="search-result" data-result="${i}"><span class="search-result-icon">${icon(x.route==='courses'?'book':x.route==='tasks'?'check-circle':'inbox',19)}</span><span><strong>${esc(x.title)}</strong><small>${esc(x.desc)}</small></span>${icon('arrow-right',17)}</button>`).join(''):`<p class="search-hint">${q?'没有找到匹配内容，试试另一个关键词。':'输入关键词，找到散落在各处的积累。'}</p>`;dialog.querySelectorAll('[data-result]').forEach(b=>b.onclick=()=>{const x=results[+b.dataset.result];closeModal();if(x.taskId)taskDialog(x.taskId);else if(x.captureId)captureDialog(x.captureId);else go(x.route,x.id);});};
 }
 function closeAssistant(){document.querySelector('#ai-drawer').hidden=true;document.querySelector('#app').inert=false;}
@@ -399,6 +402,7 @@ function render(){
   if(route==='ledger')cleanupView=mountLedger(view,subroute);
   if(route==='calendar')cleanupView=mountCalendar(view);
   if(route==='timetable')cleanupView=mountTimetable(view);
+  if(route==='competitions')cleanupView=mountCompetitions(view,subroute);
   if(route==='tasks')renderTasks();if(route==='inbox')renderInbox();if(route==='review')renderReview();if(route==='settings')renderSettings();
   if(route!=='home'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)ctx.root.animate([{opacity:0,transform:'translateY(15px) scale(.985)'},{opacity:1,transform:'none'}],{duration:350,easing:'cubic-bezier(.22,1,.36,1)'});
   cloudEditing=false;cloudDirtyFields.clear();
@@ -527,7 +531,7 @@ function renderCloudSettings(){
 }
 if(cloudClient){
   cloudClient.subscribe(updateCloudShell);
-  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')&&!event.target.closest('[data-local-ai-draft]')&&!event.target.matches('[data-ledger-filter],[data-calendar-filter],[data-timetable-view],[data-dream-view],[data-fitness-date]')){cloudDirtyFields.add(event.target);cloudEditing=true;cloudEditTick++;}});
+  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')&&!event.target.closest('[data-local-ai-draft]')&&!event.target.matches('[data-ledger-filter],[data-calendar-filter],[data-timetable-view],[data-dream-view],[data-fitness-date],[data-competition-filter]')){cloudDirtyFields.add(event.target);cloudEditing=true;cloudEditTick++;}});
   document.addEventListener('ai-request-added',event=>{
     const host=event.target;
     // A successful composer submission saves and clears only its own draft.

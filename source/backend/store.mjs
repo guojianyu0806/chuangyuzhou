@@ -8,6 +8,7 @@ import { promisify } from 'node:util';
 import { validateLedger } from '../frontend/src/ledger-model.js';
 import { validateTimetable } from '../frontend/src/timetable-model.js';
 import { validateFitness } from '../frontend/src/fitness-model.js';
+import { validateCompetitions } from '../frontend/src/competitions-model.js';
 
 const scrypt = promisify(scryptCallback);
 export const MAX_STATE_BYTES = 12 * 1024 * 1024;
@@ -114,6 +115,10 @@ export function validateWorkspace(state) {
     const spaceIds = new Set((state.spaces || []).map(space => space.id));
     if (fitness.entries.some(entry => !spaceIds.has(entry.spaceId))) throw new ApiError(400, 'invalid_fitness_reference');
   }
+  if (state.competitions !== undefined) {
+    try { validateCompetitions(state.competitions); }
+    catch { throw new ApiError(400, 'invalid_competitions'); }
+  }
   const serialized = JSON.stringify(state);
   if (Buffer.byteLength(serialized) > MAX_STATE_BYTES) throw new ApiError(413, 'workspace_too_large');
   return { serialized, blobs };
@@ -206,6 +211,7 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
         }
         if (current.state) {
           const previous = JSON.parse(current.state);
+          if (state.competitions === undefined && ['items', 'milestones', 'tasks'].some(key => previous.competitions?.[key]?.length)) throw new ApiError(409, 'workspace_update_required');
           if (state.fitness === undefined && previous.fitness?.entries?.length) throw new ApiError(409, 'workspace_update_required');
           const incomingSpaces = new Map((state.spaces || []).map(space => [space.id, space]));
           for (const space of previous.spaces || []) {

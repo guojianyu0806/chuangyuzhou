@@ -1,27 +1,40 @@
 {
-  "archive": "0-13-1-20260923-033135.tar.gz",
-  "version": "0.13.1",
-  "archiveSha256": "598c43e5c913354d3558891e243444ec7585ed99e7f9c188b1efba272e720407",
-  "bytes": 353835,
+  "archive": "0-14-0-20261008-114119.tar.gz",
+  "version": "0.14.0",
+  "archiveSha256": "ab815c03cf62c1fa569410749312899e382a1d1c30a48ab9407a89ba69c1c49d",
+  "bytes": 379538,
   "relation": "pre-competition-source-snapshot",
   "metadataSha256Matches": true,
-  "recordedAtUtc": "2026-10-19T13:33:19.544513+00:00",
+  "recordedAtUtc": "2026-10-19T13:33:21.526554+00:00",
   "kind": "historical-source-snapshot-recorded-now",
   "sourceSubset": "files present in the retained deployment archive, not an entire original workspace",
   "mainBaselinePreserved": "96bdda69beccf77910b92f2699a4726e90b4711d",
   "deltaFromPreviousArchive": {
     "added": [
-      "frontend/src/timetable-display.js"
+      "backend/tests/competitions-ai.test.mjs",
+      "backend/tests/competitions-persistence.test.mjs",
+      "frontend/src/competitions-model.js",
+      "frontend/src/competitions.css",
+      "frontend/src/competitions.js",
+      "frontend/src/workspace-actions-competitions.js"
     ],
     "deleted": [],
     "changed": [
+      "backend/hermes.mjs",
       "backend/package.json",
       "backend/server.mjs",
+      "backend/store.mjs",
+      "backend/workspace-queries.mjs",
+      "frontend/index.html",
       "frontend/package.json",
       "frontend/server.mjs",
+      "frontend/src/ai-chat.js",
+      "frontend/src/app.js",
+      "frontend/src/backup.js",
+      "frontend/src/canvas.js",
+      "frontend/src/cloud.js",
       "frontend/src/services.js",
-      "frontend/src/timetable.css",
-      "frontend/src/timetable.js"
+      "frontend/src/workspace-actions.js"
     ]
   }
 }
