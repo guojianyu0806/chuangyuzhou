@@ -160,7 +160,7 @@ export function mountCanvas(ctx, collection) {
   }
   function cardContent(card) {
     if(collection?.renderCard)return collection.renderCard(card,dataFor(card));
-    const d=dataFor(card),courseCount=state.courses?.length||0,taskCount=(state.tasks||[]).filter(t=>!t.done&&!t.archived).length,captureCount=(state.captures||[]).filter(c=>!c.archived).length;
+    const d=dataFor(card),courseCount=(state.courses||[]).filter(course=>!course.archived).length,taskCount=(state.tasks||[]).filter(t=>!t.done&&!t.archived).length,captureCount=(state.captures||[]).filter(c=>!c.archived).length;
     if(card.id==='ai')return `<div class="cv-ai-title"><span class="cv-ai-orbit" aria-hidden="true">${icon('sparkles',29)}</span><div><h2>有什么事，交给我。</h2><p>先聊清楚，再归入你的空间。</p></div></div><div class="cv-ai-host" data-ai-host></div>`;
     if(card.id==='ledger'){
       const month=localDate().slice(0,7),last=localDate(new Date(Number(month.slice(0,4)),Number(month.slice(5)),0)),totals=summarizeEntries(selectEntries(state.ledger||{entries:[],projects:[]},{start:month+'-01',end:last,scope:'total'}));
@@ -180,7 +180,7 @@ export function mountCanvas(ctx, collection) {
     if(card.id==='tasks')return `<div class="cv-card-copy"><span class="cv-card-kicker">ONE THING AT A TIME</span><h2>备忘与待办</h2><p>${esc(d.label)}</p></div><div class="cv-task-lines">${(state.tasks||[]).filter(t=>!t.done&&!t.archived).slice(0,2).map(t=>`<div><span></span><span>${esc(t.title)}</span></div>`).join('')||'<div><span></span><span>想到的事情，随手记在这里</span></div>'}</div><div class="cv-card-detail"><strong>${taskCount}</strong><span>件待办</span></div>`;
     if(card.id==='inbox')return `<div class="cv-card-copy"><span class="cv-card-kicker">CATCH YOUR IDEAS</span><h2>灵感收集箱</h2><p>不用整理，先记下来。</p></div><span class="cv-sticker-art" aria-hidden="true">${icon('bolt',54)}</span><div class="cv-card-detail"><strong>${captureCount}</strong><span>条待整理内容</span></div>`;
     if(card.id==='review')return `<div class="cv-card-copy"><span class="cv-card-kicker">YOUR LITTLE WINS</span><h2>生活回顾</h2><p>${esc(d.label)}</p></div><div class="cv-review-art" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span>${icon('arrow-right',25)}</div><div class="cv-card-detail"><strong>${(state.tasks||[]).filter(t=>t.done&&!t.archived).length}</strong><span>件已完成的事</span></div>`;
-    const files=d.files?.length||0,notes=d.notes?.length||0,tasks=(state.tasks||[]).filter(t=>t.spaceId===card.id&&!t.done&&!t.archived).length;
+    const files=(d.files||[]).filter(file=>!file.archived).length,notes=(d.notes||[]).filter(note=>!note.archived).length,tasks=(state.tasks||[]).filter(t=>t.spaceId===card.id&&!t.done&&!t.archived).length;
     return `<div class="cv-card-copy"><span class="cv-card-kicker">${d.type==='course'?'MY CLASSROOM':d.type==='project'?'MY PROJECT':'MY OWN SPACE'}</span><h2>${esc(d.title||'未命名空间')}</h2><p>${esc(d.description||'收藏资料、记录想法，安排属于你的事。')}</p></div><div class="cv-custom-art" aria-hidden="true">${safeIcon(d.icon,72)}</div><div class="cv-space-counts"><span>${files} 份文件</span><span>${notes} 篇笔记</span>${tasks?`<span>${tasks} 件待办</span>`:''}</div>`;
   }
 

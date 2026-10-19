@@ -1,29 +1,46 @@
 {
-  "archive": "0-11-1-20260921-111337.tar.gz",
-  "version": "0.11.1",
-  "archiveSha256": "cc4eb0a95cd76428fa9ebdd7e2cfaef7fa7794e089b1ee4ae5f2e523e88587d7",
-  "bytes": 295358,
+  "archive": "0-12-0-20260921-120021.tar.gz",
+  "version": "0.12.0",
+  "archiveSha256": "7b4e4d2d95e16b3a6750cd9246626197b5c7d6c9581e52164b7d7d3fb21e2a9c",
+  "bytes": 330466,
   "relation": "pre-competition-source-snapshot",
   "metadataSha256Matches": true,
-  "recordedAtUtc": "2026-10-19T13:33:08.726137+00:00",
+  "recordedAtUtc": "2026-10-19T13:33:11.160476+00:00",
   "kind": "historical-source-snapshot-recorded-now",
   "sourceSubset": "files present in the retained deployment archive, not an entire original workspace",
   "mainBaselinePreserved": "96bdda69beccf77910b92f2699a4726e90b4711d",
   "deltaFromPreviousArchive": {
     "added": [
-      "backend/tests/hermes_runner_test.py"
+      "backend/tests/workspace-ai.test.mjs",
+      "backend/tests/workspace-queries.test.mjs",
+      "backend/workspace-queries.mjs",
+      "frontend/src/workspace-actions-core.js",
+      "frontend/src/workspace-actions-study.js",
+      "frontend/src/workspace-actions.js"
     ],
     "deleted": [],
     "changed": [
       "backend/hermes.mjs",
-      "backend/hermes_runner.py",
       "backend/package.json",
       "backend/server.mjs",
       "backend/tests/hermes.test.mjs",
+      "backend/tests/timetable-import.test.mjs",
       "frontend/package.json",
       "frontend/server.mjs",
+      "frontend/src/ai-chat.css",
       "frontend/src/ai-chat.js",
-      "frontend/src/services.js"
+      "frontend/src/ai-organizer.js",
+      "frontend/src/ai.js",
+      "frontend/src/app.js",
+      "frontend/src/backup.js",
+      "frontend/src/canvas.js",
+      "frontend/src/courses.css",
+      "frontend/src/courses.js",
+      "frontend/src/english.css",
+      "frontend/src/english.js",
+      "frontend/src/services.js",
+      "frontend/src/spaces.js",
+      "frontend/src/workspace-model.js"
     ]
   }
 }

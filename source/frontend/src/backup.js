@@ -1,5 +1,6 @@
 import {validateCalendar} from './calendar-model.js';
 import {validateConversation} from './ai-conversation-model.js';
+import {validateWorkspaceActionSnapshot} from './workspace-actions.js';
 // Pure backup validation and additive merging. No browser storage or file writes.
 import {validateOrganizedProposal} from './ai-organizer.js';
 import {validateLedger,validateLedgerEntry} from './ledger-model.js';
@@ -96,17 +97,17 @@ function courseFile(value) {
     ...(value.example === undefined ? {} : { example: boolean(value.example, '资料示例标记') }),
   };
   if (value.sourceRequestId !== undefined) result.sourceRequestId = identifier(value.sourceRequestId, '来源请求编号');
-  return optionalRecordColor(value, optionalFields(value, result, ['source']));
+  return optionalRecordColor(value, optionalFields(value, result, ['source','updatedAt'], ['archived']));
 }
 function course(value) {
-  return {
+  return optionalFields(value, {
     id: identifier(value.id, '课程编号'), title: text(value.title, '课程名称', '', true),
     subtitle: text(value.subtitle, '课程简介'), icon: text(value.icon, '课程图标', 'book'),
     color: typeof value.color === 'string' && /^#[\da-f]{6}$/i.test(value.color) ? value.color : '#7950f2',
     prompt: text(value.prompt, '助教偏好'), example: boolean(value.example, '示例课程标记'),
     updatedAt: text(value.updatedAt, '课程时间'),
     notes: records(value.notes, note, '课程笔记'), files: records(value.files, courseFile, '课程资料'),
-  };
+  }, ['createdAt','sourceRequestId'], ['archived']);
 }
 function task(value) {
   const result = {
@@ -129,28 +130,28 @@ function capture(value) {
   };
   if (value.blobId !== undefined) result.blobId = identifier(value.blobId, '碎片文件编号');
   if (value.sourceRequestId !== undefined) result.sourceRequestId = identifier(value.sourceRequestId, '来源请求编号');
-  return optionalRecordColor(value, optionalFields(value, result, ['fileName', 'fileType', 'source', 'importedDraftKey'], ['example']));
+  return optionalRecordColor(value, optionalFields(value, result, ['fileName', 'fileType', 'source', 'importedDraftKey','updatedAt'], ['example']));
 }
 function space(value) {
-  return {
+  return optionalFields(value, {
     id: identifier(value.id, '空间编号'), title: text(value.title, '空间名称', '', true),
     description: text(value.description, '空间用途'), type: choice(value.type, ['blank','course','affairs','project'], '空间模板', 'blank'),
     color: color(value.color), icon: text(value.icon, '空间图标', 'folder'),
     archived: boolean(value.archived, '空间归档状态'), example: boolean(value.example, '空间示例标记'),
     createdAt: text(value.createdAt, '空间创建时间'), updatedAt: text(value.updatedAt, '空间更新时间'),
     notes: records(value.notes, note, '空间笔记', true), files: records(value.files, courseFile, '空间资料', true),
-  };
+  }, ['sourceRequestId']);
 }
 function destination(value) {
   const result = identifier(value, '目标工作区');
-  if (!['auto','english','inbox','tasks','ledger'].includes(result) && !/^(space|course|ledger):[^\s]+$/.test(result)) fail('目标工作区');
+  if (!['auto','workspace','calendar','timetable','english','inbox','tasks','ledger'].includes(result) && !/^(space|course|ledger):[^\s]+$/.test(result)) fail('目标工作区');
   return result;
 }
 function aiRevision(value) {
   return {text: text(value.text, 'AI 请求修订内容'), targetId: destination(value.targetId ?? 'auto'), savedAt: text(value.savedAt, 'AI 请求修订时间')};
 }
 function receiptItem(value) {
-  const collection = choice(value.collection, ['notes','files','tasks','captures','ledgerEntries'], '归档集合', undefined);
+  const collection = choice(value.collection, ['actions','notes','files','tasks','captures','ledgerEntries'], '归档集合', undefined);
   if (!collection) fail('归档集合');
   const result = {
     id: identifier(value.id, '归档条目编号'), type: text(value.type, '归档条目类型'), title: text(value.title, '归档条目名称'),
@@ -159,6 +160,7 @@ function receiptItem(value) {
   if (result.snapshot) {
     let parsed;
     try { parsed = JSON.parse(result.snapshot); } catch { fail('归档撤回快照'); }
+    if(collection==='actions'){result.snapshot=JSON.stringify(validateWorkspaceActionSnapshot(parsed));return result;}
     const normalized = ({notes:note,files:courseFile,tasks:task,captures:capture,ledgerEntries:validateLedgerEntry}[collection])(object(parsed, '归档撤回快照'));
     if (normalized.id !== result.id) fail('归档快照编号');
     if (collection === 'ledgerEntries' && (result.containerId !== (normalized.projectId ? `ledger:${normalized.projectId}` : 'ledger') || !normalized.sourceRequestId)) fail('记账归档快照');
@@ -219,14 +221,14 @@ function word(value) {
     example: text(value.example, '词汇例句'), translation: text(value.translation, '例句翻译'),
     status: choice(value.status, ['new', 'review', 'mastered'], '词汇掌握状态', 'new'),
     source: choice(value.source, ['builtin', 'personal'], '词汇来源', 'personal'),
-  }, ['updatedAt']);
+  }, ['updatedAt'], ['archived']);
 }
 function session(value) {
   return optionalFields(value, {
     id: identifier(value.id, '学习记录编号'), date: text(value.date, '学习日期', '', true),
     minutes: integer(value.minutes, '学习时长', 1, 720),
     type: choice(value.type, PRACTICE_TYPES, '练习类型', 'reading'), note: text(value.note, '学习备注'),
-  }, ['createdAt'], ['example']);
+  }, ['createdAt'], ['example','archived']);
 }
 function mistake(value) {
   return optionalFields(value, {
@@ -235,7 +237,7 @@ function mistake(value) {
     correct: text(value.correct, '正确答案'), explanation: text(value.explanation, '题目解析'),
     source: text(value.source, '题目来源'), date: text(value.date, '错题日期'),
     reviewed: boolean(value.reviewed, '错题回顾状态'),
-  }, [], ['example']);
+  }, [], ['example','archived']);
 }
 function readingResult(value) {
   object(value, '阅读成绩');

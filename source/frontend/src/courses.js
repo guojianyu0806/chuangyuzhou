@@ -1,5 +1,6 @@
 import { mountCanvas, canvasCardFill } from './canvas.js';
 import { assignRecordColor, createColorDraft } from './creation-colors.js';
+import { openAIConversation } from './ai.js';
 
 const DEFAULT_PROMPT = `你是我的软件工程课程助教。请以我上传的课程资料和课堂笔记为依据，按章节整理：
 1. 核心概念、概念关系与适用条件。
@@ -75,21 +76,22 @@ export function mountCourses(ctx, courseId) {
   let alive = true;
   let canvasCleanup = null;
   let detailView = 'board';
-  const course = state.courses.find(item => item.id === courseId);
-  if (course) { course.notes ||= []; course.files ||= []; selectedNoteId = course.notes[0]?.id || ''; }
+  const visibleRecords=items=>(items||[]).filter(item=>!item.archived);
+  const course = state.courses.find(item => item.id === courseId&&!item.archived);
+  if (course) { course.notes ||= []; course.files ||= []; selectedNoteId = visibleRecords(course.notes)[0]?.id || ''; }
   const glyph = (name, size) => icon(name, size);
   const releasePreview = () => { previewRequest++; if (objectUrl) URL.revokeObjectURL(objectUrl); objectUrl = ''; };
   const touch = () => { course.updatedAt = new Date().toISOString(); save(); };
   const colorOf = item => /^#[\da-f]{6}$/i.test(item.color || '') ? item.color : '#7950f2';
 
-  const matchesCourse = item => `${item.title} ${item.subtitle || ''}`.toLowerCase().includes(query.toLowerCase()) && (filter === 'all' || (filter === 'example' ? item.example : !item.example));
+  const matchesCourse = item => !item.archived&&`${item.title} ${item.subtitle || ''}`.toLowerCase().includes(query.toLowerCase()) && (filter === 'all' || (filter === 'example' ? item.example : !item.example));
 
   function courseCard(card, item) {
     return `<div class="course-library-card" style="--course-color:${colorOf(item)}">
       <div class="cv-card-copy"><span class="cv-card-kicker">${item.example ? 'EXAMPLE / 示例课程' : 'MY CLASSROOM / 我的课程'}</span><h2><button class="course-title-link" data-card-open data-course-action="open-course" data-id="${esc(item.id)}">${esc(item.title)}</button></h2><p>${esc(item.subtitle || '从一份课件，开始建立自己的知识脉络。')}</p></div>
-      <div class="course-canvas-chapters">${(item.notes || []).slice(0, 2).map(note => `<span>${glyph('chevron-right', 13)}<span>${esc(note.chapter || note.title)}</span></span>`).join('') || '<span>课件、笔记和你的理解，都放在这里。</span>'}</div>
+      <div class="course-canvas-chapters">${visibleRecords(item.notes).slice(0, 2).map(note => `<span>${glyph('chevron-right', 13)}<span>${esc(note.chapter || note.title)}</span></span>`).join('') || '<span>课件、笔记和你的理解，都放在这里。</span>'}</div>
       <div class="course-canvas-watermark" aria-hidden="true">${glyph(item.icon || 'book', 72)}</div>
-      <div class="cv-space-counts"><span>${item.files?.length || 0} 份资料</span><span>${item.notes?.length || 0} 篇笔记</span></div>
+      <div class="cv-space-counts"><span>${visibleRecords(item.files).length} 份资料</span><span>${visibleRecords(item.notes).length} 篇笔记</span></div>
     </div>`;
   }
 
@@ -99,7 +101,7 @@ export function mountCourses(ctx, courseId) {
     const empty = root.querySelector('[data-course-empty]');
     if (empty) {
       empty.hidden = count > 0;
-      empty.innerHTML = count ? '' : `${glyph('search', 25)}<strong>${state.courses.length ? '还没有找到这门课' : '从第一门课程开始'}</strong><span>${state.courses.length ? '换个关键词或筛选条件，也可以新建课程。' : '点击右上角“新建课程”，为课件和笔记留一个位置。'}</span>`;
+      empty.innerHTML = count ? '' : `${glyph('search', 25)}<strong>${visibleRecords(state.courses).length ? '还没有找到这门课' : '从第一门课程开始'}</strong><span>${visibleRecords(state.courses).length ? '换个关键词或筛选条件，也可以新建课程。' : '点击右上角“新建课程”，为课件和笔记留一个位置。'}</span>`;
     }
   }
 
@@ -111,16 +113,16 @@ export function mountCourses(ctx, courseId) {
   function renderIndex() {
     releasePreview();
     canvasCleanup?.();
-    root.innerHTML = `<section class="courses-page course-canvas-page"><div data-course-canvas></div><p class="course-example-hint">${glyph('info', 15)} 拖入卡片的资料会保存在对应课程。示例笔记仅用于体验；AI 整理与跨设备同步尚未接入。</p></section>`;
+    root.innerHTML = `<section class="courses-page course-canvas-page"><div data-course-canvas></div><p class="course-example-hint">${glyph('info', 15)} 拖入卡片的资料会保存在对应课程。示例笔记仅用于体验；在课程内选择资料，即可交给 AI 讨论整理。</p></section>`;
     state.courseCanvas ||= {};
     const host = root.querySelector('[data-course-canvas]');
     canvasCleanup = mountCanvas({ ...ctx, root: host, createSpace: newCourse, editSpace: editCourse, enterCard: enterCourse, dropOnCard: async (id, files) => {
       const target = state.courses.find(item => item.id === id);
-      if (!target) throw new Error('课程不存在，请刷新后重试。');
+      if (!target||target.archived) throw new Error('课程已归档或不存在，请刷新后重试。');
       return uploadFiles(files, target);
     } }, {
       layout: state.courseCanvas, items: state.courses, title: '课程空间', eyebrow: 'YOUR KNOWLEDGE, CONNECTED', description: '把每门课铺开，长按卡片就能自由摆放。', createLabel: '新建课程', cardLabel: '课程空间',
-      toolbar: `<div class="course-library-toolbar"><div class="tabs" aria-label="课程筛选"><button class="tab ${filter === 'all' ? 'active' : ''}" data-course-action="filter" data-filter="all">全部课程 <span>${state.courses.length}</span></button><button class="tab ${filter === 'mine' ? 'active' : ''}" data-course-action="filter" data-filter="mine">我创建的</button><button class="tab ${filter === 'example' ? 'active' : ''}" data-course-action="filter" data-filter="example">示例课程</button></div><label class="course-search">${glyph('search', 18)}<input type="search" data-course-search value="${esc(query)}" placeholder="搜索课程…" aria-label="搜索课程"></label></div>`,
+      toolbar: `<div class="course-library-toolbar"><div class="tabs" aria-label="课程筛选"><button class="tab ${filter === 'all' ? 'active' : ''}" data-course-action="filter" data-filter="all">全部课程 <span>${visibleRecords(state.courses).length}</span></button><button class="tab ${filter === 'mine' ? 'active' : ''}" data-course-action="filter" data-filter="mine">我创建的</button><button class="tab ${filter === 'example' ? 'active' : ''}" data-course-action="filter" data-filter="example">示例课程</button></div><label class="course-search">${glyph('search', 18)}<input type="search" data-course-search value="${esc(query)}" placeholder="搜索课程…" aria-label="搜索课程"></label></div>`,
       matches: matchesCourse, renderCard: courseCard, emptyHTML: false
     });
     host.querySelector('.cv-viewport')?.insertAdjacentHTML('beforeend', '<div class="course-canvas-empty" data-course-empty role="status" hidden></div>');
@@ -148,8 +150,8 @@ export function mountCourses(ctx, courseId) {
     releasePreview();
     canvasCleanup?.(); canvasCleanup = null;
     const isNote = activeTab === 'notes';
-    const note = course.notes.find(item => item.id === selectedNoteId) || course.notes[0];
-    const file = course.files.find(item => item.id === selectedFileId) || course.files[0];
+    const note = visibleRecords(course.notes).find(item => item.id === selectedNoteId) || visibleRecords(course.notes)[0];
+    const file = visibleRecords(course.files).find(item => item.id === selectedFileId) || visibleRecords(course.files)[0];
     if (note) selectedNoteId = note.id;
     if (file) selectedFileId = file.id;
     if (!(isNote ? note : file)) detailView = 'board';
@@ -159,7 +161,7 @@ export function mountCourses(ctx, courseId) {
     const selectedColor = state.boards[boardKey].cards?.find(card => card.id === selected?.id)?.color || colorOf(course);
     const fileReader = file ? `<header class="course-file-head"><div><span class="eyebrow">原始资料 · 仅本机</span><h2>${esc(file.name)}</h2><p class="muted">${readableSize(file.size)} · ${dateLabel(file.createdAt)}上传</p></div><button class="btn" data-course-action="download-file" data-id="${esc(file.id)}">${glyph('download', 17)} 下载原件</button></header><div data-course-file-preview class="course-file-preview"><div class="empty-state">正在读取本机文件…</div></div>` : '';
     root.innerHTML = `<section class="courses-page course-detail course-card-workspace" style="--course-color:${colorOf(course)};--course-fill:${canvasCardFill(colorOf(course))}"><button class="course-back" data-course-action="back">${glyph('arrow-left', 17)} 全部课程</button><header class="page-head course-detail-head course-detail-hero"><div class="course-detail-title"><span class="course-symbol">${glyph(course.icon || 'book', 25)}</span><div><div class="eyebrow">${course.example ? '示例课程 · 软件工程' : '我的课程空间'}</div><h1>${esc(course.title)}</h1><p>${esc(course.subtitle || '让每一份资料、每一次理解，都有自己的位置。')}</p></div></div><div class="course-head-actions"><button class="btn" data-course-action="preferences">${glyph('settings', 17)} 助教偏好</button><button class="btn primary" data-course-action="upload">${glyph('upload', 17)} 上传资料</button></div></header>
-      <div class="course-detail-navigation"><div class="tabs" aria-label="课程内容"><button class="tab ${isNote ? 'active' : ''}" data-course-action="tab" data-tab="notes">学习笔记 <span>${course.notes.length}</span></button><button class="tab ${!isNote ? 'active' : ''}" data-course-action="tab" data-tab="files">课程资料 <span>${course.files.length}</span></button></div><div class="course-detail-navigation-actions"><button class="btn course-ai-entry" data-course-action="ai">${glyph('sparkles', 17)} 整理课程资料</button>${isNote ? `<button class="btn primary" data-course-action="new-note">${glyph('plus', 17)} 新建笔记</button>` : ''}</div></div>
+      <div class="course-detail-navigation"><div class="tabs" aria-label="课程内容"><button class="tab ${isNote ? 'active' : ''}" data-course-action="tab" data-tab="notes">学习笔记 <span>${visibleRecords(course.notes).length}</span></button><button class="tab ${!isNote ? 'active' : ''}" data-course-action="tab" data-tab="files">课程资料 <span>${visibleRecords(course.files).length}</span></button></div><div class="course-detail-navigation-actions"><button class="btn course-ai-entry" data-course-action="ai">${glyph('sparkles', 17)} 整理课程资料</button>${isNote ? `<button class="btn primary" data-course-action="new-note">${glyph('plus', 17)} 新建笔记</button>` : ''}</div></div>
       <div class="course-workspace ${detailView === 'board' ? 'course-board-workspace' : 'course-reader-workspace'}">${detailView === 'board' ? '<div data-course-detail-canvas></div>' : `<div class="course-reader-card" style="--reader-color:${colorOf({ color: selectedColor })};--reader-fill:${canvasCardFill(selectedColor)}"><div class="course-reader-top"><button class="course-reader-return" data-course-action="back-board">${glyph('arrow-left', 17)} 返回${isNote ? '笔记' : '资料'}卡片</button><span>${glyph(isNote ? 'book' : 'file', 16)} ${isNote ? '学习笔记' : '课程资料'}</span></div><div class="course-reading-panel ${!isNote ? 'course-file-reader' : ''}">${isNote ? noteReading(note) : fileReader}</div></div>`}</div>
       <p class="course-board-footnote">${glyph('info', 15)} 资料和布局仅保存在本机；模型接入后才能自动整理。文件可以拖入这个课程空间。</p><input type="file" class="course-file-input" data-course-files multiple accept=".ppt,.pptx,.pdf,.txt,.md,.png,.jpg,.jpeg,.webp,.gif" aria-label="选择课程资料"></section>`;
     if (detailView === 'reader') { if (!isNote && file) showFile(file); return; }
@@ -168,7 +170,7 @@ export function mountCourses(ctx, courseId) {
     const emptyHTML = isNote ? `<div class="course-board-empty">${glyph('book', 37)}<h2>把这门课的理解铺开</h2><p>每篇笔记都是一张可以摆放的卡片。</p><button class="btn primary" data-course-action="new-note">${glyph('plus', 17)} 写第一篇笔记</button></div>` : `<div class="course-board-empty" data-course-dropzone>${glyph('upload', 37)}<h2>把这一门课的资料放进来</h2><p>拖入课件、课堂记录或截图，原件会留在这里。</p><button class="btn primary" data-course-action="upload">选择文件</button><small>PPT / PDF / TXT / 图片 · 单文件不超过 40 MB</small></div>`;
     const host = root.querySelector('[data-course-detail-canvas]');
     canvasCleanup = mountCanvas({ ...ctx, root: host, createSpace: () => isNote ? editNote() : root.querySelector('[data-course-files]').click(), editSpace: id => isNote && editNote(course.notes.find(item => item.id === id)), enterCard: showDetailItem }, {
-      layout: state.boards[boardKey], sourceItems: isNote ? course.notes : course.files, items, title: isNote ? '笔记卡片' : '资料卡片', hideHeader: true, createLabel: false, cardLabel: isNote ? '学习笔记' : '原始资料', footLabel: isNote ? '留下自己的理解' : '保留上传原件', enterLabel: isNote ? '阅读笔记' : '打开资料', emptyHTML, canDrop: false, onEdit: isNote ? id => editNote(course.notes.find(item => item.id === id)) : null, manageLabel: '编辑笔记', renderCard: detailCard
+      layout: state.boards[boardKey], sourceItems: isNote ? course.notes : course.files, items, title: isNote ? '笔记卡片' : '资料卡片', hideHeader: true, createLabel: false, cardLabel: isNote ? '学习笔记' : '原始资料', footLabel: isNote ? '留下自己的理解' : '保留上传原件', enterLabel: isNote ? '阅读笔记' : '打开资料', emptyHTML, canDrop: false, matches:item=>!item.archived, onEdit: isNote ? id => editNote(course.notes.find(item => item.id === id)) : null, manageLabel: '编辑笔记', renderCard: detailCard
     });
   }
 
@@ -250,7 +252,18 @@ export function mountCourses(ctx, courseId) {
   }
 
   function preferences() {
-    modal({ title: `${course.title} · 助教偏好`, submitLabel: '保存偏好', body: `<div class="stack"><div class="course-modal-info">${glyph('sparkles', 20)}<p>这份说明只用于当前课程。接入模型后，整理资料时会使用它作为课程规则。</p></div><label class="field">你希望助教怎样整理<textarea name="prompt" rows="13" required class="course-note-editor">${esc(course.prompt || DEFAULT_PROMPT)}</textarea></label><p class="muted">可以补充教材版本、关注章节、解释深度，以及你习惯的笔记格式。当前仅保存偏好，不会调用模型。</p></div>`, onSubmit(data) { const prompt = String(data.get('prompt') || '').trim(); if (!prompt) { toast('请填写整理偏好'); return false; } course.prompt = prompt; touch(); toast('课程助教偏好已保存'); } });
+    modal({ title: `${course.title} · 助教偏好`, submitLabel: '保存偏好', body: `<div class="stack"><div class="course-modal-info">${glyph('sparkles', 20)}<p>这份说明只用于当前课程。进入 AI 对话后，整理这门课时会参考这份偏好。</p></div><label class="field">你希望助教怎样整理<textarea name="prompt" rows="13" required class="course-note-editor">${esc(course.prompt || DEFAULT_PROMPT)}</textarea></label><p class="muted">可以补充教材版本、关注章节、解释深度，以及你习惯的笔记格式。当前仅保存偏好，不会调用模型。</p></div>`, onSubmit(data) { const prompt = String(data.get('prompt') || '').trim(); if (!prompt) { toast('请填写整理偏好'); return false; } course.prompt = prompt; touch(); toast('课程助教偏好已保存'); } });
+  }
+
+  function organizeCourse(){
+    const targetId=`course:${course.id}`,draft=state.aiDraft;
+    if(draft?.text?.trim()||draft?.files?.length)return openAIConversation(ctx,{targetId});
+    const files=(course.files||[]).filter(file=>!file.archived&&file.blobId);
+    const selected=activeTab==='files'&&selectedFileId?selectedFileId:'';
+    modal({title:`整理「${course.title}」`,submitLabel:'带入 AI 对话',body:`<p class="muted">选择本次要整理的资料。进入对话后可以继续补充，审核方案并确认后才会修改课程。</p><label class="field">先告诉助教什么<textarea name="instruction" rows="3" maxlength="30000">请结合本课程助教偏好${files.length?'和我选择的资料':''}，先和我确认整理目标，再生成课程笔记方案。</textarea></label>${files.length?`<fieldset class="course-ai-file-picker"><legend>课程资料 · 每次最多 12 份</legend>${files.map((file,index)=>`<label><input type="checkbox" name="fileId" value="${esc(file.id)}" ${(selected?file.id===selected:index<12)?'checked':''}><span>${esc(file.name)}</span></label>`).join('')}</fieldset>`:'<p class="muted small">还没有上传资料。你可以先聊目标，或在对话中添加附件。</p>'}`,onSubmit:data=>{
+      const ids=new Set(data.getAll('fileId').map(String));
+      openAIConversation(ctx,{targetId,text:String(data.get('instruction')||'').trim(),files:files.filter(file=>ids.has(file.id))});
+    }});
   }
 
   async function uploadFiles(files, target = course) {
@@ -307,7 +320,7 @@ export function mountCourses(ctx, courseId) {
     if (action === 'new-note') return editNote();
     if (action === 'edit-note') return editNote(course.notes.find(item => item.id === id));
     if (action === 'preferences') return preferences();
-    if (action === 'ai') return modal({ title: '为课程整理做好准备', body: `<div class="course-ai-modal"><span class="course-ai-modal-icon">${glyph('sparkles', 32)}</span><h3>课程助教还没有接入模型</h3><p>你现在可以上传资料、记录笔记，并设置这门课的整理偏好。服务接入后，助教才能读取资料并生成带来源的学习笔记。</p><div class="course-ai-checklist"><span>${glyph('check', 17)} ${course.files.length} 份本机资料已保存</span><span>${glyph('check', 17)} ${course.prompt ? '已保存课程整理偏好' : '已准备软件工程默认整理规则'}</span><span>${glyph('clock', 17)} 等待接入模型与文件解析服务</span></div><p class="muted">当前没有发起 AI 请求，也没有上传你的资料。</p></div>` });
+    if (action === 'ai') return organizeCourse();
     if (action === 'export-note') {
       const note = course.notes.find(item => item.id === id);
       if (note) download(new Blob([`# ${note.title}\n\n${note.example ? '> 示例笔记\n\n' : ''}${note.content}\n\n---\n来源：${note.source || '手动记录'}\n`], { type: 'text/markdown;charset=utf-8' }), `${note.title.replace(/[<>:"/\\|?*]/g, '_')}.md`);
@@ -329,7 +342,7 @@ export function mountCourses(ctx, courseId) {
   root.ondragleave = event => { if (!root.contains(event.relatedTarget)) root.querySelector('.course-workspace')?.classList.remove('dragging'); };
   root.ondrop = event => { if (!course) return; event.preventDefault(); root.querySelector('.course-workspace')?.classList.remove('dragging'); uploadFiles([...event.dataTransfer.files]).catch(error => toast(error.message || '文件未保存，请重试。')); };
   if (courseId && !course) {
-    root.innerHTML = `<div class="empty-state"><h2>这门课程不存在</h2><p>返回课程空间查看其他课程。</p><button class="btn primary" data-course-action="back">返回课程空间</button></div>`;
+    root.innerHTML = `<div class="empty-state"><h2>这门课程已归档或不存在</h2><p>返回课程空间查看其他课程。</p><button class="btn primary" data-course-action="back">返回课程空间</button></div>`;
   } else if (course) renderDetail(); else renderIndex();
   return () => { alive = false; canvasCleanup?.(); releasePreview(); };
 }

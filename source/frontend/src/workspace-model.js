@@ -86,6 +86,14 @@ export async function routeContent(ctx, {text='',files=[],targetId,requestId}) {
 }
 
 export async function undoRoute(ctx, receipt, requestId) {
+  if(receipt.items?.some(item=>item.collection==='actions')){
+    const {undoWorkspaceActions}=await import('./workspace-actions.js');
+    const request=ctx.state.aiRequests.find(r=>r.id===requestId),previous=request?structuredClone(request):null;
+    return undoWorkspaceActions({...ctx,save:async()=>{
+      if(request){request.status='waiting_model';delete request.receipt;request.updatedAt=new Date().toISOString();}
+      try{await ctx.save();}catch(error){if(request){for(const key of Object.keys(request))delete request[key];Object.assign(request,previous);}throw error;}
+    }},receipt,requestId);
+  }
   let removed=0,retained=0;
   const changes=[];
   for(const item of receipt.items||[]){

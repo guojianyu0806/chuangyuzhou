@@ -17,14 +17,34 @@ function ensure(state) {
 function destinations(state) {
   return [
     { id: 'auto', title: '由 AI 判断归属', group: '自动整理' },
+    { id: 'workspace', title: '整个工作台 · 跨板块行动', group: '自动整理' },
     ...(state.spaces || []).filter(s => !s.archived).map(s => ({ id: `space:${s.id}`, title: s.title, group: '我的工作区' })),
     ...(state.courses || []).filter(s => !s.archived).map(s => ({ id: `course:${s.id}`, title: s.title, group: '课程空间' })),
     { id: 'ledger', title: '记账 · 日常零钱', matchTitle: '日常零钱', group: '记账项目' },
     ...(state.ledger?.projects || []).filter(p => !p.archived).map(p => ({ id: `ledger:${p.id}`, title: `记账 · ${p.title}`, matchTitle: p.title, group: '记账项目' })),
     { id: 'english', title: '六级空间', group: '常用空间' },
+    { id: 'calendar', title: '日历安排', group: '常用空间' },
+    { id: 'timetable', title: '学期课表', group: '常用空间' },
     { id: 'inbox', title: '收集箱', group: '常用空间' },
     { id: 'tasks', title: '备忘与待办', group: '常用空间' }
   ];
+}
+
+/** Prepare an editable, unsent conversation without replacing another draft. */
+export function openAIConversation(ctx,{targetId='auto',text='',files=[]}={}){
+  ensure(ctx.state);
+  const previous=ctx.state.aiDraft, previousUpdatedAt=ctx.state.updatedAt;
+  if(previous.text?.trim()||previous.files?.length){
+    try{sessionStorage.removeItem('yuzhou-active-ai-'+ctx.state.mode);}catch{}
+    ctx.toast('已保留你尚未发送的草稿，请先处理草稿，再加入这次内容。');
+    ctx.go('ai',previous.targetId||'auto');return false;
+  }
+  if(files.length>12)throw new Error('每段对话最多携带 12 个附件，请分批选择。');
+  if(text.length>30000)throw new Error('本次文字较长，请分段发送。');
+  ctx.state.aiDraft={text,files:files.map(file=>({id:file.id,blobId:file.blobId||file.id,name:file.name,size:file.size||0,type:file.type||'',createdAt:file.createdAt||stamp()})),targetId};
+  try{ctx.save(ctx.state);}catch(error){ctx.state.aiDraft=previous;ctx.state.updatedAt=previousUpdatedAt;throw error;}
+  try{sessionStorage.removeItem('yuzhou-active-ai-'+ctx.state.mode);}catch{}
+  ctx.go('ai',targetId);return true;
 }
 
 function destinationLabel(state, id) {

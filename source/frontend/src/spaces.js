@@ -1,4 +1,5 @@
 import {mountCanvas, canvasCardFill} from './canvas.js';
+import {openAIConversation} from './ai.js';
 import {assignRecordColor, createColorDraft} from './creation-colors.js';
 
 export const SPACE_COLORS = ['#7950f2', '#009eab', '#ef3f92', '#78a500', '#f08025', '#4770f5'];
@@ -108,6 +109,7 @@ export function mountSpace(ctx, id) {
   const template = () => TEMPLATES.find(item=>item[0]===space.type) || TEMPLATES[0];
   const release = () => {previewRequest++;if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl='';};
   const localRefresh = () => {if(active)render();};
+  const openSpaceAI = () => {try{return openAIConversation(ctx,{targetId:`space:${space.id}`});}catch(error){toast(error.message);}};
   // Keep the current in-memory state intact if another window won the save race.
   function commit(mutation) {
     const before = JSON.parse(JSON.stringify(space));
@@ -119,6 +121,7 @@ export function mountSpace(ctx, id) {
   const boardHost = () => '<div class="sp-collection" data-sp-board></div>';
   const boardColors = ['#AE88FF','#63E6DC','#FF9CCE','#D8F649','#9DC5FF','#FFBC7C'];
   const noteList = () => space.notes.filter(item=>archivedNotes||!item.archived);
+  const fileList = () => space.files.filter(item=>!item.archived);
   const taskList = () => tasks().filter(item=>archivedTasks?item.archived:!item.archived);
   function overview() {
     return `<div class="sp-section-tools"><p>每类内容都有自己的卡片，可以像主页一样长按摆放。</p><button class="btn sp-primary" data-sp-action="new-note">${icon('plus',17)} 写一篇笔记</button></div>${boardHost()}`;
@@ -128,7 +131,7 @@ export function mountSpace(ctx, id) {
     return `<div class="sp-section-tools"><label class="sp-check-label"><input type="checkbox" data-sp-notes-archive ${archivedNotes?'checked':''}>显示已归档笔记</label><button class="btn sp-primary" data-sp-action="new-note">${icon('plus',17)} 新建笔记</button></div>${note?`<div class="sp-reader-stage"><button class="sp-back sp-reader-back" data-sp-action="back-board">${icon('arrow-left',17)} 回到笔记卡片</button><section class="sp-reader sp-note-reader"><header class="sp-reader-head"><span class="sp-panel-kicker">${note.archived?'ARCHIVED NOTE':'YOUR NOTES'} · 仅本机</span><h2>${esc(note.title)}</h2><div class="sp-reader-meta"><span>${dateLabel(note.updatedAt)}</span><span>版本 ${(note.revisions?.length||0)+1}</span></div><div class="sp-reader-actions"><button class="btn" data-sp-action="edit-note" data-id="${esc(note.id)}">${icon('edit',16)} 编辑</button><button class="btn" data-sp-action="note-history" data-id="${esc(note.id)}">${icon('clock',16)} 修订记录</button><button class="icon-btn" data-sp-action="export-note" data-id="${esc(note.id)}" aria-label="导出笔记">${icon('download',18)}</button><button class="icon-btn" data-sp-action="archive-note" data-id="${esc(note.id)}" aria-label="${note.archived?'恢复':'归档'}笔记">${icon(note.archived?'refresh':'archive',18)}</button></div></header><div class="sp-source">${icon('link',16)}<span>${esc(note.source||'手动记录 · 尚未关联原始资料')}</span></div><article class="sp-prose">${prose(note.content,esc)}</article></section></div>`:boardHost()}`;
   }
   function filesView() {
-    const file = space.files.find(item=>item.id===selectedFile);
+    const file = fileList().find(item=>item.id===selectedFile);
     return `<div class="sp-section-tools"><p>拖入资料，或点卡片查看原件。</p><button class="btn sp-primary" data-sp-action="upload">${icon('upload',17)} 添加文件</button></div>${file?`<div class="sp-reader-stage"><button class="sp-back sp-reader-back" data-sp-action="back-board">${icon('arrow-left',17)} 回到文件卡片</button><section class="sp-reader sp-file-reader"><header class="sp-reader-head"><span class="sp-panel-kicker">ORIGINAL FILE · 仅本机</span><h2>${esc(file.name)}</h2><div class="sp-reader-actions"><span class="muted">${sizeLabel(file.size)}</span><button class="btn" data-sp-action="download-file" data-id="${esc(file.id)}">${icon('download',17)} 下载原件</button></div></header><div class="sp-preview" data-sp-preview><p>正在读取本机文件…</p></div></section></div>`:boardHost()}`;
   }
   function tasksView() {
@@ -139,11 +142,11 @@ export function mountSpace(ctx, id) {
     const currentTab=tab;
     const summaries=[
       {id:'notes',title:'想法与笔记',subtitle:'留下每一次理解、会议记录与灵感。',color:'#AE88FF',icon:'book',count:space.notes.filter(item=>!item.archived).length,unit:'篇笔记',kicker:'THOUGHTS & NOTES'},
-      {id:'files',title:'我的资料',subtitle:'课件、活动材料和项目原件，一起收好。',color:'#63E6DC',icon:'folder',count:space.files.length,unit:'份文件',kicker:'YOUR MATERIALS'},
+      {id:'files',title:'我的资料',subtitle:'课件、活动材料和项目原件，一起收好。',color:'#63E6DC',icon:'folder',count:fileList().length,unit:'份文件',kicker:'YOUR MATERIALS'},
       {id:'tasks',title:'下一步行动',subtitle:'把想做的事，变成可以完成的一步。',color:'#D8F649',icon:'check-circle',count:tasks().filter(item=>!item.done&&!item.archived).length,unit:'件待办',kicker:'ONE THING AT A TIME'},
       {id:'assistant',title:'交给 AI 整理',subtitle:'直接发来零散内容，指定归入这个空间。',color:'#FF9CCE',icon:'sparkles',kicker:'SPACE ASSISTANT'}
     ];
-    const data=currentTab==='notes'?noteList():currentTab==='files'?space.files:currentTab==='tasks'?taskList():summaries;
+    const data=currentTab==='notes'?noteList():currentTab==='files'?fileList():currentTab==='tasks'?taskList():summaries;
     const items=currentTab==='overview'?summaries:data.map((item,index)=>({...item,title:currentTab==='files'?item.name:item.title,
       subtitle:currentTab==='notes'?item.content:currentTab==='files'?item.name:item.description,
       icon:currentTab==='notes'?(item.archived?'archive':'file'):currentTab==='files'?'folder':item.done?'check-circle':'target',
@@ -152,7 +155,7 @@ export function mountSpace(ctx, id) {
     const layout=state.boards[key] ||= {};
     const enter=(itemId)=>{
       if(!active)return;
-      if(currentTab==='overview'){if(itemId==='assistant')return go('ai',space.id);tab=itemId;selectedNote='';selectedFile='';render();return;}
+      if(currentTab==='overview'){if(itemId==='assistant')return openSpaceAI();tab=itemId;selectedNote='';selectedFile='';render();return;}
       if(currentTab==='notes'){selectedNote=itemId;render();return;}
       if(currentTab==='files'){selectedFile=itemId;render();return;}
       const task=tasks().find(item=>item.id===itemId);if(task)taskDialog(task);
@@ -166,7 +169,7 @@ export function mountSpace(ctx, id) {
       emptyHTML:empty,enterLabel:currentTab==='overview'?'打开分区':currentTab==='notes'?'阅读笔记':currentTab==='files'?'查看原件':'编辑事项',
       footLabel:currentTab==='overview'?'长按摆放 · 点击进入':currentTab==='tasks'?'长按摆放 · 点击编辑':'长按摆放 · 点击查看',
       renderCard:(card,item)=>{
-        if(currentTab==='overview')return `<div class="cv-card-copy sp-board-copy"><span class="cv-card-kicker">${item.kicker}</span><h2>${esc(item.title)}</h2><p>${esc(item.subtitle)}</p></div><div class="sp-board-summary">${item.count===undefined?`<span class="sp-board-large-icon" aria-hidden="true">${icon('sparkles',55)}</span><small>模型尚未接入 · 当前可先收件</small>`:`<strong>${item.count}</strong><span>${item.unit}</span>`}</div>`;
+        if(currentTab==='overview')return `<div class="cv-card-copy sp-board-copy"><span class="cv-card-kicker">${item.kicker}</span><h2>${esc(item.title)}</h2><p>${esc(item.subtitle)}</p></div><div class="sp-board-summary">${item.count===undefined?`<span class="sp-board-large-icon" aria-hidden="true">${icon('sparkles',55)}</span><small>先讨论目标，审核后确认执行</small>`:`<strong>${item.count}</strong><span>${item.unit}</span>`}</div>`;
         if(currentTab==='notes')return `<div class="cv-card-copy sp-board-copy"><span class="cv-card-kicker">${item.archived?'ARCHIVED NOTE':'YOUR NOTES'}</span><h2>${esc(item.title)}</h2><p class="sp-card-excerpt">${esc(item.content||'')}</p></div><div class="sp-card-meta"><span>${dateLabel(item.updatedAt)}</span><span>v${(item.revisions?.length||0)+1}</span>${item.archived?'<span>已归档</span>':''}</div>`;
         if(currentTab==='files'){const ext=item.name.split('.').pop().toUpperCase().slice(0,10);return `<div class="cv-card-copy sp-board-copy"><span class="cv-card-kicker">ORIGINAL FILE</span><h2>${esc(item.name)}</h2><p>原件保存在本机，可预览或下载。</p></div><div class="sp-file-mark"><strong>${esc(ext||'FILE')}</strong><span>${sizeLabel(item.size)}</span></div><div class="sp-card-meta"><span>${dateLabel(item.createdAt)}</span></div>`;}
         return `<div class="cv-card-copy sp-board-copy ${item.done?'sp-card-done':''}"><span class="cv-card-kicker">${item.archived?'ARCHIVED TASK':item.done?'COMPLETED':'NEXT THING'}</span><h2>${esc(item.title)}</h2><p class="sp-card-excerpt">${esc(item.description||'属于这个空间，也同步显示在全局待办中。')}</p></div><div class="sp-card-meta"><span>${item.date?esc(item.date):'时间待安排'}</span>${item.priority==='high'?'<b>优先处理</b>':''}</div><div class="sp-card-actions">${item.archived?`<button class="btn" data-sp-action="restore-task" data-id="${esc(item.id)}">${icon('refresh',16)} 恢复事项</button>`:`<button class="btn" data-sp-action="toggle-task" data-id="${esc(item.id)}" aria-pressed="${!!item.done}">${icon(item.done?'refresh':'check',16)} ${item.done?'取消完成':'标记完成'}</button>`}<button class="btn" data-sp-action="edit-task" data-id="${esc(item.id)}">${icon('edit',16)} 编辑</button></div>`;
@@ -174,10 +177,10 @@ export function mountSpace(ctx, id) {
   }  function render() {
     if(!active)return;boardCleanup?.();boardCleanup=null;release();
     const countNotes=space.notes.filter(item=>!item.archived).length;
-    root.innerHTML=`<section class="sp-page" style="--sp-color:${spaceColor(space)};--sp-on-color:${foreground(spaceColor(space))}"><div class="sp-back-row"><button class="sp-back" data-sp-action="home">${icon('arrow-left',17)} 回到空间主页</button><span>${icon('shield',14)} 仅本机保存</span></div><header class="sp-hero"><div class="sp-hero-copy"><span class="sp-hero-icon">${icon(space.icon||'folder',34)}</span><div><span class="sp-hero-kicker">${esc(template()[1])} / MY SPACE</span><h1>${esc(space.title)}</h1><p>${esc(space.description||'笔记、资料和下一步行动，都有自己的位置。')}</p></div></div><div class="sp-hero-actions"><button class="btn" data-sp-action="settings">${icon('settings',17)} 空间设置</button><button class="btn sp-primary" data-sp-action="ai">${icon('sparkles',18)} 交给 AI</button></div><div class="sp-hero-bottom"><span>${countNotes} 篇笔记</span><span>${space.files.length} 份文件</span><span>${tasks().filter(item=>!item.done&&!item.archived).length} 件待办</span><button data-sp-action="archive-space">${icon(space.archived?'refresh':'archive',15)} ${space.archived?'恢复到主页':'归档空间'}</button></div></header>${space.archived?'<div class="sp-archived-banner">这个空间已归档，资料完整保留。点击「恢复到主页」可重新放回画布。</div>':''}<nav class="sp-tabs" aria-label="工作区内容">${[['overview','总览','layers'],['notes','笔记','book'],['files','文件','folder'],['tasks','待办','check-circle']].map(([key,label,glyph])=>`<button class="${tab===key?'active':''}" data-sp-action="tab" data-tab="${key}" aria-current="${tab===key?'page':'false'}">${icon(glyph,19)} ${label}</button>`).join('')}</nav><div class="sp-tab-content">${tab==='overview'?overview():tab==='notes'?notesView():tab==='files'?filesView():tasksView()}</div><div class="sp-drop-overlay" aria-hidden="true">${icon('upload',46)}<strong>放入「${esc(space.title)}」</strong><span>文件会保存在这个工作区</span></div><input type="file" hidden multiple data-sp-file-input aria-label="添加工作区文件"></section>`;
+    root.innerHTML=`<section class="sp-page" style="--sp-color:${spaceColor(space)};--sp-on-color:${foreground(spaceColor(space))}"><div class="sp-back-row"><button class="sp-back" data-sp-action="home">${icon('arrow-left',17)} 回到空间主页</button><span>${icon('shield',14)} 仅本机保存</span></div><header class="sp-hero"><div class="sp-hero-copy"><span class="sp-hero-icon">${icon(space.icon||'folder',34)}</span><div><span class="sp-hero-kicker">${esc(template()[1])} / MY SPACE</span><h1>${esc(space.title)}</h1><p>${esc(space.description||'笔记、资料和下一步行动，都有自己的位置。')}</p></div></div><div class="sp-hero-actions"><button class="btn" data-sp-action="settings">${icon('settings',17)} 空间设置</button><button class="btn sp-primary" data-sp-action="ai">${icon('sparkles',18)} 交给 AI</button></div><div class="sp-hero-bottom"><span>${countNotes} 篇笔记</span><span>${fileList().length} 份文件</span><span>${tasks().filter(item=>!item.done&&!item.archived).length} 件待办</span><button data-sp-action="archive-space">${icon(space.archived?'refresh':'archive',15)} ${space.archived?'恢复到主页':'归档空间'}</button></div></header>${space.archived?'<div class="sp-archived-banner">这个空间已归档，资料完整保留。点击「恢复到主页」可重新放回画布。</div>':''}<nav class="sp-tabs" aria-label="工作区内容">${[['overview','总览','layers'],['notes','笔记','book'],['files','文件','folder'],['tasks','待办','check-circle']].map(([key,label,glyph])=>`<button class="${tab===key?'active':''}" data-sp-action="tab" data-tab="${key}" aria-current="${tab===key?'page':'false'}">${icon(glyph,19)} ${label}</button>`).join('')}</nav><div class="sp-tab-content">${tab==='overview'?overview():tab==='notes'?notesView():tab==='files'?filesView():tasksView()}</div><div class="sp-drop-overlay" aria-hidden="true">${icon('upload',46)}<strong>放入「${esc(space.title)}」</strong><span>文件会保存在这个工作区</span></div><input type="file" hidden multiple data-sp-file-input aria-label="添加工作区文件"></section>`;
     root.querySelector('.sp-page').style.setProperty('--sp-fill',canvasCardFill(spaceColor(space)));
     mountBoard();
-    if(tab==='files'&&selectedFile){const file=space.files.find(item=>item.id===selectedFile);if(file)preview(file);}
+    if(tab==='files'&&selectedFile){const file=fileList().find(item=>item.id===selectedFile);if(file)preview(file);}
   }
   async function preview(file) {
     const ticket=++previewRequest, host=root.querySelector('[data-sp-preview]');
@@ -215,7 +218,7 @@ export function mountSpace(ctx, id) {
   }
   async function upload(files) {
     if(uploading||!files.length)return;uploading=true;toast('正在把文件保存到这个空间…');
-    try {const result=await saveSpaceFiles(ctx,space,files);if(result.saved){tab='files';selectedFile=space.files[0]?.id||'';localRefresh();}toast(`已保存 ${result.saved} 份文件${result.rejected?`，${result.rejected} 份未保存，请检查 40 MB 大小限制和存储空间`:''}`);}
+    try {const result=await saveSpaceFiles(ctx,space,files);if(result.saved){tab='files';selectedFile=fileList()[0]?.id||'';localRefresh();}toast(`已保存 ${result.saved} 份文件${result.rejected?`，${result.rejected} 份未保存，请检查 40 MB 大小限制和存储空间`:''}`);}
     catch(error){toast(error.message||'保存未完成，请重试');}finally{uploading=false;}
   }
   async function onClick(event) {
@@ -223,7 +226,7 @@ export function mountSpace(ctx, id) {
     const action=button.dataset.spAction,note=space.notes.find(item=>item.id===button.dataset.id),task=state.tasks.find(item=>item.id===button.dataset.id&&item.spaceId===space.id);
     try {
       if(action==='home')return go('home');
-      if(action==='ai')return go('ai',space.id);
+      if(action==='ai')return openSpaceAI();
       if(action==='settings')return openSpaceDialog({...ctx,refresh:localRefresh},space);
       if(action==='tab'){tab=button.dataset.tab;selectedNote='';selectedFile='';render();}
       if(action==='back-board'){selectedNote='';selectedFile='';render();}
@@ -235,7 +238,7 @@ export function mountSpace(ctx, id) {
       if(action==='note-history'&&note)modal({title:'每一次想法，都留有记录',body:`<p class="muted">当前为版本 ${(note.revisions?.length||0)+1}。以下为编辑前保留的版本。</p><div class="sp-history">${[...(note.revisions||[])].reverse().map((revision,index)=>`<details><summary><strong>版本 ${note.revisions.length-index} · ${esc(revision.title)}</strong><small>${dateLabel(revision.updatedAt)}</small></summary><article class="sp-prose">${prose(revision.content,esc)}</article><p class="sp-source">${esc(revision.source||'手动记录')}</p></details>`).join('')||'<div class="sp-empty"><p>还没有历史修订，下次编辑保存时会保留当前内容。</p></div>'}</div>`});
       if(action==='upload')root.querySelector('[data-sp-file-input]').click();
       if(action==='select-file'){selectedFile=button.dataset.id;tab='files';render();}
-      if(action==='download-file'){const file=space.files.find(item=>item.id===button.dataset.id);if(!file)return;const blob=await getFile(file.blobId);if(!blob)throw new Error('本机找不到原件，请重新添加文件');download(blob,file.name);}
+      if(action==='download-file'){const file=fileList().find(item=>item.id===button.dataset.id);if(!file)return;const blob=await getFile(file.blobId);if(!blob)throw new Error('本机找不到原件，请重新添加文件');download(blob,file.name);}
       if(action==='new-task')taskDialog();
       if(action==='edit-task'&&task)taskDialog(task);
       if(action==='toggle-task'&&task){commit(()=>{task.done=!task.done;task.completedAt=task.done?stamp():null;});render();}

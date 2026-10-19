@@ -2,6 +2,7 @@
 // created by an AI proposal; model output never becomes executable code.
 import {assignRecordColor} from './creation-colors.js';
 import {parseAmount,formatMoney,isValidDate,validateLedger} from './ledger-model.js';
+import {validateWorkspaceActions,applyWorkspaceActions,previewWorkspaceActions} from './workspace-actions.js';
 export function validateOrganizedProposal(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('AI 整理结果格式不正确。');
   const string = (v, max, required = false) => {
@@ -9,7 +10,12 @@ export function validateOrganizedProposal(value) {
     return v.trim();
   };
   const destinationId = string(value.destinationId, 256, true);
-  if (!['english', 'inbox', 'tasks', 'ledger'].includes(destinationId) && !/^(space|course|ledger):[^\s]+$/.test(destinationId)) throw new Error('AI 返回了无效的工作区。');
+  if (!['workspace','calendar','timetable','english', 'inbox', 'tasks', 'ledger'].includes(destinationId) && !/^(space|course|ledger):[^\s]+$/.test(destinationId)) throw new Error('AI 返回了无效的工作区。');
+  if(value.actions!==undefined){
+    if(['notes','tasks','ledgerEntries'].some(key=>value[key]!==undefined&&(!Array.isArray(value[key])||value[key].length)))throw new Error('通用行动单不能混入旧版整理条目。');
+    return {title:string(value.title,240,true),summary:string(value.summary??'',30000),destinationId,notes:[],tasks:[],actions:validateWorkspaceActions(value.actions),reason:string(value.reason??'',5000),warnings:Array.isArray(value.warnings)&&value.warnings.length<=30?value.warnings.map(w=>string(w,2000)):[]};
+  }
+  if(['workspace','calendar','timetable'].includes(destinationId))throw new Error('这个目标需要使用明确的行动单。');
   if (!Array.isArray(value.notes) || value.notes.length > 30 || !Array.isArray(value.tasks) || value.tasks.length > 50) throw new Error('AI 整理条目数量无效。');
   const notes = value.notes.map(n => ({
     title: string(n.title, 240, true), content: string(n.content, 120000, true),
@@ -43,6 +49,11 @@ export function applyOrganizedContent(state, requestId, input, {uid = () => cryp
   if (request.status === 'filed' && request.receipt) return request.receipt;
   if (request.status !== 'waiting_model') throw new Error('这份请求已经取消，整理结果尚未归档。');
   const proposal = validateOrganizedProposal(input);
+  if(proposal.actions){
+    const receipt=applyWorkspaceActions(state,requestId,proposal.actions,{uid,now});
+    Object.assign(request,{status:'filed',aiStatus:'succeeded',aiProposal:proposal,receipt,updatedAt:now});
+    delete request.aiError;state.updatedAt=now;return receipt;
+  }
   const target = proposal.destinationId;
   const isSpace = target.startsWith('space:');
   const isCourse = target.startsWith('course:');
@@ -116,6 +127,8 @@ export function applyOrganizedContent(state, requestId, input, {uid = () => cryp
 // Use the same bounded writer on an isolated copy so review includes every
 // actual operation, including summary fallback, attachments and task routing.
 export function previewOrganizedContent(state,requestId,input){
+  const proposal=validateOrganizedProposal(input);
+  if(proposal.actions)return previewWorkspaceActions(state,proposal.actions,{requestId});
   const copy=structuredClone(state);let sequence=0;
   const receipt=applyOrganizedContent(copy,requestId,input,{uid:()=>`review-${++sequence}`});
   return receipt.items.map(item=>{

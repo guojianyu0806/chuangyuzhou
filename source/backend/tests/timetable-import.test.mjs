@@ -26,7 +26,8 @@ test('private import CLI executes through the active release symlink and dry-run
 test('private timetable import is idempotent and preserves all non-timetable records',t=>{
  const dir=mkdtempSync(join(tmpdir(),'yuzhou-timetable-import-')),store=createStore(dir);
  t.after(()=>{store.close();if(!resolve(dir).startsWith(resolve(join(tmpdir(),'yuzhou-timetable-import-'))))throw Error('Unexpected cleanup path');rmSync(dir,{recursive:true,force:true});});
- const initial={schema:1,mode:'personal',profile:{name:'fixture'},english:{},courses:[],tasks:[{id:'event',title:'重要事件',date:'2026-09-20'}],captures:[],calendar:{events:[{id:'separate-event',title:'独立日历事件'}]},canvas:{cards:[{id:'tasks',x:12,y:34,w:300,h:200}]}};
+ const event={id:'separate-event',title:'独立日历事件',kind:'mark',startDate:'2026-09-20',endDate:'2026-09-20',allDay:true,startTime:'',endTime:'',location:'',notes:'',important:true,done:false,archived:false,color:'#7950f2',createdAt:'2026-09-20T00:00:00.000Z',updatedAt:'2026-09-20T00:00:00.000Z'};
+ const initial={schema:1,mode:'personal',profile:{name:'fixture'},english:{},courses:[],tasks:[{id:'event',title:'重要事件',date:'2026-09-20'}],captures:[],calendar:{version:1,events:[event]},canvas:{cards:[{id:'tasks',x:12,y:34,w:300,h:200}]}};
  store.saveWorkspace(0,initial);
  assert.equal(importTimetable(store,input(),{dryRun:true}).dryRun,true);assert.deepEqual(store.getWorkspace().state,initial);
  const first=importTimetable(store,input());assert.equal(first.changed,true);

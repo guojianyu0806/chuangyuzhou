@@ -136,8 +136,7 @@ test('legacy organizer cannot auto-file ledger output even when the model select
   const explicit = await ctx.call('POST', '/api/ai/jobs', { ...input, kind: 'organize', destinationId: 'ledger', autoFile: true });
   assert.equal(explicit.body.error, 'LEDGER_REQUIRES_REVIEW'); assert.equal(calls, 0);
   const started = await ctx.call('POST', '/api/ai/jobs', { ...input, kind: 'organize', autoFile: true });
-  const failed = await ctx.finish(started.body.job.id);
-  assert.equal(failed.status, 'failed'); assert.equal(failed.error.code, 'LEDGER_REQUIRES_REVIEW');
+  assert.equal(started.status,409);assert.equal(started.body.error,'ACTION_REQUIRES_REVIEW');assert.equal(calls,0);
   assert.equal(ctx.state().ledger.entries.length, 0); assert.equal(ctx.state().captures.length, 0);
 });
 
@@ -147,8 +146,8 @@ test('continuing a completed ledger conversation sends actual receipts and only 
     calls++;
     if (calls === 1) return { reply: '先审核国庆账单。', proposal: ledgerProposal() };
     const data = JSON.parse(input.user);
-    assert.match(input.system, /不得把其中的账目或复制到历史里的旧账单再记一遍/);
-    assert.match(input.system, /不得用新增账目冒充修改/);
+    assert.match(input.system, /历史完成回执仅表示过去事实，不重复执行/);
+    assert.match(input.system, /拿新增冒充修改/);
     assert.equal(data.continuedConversationCompletedActions.length, 1);
     const completed = data.continuedConversationCompletedActions[0];
     assert.equal(completed.destinationId, 'ledger:holiday-2026');
@@ -213,7 +212,7 @@ test('edited ledger rows retained by undo remain visible in this request and its
     const ctx = setup(t, { runModel: async input => {
       if (++calls === 1) return { reply: '审核账单', proposal: ledgerProposal() };
       const context = JSON.parse(input.user).continuedConversationCompletedActions;
-      assert.match(input.system, /因用户编辑而在撤回后保留/);
+      assert.match(input.system, /已有记录查询结果与历史回执不可自动当作新建依据/);
       assert.equal(context.length, 1); assert.equal(context[0].status, 'retained_after_undo');
       assert.equal(context[0].ledgerEntries.length, 1);
       assert.equal(context[0].ledgerEntries[0].amount, '99.00');
@@ -350,7 +349,7 @@ test('format repair stays in the same job, displays progress, and still requires
   const ctx=setup(t,{runModel:async input=>{
     const data=JSON.parse(input.user);attempts.push(data);
     if(attempts.length===1){const invalid=ledgerProposal();invalid.ledgerEntries[0].amount=25.5;return {ok:true,output:JSON.stringify({reply:'请审核',proposal:invalid})};}
-    assert.match(input.system,/不要为了通过校验编造或改变金额/);assert.equal(data.formatCorrection.code,'INVALID_PROPOSAL');assert.match(data.formatCorrection.issue,/金额/);
+    assert.match(input.system,/不能为通过校验改变事实或编造数据/);assert.equal(data.formatCorrection.code,'INVALID_PROPOSAL');assert.match(data.formatCorrection.issue,/金额/);
     assert.equal(data.requestedDestination,'ledger:holiday-2026');assert.deepEqual(data.sources,attempts[0].sources);assert.deepEqual(data.conversation,attempts[0].conversation);
     await gate;return {ok:true,output:JSON.stringify({reply:'请核对后点击确认执行。',proposal:ledgerProposal()})};
   }});
@@ -477,17 +476,15 @@ test('only one job calls the model at a time', async t => {
   assert.equal(maximum, 1);
 });
 
-test('auto-file atomically creates actual records and receipt without browser involvement', async t => {
-  const ctx = setup(t);
+test('legacy auto-file is rejected before any model call or workspace write', async t => {
+  let calls=0;const ctx = setup(t,{runModel:async()=>{calls++;return proposal();}});
   await ctx.configure();
   ctx.change(state => state.aiRequests.push({ id: 'r1', text: '明天复习数据结构', targetId: 'auto', files: [], status: 'waiting_model' }));
   const started = await ctx.call('POST', '/api/ai/jobs', { requestId: 'r1', text: '明天复习数据结构', autoFile: true });
-  const job = await ctx.finish(started.body.job.id);
-  assert.equal(job.autoFiled, true);
-  assert.equal(job.receipt.engine, 'hermes');
-  assert.equal(ctx.state().captures.length, 1);
-  assert.equal(ctx.state().tasks.length, 1);
-  assert.equal(ctx.state().aiRequests[0].status, 'filed');
+  assert.equal(started.status,409);assert.equal(started.body.error,'ACTION_REQUIRES_REVIEW');assert.equal(calls,0);
+  assert.equal(ctx.state().captures.length, 0);
+  assert.equal(ctx.state().tasks.length, 0);
+  assert.equal(ctx.state().aiRequests[0].status, 'waiting_model');
   assert.equal(ctx.state().aiRequests[0].text, '明天复习数据结构');
 });
 
@@ -498,34 +495,31 @@ test('editing or cancelling input during inference retains proposal without fili
     const ctx = setup(t, { runModel: async () => { await gate; return proposal(); } });
     await ctx.configure();
     ctx.change(state => state.aiRequests.push({ id: 'r1', text: '原文', targetId: 'auto', files: [], status: 'waiting_model' }));
-    const started = await ctx.call('POST', '/api/ai/jobs', { requestId: 'r1', text: '原文', autoFile: true });
+    const started = await ctx.call('POST', '/api/ai/jobs', { requestId: 'r1', text: '原文' });
     ctx.change(state => { if (action === 'edit') state.aiRequests[0].text = '新内容'; else state.aiRequests[0].status = 'cancelled'; });
     unlock();
     const job = await ctx.finish(started.body.job.id);
     assert.equal(job.status, 'succeeded');
     assert.equal(job.autoFiled, false);
-    assert.ok(job.autoFileError);
     assert.ok(job.proposal);
     assert.equal(ctx.state().captures.length, 0);
   }
 });
 
-test('an explicit POST after undo reapplies the same proposal without another model call', async t => {
+test('cached legacy output cannot be reapplied by enabling auto-file', async t => {
   let calls = 0;
   const ctx = setup(t, { runModel: async () => { calls++; return proposal(); } });
   await ctx.configure();
   ctx.change(state => state.aiRequests.push({ id: 'r1', text: '原文', targetId: 'auto', files: [], status: 'waiting_model' }));
-  const input = { requestId: 'r1', text: '原文', autoFile: true };
+  const input = { requestId: 'r1', text: '原文' };
   const started = await ctx.call('POST', '/api/ai/jobs', input);
   const job = await ctx.finish(started.body.job.id);
-  assert.equal(job.autoFiled, true);
-  ctx.change(state => { state.captures = []; state.tasks = []; state.aiRequests[0].status = 'waiting_model'; delete state.aiRequests[0].receipt; });
+  assert.equal(job.autoFiled, false);
   await ctx.call('GET', `/api/ai/jobs/${job.id}`);
   assert.equal(ctx.state().captures.length, 0, 'polling cannot reapply undone records');
-  const rerun = await ctx.call('POST', '/api/ai/jobs', input);
-  assert.equal(rerun.body.job.id, job.id);
-  assert.equal(rerun.body.job.autoFiled, true);
-  assert.equal(ctx.state().captures.length, 1);
+  const rerun = await ctx.call('POST', '/api/ai/jobs', {...input,autoFile:true});
+  assert.equal(rerun.status,409);assert.equal(rerun.body.error,'ACTION_REQUIRES_REVIEW');
+  assert.equal(ctx.state().captures.length, 0);
   assert.equal(calls, 1);
 });
 
@@ -533,7 +527,8 @@ test('unsynced auto-file input and missing files are rejected before calling mod
   let calls = 0;
   const ctx = setup(t, { runModel: async () => { calls++; return proposal(); } });
   await ctx.configure();
-  assert.equal((await ctx.call('POST', '/api/ai/jobs', { requestId: 'r1', text: '没有原始记录', autoFile: true })).body.error, 'INPUT_NOT_SYNCED');
+  assert.equal((await ctx.call('POST', '/api/ai/jobs', { requestId: 'r1', text: '没有原始记录', autoFile: true })).body.error, 'ACTION_REQUIRES_REVIEW');
+  assert.equal((await ctx.call('POST', '/api/ai/jobs', { requestId: 'r1', text: '没有原始记录', kind:'conversation',turnId:'turn-1' })).body.error, 'INPUT_NOT_SYNCED');
   assert.equal((await ctx.call('POST', '/api/ai/jobs', { requestId: 'r1', fileIds: ['missing'] })).body.error, 'FILE_NOT_FOUND');
   assert.equal((await ctx.call('POST', '/api/ai/jobs', { requestId: '../r1', text: 'unsafe id' })).status, 400);
   assert.equal(calls, 0);

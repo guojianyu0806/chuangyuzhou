@@ -163,3 +163,4 @@
   .course-reader-card .course-note-meta{gap:10px;font-size:10px}
   .course-board-footnote{font-size:9px}
 }
+.course-ai-file-picker{border:1px solid #d7c6ee;border-radius:14px;padding:12px;margin:14px 0;max-height:310px;overflow:auto}.course-ai-file-picker legend{font-size:12px;color:#75578e;padding:0 6px}.course-ai-file-picker label{display:flex;align-items:center;gap:10px;min-height:44px;padding:7px 3px;line-height:1.6}.course-ai-file-picker input{width:19px;height:19px;flex:none;accent-color:#7950f2}.course-ai-file-picker span{font-size:13px;overflow-wrap:anywhere}
