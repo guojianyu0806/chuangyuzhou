@@ -1,0 +1,96 @@
+"""Prepare a reviewable GitHub entry without changing old deliverable files."""
+from pathlib import Path, PurePosixPath
+import hashlib,json,zipfile,datetime,subprocess
+
+ROOT=Path(__file__).resolve().parent.parent
+FINAL=ROOT/'delivery/2026-10-19_创宇宙正式提交_v1'
+ZIP=FINAL/'创宇宙_源码_正式提交版_v1.zip'
+DEST=ROOT/'submission/创宇宙-v1'
+BACKUP=ROOT/'docs/archive/README-开发入口-发布前-v1.md'
+
+def sha(b):return hashlib.sha256(b).hexdigest()
+def new(path,data):
+    assert path.resolve().is_relative_to(ROOT.resolve())
+    path.parent.mkdir(parents=True,exist_ok=True)
+    with path.open('xb') as f:f.write(data)
+
+def main():
+    assert not DEST.exists() and not BACKUP.exists()
+    assert sha(ZIP.read_bytes())=='1ec8fabc592472f612c298016545152b7e3f65dae083d2218adb89ebfb6f60b3'
+    before=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+    original_readme=(ROOT/'README.md').read_bytes()
+    new(BACKUP,original_readme)
+    new(BACKUP.parent/'.gitattributes',(BACKUP.name+' -text whitespace=cr-at-eol\n').encode())
+    entries=[]
+    with zipfile.ZipFile(ZIP) as z:
+        assert len(z.namelist())==297
+        for row in z.infolist():
+            path=PurePosixPath(row.filename)
+            assert not path.is_absolute() and '..' not in path.parts and not row.is_dir()
+            assert not any(p in ('.git','.cu-runtime','node_modules') for p in path.parts)
+            data=z.read(row)
+            new(DEST/Path(*path.parts),data)
+            entries.append({'path':row.filename,'sha256':sha(data),'bytes':len(data)})
+    # The release verifier hashes original bytes; disable checkout newline transforms.
+    new(DEST/'.gitattributes',b'# Keep verified package bytes, including historical final blank lines.\n* -text whitespace=-blank-at-eof\n')
+    readme='''# 创宇宙
+
+让每个人搭建自己的工作台。用模块、空间和方块组织资料、日程与任务，由 AI 伙伴协助查询、提出方案，并在用户审核确认后执行。
+
+## 查看与运行正式版
+
+- [正式源码目录与完整复现指南](submission/创宇宙-v1/README.md)：从已验证的正式 ZIP 原样展开，便于在线浏览代码。
+- [下载正式源码 ZIP](delivery/2026-10-19_创宇宙正式提交_v1/创宇宙_源码_正式提交版_v1.zip) · [技术文档 PDF](delivery/2026-10-19_创宇宙正式提交_v1/创宇宙_技术文档_正式提交版_v1.pdf)
+- [提交前核查报告](delivery/2026-10-19_创宇宙正式提交_v1/提交前核查报告.md) · [文件校验和](delivery/2026-10-19_创宇宙正式提交_v1/SHA256SUMS.txt)
+
+安装 Node.js ≥22.13 后，在仓库根目录执行：
+
+```powershell
+cd "submission/创宇宙-v1"
+node tools/verify-source.mjs
+node tools/start.mjs --check
+node tools/start.mjs
+```
+
+基础应用不需要 `npm install` 或前端构建。默认访问 `http://127.0.0.1:4399/`，首次初始化与账号创建步骤见源码目录 README。新副本不含作者账号、业务数据或模型 Key。DOCX/PPTX/PDF 解析及真实 AI 是可选配置，基础复现不会自动调用付费模型。
+
+## 主要能力与实际验证
+
+- 自由画布与拖入搭建，主空间和子空间分别配置；模块及侧栏可组合。
+- 课程、课表、资料、灵感、任务、日历和账单分类等业务模块，以及自定义方块与手动运行的小程序。
+- AI 查询、方案生成、多轮修订、审核确认与有边界的撤销。
+
+正式包完成独立解压目录的初始化、保存、重启与登录复现，合成浏览器核对主要流程；自动回归为 861 通过、0 失败、1 可选跳过。具体环境、计时和限制以核查报告为准。未做过的公网部署、完整真机兼容、独立真人收益或外部安全审计不作为已通过项目。
+
+## 开发过程和来源
+
+本作品由作者通过 AI 辅助开发。最初是个人使用的“宇宙”工作台，2026-10-08 将 0.15.0 底座物理复制到独立比赛目录，继续演化为可供每个人搭建的“创宇宙”。历史名称、基线导入、实际失败与验证限制均保留。
+
+- **比赛真实主线 `main`**：保留原有 188 条提交及 SHA，后续说明和发布准备继续以真实当前时间追加。
+- **早期快照补录 `codex/yuzhou-historical-snapshots`**：25 个截至 0.15.0 的旧发布包按顺序补录，所有提交均使用 2026-10-19 实际补录时间。它是版本对照，不是当时已经存在的 Git 历史，不伪接为比赛主线的父提交。
+- [早期来源说明](docs/创宇宙-早期开发与Git补录说明-v1.md) · [25 个快照目录](evidence/provenance/DEV-047/README.md) · [原始导入清单](evidence/provenance/yuzhou-0.15.0-import.json)
+- [三条 AI 开发 Prompt 链](evidence/prompt-chains/README.md)：所选主题中的 104 条公开文本、46 条历史提交索引和 10 份关键 diff；范围及缺失附件如实说明。
+- [DEV 阶段记录](evidence/dev/) · [工程验证证据](evidence/engineering/)
+
+发布包的 94 个来源文件与当时导入清单全部哈希一致；早期补录的 25 个快照共 1620 个源文件版本完成字节核对。原始开发私聊、凭据、私人运行数据及本地工具检查点不属于公开记录。
+
+本次公开由作者决定进行。[官方规则核查](docs/创宇宙-官方规则与历史补录核查-v1.md)仍未取得组委会对自有项目演化及快照补录的具体书面认可，公开仓库不表示赛事资格已经确认。
+
+## 仓库目录与版本边界
+
+| 目录 | 用途 |
+| --- | --- |
+| `submission/创宇宙-v1/` | 品牌统一、按正式 README 验证过的源码副本；包含原包逐文件校验 |
+| `delivery/2026-10-19_创宇宙正式提交_v1/` | 保留的正式 ZIP、README、PDF 和核查报告 |
+| `yuzhou/` | 比赛持续开发目录，保留原内部标识及历史名称，不应与正式包配置混用 |
+| `app/` | 更早的旧底座支线，保留历史用途，不是当前运行入口 |
+| `evidence/`、`docs/`、`scripts/` | 来源、开发过程、测试和交付脚本 |
+
+[发布前开发入口原文](docs/archive/README-开发入口-发布前-v1.md)另存保留；其中旧状态和原根目录相对链接属于历史记录。旧正式成品没有覆盖。仓库没有新增开源许可证，第三方依赖的许可及来源应分别遵守；公开可访问不等于授予未声明的使用权利。
+'''
+    (ROOT/'README.md').write_text(readme,encoding='utf8',newline='\n')
+    result={'preparedAtUtc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'preparationBase':before,'sourceZip':str(ZIP.relative_to(ROOT)).replace('\\','/'),'sourceZipSha256':sha(ZIP.read_bytes()),'sourceDirectory':str(DEST.relative_to(ROOT)).replace('\\','/'),'sourceFilesCopied':len(entries),'addedMetadataFiles':['.gitattributes'],'previousReadmeBackup':str(BACKUP.relative_to(ROOT)).replace('\\','/'),'previousReadmeSha256':sha(original_readme),'rootReadmeUpdated':True,'existingFormalArtifactsOverwritten':False,'applicationDevelopmentSourceChanged':False,'files':entries}
+    new(ROOT/'evidence/engineering/DEV-049-publication-preparation.json',(json.dumps(result,ensure_ascii=False,indent=2)+'\n').encode())
+    print(json.dumps({k:v for k,v in result.items() if k!='files'},ensure_ascii=False,indent=2))
+
+if __name__=='__main__':main()

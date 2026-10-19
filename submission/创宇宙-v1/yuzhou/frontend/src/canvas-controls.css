@@ -1,0 +1,39 @@
+/* One compact action row for every board. On narrow screens actions scroll
+   horizontally while fullscreen remains reachable at the right edge. */
+.space-desktop>.cv-pagehead.cv-compact-header{display:flex!important;align-items:center;flex-wrap:nowrap;gap:10px!important;min-height:44px;margin:0 0 8px!important;padding:0!important;flex:0 0 auto}
+.cv-compact-header .cv-heading{flex:none;min-width:0!important}
+.cv-compact-header .cv-heading h1{font-size:24px!important;line-height:1.25;white-space:nowrap}
+.space-desktop .cv-compact-header .cv-head-actions{display:flex!important;position:static!important;align-items:center;gap:8px;flex:1;min-width:0;width:auto;max-width:none;margin:0;padding:3px 1px 5px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#c9b6ef transparent}
+.space-desktop .cv-compact-header .cv-button{flex:none;min-height:44px;padding:0 12px;white-space:nowrap}
+.space-desktop .cv-compact-header .cv-create[hidden]{display:none!important}
+.cv-compact-header>.cv-fullscreen-toggle{flex:none;margin-left:auto}
+.space-desktop .cv-compact-header .cv-zoom-controls{display:flex!important;flex:none;margin:0 0 0 auto;min-height:44px;padding:0 3px;gap:1px;background:#fdfbff;border:1px solid #ded5ef;border-radius:11px}
+.space-desktop .cv-compact-header .cv-zoom-controls button{width:40px;min-width:40px;min-height:44px;padding:0;font-size:15px}
+.space-desktop .cv-compact-header .cv-zoom-controls .cv-zoom-number{width:44px;min-width:44px;font-size:10px}
+.space-desktop.is-list-mode .cv-compact-header .cv-zoom-controls{display:none!important}
+.space-desktop>.cv-statusbar{display:none!important}
+.space-desktop.is-stack-mode>.cv-statusbar{display:flex!important;justify-content:flex-end;min-height:44px;padding:0}
+.space-desktop.surface-is-fullscreen{padding-top:calc(8px + env(safe-area-inset-top))!important}
+.space-desktop.surface-is-fullscreen>.cv-pagehead.cv-compact-header{padding-right:122px!important}
+.cv-arrange-options{display:grid;gap:6px}
+.cv-arrange-options>button{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:10px 14px;border:1px solid #e2dbea;border-radius:12px;text-align:left;color:#55436e;background:#fbf9ff}
+.cv-arrange-options>button>span{flex:1}
+.cv-arrange-options>button[aria-pressed=true]{background:#ede3ff;border-color:#a480e6;color:#6234a4}
+.cv-arrange-options>button:hover,.cv-open-settings:hover{background:#f0e9fa}
+.cv-open-settings{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;margin-top:16px;padding:10px 14px;border-top:1px solid #e2dbea;color:#66517f;text-align:left}
+.cv-open-settings>span{flex:1}
+.cv-setting-switch{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px;padding:8px 0;color:#55436e}
+.cv-setting-switch input{width:24px;height:24px;min-height:24px;accent-color:#7950f2}
+
+@media(max-width:1000px){.cv-compact-header .cv-heading{display:none}}
+@media(max-width:760px){
+ .space-desktop>.cv-pagehead.cv-compact-header{gap:6px!important}
+ .space-desktop .cv-compact-header .cv-head-actions{gap:6px}
+ .space-desktop .cv-compact-header .cv-button{padding:0 10px}
+ .cv-compact-header>.cv-fullscreen-toggle{width:44px;padding:0}
+ .cv-compact-header>.cv-fullscreen-toggle>span{display:none}
+ .space-desktop.surface-is-fullscreen>.cv-pagehead.cv-compact-header{padding-right:50px!important}
+ .space-desktop.surface-is-fullscreen>.surface-fullscreen-exit{width:44px;min-width:44px;padding:0}
+ .space-desktop.surface-is-fullscreen>.surface-fullscreen-exit>span{display:none}
+ .space-desktop .cv-compact-header .cv-zoom-controls button{width:44px;min-width:44px}
+}

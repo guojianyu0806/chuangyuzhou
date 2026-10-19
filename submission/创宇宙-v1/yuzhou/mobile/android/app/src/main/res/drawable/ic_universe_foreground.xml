@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="128" android:viewportHeight="128">
+    <group android:pivotX="64" android:pivotY="64" android:scaleX="0.74" android:scaleY="0.74">
+        <!-- Back ring, planet, then front ring: preserve depth on every launcher. -->
+        <group android:rotation="-30" android:pivotX="64" android:pivotY="64">
+            <path android:fillColor="#00000000" android:strokeColor="#D5F542" android:strokeWidth="8"
+                android:pathData="M16,64 A48,17 0,1 0,112 64 A48,17 0,1 0,16 64 Z" />
+        </group>
+        <path android:fillColor="#FFFFFF" android:pathData="M64,40 A24,24 0,1 0,64 88 A24,24 0,1 0,64 40" />
+        <group android:rotation="-30" android:pivotX="64" android:pivotY="64">
+            <path android:fillColor="#00000000" android:strokeColor="#D5F542" android:strokeWidth="8"
+                android:pathData="M112,64 A48,17 0,0 1,16 64" />
+        </group>
+        <path android:fillColor="#00D6D6" android:pathData="M99,19 A6,6 0,1 0,99 31 A6,6 0,1 0,99 19" />
+        <path android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="4"
+            android:strokeLineCap="round" android:pathData="M28,24 L28,36 M22,30 L34,30" />
+    </group>
+</vector>

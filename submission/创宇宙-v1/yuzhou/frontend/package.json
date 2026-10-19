@@ -1,0 +1,10 @@
+{
+  "name": "czb-yuzhou-workbench-frontend",
+  "version": "0.15.0",
+  "private": true,
+  "type": "module",
+  "description": "创宇宙的完整前端，基于个人工作台0.15.0。",
+  "scripts": {
+    "start": "node server.mjs"
+  }
+}
