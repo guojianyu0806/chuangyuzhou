@@ -1,0 +1,82 @@
+{
+  "checkedAtUtc": "2026-10-19T14:01:38.743452+00:00",
+  "trackId": 10039,
+  "trackName": "AI创新应用挑战赛",
+  "officialNoticeIndexTotal": 87,
+  "officialNoticeIndexRecordsReceived": 87,
+  "currentEditionNoticeCount": 7,
+  "currentEditionNotices": [
+    {
+      "id": 10091,
+      "title": "全国大学生计算机应用能力与数字素养大赛暨第九届传智杯作品赛预指导活动正式启动！",
+      "competitionName": "2026第九届传智杯全国大学生数智创新与 AI 应用大赛",
+      "lastEnableTime": "2026-10-15 17:21"
+    },
+    {
+      "id": 10090,
+      "title": "第九届传智杯程序设计挑战赛第二场排位赛成绩公示！",
+      "competitionName": "2026第九届传智杯全国大学生数智创新与 AI 应用大赛",
+      "lastEnableTime": "2026-10-14 19:11"
+    },
+    {
+      "id": 10089,
+      "title": "关于开展第九届传智杯全国高校程序设计挑战赛新生赛的通知",
+      "competitionName": "2026第九届传智杯全国大学生数智创新与 AI 应用大赛",
+      "lastEnableTime": "2026-10-13 14:48"
+    },
+    {
+      "id": 10088,
+      "title": "第九届传智杯程序设计挑战赛第一场排位赛成绩公示！",
+      "competitionName": "2026第九届传智杯全国大学生数智创新与 AI 应用大赛",
+      "lastEnableTime": "2026-10-08 18:47"
+    },
+    {
+      "id": 10087,
+      "title": "第九届传智杯大赛程序设计赛道排位赛规则与奖励",
+      "competitionName": "2026第九届传智杯全国大学生数智创新与 AI 应用大赛",
+      "lastEnableTime": "2026-09-18 15:27"
+    },
+    {
+      "id": 10086,
+      "title": "关于举办第九届传智杯全国大学生数智创新与AI应用大赛程序设计挑战赛排位赛的通知",
+      "competitionName": "2026第九届传智杯全国大学生数智创新与 AI 应用大赛",
+      "lastEnableTime": "2026-09-18 11:36"
+    },
+    {
+      "id": 10085,
+      "title": "关于全国大学生计算机应用能力与数字素养大赛暨第九届传智杯启动报名的相关通知！",
+      "competitionName": "2026第九届传智杯全国大学生数智创新与 AI 应用大赛",
+      "lastEnableTime": "2026-08-14 11:49"
+    }
+  ],
+  "explicitRetrospectiveGitAcceptanceFound": false,
+  "existingPersonalProjectEligibilityConfirmed": false,
+  "officialRejectionOfThisSpecificProjectFound": false,
+  "writtenOrganizerResponseObtained": false,
+  "publicationConditionSatisfied": false,
+  "githubUploadPerformed": false,
+  "originalMainCommitsPreserved": 188,
+  "retrospectiveSnapshotCommitsPreserved": 25,
+  "sourceSnapshots": [
+    {
+      "file": "official-track-10039.json",
+      "sha256": "37e30f82e3629c2f931e6c9cb2848bbe219df8ccf47791c4771e106ce0f15704",
+      "sourceUrl": "https://gateway.boxuegu.com/portal-marketing/competition/track/detail?id=10039&includeDetail=true"
+    },
+    {
+      "file": "official-notice-10091.json",
+      "sha256": "e53bf074f1d6bca62763b1c8d5f9871cc69059794493fd4d034888046de9541b",
+      "sourceUrl": "https://gateway.boxuegu.com/portal-marketing/competition-notice/detail?id=10091"
+    },
+    {
+      "file": "official-notice-10085.json",
+      "sha256": "115fbb42c2d46454a465ed2a67b724d53f74340d1f4080c5ce1e3cff47bdb128",
+      "sourceUrl": "https://gateway.boxuegu.com/portal-marketing/competition-notice/detail?id=10085"
+    }
+  ],
+  "searchLimitations": [
+    "Public official rules and notices checked; no private group, paid-only materials or individual organizer ruling accessed.",
+    "Absence of a found permission is not proof of a ban or disqualification.",
+    "Official API is dynamic; this is a retrieval-time public-data snapshot."
+  ]
+}
