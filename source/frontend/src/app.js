@@ -417,7 +417,7 @@ document.addEventListener('click',event=>{
   if(!link||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey||matchMedia('(max-width:760px)').matches)return;
   const href=link.getAttribute('href'),now=performance.now();
   if(event.detail===2||(event.detail>0&&lastSidebarClick.href===href&&now-lastSidebarClick.time<500)){
-    setSidebarExpanded(true);lastSidebarClick={href:'',time:0};
+    setSidebarExpanded(!state.ui.sidebarPinned);lastSidebarClick={href:'',time:0};
   }else lastSidebarClick={href,time:now};
 });
 function setMobileNav(open){

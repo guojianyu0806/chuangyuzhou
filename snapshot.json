@@ -1,30 +1,25 @@
 {
-  "archive": "0-7-1-20260920-150236.tar.gz",
-  "version": "0.7.1",
-  "archiveSha256": "509406379b339637c93a3d47fb713351d4f4da86ee97bc694b0f92ca9a369b28",
-  "bytes": 257520,
+  "archive": "0-7-2-20260920-150902.tar.gz",
+  "version": "0.7.2",
+  "archiveSha256": "7abd4d510d0f96b41e940a87c3b85ad1653d2be84b435139ff9dce0b9765e692",
+  "bytes": 257615,
   "relation": "pre-competition-source-snapshot",
   "metadataSha256Matches": true,
-  "recordedAtUtc": "2026-10-19T13:32:50.597803+00:00",
+  "recordedAtUtc": "2026-10-19T13:32:52.793391+00:00",
   "kind": "historical-source-snapshot-recorded-now",
   "sourceSubset": "files present in the retained deployment archive, not an entire original workspace",
   "mainBaselinePreserved": "96bdda69beccf77910b92f2699a4726e90b4711d",
   "deltaFromPreviousArchive": {
-    "added": [
-      "frontend/src/canvas-controls.css"
-    ],
+    "added": [],
     "deleted": [],
     "changed": [
       "backend/package.json",
       "backend/server.mjs",
       "deployment/README.md",
-      "frontend/index.html",
       "frontend/package.json",
       "frontend/server.mjs",
       "frontend/src/app.js",
-      "frontend/src/canvas.js",
-      "frontend/src/services.js",
-      "frontend/src/shell.css"
+      "frontend/src/services.js"
     ]
   }
 }

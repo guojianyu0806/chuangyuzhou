@@ -10,7 +10,7 @@ import { ApiError, createStore, digest, secretEqual, hashPassword, verifyPasswor
 import { isCliEntry } from './is-cli.mjs';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
-export const VERSION = '0.7.1';
+export const VERSION = '0.7.2';
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webmanifest': 'application/manifest+json' };
 const writeMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const localHostnames = new Set(['127.0.0.1', 'localhost', '[::1]']);
