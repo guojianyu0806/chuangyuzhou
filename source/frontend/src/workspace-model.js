@@ -1,8 +1,10 @@
 import {initializeLedger} from './ledger-model.js';
+import {initializeTimetable} from './timetable-model.js';
 export const SPACE_COLORS = ['#7950f2','#00b8b0','#ec4899','#b2cf18','#f58b35','#4088f4'];
 
 export function initializeSpaces(state) {
   initializeLedger(state);
+  initializeTimetable(state);
   if (!Array.isArray(state.spaces)) {
     const now = new Date().toISOString();
     state.spaces = state.mode === 'demo' ? [

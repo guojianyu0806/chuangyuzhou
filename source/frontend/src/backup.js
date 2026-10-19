@@ -1,6 +1,7 @@
 // Pure backup validation and additive merging. No browser storage or file writes.
 import {validateOrganizedProposal} from './ai-organizer.js';
 import {validateLedger} from './ledger-model.js';
+import {validateTimetable, mergeTimetables} from './timetable-model.js';
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
 const DRAFT_TYPES = ['writing', 'translation', 'listening'];
 const PRACTICE_TYPES = ['reading', 'writing', 'translation', 'listening', 'vocabulary'];
@@ -274,6 +275,7 @@ function workspace(value) {
   };
   if (value.spaces !== undefined) result.spaces = records(value.spaces, space, '自建工作区');
   if (value.ledger !== undefined) result.ledger = validateLedger(value.ledger);
+  if (value.timetable !== undefined) result.timetable = validateTimetable(value.timetable);
   if (value.aiRequests !== undefined) result.aiRequests = records(value.aiRequests, aiRequest, 'AI 收件记录');
   if (value.aiDraft !== undefined) result.aiDraft = aiDraft(value.aiDraft);
   if (value.canvas !== undefined) result.canvas = canvas(value.canvas);
@@ -349,6 +351,11 @@ export function mergeBackup(current, incoming) {
     mergeRecords(state.ledger.projects, source.ledger.projects);
     mergeRecords(state.ledger.entries, source.ledger.entries);
     state.ledger = validateLedger(state.ledger);
+  }
+  if (source.timetable) {
+    const merged = mergeTimetables(state.timetable, source.timetable);
+    state.timetable = merged.timetable;
+    count += merged.count;
   }
   if (source.aiRequests) mergeRecords(state.aiRequests ||= [], source.aiRequests, (existing, item) => {
     mergeRecords(existing.files ||= [], item.files);

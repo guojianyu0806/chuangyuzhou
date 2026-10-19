@@ -4,6 +4,7 @@ import { resolve, join } from 'node:path';
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import { validateLedger } from '../frontend/src/ledger-model.js';
+import { validateTimetable } from '../frontend/src/timetable-model.js';
 
 const scrypt = promisify(scryptCallback);
 export const MAX_STATE_BYTES = 12 * 1024 * 1024;
@@ -91,6 +92,10 @@ export function validateWorkspace(state) {
     try { validateLedger(state.ledger); }
     catch { throw new ApiError(400, 'invalid_ledger'); }
   }
+  if (state.timetable !== undefined) {
+    try { validateTimetable(state.timetable); }
+    catch { throw new ApiError(400, 'invalid_timetable'); }
+  }
   const serialized = JSON.stringify(state);
   if (Buffer.byteLength(serialized) > MAX_STATE_BYTES) throw new ApiError(413, 'workspace_too_large');
   return { serialized, blobs };
@@ -164,10 +169,14 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
         const current = db.prepare('SELECT revision,state,updated_at FROM workspace WHERE id=1').get();
         if (current.revision !== baseRevision) throw new ApiError(409, 'revision_conflict', { revision: current.revision });
         // Older clients may discard fields they do not recognize when importing backups.
-        // Require a refresh instead of accepting a workspace that would erase a populated ledger.
+        // Require a refresh instead of accepting a workspace that would erase a populated ledger or timetable.
         if (state.ledger === undefined && current.state) {
           const previousLedger = JSON.parse(current.state).ledger;
           if (previousLedger?.entries?.length || previousLedger?.projects?.length) throw new ApiError(409, 'workspace_update_required');
+        }
+        if (state.timetable === undefined && current.state) {
+          const previousTimetable = JSON.parse(current.state).timetable;
+          if (previousTimetable?.terms?.length) throw new ApiError(409, 'workspace_update_required');
         }
         const missing = [...blobs].filter(id => !fileInfo(id) || !existsSync(filePath(id)));
         if (missing.length) throw new ApiError(409, 'missing_files', { fileIds: missing.slice(0, 100) });

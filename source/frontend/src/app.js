@@ -7,6 +7,7 @@ import {mountCanvas,ensureCanvas} from './canvas.js';
 import {mountSpace,openSpaceDialog,saveSpaceFiles} from './spaces.js';
 import {mountAI,mountAIComposer} from './ai.js';
 import {mountLedger} from './ledger.js';
+import {mountTimetable} from './timetable.js';
 import {initializeSpaces,routeContent,undoRoute,openDestination} from './workspace-model.js';
 import {bootstrapCloud,mountModelSettings} from './cloud.js';
 
@@ -22,7 +23,7 @@ if(!['demo','personal'].includes(mode))mode='demo';
 let route='home',subroute='',filter='all';
 let cleanupView=null;
 let lastStored=localStorage.getItem(key(mode));
-const nav=[['home','orbit','空间主页'],['ai','sparkles','AI 收件台'],['courses','book','课程空间'],['english','graduation','六级计划'],['tasks','check-circle','备忘与待办'],['ledger','wallet','记账'],['inbox','inbox','收集箱'],['review','chart','生活回顾']];
+const nav=[['home','orbit','空间主页'],['ai','sparkles','AI 收件台'],['courses','book','课程空间'],['timetable','timetable','学期课表'],['english','graduation','六级计划'],['tasks','check-circle','备忘与待办'],['ledger','wallet','记账'],['inbox','inbox','收集箱'],['review','chart','生活回顾']];
 function seed(mode){
   const demo=mode==='demo';
   return {schema:1,mode,profile:{name:'同学',major:'软件工程',provider:'deepseek'},courses:demo?seedCourses():[],english:seedEnglish(demo),tasks:demo?[
@@ -125,6 +126,7 @@ function makeContext(){
 async function dropOnCard(local,id,input){
   const files=Array.from(input||[]),space=local.state.spaces.find(s=>s.id===id);
   if(id==='ledger'){toast('打开记账，点「记一笔」录入金额、日期和项目。');return {saved:0,rejected:files.length};}
+  if(id==='timetable'){toast('打开学期课表，可查看每周安排并新增或修改课程。');return {saved:0,rejected:files.length};}
   if(space){
     const result=await saveSpaceFiles(local,space,files);
     toast(`已保存 ${result.saved} 份文件到「${space.title}」${result.rejected?`，${result.rejected} 份未保存（单文件上限 40 MB）`:''}。`);
@@ -336,6 +338,7 @@ function render(){
   if(route==='courses')cleanupView=mountCourses(view,subroute);
   if(route==='english')cleanupView=mountEnglish(view,subroute);
   if(route==='ledger')cleanupView=mountLedger(view);
+  if(route==='timetable')cleanupView=mountTimetable(view);
   if(route==='tasks')renderTasks();if(route==='inbox')renderInbox();if(route==='review')renderReview();if(route==='settings')renderSettings();
   if(route!=='home'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)ctx.root.animate([{opacity:0,transform:'translateY(15px) scale(.985)'},{opacity:1,transform:'none'}],{duration:350,easing:'cubic-bezier(.22,1,.36,1)'});
   cloudEditing=false;cloudDirtyFields.clear();
@@ -438,7 +441,7 @@ function renderCloudSettings(){
 }
 if(cloudClient){
   cloudClient.subscribe(updateCloudShell);
-  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')&&!event.target.matches('[data-ledger-filter]')){cloudDirtyFields.add(event.target);cloudEditing=true;cloudEditTick++;}});
+  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')&&!event.target.matches('[data-ledger-filter],[data-timetable-view]')){cloudDirtyFields.add(event.target);cloudEditing=true;cloudEditTick++;}});
   document.addEventListener('ai-request-added',event=>{
     const host=event.target;
     // A successful composer submission saves and clears only its own draft.
