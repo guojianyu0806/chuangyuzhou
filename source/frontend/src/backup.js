@@ -1,3 +1,4 @@
+import {validateCalendar} from './calendar-model.js';
 import {validateConversation} from './ai-conversation-model.js';
 // Pure backup validation and additive merging. No browser storage or file writes.
 import {validateOrganizedProposal} from './ai-organizer.js';
@@ -284,6 +285,7 @@ function workspace(value) {
     english: english(value.english), updatedAt: text(value.updatedAt, '工作区更新时间'),
   };
   if (value.spaces !== undefined) result.spaces = records(value.spaces, space, '自建工作区');
+  if (value.calendar !== undefined) result.calendar = validateCalendar(value.calendar);
   if (value.ledger !== undefined) result.ledger = validateLedger(value.ledger);
   if (value.timetable !== undefined) result.timetable = validateTimetable(value.timetable);
   if (value.aiRequests !== undefined) result.aiRequests = records(value.aiRequests, aiRequest, 'AI 收件记录');
@@ -364,6 +366,11 @@ export function mergeBackup(current, incoming) {
   if (source.spaces) mergeRecords(state.spaces ||= [], source.spaces, mergeContainer);
   mergeRecords(state.tasks, source.tasks);
   mergeRecords(state.captures, source.captures);
+  if (source.calendar) {
+    state.calendar ||= {version:1,events:[]};
+    mergeRecords(state.calendar.events, source.calendar.events);
+    state.calendar = validateCalendar(state.calendar);
+  }
   if (source.ledger) {
     state.ledger ||= {version:1, currency:'CNY', projects:[], entries:[]};
     mergeRecords(state.ledger.projects, source.ledger.projects);

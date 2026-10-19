@@ -1,38 +1,35 @@
 {
-  "archive": "0-8-0-20260920-153220.tar.gz",
-  "version": "0.8.0",
-  "archiveSha256": "d0f28170d540b63829703587e3afa805989d44f51e7a0cb040ff67f47b9b5a0c",
-  "bytes": 264123,
+  "archive": "0-9-0-20260920-154630.tar.gz",
+  "version": "0.9.0",
+  "archiveSha256": "6bd1cebf2c42cacf11cba603db0aaad0d053930ae05a1d5340143eda63424084",
+  "bytes": 272179,
   "relation": "pre-competition-source-snapshot",
   "metadataSha256Matches": true,
-  "recordedAtUtc": "2026-10-19T13:32:54.627401+00:00",
+  "recordedAtUtc": "2026-10-19T13:32:57.592700+00:00",
   "kind": "historical-source-snapshot-recorded-now",
   "sourceSubset": "files present in the retained deployment archive, not an entire original workspace",
   "mainBaselinePreserved": "96bdda69beccf77910b92f2699a4726e90b4711d",
   "deltaFromPreviousArchive": {
     "added": [
-      "frontend/src/ai-chat.css",
-      "frontend/src/ai-chat.js",
-      "frontend/src/ai-conversation-model.js"
+      "frontend/src/calendar-model.js",
+      "frontend/src/calendar.css",
+      "frontend/src/calendar.js"
     ],
     "deleted": [],
     "changed": [
-      "backend/hermes.mjs",
       "backend/package.json",
       "backend/server.mjs",
       "backend/store.mjs",
-      "backend/tests/hermes.test.mjs",
       "backend/tests/server.test.mjs",
-      "deployment/README.md",
       "frontend/index.html",
       "frontend/package.json",
       "frontend/server.mjs",
-      "frontend/src/ai-cloud.js",
-      "frontend/src/ai.js",
       "frontend/src/app.js",
       "frontend/src/backup.js",
       "frontend/src/canvas.js",
-      "frontend/src/services.js"
+      "frontend/src/cloud.js",
+      "frontend/src/services.js",
+      "frontend/src/workspace-model.js"
     ]
   }
 }

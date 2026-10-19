@@ -1,3 +1,4 @@
+import {validateCalendar} from '../frontend/src/calendar-model.js';
 import {validateConversation} from '../frontend/src/ai-conversation-model.js';
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, chmodSync, existsSync, linkSync, unlinkSync } from 'node:fs';
@@ -90,6 +91,10 @@ export function validateWorkspace(state) {
     if (state.aiDraft.files !== undefined) recordList(state.aiDraft.files, ['id', 'blobId', 'name']);
   }
   for (const key of ['words', 'sessions', 'mistakes', 'attempts']) if (state.english[key] !== undefined) recordList(state.english[key]);
+  if (state.calendar !== undefined) {
+    try { validateCalendar(state.calendar); }
+    catch { throw new ApiError(400, 'invalid_calendar'); }
+  }
   if (state.ledger !== undefined) {
     try { validateLedger(state.ledger); }
     catch { throw new ApiError(400, 'invalid_ledger'); }
@@ -176,6 +181,7 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
           const previousLedger = JSON.parse(current.state).ledger;
           if (previousLedger?.entries?.length || previousLedger?.projects?.length) throw new ApiError(409, 'workspace_update_required');
         }
+        if (state.calendar === undefined && current.state && JSON.parse(current.state).calendar?.events?.length) throw new ApiError(409, 'workspace_update_required');
         if (state.timetable === undefined && current.state) {
           const previousTimetable = JSON.parse(current.state).timetable;
           if (previousTimetable?.terms?.length) throw new ApiError(409, 'workspace_update_required');

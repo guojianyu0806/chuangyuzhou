@@ -57,6 +57,17 @@ test('old workspace clients cannot discard conversation history and malformed ro
   assert.equal((await f.api('/api/workspace',{method:'PUT',body:{baseRevision:1,state:model}})).body.error,'invalid_conversation');
 });
 
+test('calendar persists independently and rejects malformed or stripping clients',async t=>{
+  const f=await fixture(t);await f.setup();const model=state(),stamp=new Date().toISOString();
+  model.calendar={version:1,events:[{id:'e',title:'会议',kind:'plan',startDate:'2026-09-20',endDate:'2026-09-20',allDay:true,startTime:'',endTime:'',location:'',notes:'',important:false,done:false,archived:false,color:'#ae88ff',createdAt:stamp,updatedAt:stamp}]};
+  assert.equal((await f.api('/api/workspace',{method:'PUT',body:{baseRevision:0,state:model}})).status,200);
+  const old=structuredClone(model);delete old.calendar;
+  assert.equal((await f.api('/api/workspace',{method:'PUT',body:{baseRevision:1,state:old}})).body.error,'workspace_update_required');
+  const bad=structuredClone(model);bad.calendar.events[0].endDate='2026-02-30';
+  assert.equal((await f.api('/api/workspace',{method:'PUT',body:{baseRevision:1,state:bad}})).body.error,'invalid_calendar');
+  const persisted=(await f.api('/api/workspace')).body.state;assert.deepEqual(persisted.calendar,model.calendar);assert.equal(persisted.timetable,undefined);
+});
+
 test('setup creation is atomic under concurrent requests', async t => {
   const f = await fixture(t);
   const results = await Promise.all([f.setup(), f.setup()]);
