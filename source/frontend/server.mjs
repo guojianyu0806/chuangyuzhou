@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = await realpath(fileURLToPath(new URL('.', import.meta.url)));
-const VERSION = '0.5.0';
+const VERSION = '0.6.0';
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = Number(process.env.PORT || 4173);
 

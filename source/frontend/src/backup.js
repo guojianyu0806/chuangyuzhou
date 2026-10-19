@@ -288,6 +288,10 @@ function workspace(value) {
   if (value.ui !== undefined) {
     const ui = object(value.ui, '界面偏好');
     result.ui = {sidebarPinned: boolean(ui.sidebarPinned, '侧边栏固定状态')};
+    if(ui.inboxView!==undefined){
+      if(!['cards','dream'].includes(ui.inboxView))fail('灵感显示方式');
+      result.ui.inboxView=ui.inboxView;
+    }
   }
   if (value.workspaceVersion !== undefined) result.workspaceVersion = integer(value.workspaceVersion, '空间版本', 1, 2);
   return result;
@@ -399,6 +403,7 @@ export function mergeBackup(current, incoming) {
     }
   }
   if (!state.ui && source.ui) { state.ui = structuredClone(source.ui); count++; }
+  else if(state.ui?.inboxView===undefined&&source.ui?.inboxView!==undefined){state.ui.inboxView=source.ui.inboxView;count++;}
   if (source.workspaceVersion && (!state.workspaceVersion || state.workspaceVersion < source.workspaceVersion)) state.workspaceVersion = source.workspaceVersion;
   const en = state.english ||= english({});
   const imported = source.english;

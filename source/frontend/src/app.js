@@ -8,6 +8,7 @@ import {mountSpace,openSpaceDialog,saveSpaceFiles} from './spaces.js';
 import {mountAI,mountAIComposer} from './ai.js';
 import {mountLedger} from './ledger.js';
 import {mountTimetable} from './timetable.js';
+import {mountDream} from './dream.js';
 import {initializeSpaces,routeContent,undoRoute,openDestination} from './workspace-model.js';
 import {bootstrapCloud,mountModelSettings} from './cloud.js';
 
@@ -91,7 +92,7 @@ function modal({title,body,submitLabel='保存',onSubmit}){
   const input=form.querySelector('input:not([type=file]),textarea,select');if(input)setTimeout(()=>input.focus(),50);
 }
 dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeModal();}});
-dialog.addEventListener('cancel',()=>{modalReturnFocus?.focus?.();});
+dialog.addEventListener('cancel',event=>{event.preventDefault();closeModal();});
 const ctx={root:null,state,save,esc,icon,toast,modal,closeModal,go,uid,putFile,getFile,download,dateLabel,cloud:cloudClient};
 
 // Keep async work attached to the workspace in which it started.
@@ -235,10 +236,35 @@ function captureDialog(id){
   const c=state.captures.find(x=>x.id===id);
   modal({title:c?'编辑碎片':'收集一个想法',body:`<label class="field">内容<textarea name="text" rows="6" required maxlength="12000" placeholder="文字、链接，或一段聊天里需要记住的事…">${esc(c?.text||'')}</textarea></label><div class="form-grid"><label class="field">分类<select name="category">${['备忘','学习灵感','英语','链接','消息摘录'].map(k=>`<option ${c?.category===k?'selected':''}>${k}</option>`).join('')}</select></label><label class="field">标签<input name="tags" maxlength="60" placeholder="例如：数据结构" value="${esc(c?.tags||'')}"></label></div>${c?.fileName?`<p class="muted">附件：${esc(c.fileName)}（${cloudClient&&mode==='personal'?'随工作区同步':'仅本机保存'}）</p>`:''}`,onSubmit:data=>{const values={text:data.get('text').trim(),category:data.get('category'),tags:data.get('tags').trim()};if(!values.text){toast('请先填写内容。');return false;}if(c){Object.assign(c,values);save();toast('内容已更新。');}else addCapture(values.text,values);render();}});
 }
+function setInboxView(value){
+  const previous=state.ui.inboxView;
+  try{state.ui.inboxView=value;save();render();}
+  catch(error){if(previous===undefined)delete state.ui.inboxView;else state.ui.inboxView=previous;toast(error.message);}
+}
 function renderInbox(){
+  if(state.ui.inboxView==='dream'){
+    ctx.root.innerHTML='';
+    cleanupView=mountDream(makeContext(),{
+      items:state.captures.filter(c=>!c.archived),onExit:()=>setInboxView('cards'),onCreate:()=>captureDialog(),onEdit:id=>captureDialog(id),
+      onArchive:id=>{
+        const capture=state.captures.find(c=>c.id===id);if(!capture)return;
+        const previous=capture.archived;
+        try{capture.archived=true;save();render();toast('灵感已归档，可在卡片排列的「已归档」中恢复。');}
+        catch(error){capture.archived=previous;toast(error.message);}
+      },
+      onDownload:async id=>{
+        try{const capture=state.captures.find(c=>c.id===id);if(!capture?.blobId)throw new Error('没有可下载的附件。');const blob=await getFile(capture.blobId);if(!blob)throw new Error('附件暂时不可用。');download(blob,capture.fileName||'灵感附件');}
+        catch(error){toast(error.message);}
+      }
+    });
+    return;
+  }
   const captures=state.captures.filter(c=>filter==='archived'?c.archived:!c.archived&&(filter==='all'||c.category===filter));
   ctx.root.innerHTML=pageHead('灵感，先放在这里。','每条碎片都有一张卡。拖入文件，或记下刚刚的想法。',`<div class="row">${button('添加附件','capture-file','upload')}${button('随手记','add-capture','plus',true)}</div>`)+`<section class="interior-page capture-desktop"><div class="inbox-notice">${icon('sparkles',21)}<div><strong>先收集，再连接。</strong><span>接入大模型后，可自动提取重点、建议分类和待办。目前可以手动整理。</span></div><button class="text-btn" data-action="assistant">交给 AI ${icon('arrow-right',16)}</button></div><div class="toolbar interior-filter"><div class="tabs">${[['all','全部碎片'],['学习灵感','学习灵感'],['英语','英语'],['备忘','备忘'],['archived','已归档']].map(([f,l])=>`<button class="tab ${filter===f?'active':''}" data-action="filter" data-filter="${f}">${l}</button>`).join('')}</div><span class="muted small">${captures.length} 条记录</span></div><div data-capture-board></div></section>`;
   const palette={'备忘':'#FF9CCE','学习灵感':'#AE88FF','英语':'#D8F649','链接':'#9DC5FF','消息摘录':'#63E6DC'};
+  const dreamButton=document.createElement('button');dreamButton.type='button';dreamButton.className='btn dream-entry';dreamButton.dataset.action='dream-mode';dreamButton.innerHTML=`${icon('cloud',18)}梦境模式`;
+  ctx.root.querySelector('.page-head .row')?.prepend(dreamButton);
+  if(!dreamButton.isConnected)ctx.root.querySelector('.capture-desktop').prepend(dreamButton);
   state.boards||={};state.boards.inbox||={};
   cleanupView=mountCanvas({...makeContext(),root:ctx.root.querySelector('[data-capture-board]'),createSpace:()=>captureDialog(),editSpace:id=>captureDialog(id),enterCard:id=>captureDialog(id)}, {
     layout:state.boards.inbox,items:state.captures.map(c=>({...c,title:c.text.slice(0,50)||c.fileName||'未命名碎片',subtitle:c.category,color:palette[c.category]||'#FFBC7C',icon:c.fileName?'file':c.category==='链接'?'link':'bolt'})),matches:c=>captures.some(x=>x.id===c.id),title:'灵感卡片',hideHeader:true,createLabel:false,cardLabel:c=>c.archived?'已归档':c.category,footLabel:c=>new Date(c.createdAt).toLocaleDateString('zh-CN',{month:'short',day:'numeric'}),enterLabel:'展开内容',canDrop:false,manageLabel:'编辑碎片',emptyHTML:empty('为下一次灵感，留一个位置。','写点什么，或拖入一份资料。',button('记下第一个想法','add-capture')),
@@ -256,6 +282,7 @@ function captureFile(){
 async function handleMain(event){
   const b=event.target.closest('[data-action]');if(!b)return;const id=b.dataset.id;const action=b.dataset.action;
   if(action==='assistant')assistant();
+  if(action==='dream-mode')setInboxView('dream');
   if(action==='add-task')taskDialog();
   if(action==='edit-task')taskDialog(id);
   if(action==='toggle-task'){const task=state.tasks.find(x=>x.id===id);task.done=!task.done;task.completedAt=task.done?new Date().toISOString():null;save();render();toast(task.done?'又完成一件事。':'已放回待办。');}
@@ -387,7 +414,7 @@ document.addEventListener('click',e=>{
   if(action==='close-assistant'){closeAssistant();document.querySelector('.assistant-fab').focus();}
   if(action==='assistant-note'){closeAssistant();captureDialog();}
 });
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();closeAssistant();searchDialog();}if(e.key==='Escape'){closeAssistant();setMobileNav(false);}const drawer=document.querySelector('#ai-drawer');if(e.key==='Tab'&&!drawer.hidden){const items=[...drawer.querySelectorAll('button,a,input,textarea,select')].filter(el=>!el.disabled);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}});
+document.addEventListener('keydown',e=>{if(e.defaultPrevented)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(document.querySelector('dialog[open]'))return;closeAssistant();searchDialog();}if(e.key==='Escape'){if(dialog.open||document.querySelector('[data-dream-detail-open],.surface-is-fullscreen'))return;closeAssistant();setMobileNav(false);}const drawer=document.querySelector('#ai-drawer');if(e.key==='Tab'&&!drawer.hidden){const items=[...drawer.querySelectorAll('button,a,input,textarea,select')].filter(el=>!el.disabled);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}});
 window.addEventListener('hashchange',()=>{filter='all';closeAssistant();setMobileNav(false);render();window.scrollTo({top:0,behavior:'instant'});});
 window.addEventListener('storage',event=>{if(event.key===key(mode)){const banner=document.querySelector('.mode-banner');if(banner)banner.innerHTML=`${icon('refresh',15)}<span>另一个窗口已更新此空间。</span><button data-action="reload-latest">加载最新内容 ${icon('arrow-right',14)}</button>`;}});
 window.addEventListener('unhandledrejection',event=>{if(event.reason?.name==='StorageConflictError')event.preventDefault();});
@@ -413,16 +440,25 @@ function updateCloudShell(){
   banner.querySelector('[data-cloud-retry]')?.addEventListener('click',()=>cloudClient.pending?cloudClient.flush().catch(error=>toast(error.message)):cloudClient.poll());
   const label=document.querySelector('[data-cloud-status]');if(label)label.textContent=cloudClient.label;
 }
+const immersiveBusy=()=>!!document.querySelector('[data-dream-detail-open],.surface-is-fullscreen');
 async function loadCloudUpdate(explicit=false){
   if(mode!=='personal'||!cloudClient)return;
+  if(!explicit&&immersiveBusy())return;
   if(explicit&&(cloudEditing||dialog.open||cloudClient.status==='conflict')){
-    modal({title:'加载云端最新内容',body:'<p>云端内容将替换当前显示。本设备已保存的改动会保留为恢复副本；未提交的表单请先保存，或关闭此弹窗后继续编辑。</p>',submitLabel:'保留副本并加载',onSubmit:()=>applyCloudUpdate()});return;
+    modal({title:'加载云端最新内容',body:'<p>云端内容将替换当前显示。本设备已保存的改动会保留为恢复副本；未提交的表单请先保存，或关闭此弹窗后继续编辑。</p>',submitLabel:'保留副本并加载',onSubmit:()=>applyCloudUpdate(true)});return;
   }
-  try{await applyCloudUpdate();}catch(error){toast(error.message);}
+  try{await applyCloudUpdate(explicit);}catch(error){toast(error.message);}
 }
-async function applyCloudUpdate(){
-  const source=state,editTick=cloudEditTick;
-  const remote=await cloudClient.acceptRemote(()=>mode==='personal'&&state===source&&cloudEditTick===editTick);
+async function applyCloudUpdate(allowImmersive=false){
+  const source=state,editTick=cloudEditTick,modalForm=dialog.open?dialog.querySelector('form'):null;
+  const remote=await cloudClient.acceptRemote(()=>{
+    if(mode!=='personal'||state!==source||cloudEditTick!==editTick)return false;
+    // The request may finish after an editor opens. Keep its captured record
+    // attached to the current state until the user has finished with it.
+    if(allowImmersive)return !dialog.open||dialog.querySelector('form')===modalForm;
+    const focused=document.activeElement?.matches('input,textarea,select,[contenteditable]');
+    return !dialog.open&&!cloudEditing&&!cloudPointer&&!focused&&!immersiveBusy();
+  });
   state=initializeSpaces(remote||seed('personal'));state.mode='personal';ensureCanvas(state);
   localStorage.setItem(key(mode),JSON.stringify(state));lastStored=localStorage.getItem(key(mode));baselines.set(state,lastStored);ctx.state=state;
   shell();render();
@@ -441,7 +477,7 @@ function renderCloudSettings(){
 }
 if(cloudClient){
   cloudClient.subscribe(updateCloudShell);
-  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')&&!event.target.matches('[data-ledger-filter],[data-timetable-view]')){cloudDirtyFields.add(event.target);cloudEditing=true;cloudEditTick++;}});
+  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')&&!event.target.matches('[data-ledger-filter],[data-timetable-view],[data-dream-view]')){cloudDirtyFields.add(event.target);cloudEditing=true;cloudEditTick++;}});
   document.addEventListener('ai-request-added',event=>{
     const host=event.target;
     // A successful composer submission saves and clears only its own draft.
@@ -456,7 +492,7 @@ if(cloudClient){
   document.addEventListener('pointercancel',()=>{cloudPointer=false;cloudActivity=Date.now();});
   cloudClient.start(()=>{
     const focused=document.activeElement?.matches('input,textarea,select,[contenteditable]');
-    if(mode==='personal'&&!dialog.open&&!cloudEditing&&!cloudPointer&&!focused&&Date.now()-cloudActivity>1500)loadCloudUpdate();
+    if(mode==='personal'&&!dialog.open&&!cloudEditing&&!cloudPointer&&!focused&&!immersiveBusy()&&Date.now()-cloudActivity>1500)loadCloudUpdate();
   });
 }
 shell();render();

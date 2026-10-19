@@ -37,6 +37,17 @@
 
 .cv-card.cv-compact .cv-card-body{margin-top:5px}
 
+/* Enter fullscreen without rebuilding cards or changing their saved coordinates. */
+.cv-fullscreen-toggle{display:flex;align-items:center;justify-content:center;gap:5px;min-height:44px;min-width:44px;padding:0 10px;border:1px solid #d5c5ed;border-radius:11px;color:#65438e;background:#fcf9ff;font-size:11px;flex-shrink:0;white-space:nowrap}
+.cv-fullscreen-toggle:hover,.cv-fullscreen-toggle[aria-pressed=true]{background:#ebe0ff;border-color:#b596e8}.cv-fullscreen-toggle:focus-visible{outline:3px solid #7950f2;outline-offset:2px}
+.surface-is-fullscreen .cv-fullscreen-toggle{display:none}
+.space-desktop.surface-is-fullscreen,.space-shell.on-canvas .space-desktop.surface-is-fullscreen{display:flex!important;flex-direction:column!important;gap:0!important}
+.space-desktop.surface-is-fullscreen>.cv-pagehead{flex:0 0 auto;min-height:0;margin-bottom:10px}.space-desktop.surface-is-fullscreen .cv-eyebrow,.space-desktop.surface-is-fullscreen .cv-pagehead p{display:none}.space-desktop.surface-is-fullscreen .cv-pagehead h1{font-size:23px!important}
+.space-desktop.surface-is-fullscreen .cv-toolbar{flex:0 0 auto;margin-bottom:8px}.space-desktop.surface-is-fullscreen>.cv-viewport{flex:1 1 0!important;height:auto!important;min-height:0!important;max-height:none!important;width:100%;margin:0!important;overflow:hidden!important}
+.space-desktop.surface-is-fullscreen>.cv-viewport.is-list{overflow:auto!important;overscroll-behavior:contain}.space-desktop.surface-is-fullscreen>.cv-statusbar{flex:0 0 auto;min-height:52px;margin:0;padding:4px 0 0}.space-desktop.surface-is-fullscreen>.cv-statusbar .cv-save-state{max-width:none}
+@media(max-width:760px){.cv-fullscreen-toggle{padding:0 9px}.space-desktop.surface-is-fullscreen .cv-pagehead>div:first-child{display:none}.space-desktop.surface-is-fullscreen .cv-head-actions{padding-top:0}.space-desktop.surface-is-fullscreen .cv-pagehead{gap:6px!important}.space-desktop.surface-is-fullscreen .cv-toolbar{margin-bottom:4px}.space-desktop.surface-is-fullscreen .cv-help{display:none}.space-desktop.surface-is-fullscreen .cv-statusbar{min-height:50px}.space-desktop.surface-is-fullscreen .cv-save-state{display:none}}
+@media(max-width:760px){.space-desktop.surface-is-fullscreen .cv-pagehead{display:block!important}.space-desktop.surface-is-fullscreen .cv-head-actions{position:absolute;top:calc(8px + env(safe-area-inset-top));left:max(8px,env(safe-area-inset-left));margin:0;max-width:calc(100% - 132px)}.space-desktop.surface-is-fullscreen .cv-head-actions .cv-button{padding:0 10px}.space-desktop.surface-is-fullscreen .cv-head-actions .cv-edit-toggle{padding:0}}
+
 /* Display choices share the same cards; only the free canvas owns their geometry. */
 .cv-stack-scroll{display:contents}
 .cv-stack-title,.cv-stack-rail,.cv-stack-focusline,.cv-stack-controls{display:none}

@@ -2,6 +2,7 @@
 import {formatMoney,localDate,selectEntries,summarizeEntries} from './ledger-model.js';
 import {CARD_PRESENTATIONS,normalizePresentation,normalizeStackPointer,stackMetrics,stackLayout} from './card-layouts.js';
 import {weekForDate,entriesForWeek} from './timetable-model.js';
+import {mountSurfaceFullscreen} from './fullscreen.js';
 const PRESETS = {
   ai:      { x:36, y:40, w:540, h:380, color:'#B3A0FF', title:'AI 收件台', icon:'sparkles', label:'把零散，变有序。' },
   courses: { x:612, y:40, w:310, h:272, color:'#AE88FF', title:'课程空间', icon:'book', label:'让知识，连成线。' },
@@ -112,6 +113,11 @@ export function mountCanvas(ctx, collection) {
     <div class="sr-only" role="status" aria-live="polite" data-cv-live></div>
   </section>`;
   const section=root.querySelector('.space-desktop'),viewport=root.querySelector('.cv-viewport'),world=root.querySelector('.cv-world'),live=root.querySelector('[data-cv-live]');
+  const fullscreenButton=document.createElement('button');
+  fullscreenButton.type='button';fullscreenButton.className='cv-fullscreen-toggle';fullscreenButton.dataset.cv='fullscreen';
+  fullscreenButton.setAttribute('aria-label','全屏画布');fullscreenButton.setAttribute('aria-pressed','false');fullscreenButton.title='全屏画布';
+  fullscreenButton.innerHTML=`${fitIcon}<span>全屏</span>`;
+  section.querySelector('.cv-toolbar').append(fullscreenButton);
   const stackScroll=viewport.querySelector('.cv-stack-scroll'),stackRail=viewport.querySelector('.cv-stack-rail'),stackPointer=viewport.querySelector('.cv-stack-pointer'),stackLine=viewport.querySelector('.cv-stack-focusline'),stackControls=viewport.querySelector('.cv-stack-controls');
   section.querySelector('.cv-statusbar').append(stackControls);
   if(!collection){
@@ -297,6 +303,7 @@ export function mountCanvas(ctx, collection) {
       const action=button.dataset.cv,el=button.closest('[data-card]'),card=canvas.cards.find(c=>c.id===el?.dataset.card);
       if(action==='create')return ctx.createSpace?.();
       if(action==='edit')return setEditing(!editing);
+      if(action==='fullscreen')return fullscreen.toggle();
       if(CARD_PRESENTATIONS.includes(action)){
         if(interaction)finish({type:'pointercancel',pointerId:interaction.id});finishStackPointer({type:'pointercancel',pointerId:stackDrag?.id});
         presentation=action;canvas.presentation=action;stackReady=false;markCustomized();if(action!=='canvas')setEditing(false);
@@ -496,6 +503,11 @@ export function mountCanvas(ctx, collection) {
     applyView();persist();
   }
   const onResize=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{if(presentation==='stack')stackReady=false;applyView();});};
+  const fullscreen=mountSurfaceFullscreen({element:section,label:'画布',onChange:active=>{
+    blur();fullscreenButton.setAttribute('aria-pressed',String(active));fullscreenButton.setAttribute('aria-label',active?'退出画布全屏':'全屏画布');
+    fullscreenButton.title=active?'退出画布全屏':'全屏画布';fullscreenButton.querySelector('span').textContent=active?'退出全屏':'全屏';
+    if(alive)onResize();
+  }});
   const resizeObserver=new ResizeObserver(onResize);resizeObserver.observe(viewport);
   section.addEventListener('click',onClick);
   stackScroll.addEventListener('scroll',requestStackPaint,{passive:true});section.addEventListener('focusin',stackFocusIn);
@@ -511,6 +523,7 @@ export function mountCanvas(ctx, collection) {
   window.addEventListener('blur',blur);
   viewport.addEventListener('dragenter',fileDrag);viewport.addEventListener('dragover',fileDrag);viewport.addEventListener('dragleave',fileDrag);viewport.addEventListener('drop',drop);
   const dispose=()=>{
+    fullscreen.destroy();
     if(stackDrag)finishStackPointer({type:'pointercancel',pointerId:stackDrag.id});
     if(interaction)finish({type:'pointercancel',pointerId:interaction.id});
     if(saveTimer){clearTimeout(saveTimer);persist();}alive=false;cancelAnimationFrame(raf);cancelAnimationFrame(stackRaf);clearTimeout(section._cvStatusTimer);resizeObserver.disconnect();composerCleanup?.();pointers.clear();
