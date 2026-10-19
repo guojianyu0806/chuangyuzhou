@@ -130,6 +130,10 @@ export async function createWorkbenchServer(options = {}) {
     if (path.includes('\\') || path.includes('\0') || path.split('/').some(part => part === '..' || part === '.')) throw new ApiError(400, 'invalid_path');
     const url = new URL(req.url || '/', 'http://localhost');
     if (path === '/api/health' && req.method === 'GET') { json(res, 200, { ok: true, mode: 'cloud', version: VERSION }); return; }
+    if (path === '/version.json') {
+      if (!['GET', 'HEAD'].includes(req.method)) throw new ApiError(405, 'method_not_allowed');
+      json(res, 200, { version: VERSION, mode: 'cloud', edition: 'private-cloud' }); return;
+    }
     if (path.startsWith('/api/')) {
       const session = store.getSession(cookieValue(req, cookieName));
       const user = store.account();

@@ -1,28 +1,20 @@
 {
-  "archive": "0-2-0-20260920-085122.tar.gz",
+  "archive": "0-2-0-20260920-085429.tar.gz",
   "version": "0.2.0",
-  "archiveSha256": "b821ce88b16247eb8f9d6a691d83ed8f01ad3c6e4db060fd595b9cd0080d8bc7",
-  "bytes": 197518,
+  "archiveSha256": "1a852b36075d27c75d469c094576eb4ca7750f0cfd3cc63d39b612803caaf373",
+  "bytes": 197777,
   "relation": "pre-competition-source-snapshot",
-  "recordedAtUtc": "2026-10-19T13:32:19.108465+00:00",
+  "recordedAtUtc": "2026-10-19T13:32:20.978066+00:00",
   "kind": "historical-source-snapshot-recorded-now",
   "sourceSubset": "files present in the retained deployment archive, not an entire original workspace",
   "mainBaselinePreserved": "96bdda69beccf77910b92f2699a4726e90b4711d",
   "deltaFromPreviousArchive": {
-    "added": [
-      "backend/is-cli.mjs",
-      "backend/tests/cli-symlink.test.mjs",
-      "deployment/README.md",
-      "frontend/README.md"
-    ],
-    "deleted": [
-      "frontend/package.json"
-    ],
+    "added": [],
+    "deleted": [],
     "changed": [
-      "backend/backup.mjs",
       "backend/server.mjs",
-      "frontend/src/app.js",
-      "frontend/src/cloud.js"
+      "backend/tests/server.test.mjs",
+      "deployment/README.md"
     ]
   }
 }

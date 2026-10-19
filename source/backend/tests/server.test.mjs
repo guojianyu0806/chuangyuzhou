@@ -53,6 +53,21 @@ test('setup creation is atomic under concurrent requests', async t => {
   assert.deepEqual(results.map(r => r.status).sort(), [201, 409]);
 });
 
+test('public version metadata supports the frontend update check and rejects writes', async t => {
+  const f = await fixture(t);
+  const version = await f.api('/version.json', { auth: false });
+  assert.equal(version.status, 200);
+  assert.deepEqual(version.body, { version: '0.2.0', mode: 'cloud', edition: 'private-cloud' });
+  assert.equal(version.headers.get('cache-control'), 'no-store');
+  assert.match(version.headers.get('content-type'), /application\/json/);
+  assert.equal((await f.api('/version.json', { method: 'HEAD', auth: false })).status, 200);
+  for (const method of ['POST', 'PUT', 'PATCH', 'DELETE']) {
+    const rejected = await f.api('/version.json', { method, auth: false, body: { version: 'changed' } });
+    assert.equal(rejected.status, 405); assert.equal(rejected.body.error, 'method_not_allowed');
+  }
+  assert.equal((await f.api('/version.json')).body.version, '0.2.0');
+});
+
 test('CSRF token and exact Origin protect writes including logout', async t => {
   const f = await fixture(t); await f.setup();
   const write = { method: 'PUT', body: { baseRevision: 0, state: state() } };

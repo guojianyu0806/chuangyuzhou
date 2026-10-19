@@ -22,7 +22,8 @@
 | HTTPS 配置 | `/etc/caddy/shiguang/workbench-ip.caddy` |
 | 文档解析环境 | `/opt/shiguang/extract-venv`，pypdf 6.9.1 |
 | 现有 Hermes 库 | `/home/ubuntu/.hermes/hermes-agent`，只读绑定 |
-| 隔离 Hermes 工作目录 | `/var/lib/shiguang/agent-home/.hermes` |
+| 隔离 Hermes 任务目录 | `/var/lib/shiguang/ai/hermes` |
+| 服务进程 HOME | `/var/lib/shiguang/agent-home` |
 | 原 Caddy 配置备份 | `/var/backups/shiguang/before-cloud-20260920T083658Z/Caddyfile` |
 
 HTTPS 使用 Let's Encrypt 的 IP 短期证书，交由 Caddy 自动申请和续期。必须保持端口 80 可用于 ACME 验证；实际公网连通与证书状态应通过不忽略证书错误的 HTTPS 请求确认。
