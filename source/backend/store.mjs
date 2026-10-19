@@ -7,6 +7,7 @@ import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } fr
 import { promisify } from 'node:util';
 import { validateLedger } from '../frontend/src/ledger-model.js';
 import { validateTimetable } from '../frontend/src/timetable-model.js';
+import { validateFitness } from '../frontend/src/fitness-model.js';
 
 const scrypt = promisify(scryptCallback);
 export const MAX_STATE_BYTES = 12 * 1024 * 1024;
@@ -81,6 +82,9 @@ export function validateWorkspace(state) {
       }
     }
   }
+  for (const space of state.spaces || []) {
+    if (space.fitnessEnabled !== undefined && typeof space.fitnessEnabled !== 'boolean') throw new ApiError(400, 'invalid_space_fitness_enabled');
+  }
   if (state.aiRequests !== undefined) {
     recordList(state.aiRequests, ['id', 'text']);
     for(const request of state.aiRequests)if(request.conversation!==undefined){try{validateConversation(request.conversation);}catch{throw new ApiError(400,'invalid_conversation');}}
@@ -102,6 +106,13 @@ export function validateWorkspace(state) {
   if (state.timetable !== undefined) {
     try { validateTimetable(state.timetable); }
     catch { throw new ApiError(400, 'invalid_timetable'); }
+  }
+  if (state.fitness !== undefined) {
+    let fitness;
+    try { fitness = validateFitness(state.fitness); }
+    catch { throw new ApiError(400, 'invalid_fitness'); }
+    const spaceIds = new Set((state.spaces || []).map(space => space.id));
+    if (fitness.entries.some(entry => !spaceIds.has(entry.spaceId))) throw new ApiError(400, 'invalid_fitness_reference');
   }
   const serialized = JSON.stringify(state);
   if (Buffer.byteLength(serialized) > MAX_STATE_BYTES) throw new ApiError(413, 'workspace_too_large');
@@ -176,7 +187,7 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
         const current = db.prepare('SELECT revision,state,updated_at FROM workspace WHERE id=1').get();
         if (current.revision !== baseRevision) throw new ApiError(409, 'revision_conflict', { revision: current.revision });
         // Older clients may discard fields they do not recognize when importing backups.
-        // Require a refresh instead of accepting a workspace that would erase a populated ledger or timetable.
+        // Require a refresh instead of accepting a workspace that would erase populated feature data.
         if (state.ledger === undefined && current.state) {
           const previousLedger = JSON.parse(current.state).ledger;
           if (previousLedger?.entries?.length || previousLedger?.projects?.length) throw new ApiError(409, 'workspace_update_required');
@@ -192,6 +203,15 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
         if (state.timetable === undefined && current.state) {
           const previousTimetable = JSON.parse(current.state).timetable;
           if (previousTimetable?.terms?.length) throw new ApiError(409, 'workspace_update_required');
+        }
+        if (current.state) {
+          const previous = JSON.parse(current.state);
+          if (state.fitness === undefined && previous.fitness?.entries?.length) throw new ApiError(409, 'workspace_update_required');
+          const incomingSpaces = new Map((state.spaces || []).map(space => [space.id, space]));
+          for (const space of previous.spaces || []) {
+            const incoming = incomingSpaces.get(space.id);
+            if (incoming && space.fitnessEnabled !== undefined && incoming.fitnessEnabled === undefined) throw new ApiError(409, 'workspace_update_required');
+          }
         }
         if(current.state){
           const incoming=new Map((state.aiRequests||[]).map(r=>[r.id,r]));

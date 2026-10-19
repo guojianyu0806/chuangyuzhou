@@ -5,6 +5,7 @@ import {validateWorkspaceActionSnapshot} from './workspace-actions.js';
 import {validateOrganizedProposal} from './ai-organizer.js';
 import {validateLedger,validateLedgerEntry} from './ledger-model.js';
 import {validateTimetable, mergeTimetables} from './timetable-model.js';
+import {validateFitness, mergeFitness} from './fitness-model.js';
 import {isRecordColor, assignRecordColor} from './creation-colors.js';
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
 const DRAFT_TYPES = ['writing', 'translation', 'listening'];
@@ -135,12 +136,12 @@ function capture(value) {
 function space(value) {
   return optionalFields(value, {
     id: identifier(value.id, '空间编号'), title: text(value.title, '空间名称', '', true),
-    description: text(value.description, '空间用途'), type: choice(value.type, ['blank','course','affairs','project'], '空间模板', 'blank'),
+    description: text(value.description, '空间用途'), type: choice(value.type, ['blank','course','affairs','project','fitness'], '空间模板', 'blank'),
     color: color(value.color), icon: text(value.icon, '空间图标', 'folder'),
     archived: boolean(value.archived, '空间归档状态'), example: boolean(value.example, '空间示例标记'),
     createdAt: text(value.createdAt, '空间创建时间'), updatedAt: text(value.updatedAt, '空间更新时间'),
     notes: records(value.notes, note, '空间笔记', true), files: records(value.files, courseFile, '空间资料', true),
-  }, ['sourceRequestId']);
+  }, ['sourceRequestId'], ['fitnessEnabled']);
 }
 function destination(value) {
   const result = identifier(value, '目标工作区');
@@ -291,6 +292,11 @@ function workspace(value) {
   if (value.calendar !== undefined) result.calendar = validateCalendar(value.calendar);
   if (value.ledger !== undefined) result.ledger = validateLedger(value.ledger);
   if (value.timetable !== undefined) result.timetable = validateTimetable(value.timetable);
+  if (value.fitness !== undefined) {
+    result.fitness = validateFitness(value.fitness);
+    const spaceIds = new Set((result.spaces || []).map(item => item.id));
+    if (result.fitness.entries.some(entry => !spaceIds.has(entry.spaceId))) fail('运动记录关联工作区');
+  }
   if (value.aiRequests !== undefined) result.aiRequests = records(value.aiRequests, aiRequest, 'AI 收件记录');
   if (value.aiDraft !== undefined) result.aiDraft = aiDraft(value.aiDraft);
   if (value.canvas !== undefined) result.canvas = canvas(value.canvas);
@@ -366,7 +372,10 @@ export function mergeBackup(current, incoming) {
     mergeRecords(existing.files, item.files);
   };
   mergeRecords(state.courses, source.courses, mergeContainer);
-  if (source.spaces) mergeRecords(state.spaces ||= [], source.spaces, mergeContainer);
+  if (source.spaces) mergeRecords(state.spaces ||= [], source.spaces, (existing, item) => {
+    mergeContainer(existing, item);
+    if (existing.fitnessEnabled === undefined && item.fitnessEnabled !== undefined) { existing.fitnessEnabled = item.fitnessEnabled; count++; }
+  });
   mergeRecords(state.tasks, source.tasks);
   mergeRecords(state.captures, source.captures);
   if (source.calendar) {
@@ -386,6 +395,11 @@ export function mergeBackup(current, incoming) {
     const merged = mergeTimetables(state.timetable, source.timetable);
     state.timetable = merged.timetable;
     count += merged.count;
+  }
+  if (source.fitness) {
+    const knownIds = new Set((state.fitness?.entries || []).map(entry => entry.id));
+    state.fitness = mergeFitness(state.fitness, source.fitness);
+    count += state.fitness.entries.filter(entry => !knownIds.has(entry.id)).length;
   }
   if (source.aiRequests) mergeRecords(state.aiRequests ||= [], source.aiRequests, (existing, item) => {
     if(item.conversation&&!existing.conversation){existing.conversation=structuredClone(item.conversation);count++;}

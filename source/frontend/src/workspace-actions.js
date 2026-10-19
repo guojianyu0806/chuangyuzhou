@@ -2,11 +2,12 @@
 // property paths, account settings, or model-selected new record identifiers.
 import {CORE_ACTION_ADAPTERS} from './workspace-actions-core.js';
 import {STUDY_ACTION_ADAPTERS} from './workspace-actions-study.js';
+import {FITNESS_ACTION_ADAPTERS} from './workspace-actions-fitness.js';
 import {assignRecordColor} from './creation-colors.js';
 import {formatMoney} from './ledger-model.js';
 
-const ADAPTERS={...CORE_ACTION_ADAPTERS,...STUDY_ACTION_ADAPTERS};
-const DOMAIN_KEYS=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','profile','ui','canvas','courseCanvas','boards'];
+const ADAPTERS={...CORE_ACTION_ADAPTERS,...STUDY_ACTION_ADAPTERS,...FITNESS_ACTION_ADAPTERS};
+const DOMAIN_KEYS=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','fitness','profile','ui','canvas','courseCanvas','boards'];
 const OPERATIONS=['create','update','archive','restore'];
 const OP_LABEL={create:'新建',update:'修改',archive:'归档',restore:'恢复'};
 const fail=message=>{throw new Error(message);};
@@ -75,7 +76,7 @@ function run(state,requestId,actions,options){
   safeJSON(snapshots);return {copy,snapshots,now:ctx.now,uid:ctx.uid};
 }
 function commit(state,next){for(const key of DOMAIN_KEYS){if(Object.hasOwn(next,key))state[key]=next[key];else delete state[key];}}
-const recordTitle=record=>record?.title||record?.name||record?.word||record?.question?.slice(0,80)||record?.text?.slice(0,80)||record?.note||record?.category||record?.topic||record?.id||'设置';
+const recordTitle=record=>record?.title||record?.name||record?.word||(record?.activity?`${record.date} · ${record.activity} · ${record.minutes} 分钟`:'')||record?.question?.slice(0,80)||record?.text?.slice(0,80)||record?.note||record?.category||record?.topic||record?.id||'设置';
 export function applyWorkspaceActions(state,requestId,actions,options={}){
   const {copy,snapshots,now,uid}=run(state,requestId,actions,options);
   const receipt={destinationId:'workspace',destinationLabel:'工作台',engine:'hermes',createdAt:now,items:snapshots.map(snapshot=>({id:uid(),type:`${OP_LABEL[snapshot.operation]}${ADAPTERS[snapshot.entity].label||snapshot.entity}`,title:recordTitle(snapshot.after),collection:'actions',containerId:'workspace',snapshot:JSON.stringify(snapshot)}))};
@@ -83,9 +84,10 @@ export function applyWorkspaceActions(state,requestId,actions,options={}){
 }
 const FIELD_LABEL={title:'名称',description:'说明',subtitle:'课程简介',prompt:'助教偏好',content:'正文',chapter:'章节',source:'来源',color:'卡片颜色',type:'类型',text:'内容',tags:'标签',category:'分类',date:'日期',priority:'优先级',done:'完成状态',archived:'归档状态',spaceId:'所属空间',projectId:'所属账本',amount:'金额',amountCents:'金额',includeInTotal:'计入总账单',name:'文件名称',blobId:'原文件',size:'文件大小',icon:'图标',note:'备注',targetContainerId:'移动到',containerId:'所属位置',startDate:'开始日期',endDate:'结束日期',startTime:'开始时间',endTime:'结束时间',allDay:'全天',kind:'安排类型',important:'重要标记',location:'地点',notes:'备注',teacher:'教师',room:'教室',weeks:'周次',day:'星期',weekday:'星期',startPeriod:'开始节次',endPeriod:'结束节次',campus:'校区',word:'单词',meaning:'释义',phonetic:'音标',example:'例句',translation:'译文',status:'学习状态',duration:'学习时长',minutes:'学习分钟',reviewed:'已回顾',targetScore:'目标分数',examDate:'考试日期',dailyMinutes:'每日时长',vocabularyTarget:'词汇目标',contentGoal:'学习内容',enabled:'启用',scale:'缩放',x:'横向位置',y:'纵向位置',w:'宽度',h:'高度',width:'宽度',height:'高度',layout:'排列方式',snap:'网格吸附',sidebarPinned:'固定侧边栏',displayName:'显示名称'};
 const SKIP_FIELDS=new Set(['id','updatedAt','createdAt','sourceRequestId','revisions','completedAt']);
-Object.assign(FIELD_LABEL,{major:'专业',weekOne:'第一周开始日期',totalWeeks:'学期总周数',teachingWeeks:'教学周数',periods:'节次时间',entries:'课程安排',activeTermId:'当前学期',target:'目标分数',focus:'练习重点',question:'题目',selected:'作答内容',correct:'正确答案',explanation:'解析',questionId:'题目编号',fileName:'附件名称',fileType:'文件类型',files:'文件',cards:'卡片',snap:'网格吸附',initialized:'画布已初始化',customized:'已自定义布局',presentation:'排列方式',stackPointer:'堆叠指针',view:'画布视角',zoom:'缩放',inboxView:'灵感显示方式',evidence:'用户原话依据'});
+Object.assign(FIELD_LABEL,{major:'专业',weekOne:'第一周开始日期',totalWeeks:'学期总周数',teachingWeeks:'教学周数',periods:'节次时间',entries:'课程安排',activeTermId:'当前学期',target:'目标分数',focus:'练习重点',question:'题目',selected:'作答内容',correct:'正确答案',explanation:'解析',questionId:'题目编号',fileName:'附件名称',fileType:'文件类型',files:'文件',cards:'卡片',snap:'网格吸附',initialized:'画布已初始化',customized:'已自定义布局',presentation:'排列方式',stackPointer:'堆叠指针',view:'画布视角',zoom:'缩放',inboxView:'灵感显示方式',evidence:'用户原话依据',fitnessEnabled:'开启运动记录',activity:'运动项目',distanceKm:'距离（公里）',caloriesKcal:'消耗热量（千卡）'});
 function human(value,key,state){
   if(key==='projectId'&&value==='')return '日常零钱';
+  if(['distanceKm','caloriesKcal'].includes(key)&&value===null)return '未提供（不计入已知合计）';
   if(value===undefined||value===null||value==='')return '未设置';
   if(key==='amountCents')return `¥${formatMoney(value)}`;
   if(key==='amount')return `¥${value}`;
@@ -95,7 +97,7 @@ function human(value,key,state){
   if(key==='type'&&['expense','income'].includes(value))return value==='expense'?'支出':'收入';
   if(key==='priority')return value==='high'?'重要':'普通';
   const practices={reading:'阅读',writing:'写作',listening:'听力',translation:'翻译',vocabulary:'词汇'};
-  const named={kind:{plan:'计划',mark:'标注',note:'注意事项'},type:{blank:'空白空间',course:'课程',affairs:'事务',project:'项目',...practices},focus:practices,source:{personal:'用户添加',builtin:'内置'},status:{new:'未学习',learning:'学习中',review:'待复习',mastered:'已掌握'},layout:{free:'自由画布',auto:'自适应',two:'两列',three:'三列',stack:'堆叠'},presentation:{canvas:'自由画布',list:'自适应','grid-2':'两列','grid-3':'三列',stack:'堆叠'},inboxView:{cards:'卡片',dream:'梦境模式'}};
+  const named={kind:{plan:'计划',mark:'标注',note:'注意事项'},type:{blank:'空白空间',course:'课程',affairs:'事务',project:'项目',fitness:'运动健身',...practices},focus:practices,source:{personal:'用户添加',builtin:'内置',manual:'手动提供',device:'设备读数'},status:{new:'未学习',learning:'学习中',review:'待复习',mastered:'已掌握'},layout:{free:'自由画布',auto:'自适应',two:'两列',three:'三列',stack:'堆叠'},presentation:{canvas:'自由画布',list:'自适应','grid-2':'两列','grid-3':'三列',stack:'堆叠'},inboxView:{cards:'卡片',dream:'梦境模式'}};
   if(named[key]?.[value])return named[key][value];
   if(Array.isArray(value))return value.length?JSON.stringify(value):'空';
   return typeof value==='object'?JSON.stringify(value):String(value);

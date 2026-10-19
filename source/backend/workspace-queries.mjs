@@ -2,6 +2,7 @@ import {createHash} from 'node:crypto';
 import {listWorkspaceRecords,WORKSPACE_ACTION_CAPABILITIES} from '../frontend/src/workspace-actions.js';
 import {selectEntries,summarizeEntries,formatMoney,isValidDate} from '../frontend/src/ledger-model.js';
 import {entriesForWeek,weekForDate,dateForWeek,periodTime} from '../frontend/src/timetable-model.js';
+import {selectFitnessEntries,summarizeFitness,fitnessRange} from '../frontend/src/fitness-model.js';
 
 export const WORKSPACE_QUERY_CAPABILITIES=[
  {kind:'search',label:'搜索工作台',description:'entity可省略；text关键词；可筛containerId、archived(false默认/true/all)、done；offset默认0，limit默认20最多50；返回真实编号和分页总数。'},
@@ -10,6 +11,7 @@ export const WORKSPACE_QUERY_CAPABILITIES=[
  {kind:'calendar.range',label:'查询日历安排',description:'start和end为YYYY-MM-DD；查询与范围交叠的事件；可kindFilter:plan/mark/note、done、archived。'},
  {kind:'timetable.week',label:'查询一周课表',description:'termId可省略使用当前学期；week为整数或date为YYYY-MM-DD；返回当周课程、实际日期、作息时间。'},
  {kind:'english.status',label:'查询六级学习情况',description:'start/end可选，返回计划、词汇掌握统计、错题数和程序计算的学习时长，不编造学习记录。'},
+ {kind:'fitness.summary',label:'计算运动统计',description:'spaceId必填真实空间id，只计算该空间；start/end可选YYYY-MM-DD，或用date与period=day|week|month选择完整日/周/月（不能与start/end混用）；archived=false默认/true/all。程序汇总全部匹配记录的次数、分钟、已知公里/千卡及缺失计数，不估算热量，不把null当零，不把计划记作实际运动。'},
  {kind:'file.read',label:'读取已有资料文字',description:'blobId必须来自已保存或本次对话附件；提取已上传资料文字，不能读取服务器路径或任意网址。'}
 ];
 const fail=message=>{throw new Error(message);};
@@ -20,10 +22,10 @@ export function validateWorkspaceQueries(value){
  if(!Array.isArray(value)||!value.length||value.length>6)fail('每轮查询须为1至6项。');
  return value.map(q=>{
   if(!object(q)||!WORKSPACE_QUERY_CAPABILITIES.some(c=>c.kind===q.kind))fail('不支持这个工作台查询。');
-  const allowed={search:['entity','text','containerId','archived','done','offset','limit'],get:['entity','id','containerId'],'ledger.summary':['scope','projectId','start','end','groupBy','archived'],'calendar.range':['start','end','kindFilter','done','archived','offset','limit'],'timetable.week':['termId','week','date'],'english.status':['start','end'],'file.read':['blobId']}[q.kind];
+  const allowed={search:['entity','text','containerId','archived','done','offset','limit'],get:['entity','id','containerId'],'ledger.summary':['scope','projectId','start','end','groupBy','archived'],'calendar.range':['start','end','kindFilter','done','archived','offset','limit'],'timetable.week':['termId','week','date'],'english.status':['start','end'],'fitness.summary':['spaceId','start','end','date','period','archived'],'file.read':['blobId']}[q.kind];
   if(Object.keys(q).some(k=>k!=='kind'&&!allowed.includes(k)))fail('查询包含不支持的字段。');
   const result={kind:q.kind};
-  for(const key of ['entity','text','containerId','id','projectId','termId','scope','groupBy','kindFilter','blobId'])if(q[key]!==undefined)result[key]=text(q[key],key==='text'?300:256,true);
+  for(const key of ['entity','text','containerId','id','projectId','spaceId','termId','scope','groupBy','kindFilter','blobId','period'])if(q[key]!==undefined)result[key]=text(q[key],key==='text'?300:256,true);
   if(result.entity&&!entities().has(result.entity))fail('查询的记录类型不存在。');
   if(q.kind==='get'&&(!result.entity||!result.id))fail('读取详情需要记录类型和真实编号。');
   if(q.kind==='file.read'&&!result.blobId)fail('请选择已有资料的文件编号。');
@@ -36,6 +38,12 @@ export function validateWorkspaceQueries(value){
   if(result.kindFilter&&!['plan','mark','note'].includes(result.kindFilter))fail('日历类型无效。');
   if(result.scope&&!['total','daily','projects','all'].includes(result.scope))fail('记账统计范围无效。');
   if(result.groupBy&&!['category','project','date'].includes(result.groupBy))fail('记账分组方式无效。');
+  if(q.kind==='fitness.summary'){
+   if(!result.spaceId)fail('运动统计必须指定空间，避免混合不同空间的记录。');
+   if(result.period&&!['day','week','month'].includes(result.period))fail('运动统计周期无效。');
+   if(Boolean(result.date)!==Boolean(result.period))fail('请同时指定运动统计日期date和周期period。');
+   if(result.period&&(result.start||result.end))fail('日期周期与起止范围只能选择一种。');
+  }
   return result;
  });
 }
@@ -43,7 +51,7 @@ export function validateWorkspaceQueries(value){
 // A proposal is bound to the actual domain data it read. Conversation messages,
 // timestamps and unsent drafts change independently and do not invalidate it.
 export function workspaceFingerprint(state){
- const fields=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','profile','canvas','courseCanvas','boards','ui'];
+ const fields=['spaces','courses','tasks','captures','ledger','calendar','timetable','english','fitness','profile','canvas','courseCanvas','boards','ui'];
  const data=Object.fromEntries(fields.map(key=>[key,state?.[key]??null]));
  return createHash('sha256').update(JSON.stringify(data)).digest('hex');
 }
@@ -103,6 +111,13 @@ export async function runWorkspaceQuery(state,q,{readFile}={}){
  if(q.kind==='english.status'){
   const english=state.english||{},sessions=(english.sessions||[]).filter(s=>!s.archived&&(!q.start||s.date>=q.start)&&(!q.end||s.date<=q.end)),words=(english.words||[]).filter(w=>!w.archived),statuses={new:0,review:0,mastered:0};for(const w of words)statuses[w.status||'new']++;
   return {plan:english.plan||null,start:q.start||null,end:q.end||null,wordCount:words.length,wordStatuses:statuses,sessionCount:sessions.length,minutes:sessions.reduce((n,s)=>n+(Number.isFinite(s.minutes)?s.minutes:0),0),mistakeCount:(english.mistakes||[]).filter(m=>!m.archived).length,notice:'学习时长仅汇总已经保存的记录；未记录的学习无法推测。'};
+ }
+ if(q.kind==='fitness.summary'){
+  const space=state.spaces?.find(row=>row.id===q.spaceId);if(!space)fail('运动空间不存在，请先查询确认。');
+  const range=q.period?fitnessRange(q.date,q.period):{start:q.start||'',end:q.end||''};
+  const entries=selectFitnessEntries(state.fitness||{version:1,entries:[]},{spaceId:q.spaceId,start:range.start,end:range.end,archived:q.archived??false});
+  return {spaceId:q.spaceId,spaceTitle:space.title,start:range.start||null,end:range.end||null,period:q.period||null,archived:q.archived??false,totals:summarizeFitness(entries),computedFromAllMatchingEntries:true,
+   units:{minutes:'分钟',distanceKm:'公里',caloriesKcal:'千卡'},notice:'只统计所选空间已保存的真实运动记录。热量与里程仅合计已提供数值，缺失项单列；全部缺失时总量为null，不能解释为零或估算补齐。'};
  }
  if(q.kind==='file.read'){
   const records=listWorkspaceRecords(state).map(r=>r.record),files=[...records,...(state.aiRequests||[]).flatMap(r=>r.files||[])];

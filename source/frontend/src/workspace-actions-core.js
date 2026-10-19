@@ -22,7 +22,7 @@ const date=value=>{if(value!==''&&!isValidDate(value))fail('行动日期无效�
 const color=value=>{if(!isRecordColor(value))fail('卡片颜色无效。');return value;};
 const title=value=>text(value,180,true);
 const definitions={
-  space:{label:'空间',collection:'spaces',required:['title'],fields:{title,description:v=>text(v,5000),type:v=>choice(v,['blank','course','affairs','project']),icon:v=>text(v,64,true),color}},
+  space:{label:'空间',collection:'spaces',required:['title'],fields:{title,description:v=>text(v,5000),type:v=>choice(v,['blank','course','affairs','project','fitness']),fitnessEnabled:bool,icon:v=>text(v,64,true),color}},
   course:{label:'课程',collection:'courses',required:['title'],fields:{title,subtitle:v=>text(v,5000),prompt:v=>text(v,30000),icon:v=>text(v,64,true),color}},
   note:{label:'笔记',collection:'notes',nested:true,required:['title','content'],fields:{title,content:v=>text(v,120000),chapter:v=>text(v,240),source:v=>text(v,3000),color,targetContainerId:id}},
   file:{label:'文件',collection:'files',nested:true,required:['blobId'],fields:{blobId:id,name:v=>text(v,240,true),source:v=>text(v,3000),color,targetContainerId:id}},
@@ -34,7 +34,7 @@ const definitions={
 const metadata=['id','createdAt','updatedAt','archived','example','color','sourceRequestId'];
 const recordExtra={space:['notes','files'],course:['notes','files'],note:['revisions'],file:['size','type'],task:['source','completedAt','captureId'],capture:['fileName','fileType','importedDraftKey'],ledgerProject:[],ledgerEntry:['amountCents']};
 const schemaDescriptions={
-  space:'title非空字符串≤180（新建必填）；description字符串≤5000默认空；type仅blank|course|affairs|project，默认blank；icon图标名称字符串≤64，默认folder。新建空间的notes/files由后续note/file行动写入，不能直接替换数组。',
+  space:'title非空字符串≤180（新建必填）；description字符串≤5000默认空；type仅blank|course|affairs|project|fitness，默认blank；fitnessEnabled可选布尔，true开启该空间运动记录，false明确关闭，type为fitness新建默认开启；icon图标名称字符串≤64，默认folder。新建空间的notes/files由后续note/file行动写入，不能直接替换数组；真实已完成运动由fitnessEntry行动写入，计划由calendarEvent写入。',
   course:'title非空字符串≤180（新建必填）；subtitle课程简介字符串≤5000默认空；prompt助教偏好完整字符串≤30000默认空；icon图标名称字符串≤64默认book。notes/files仅由note/file行动修改。',
   note:'title非空字符串≤180、content完整Markdown正文字符串≤120000（新建均必填，content可空）；chapter字符串≤240默认空；source来源说明字符串≤3000。update只写要变更的字段，但修改content须给完整新正文（不是补丁）。所属containerId必填space:真实id或course:真实id，可为前序space/course创建的$ref；data.targetContainerId以同格式移动已有笔记。',
   file:'blobId现有上传文件编号（新建必填，不能是URL）；name非空文件名字符串≤240可选，默认保留原名；source说明字符串≤3000可选。size和type由已有上传资料取得，禁止手填。所属containerId为space:id或course:id，data.targetContainerId可移动已有文件；两者可引用前序space/course的$ref。',
@@ -134,6 +134,7 @@ function apply(state,entity,action,ctx){
     if(entity==='capture'&&data.blobId!==undefined){const file=uploadedFile(state,data.blobId,ctx.requestId);Object.assign(after,{fileName:file.name,fileType:file.type||''});}
     if(entity==='ledgerEntry'&&data.amount!==undefined){after.amountCents=parseAmount(data.amount);delete data.amount;}
     Object.assign(after,data);
+    if(entity==='space'&&action.operation==='create'&&data.type==='fitness'&&data.fitnessEnabled===undefined)after.fitnessEnabled=true;
     if(action.operation==='create'&&entity!=='ledgerEntry')after.color=ctx.assignColor(state,data.color);
     if(entity==='task'&&data.done!==undefined)after.completedAt=data.done?(before?.completedAt||ctx.now):null;
     if(entity==='note'&&before&&(data.title!==undefined||data.content!==undefined||data.chapter!==undefined)){
@@ -149,7 +150,7 @@ function apply(state,entity,action,ctx){
 }
 function dependent(state,entity,record){
   const boardDependency=['space','course'].includes(entity)&&Object.entries(state.boards||{}).some(([key,board])=>key.startsWith(`${entity}:${record.id}:`)&&(board.customized||board.cards?.length));
-  if(entity==='space')return !!(record.notes?.length||record.files?.length||(state.tasks||[]).some(row=>row.spaceId===record.id)||boardDependency);
+  if(entity==='space')return !!(record.notes?.length||record.files?.length||(state.tasks||[]).some(row=>row.spaceId===record.id)||(state.fitness?.entries||[]).some(row=>row.spaceId===record.id)||boardDependency);
   if(entity==='course')return !!(record.notes?.length||record.files?.length||boardDependency);
   if(entity==='ledgerProject')return !!state.ledger?.entries?.some(row=>row.projectId===record.id);
   return false;
