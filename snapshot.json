@@ -1,18 +1,17 @@
 {
-  "archive": "0-7-0-20260920-143816.tar.gz",
-  "version": "0.7.0",
-  "archiveSha256": "75f24ed7854396445c1cac309d536fe674ca199565711c6b3fb98710e78bea68",
-  "bytes": 256831,
+  "archive": "0-7-1-20260920-150236.tar.gz",
+  "version": "0.7.1",
+  "archiveSha256": "509406379b339637c93a3d47fb713351d4f4da86ee97bc694b0f92ca9a369b28",
+  "bytes": 257520,
   "relation": "pre-competition-source-snapshot",
   "metadataSha256Matches": true,
-  "recordedAtUtc": "2026-10-19T13:32:47.438278+00:00",
+  "recordedAtUtc": "2026-10-19T13:32:50.597803+00:00",
   "kind": "historical-source-snapshot-recorded-now",
   "sourceSubset": "files present in the retained deployment archive, not an entire original workspace",
   "mainBaselinePreserved": "96bdda69beccf77910b92f2699a4726e90b4711d",
   "deltaFromPreviousArchive": {
     "added": [
-      "frontend/src/creation-colors.js",
-      "frontend/src/updates.css"
+      "frontend/src/canvas-controls.css"
     ],
     "deleted": [],
     "changed": [
@@ -22,18 +21,10 @@
       "frontend/index.html",
       "frontend/package.json",
       "frontend/server.mjs",
-      "frontend/src/ai-organizer.js",
       "frontend/src/app.js",
-      "frontend/src/backup.js",
       "frontend/src/canvas.js",
-      "frontend/src/courses.js",
-      "frontend/src/dream.css",
-      "frontend/src/dream.js",
-      "frontend/src/ledger.js",
       "frontend/src/services.js",
-      "frontend/src/spaces.js",
-      "frontend/src/timetable.js",
-      "frontend/src/workspace-model.js"
+      "frontend/src/shell.css"
     ]
   }
 }

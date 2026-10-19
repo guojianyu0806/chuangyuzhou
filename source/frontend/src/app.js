@@ -166,7 +166,7 @@ function shell(){
   document.querySelector('#app').innerHTML=`
   <button class="rail-scrim" data-action="close-nav" aria-label="关闭导航" hidden></button>
   <aside class="sidebar ${state.ui.sidebarPinned?'rail-pinned':''}" aria-label="空间导航"><a href="#/home" class="brand" aria-label="宇宙空间主页"><img src="./icon.svg" alt="" width="39" height="39"><span>宇宙<small>YOUR OWN UNIVERSE</small></span></a>
-  <button class="rail-pin" data-action="pin-nav" aria-label="${state.ui.sidebarPinned?'取消固定导航':'固定展开导航'}" aria-pressed="${!!state.ui.sidebarPinned}">${icon('pin',17)}<span>${state.ui.sidebarPinned?'取消固定':'固定导航'}</span></button>
+  <button class="rail-pin" data-action="pin-nav" aria-label="${state.ui.sidebarPinned?'收起侧边栏':'展开侧边栏'}" aria-pressed="${!!state.ui.sidebarPinned}">${icon('pin',17)}<span>${state.ui.sidebarPinned?'收起侧边栏':'展开侧边栏'}</span></button>
   <button class="workspace-switch" data-action="switch-workspace" aria-label="切换示例与个人空间"><span class="workspace-avatar">${mode==='demo'?'L':'我'}</span><span><strong>${mode==='demo'?'示例工作区':'我的工作台'}</strong><small>所有日常，都在这里</small></span>${icon('chevron-down',16)}</button>
   <nav class="primary-nav" aria-label="主导航">${nav.map(([id,i,label])=>`<a href="#/${id}" data-nav="${id}" aria-label="${label}" title="${label}">${icon(i)}<span>${label}</span><b data-count="${id}"></b></a>`).join('')}</nav>
   <div class="rail-spaces"><div class="rail-section-title"><span>我的工作区</span><button class="icon-btn" data-action="new-space" aria-label="新建工作区">${icon('plus',15)}</button></div><div id="rail-space-links"></div></div>
@@ -399,11 +399,27 @@ function render(){
   if(route==='tasks')renderTasks();if(route==='inbox')renderInbox();if(route==='review')renderReview();if(route==='settings')renderSettings();
   if(route!=='home'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)ctx.root.animate([{opacity:0,transform:'translateY(15px) scale(.985)'},{opacity:1,transform:'none'}],{duration:350,easing:'cubic-bezier(.22,1,.36,1)'});
   cloudEditing=false;cloudDirtyFields.clear();
-  if(cloudClient){updateCloudShell();if(mode==='personal'){
-    const textNodes=document.createTreeWalker(ctx.root,NodeFilter.SHOW_TEXT);
-    while(textNodes.nextNode()){const item=textNodes.currentNode;if(item.nodeValue==='布局自动保存在本机')item.nodeValue='布局随工作区同步';}
-  }}
+  if(cloudClient)updateCloudShell();
 }
+function setSidebarExpanded(expanded){
+  state.ui.sidebarPinned=expanded;save();
+  document.querySelector('.sidebar')?.classList.toggle('rail-pinned',expanded);
+  const button=document.querySelector('[data-action="pin-nav"]');
+  button?.setAttribute('aria-pressed',String(expanded));
+  button?.setAttribute('aria-label',expanded?'收起侧边栏':'展开侧边栏');
+  if(button)button.querySelector('span').textContent=expanded?'收起侧边栏':'展开侧边栏';
+}
+// Route immediately on the first click. Track destinations because custom
+// workspace links are re-rendered after navigation, before the second click.
+let lastSidebarClick={href:'',time:0};
+document.addEventListener('click',event=>{
+  const link=event.target.closest('.sidebar a[href^="#/"]');
+  if(!link||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey||matchMedia('(max-width:760px)').matches)return;
+  const href=link.getAttribute('href'),now=performance.now();
+  if(event.detail===2||(event.detail>0&&lastSidebarClick.href===href&&now-lastSidebarClick.time<500)){
+    setSidebarExpanded(true);lastSidebarClick={href:'',time:0};
+  }else lastSidebarClick={href,time:now};
+});
 function setMobileNav(open){
   const wasOpen=document.body.classList.contains('rail-open');
   document.body.classList.toggle('rail-open',open);document.querySelector('.rail-scrim').hidden=!open;
@@ -434,7 +450,7 @@ document.addEventListener('click',e=>{
   if(action==='check-update')checkAppUpdate();
   if(action==='switch-workspace')switchWorkspace();
   if(action==='new-space')openSpaceDialog(makeContext());
-  if(action==='pin-nav'){state.ui.sidebarPinned=!state.ui.sidebarPinned;save();const rail=document.querySelector('.sidebar');rail.classList.toggle('rail-pinned',state.ui.sidebarPinned);button.setAttribute('aria-pressed',String(state.ui.sidebarPinned));button.setAttribute('aria-label',state.ui.sidebarPinned?'取消固定导航':'固定展开导航');button.querySelector('span').textContent=state.ui.sidebarPinned?'取消固定':'固定导航';}
+  if(action==='pin-nav')setSidebarExpanded(!state.ui.sidebarPinned);
   if(action==='toggle-nav')setMobileNav(!document.body.classList.contains('rail-open'));
   if(action==='close-nav')setMobileNav(false);
   if(action==='reload-latest'){closeModal();state=load(mode);lastStored=localStorage.getItem(key(mode));baselines.set(state,lastStored);ctx.state=state;shell();render();toast('已加载最新记录，未提交的表单草稿仍然保留。');}

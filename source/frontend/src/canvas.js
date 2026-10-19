@@ -105,11 +105,11 @@ export function mountCanvas(ctx, collection) {
   const gridIcon='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>';
 
   root.innerHTML=`<section class="space-desktop ${collection?.hideHeader?'cv-nested':''}" aria-labelledby="canvas-title">
-    <header class="cv-pagehead"><div><div class="cv-eyebrow"><span></span> ${esc(collection?.eyebrow||'YOUR PERSONAL UNIVERSE')}</div><h1 id="canvas-title">${esc(collection?.title||'我的空间')}<span class="cv-title-dot">.</span></h1><p>${esc(collection?.description||'把日常铺开，让每一件事都有位置。')}</p></div><div class="cv-head-actions"><button class="cv-button cv-edit-toggle" type="button" data-cv="edit" aria-label="整理桌面" title="整理桌面" aria-pressed="false">${icon('edit',17)}<span>整理桌面</span></button><button class="cv-button cv-create" type="button" data-cv="create" ${collection?.createLabel===false?'hidden':''}>${icon('plus',19)}<span>${esc(collection?.createLabel||'新建空间')}</span></button></div></header>
+    <header class="cv-pagehead cv-compact-header"><div class="cv-heading"><h1 id="canvas-title">${esc(collection?.title||'我的空间')}<span class="cv-title-dot">.</span></h1></div><div class="cv-head-actions"><button class="cv-button cv-arrange-toggle" type="button" data-cv="arrange" aria-label="选择卡片排列方式" aria-haspopup="dialog">${gridIcon}<span>排列</span>${icon('chevron-down',13)}</button><button class="cv-button cv-create" type="button" data-cv="create" ${collection?.createLabel===false?'hidden':''}>${icon('plus',19)}<span>${esc(collection?.createLabel||'新建空间')}</span></button></div></header>
     ${collection?.toolbar||''}
-    <div class="cv-toolbar"><div class="cv-view-tabs" role="group" aria-label="空间展示方式">${[['canvas','自由画布'],['list','自适应'],['grid-2','两列'],['grid-3','三列'],['stack','堆叠']].map(([id,label])=>`<button type="button" data-cv="${id}" aria-pressed="${presentation===id}">${id==='canvas'?gridIcon:id==='stack'?icon('layers',18):id==='list'?icon('list',18):gridIcon}<span>${label}</span></button>`).join('')}</div><span class="cv-help">长按卡片，轻弹后拖动 · 拖空白处漫游</span>${!collection&&state.spaces.some(s=>s.archived)?`<button class="cv-archives" type="button" data-cv="archives">${icon('archive',15)}<span>已归档 ${state.spaces.filter(s=>s.archived).length}</span></button>`:''}<button class="cv-snap" type="button" data-cv="snap" aria-pressed="${canvas.snap}" title="拖动时吸附到网格">${icon('target',16)}<span>网格吸附</span></button><button class="cv-help-button" type="button" data-cv="help" aria-label="画布使用帮助">${icon('info',19)}</button></div>
-    <div class="cv-viewport" tabindex="0" aria-label="工作区卡片"><div class="cv-stack-scroll"><div class="cv-world"></div></div><div class="cv-stack-focusline" aria-hidden="true" hidden></div><aside class="cv-stack-rail" aria-label="堆叠展开位置" hidden><button class="cv-stack-pointer" type="button" role="slider" aria-label="上下拖动，调节卡片展开位置" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">${icon('chevron-right',22)}</button><span class="cv-stack-readout" aria-hidden="true"></span></aside><div class="cv-stack-controls" hidden><span>滑动卡片 · 拖动左侧指针展开</span><button type="button" data-cv="stack-prev" aria-label="上一张卡片">${icon('arrow-left',17)}</button><button type="button" data-cv="stack-next" aria-label="下一张卡片">${icon('arrow-right',17)}</button></div><div class="cv-pan-hint" aria-hidden="true"><span>你的空间，不止这一屏</span><span>拖动探索 ${icon('arrow-right',15)}</span></div><div class="cv-edit-message" hidden>${dragIcon}<span>拖动卡片排位置 · 拖右下角改大小 · 点菜单换颜色</span></div></div>
-    <footer class="cv-statusbar"><span class="cv-save-state"><span></span><span data-cv-status>布局自动保存在本机</span></span><div class="cv-zoom-controls" role="group" aria-label="画布视图"><button type="button" data-cv="zoom-out" aria-label="缩小画布">−</button><button type="button" data-cv="reset-zoom" class="cv-zoom-number" title="还原为100%">100%</button><button type="button" data-cv="zoom-in" aria-label="放大画布">+</button><i></i><button type="button" data-cv="fit" title="让所有卡片进入视野" aria-label="适应全部卡片">${fitIcon}</button><button type="button" data-cv="home" title="回到起始位置" aria-label="回到画布中心">${icon('home',18)}</button></div><button class="cv-home-link" ${collection?'hidden':''} type="button" data-cv="ai">${icon('sparkles',15)}<span>交给 AI 整理</span>${icon('arrow-right',14)}</button></footer>
+
+    <div class="cv-viewport" tabindex="0" aria-label="工作区卡片"><div class="cv-stack-scroll"><div class="cv-world"></div></div><div class="cv-stack-focusline" aria-hidden="true" hidden></div><aside class="cv-stack-rail" aria-label="堆叠展开位置" hidden><button class="cv-stack-pointer" type="button" role="slider" aria-label="上下拖动，调节卡片展开位置" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">${icon('chevron-right',22)}</button><span class="cv-stack-readout" aria-hidden="true"></span></aside><div class="cv-stack-controls" hidden><span>滑动卡片 · 拖动左侧指针展开</span><button type="button" data-cv="stack-prev" aria-label="上一张卡片">${icon('arrow-left',17)}</button><button type="button" data-cv="stack-next" aria-label="下一张卡片">${icon('arrow-right',17)}</button></div><div class="cv-edit-message" hidden>${dragIcon}<span>拖动卡片排位置 · 拖右下角改大小 · 点菜单换颜色</span></div></div>
+    <footer class="cv-statusbar"><div class="cv-zoom-controls" role="group" aria-label="画布视图"><button type="button" data-cv="zoom-out" aria-label="缩小画布">−</button><button type="button" data-cv="reset-zoom" class="cv-zoom-number" title="还原为100%">100%</button><button type="button" data-cv="zoom-in" aria-label="放大画布">+</button><i></i><button type="button" data-cv="fit" title="让所有卡片进入视野" aria-label="适应全部卡片">${fitIcon}</button><button type="button" data-cv="home" title="回到起始位置" aria-label="回到画布中心">${icon('home',18)}</button></div></footer>
     <div class="sr-only" role="status" aria-live="polite" data-cv-live></div>
   </section>`;
   const section=root.querySelector('.space-desktop'),viewport=root.querySelector('.cv-viewport'),world=root.querySelector('.cv-world'),live=root.querySelector('[data-cv-live]');
@@ -117,18 +117,45 @@ export function mountCanvas(ctx, collection) {
   fullscreenButton.type='button';fullscreenButton.className='cv-fullscreen-toggle';fullscreenButton.dataset.cv='fullscreen';
   fullscreenButton.setAttribute('aria-label','全屏画布');fullscreenButton.setAttribute('aria-pressed','false');fullscreenButton.title='全屏画布';
   fullscreenButton.innerHTML=`${fitIcon}<span>全屏</span>`;
-  section.querySelector('.cv-toolbar').append(fullscreenButton);
+  section.querySelector('.cv-head-actions').append(section.querySelector('.cv-zoom-controls'));
+  section.querySelector('.cv-compact-header').append(fullscreenButton);
   const stackScroll=viewport.querySelector('.cv-stack-scroll'),stackRail=viewport.querySelector('.cv-stack-rail'),stackPointer=viewport.querySelector('.cv-stack-pointer'),stackLine=viewport.querySelector('.cv-stack-focusline'),stackControls=viewport.querySelector('.cv-stack-controls');
   section.querySelector('.cv-statusbar').append(stackControls);
-  if(!collection){
-    const header=section.querySelector('.cv-pagehead');
-    header.insertBefore(section.querySelector('.cv-toolbar'),header.querySelector('.cv-head-actions'));
-  }
-  if(collection?.hideHeader){
-    section.querySelector('.cv-toolbar').append(section.querySelector('.cv-head-actions'));
-    section.querySelector('.cv-pagehead').hidden=true;
-  }
+  if(collection?.hideHeader)section.querySelector('.cv-heading').hidden=true;
 
+  function selectPresentation(action){
+    if(!alive||!CARD_PRESENTATIONS.includes(action))return;
+    if(interaction)finish({type:'pointercancel',pointerId:interaction.id});
+    finishStackPointer({type:'pointercancel',pointerId:stackDrag?.id});
+    presentation=action;canvas.presentation=action;stackReady=false;markCustomized();
+    if(action!=='canvas')setEditing(false);
+    section.querySelector('[data-cv="arrange"]').title=`排列方式：${presentationLabel(action)}`;
+    applyView();persist();
+  }
+  function presentationLabel(value){return ({canvas:'自由画布',list:'自适应','grid-2':'两列','grid-3':'三列',stack:'堆叠'})[value];}
+  function arrangeDialog(){
+    modal({title:'卡片排列',body:`<div class="cv-arrange-options">${CARD_PRESENTATIONS.map(value=>`<button type="button" data-cv-choice="${value}" aria-pressed="${presentation===value}">${value==='stack'?icon('layers',20):value==='list'?icon('list',20):gridIcon}<span>${presentationLabel(value)}</span>${presentation===value?icon('check',18):''}</button>`).join('')}</div><button type="button" class="cv-open-settings" data-cv-settings>${icon('settings',18)}<span>画布设置</span>${icon('chevron-right',16)}</button>`});
+    const host=document.querySelector('#modal');
+    host.querySelectorAll('[data-cv-choice]').forEach(button=>button.onclick=()=>{ctx.closeModal();selectPresentation(button.dataset.cvChoice);});
+    host.querySelector('[data-cv-settings]').onclick=canvasSettings;
+  }
+  function openArchives(){
+        const spaces=state.spaces.filter(s=>s.archived);
+        modal({title:'已归档的空间',body:`<p class="cv-settings-hint">归档保留了资料。进入空间后，可以恢复到主页。</p><div class="cv-archive-list">${spaces.map(space=>`<button type="button" data-archive-space="${esc(space.id)}"><span style="--space-color:${color(space.color)}">${safeIcon(space.icon,22)}</span><div><strong>${esc(space.title)}</strong><small>${esc(space.description||'资料已保留')}</small></div>${icon('arrow-right',18)}</button>`).join('')}</div>`});
+        document.querySelector('#modal')?.querySelectorAll('[data-archive-space]').forEach(button=>button.onclick=()=>{const id=button.dataset.archiveSpace;ctx.closeModal();ctx.enterCard?.(id);});return;
+  }
+  function canvasSettings(){
+    modal({title:'画布设置',body:`<label class="cv-setting-switch"><span>网格吸附</span><input type="checkbox" name="snap" ${canvas.snap?'checked':''}></label>`,submitLabel:'保存设置',onSubmit:data=>{
+      if(!alive)return false;
+      const before=canvas.snap;canvas.snap=data.has('snap');markCustomized();
+      try{save();}catch(error){canvas.snap=before;throw error;}
+    }});
+    if(!collection&&state.spaces.some(space=>space.archived)){
+      const button=document.createElement('button');button.type='button';button.className='cv-open-settings';button.textContent='已归档的空间';
+      button.onclick=openArchives;
+      document.querySelector('#modal .modal-body').append(button);
+    }
+  }
   function cardContent(card) {
     if(collection?.renderCard)return collection.renderCard(card,dataFor(card));
     const d=dataFor(card),courseCount=state.courses?.length||0,taskCount=(state.tasks||[]).filter(t=>!t.done&&!t.archived).length,captureCount=(state.captures||[]).filter(c=>!c.archived).length;
@@ -192,8 +219,7 @@ export function mountCanvas(ctx, collection) {
     viewport.classList.toggle('is-grid-3',presentation==='grid-3');
     viewport.classList.toggle('is-stack',stack);
     section.querySelectorAll('.cv-zoom-controls button').forEach(button=>button.disabled=!free);
-    section.querySelector('[data-cv="snap"]').disabled=!free;
-    section.querySelector('.cv-edit-toggle').disabled=!free;
+    section.querySelector('[data-cv="arrange"]').title=`排列方式：${presentationLabel(presentation)}`;
     stackRail.hidden=stackLine.hidden=stackControls.hidden=!stack;
     viewport.setAttribute('aria-label',stack?'堆叠卡片，滑动浏览；拖动左侧指针调整展开位置':free?'工作区画布，可拖动背景平移；使用下方按钮缩放':'工作区卡片网格');
     if(stack){
@@ -278,8 +304,8 @@ export function mountCanvas(ctx, collection) {
     el.style.transform=`translate(${card.x}px,${card.y}px)`;el.style.width=`${card.w}px`;el.style.height=`${card.h}px`;
     el.classList.toggle('cv-compact',card.h<260);el.classList.toggle('cv-short',card.h<330);
   }
-  function announce(message) {live.textContent=message;section.querySelector('[data-cv-status]').textContent=message;clearTimeout(section._cvStatusTimer);section._cvStatusTimer=setTimeout(()=>{if(alive)section.querySelector('[data-cv-status]').textContent='布局自动保存在本机';},2500);}
-  function setEditing(value) {editing=value;section.classList.toggle('is-editing',editing);section.querySelector('.cv-edit-toggle').setAttribute('aria-pressed',String(editing));section.querySelector('.cv-edit-toggle span').textContent=editing?'完成整理':'整理桌面';section.querySelector('.cv-edit-message').hidden=!editing;}
+  function announce(message) {live.textContent=message;}
+  function setEditing(value) {editing=value;section.classList.toggle('is-editing',editing);section.querySelector('.cv-edit-message').hidden=!editing;}
   function cardSettings(card) {
     const d=dataFor(card),minWidth=card.id==='ai'?390:220,minHeight=card.id==='ai'?350:220;
     modal({title:`${d.title} · 卡片外观`,body:`<p class="cv-settings-hint">调节这张卡片的颜色、尺寸和摆放位置。</p><label class="field">卡片颜色<div class="cv-color-options">${COLORS.map(c=>`<button type="button" class="cv-color-swatch" data-pick-color="${c}" style="--swatch:${c}" aria-label="选择颜色 ${c}">${c===d.color?icon('check',17):''}</button>`).join('')}<input type="color" name="color" value="${color(d.color)}" aria-label="自定义卡片颜色"></div></label><div class="form-grid"><label class="field">宽度<input type="number" name="width" value="${Math.round(card.w)}" min="${minWidth}" max="1100" step="1" required></label><label class="field">高度<input type="number" name="height" value="${Math.round(card.h)}" min="${minHeight}" max="850" step="1" required></label><label class="field">横向位置<input type="number" name="x" value="${Math.round(card.x)}" min="-100000" max="100000" step="1" required></label><label class="field">纵向位置<input type="number" name="y" value="${Math.round(card.y)}" min="-100000" max="100000" step="1" required></label></div>${(collection?(collection.onEdit!==undefined?collection.onEdit:ctx.editSpace):!presets[card.id]&&ctx.editSpace)?`<button type="button" class="btn" data-manage-space>${esc(collection?.manageLabel||'编辑卡片内容')}</button>`:''}`,onSubmit:form=>{
@@ -305,32 +331,21 @@ export function mountCanvas(ctx, collection) {
     if(button){
       const action=button.dataset.cv,el=button.closest('[data-card]'),card=canvas.cards.find(c=>c.id===el?.dataset.card);
       if(action==='create')return ctx.createSpace?.();
-      if(action==='edit')return setEditing(!editing);
       if(action==='fullscreen')return fullscreen.toggle();
-      if(CARD_PRESENTATIONS.includes(action)){
-        if(interaction)finish({type:'pointercancel',pointerId:interaction.id});finishStackPointer({type:'pointercancel',pointerId:stackDrag?.id});
-        presentation=action;canvas.presentation=action;stackReady=false;markCustomized();if(action!=='canvas')setEditing(false);
-        section.querySelectorAll('.cv-view-tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.cv===action)));
-        applyView();persist();return;
-      }
+      if(action==='arrange')return arrangeDialog();
+      if(CARD_PRESENTATIONS.includes(action))return selectPresentation(action);
       if(action==='stack-prev'||action==='stack-next')return selectStack(Math.round(stackFocus)+(action==='stack-prev'?-1:1));
-      if(action==='snap'){canvas.snap=!canvas.snap;markCustomized();button.setAttribute('aria-pressed',String(canvas.snap));persist();return;}
       if(action==='zoom-in')return scaleView(1.15);
       if(action==='zoom-out')return scaleView(1/1.15);
       if(action==='reset-zoom')return scaleView(1/canvas.view.zoom);
       if(action==='fit')return fitAll();
       if(action==='home')return homeView();
       if(action==='card-menu'&&card)return cardSettings(card);
-      if(action==='archives'){
-        const spaces=state.spaces.filter(s=>s.archived);
-        modal({title:'已归档的空间',body:`<p class="cv-settings-hint">归档保留了资料。进入空间后，可以恢复到主页。</p><div class="cv-archive-list">${spaces.map(space=>`<button type="button" data-archive-space="${esc(space.id)}"><span style="--space-color:${color(space.color)}">${safeIcon(space.icon,22)}</span><div><strong>${esc(space.title)}</strong><small>${esc(space.description||'资料已保留')}</small></div>${icon('arrow-right',18)}</button>`).join('')}</div>`});
-        document.querySelector('#modal')?.querySelectorAll('[data-archive-space]').forEach(button=>button.onclick=()=>{const id=button.dataset.archiveSpace;ctx.closeModal();ctx.enterCard?.(id);});return;
-      }
       if(action==='enter'&&card)return ctx.enterCard?.(card.id,el);
       if(action==='ai')return ctx.enterCard?.('ai',cardEl('ai'))||(!ctx.enterCard&&go('ai'));
       if(action==='vocabulary')return go('english','vocabulary');
       if(action==='reading')return go('english','reading');
-      if(action==='help')return modal({title:'你的空间，你来摆放',body:`<div class="cv-help-list"><p><strong>移动视野</strong>拖动画布空白处，或用鼠标滚轮平移。按住空格可在卡片上拖动画布。</p><p><strong>缩放画布</strong>使用底部 ＋ / −，触屏可双指缩放，鼠标可按 Ctrl + 滚轮。</p><p><strong>摆放卡片</strong>按住卡片约半秒，轻弹浮起后继续拖动，松手保存。短按进入空间。也可以直接拖右上角手柄，或在“整理桌面”中直接拖动。右下角可调整大小。</p><p><strong>键盘调整</strong>聚焦卡片手柄后按方向键移动；聚焦右下角手柄后按方向键调整尺寸。Shift 可加大步长。</p><p><strong>收进文件</strong>把文件拖到卡片上，出现高亮边框后松手。触屏可进入空间选择文件上传。</p><p><strong>颜色与用途</strong>卡片右上角菜单可调整颜色、大小和位置，自建空间还能修改名称和用途。</p></div>`});
+
       return;
     }
     const el=event.target.closest('[data-card]');
