@@ -35,7 +35,7 @@ async function fixture(t, options = {}) {
 
 test('public health is minimal; private APIs require auth; setup cannot be claimed without token', async t => {
   const f = await fixture(t);
-  assert.deepEqual((await f.api('/api/health')).body, { ok: true, mode: 'cloud', version: '0.2.0' });
+  assert.deepEqual((await f.api('/api/health')).body, { ok: true, mode: 'cloud', version: '0.2.1' });
   assert.equal((await f.api('/api/auth/session')).body.setupRequired, true);
   for (const path of ['/api/workspace', '/api/model/status', `/api/files/${randomUUID()}`]) assert.equal((await f.api(path)).status, 401);
   const rejected = await f.api('/api/auth/setup', { method: 'POST', body: { username, password, setupToken: 'wrong' } });
@@ -57,7 +57,7 @@ test('public version metadata supports the frontend update check and rejects wri
   const f = await fixture(t);
   const version = await f.api('/version.json', { auth: false });
   assert.equal(version.status, 200);
-  assert.deepEqual(version.body, { version: '0.2.0', mode: 'cloud', edition: 'private-cloud' });
+  assert.deepEqual(version.body, { version: '0.2.1', mode: 'cloud', edition: 'private-cloud' });
   assert.equal(version.headers.get('cache-control'), 'no-store');
   assert.match(version.headers.get('content-type'), /application\/json/);
   assert.equal((await f.api('/version.json', { method: 'HEAD', auth: false })).status, 200);
@@ -65,7 +65,7 @@ test('public version metadata supports the frontend update check and rejects wri
     const rejected = await f.api('/version.json', { method, auth: false, body: { version: 'changed' } });
     assert.equal(rejected.status, 405); assert.equal(rejected.body.error, 'method_not_allowed');
   }
-  assert.equal((await f.api('/version.json')).body.version, '0.2.0');
+  assert.equal((await f.api('/version.json')).body.version, '0.2.1');
 });
 
 test('CSRF token and exact Origin protect writes including logout', async t => {

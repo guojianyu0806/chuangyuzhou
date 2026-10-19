@@ -45,7 +45,7 @@ export async function backupWorkbench({ dataDir, outputDir, now = new Date() }) 
   const sourceStat = await lstat(sourceRoot);
   if (!sourceStat.isDirectory() || sourceStat.isSymbolicLink()) throw new Error('DATA_DIR must be an ordinary directory');
   await privateDirectory(destinationRoot);
-  const name = `shiguang-${now.toISOString().replace(/[:.]/g, '-')}-${randomBytes(4).toString('hex')}`;
+  const name = `yuzhou-${now.toISOString().replace(/[:.]/g, '-')}-${randomBytes(4).toString('hex')}`;
   const staging = join(destinationRoot, `${name}.partial`); const completed = join(destinationRoot, name);
   await mkdir(staging, { mode: 0o700 });
   const entries = [];

@@ -1,6 +1,8 @@
-# 拾光私人工作台 · 0.2.0
+# 宇宙私人工作台 · 0.2.1
 
 原生 HTML、CSS、JavaScript ESM，无第三方前端运行依赖。支持本地模式和私人云模式：`frontend/server.mjs` 保留原有本机工作台；`backend/server.mjs` 提供账号、资料同步、私有附件与 Hermes AI 后台。服务器部署说明见 `../deployment/README.md`。
+
+0.2.1 统一使用“宇宙”品牌与轨道图标；网页标题、安装名称、登录页及备份文件名同步更新。账号、浏览器存储标识和备份格式保持兼容，原有资料与备份可以继续使用。
 
 ## 启动
 
@@ -76,7 +78,7 @@ node server.mjs
 | 路径 | 返回内容 |
 | --- | --- |
 | `/api/health` | 服务状态、版本、`backendConfigured: false` |
-| `/version.json` | `0.2.0` 与“本地界面版”标记 |
+| `/version.json` | `0.2.1` 与“本地界面版”标记 |
 | 其他 `/api` 路径 | HTTP 501，`backend_not_configured` |
 
 本地开发服务仅支持 `GET`、`HEAD`，其他方法返回 HTTP 405；不提供目录枚举。私人云接口另见 `../backend/README.md`。

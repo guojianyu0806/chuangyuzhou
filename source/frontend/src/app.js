@@ -63,7 +63,7 @@ function save(target=state){
   try{localStorage.setItem(key(targetMode),JSON.stringify(target));}catch(error){toast('本机保存失败，请立即导出数据备份。');throw error;}
   const stored=localStorage.getItem(key(targetMode));baselines.set(target,stored);
   if(cloudClient)cloudClient.enqueue(target);
-  if(target===state){lastStored=stored;updateShellCounts();renderSpaceLinks();if(route==='space'){const title=state.spaces.find(s=>s.id===subroute)?.title;if(title){document.title=`${title} · 拾光`;const label=document.querySelector('#current-page');if(label)label.textContent=title;}}}
+  if(target===state){lastStored=stored;updateShellCounts();renderSpaceLinks();if(route==='space'){const title=state.spaces.find(s=>s.id===subroute)?.title;if(title){document.title=`${title} · 宇宙`;const label=document.querySelector('#current-page');if(label)label.textContent=title;}}}
 }
 const dialog=document.querySelector('#modal');
 let modalReturnFocus;
@@ -153,7 +153,7 @@ function shell(){
   document.body.classList.add('space-shell');
   document.querySelector('#app').innerHTML=`
   <button class="rail-scrim" data-action="close-nav" aria-label="关闭导航" hidden></button>
-  <aside class="sidebar ${state.ui.sidebarPinned?'rail-pinned':''}" aria-label="空间导航"><a href="#/home" class="brand" aria-label="拾光空间主页"><img src="./icon.svg" alt="" width="39" height="39"><span>拾光<small>YOUR OWN UNIVERSE</small></span></a>
+  <aside class="sidebar ${state.ui.sidebarPinned?'rail-pinned':''}" aria-label="空间导航"><a href="#/home" class="brand" aria-label="宇宙空间主页"><img src="./icon.svg" alt="" width="39" height="39"><span>宇宙<small>YOUR OWN UNIVERSE</small></span></a>
   <button class="rail-pin" data-action="pin-nav" aria-label="${state.ui.sidebarPinned?'取消固定导航':'固定展开导航'}" aria-pressed="${!!state.ui.sidebarPinned}">${icon('pin',17)}<span>${state.ui.sidebarPinned?'取消固定':'固定导航'}</span></button>
   <button class="workspace-switch" data-action="switch-workspace" aria-label="切换示例与个人空间"><span class="workspace-avatar">${mode==='demo'?'L':'我'}</span><span><strong>${mode==='demo'?'示例工作区':'我的工作台'}</strong><small>所有日常，都在这里</small></span>${icon('chevron-down',16)}</button>
   <nav class="primary-nav" aria-label="主导航">${nav.map(([id,i,label])=>`<a href="#/${id}" data-nav="${id}" aria-label="${label}" title="${label}">${icon(i)}<span>${label}</span><b data-count="${id}"></b></a>`).join('')}</nav>
@@ -161,7 +161,7 @@ function shell(){
   <div class="sidebar-bottom"><button class="rail-new" data-action="new-space" aria-label="新建工作区">${icon('plus',20)}<span>新建工作区</span></button><a class="settings-link" href="#/settings" aria-label="偏好与连接" title="偏好与连接">${icon('settings')}<span>偏好与连接</span></a><button class="profile" data-go="settings" aria-label="个人设置"><span class="avatar">${esc(state.profile.name.slice(0,1))}</span><span><strong>${esc(state.profile.name)}</strong><small>你的私人工作台</small></span></button></div></aside>
   <div class="app-main"><header class="topbar"><div class="breadcrumb"><button class="mobile-menu icon-btn" data-action="toggle-nav" aria-label="展开导航">${icon('menu')}</button><a href="#/home" class="desktop-label">我的宇宙</a><span class="slash desktop-label">/</span><strong id="current-page">空间主页</strong></div><button class="search-trigger" data-action="search" aria-label="搜索所有空间">${icon('search',17)}<span>搜索所有空间…</span><kbd>Ctrl K</kbd></button><div class="topbar-actions"><button class="sync-indicator" data-go="settings"><span class="status-dot"></span><span>本机已就绪</span></button><button class="icon-btn" data-action="notifications" aria-label="通知">${icon('bell')}</button><button class="avatar small-avatar" data-go="settings" aria-label="个人设置">${esc(state.profile.name.slice(0,1))}</button></div></header>
   <div class="mode-banner ${mode==='personal'?'personal-banner':''}">${icon(mode==='demo'?'layers':'shield',15)}<span>${mode==='demo'?'当前为示例工作区，内容用于体验界面。':'个人空间 · 数据保存在当前浏览器，云端连接后可跨设备同步。'}</span><button data-action="switch-workspace">${mode==='demo'?'进入我的工作台':'查看示例'} ${icon('arrow-right',14)}</button></div>
-  <main id="main" tabindex="-1"></main><footer class="page-footer"><span>一点一滴，都是你的积累。</span><span>拾光 v${VERSION} · 本地界面版</span></footer></div>
+  <main id="main" tabindex="-1"></main><footer class="page-footer"><span>一点一滴，都是你的积累。</span><span>宇宙 v${VERSION} · 本地界面版</span></footer></div>
   <nav class="bottom-nav" aria-label="移动导航">${[['home','orbit','空间'],['ai','sparkles','AI'],['english','graduation','六级'],['tasks','check-circle','待办']].map(([id,i,label])=>`<a href="#/${id}" data-nav="${id}">${icon(i,21)}<span>${label}</span></a>`).join('')}<button data-action="toggle-nav">${icon('menu',21)}<span>更多</span></button></nav>
   <button class="assistant-fab" data-action="assistant" aria-label="打开 AI 收件台">${icon('sparkles',22)}<span>交给 AI</span></button>`;
   ctx.root=document.querySelector('#main');
@@ -288,12 +288,12 @@ async function exportBackup(dataState=state){
     const files=[];for(const id of fileIds){const blob=await getFile(id);if(!blob)throw new Error('有附件在本机存储中缺失，请重新添加原件后再导出完整备份。');const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob);});files.push({id,type:blob.type,data});}
     const backupBlob=new Blob([JSON.stringify({format:'lumi-backup',version:1,exportedAt:new Date().toISOString(),state:dataState,files},null,2)],{type:'application/json'});
     if(backupBlob.size>512*1024*1024)throw new Error('完整备份超过本地界面版 512 MB 上限，请先逐份下载附件，并在服务器接入后使用云端备份。');
-    download(backupBlob,`拾光-${dataState.mode==='demo'?'示例':'个人'}-备份-${today()}.json`);toast('备份已导出，附件已一并打包。');
+    download(backupBlob,`宇宙-${dataState.mode==='demo'?'示例':'个人'}-备份-${today()}.json`);toast('备份已导出，附件已一并打包。');
   }catch(error){toast(`导出失败：${error.message}`);}
 }
 function importBackup(){
-  modal({title:'导入拾光备份',body:'<p class="muted">导入到当前空间，补充缺少的课程、笔记、记录与未设置的计划。已有文字会保留，内容不同的英语草稿会另存到收集箱。单份备份上限 512 MB。</p><label class="field">备份文件<input type="file" name="file" accept=".json,application/json" required></label>',submitLabel:'导入数据',onSubmit:async data=>{
-    const file=data.get('file');if(!file?.size||file.size>512*1024*1024)throw new Error('请选择小于 512 MB 的拾光 JSON 备份。');
+  modal({title:'导入宇宙备份',body:'<p class="muted">导入到当前空间，补充缺少的课程、笔记、记录与未设置的计划。已有文字会保留，内容不同的英语草稿会另存到收集箱。单份备份上限 512 MB。</p><label class="field">备份文件<input type="file" name="file" accept=".json,application/json" required></label>',submitLabel:'导入数据',onSubmit:async data=>{
+    const file=data.get('file');if(!file?.size||file.size>512*1024*1024)throw new Error('请选择小于 512 MB 的宇宙 JSON 备份。');
     let backup;try{backup=JSON.parse(await file.text());}catch{throw new Error('文件不是有效的 JSON 备份。');}
     backup=validateBackup(backup);
     const refs=new Set();function collect(value){if(value&&typeof value==='object')for(const [k,v] of Object.entries(value)){if(typeof v==='string'&&/blobId|fileId|audioId/i.test(k))refs.add(v);else if(typeof v==='object')collect(v);}}collect(backup.state);
@@ -314,7 +314,7 @@ function closeAssistant(){document.querySelector('#ai-drawer').hidden=true;docum
 function assistant(){go('ai');}
 function switchWorkspace(){mode=mode==='demo'?'personal':'demo';if(cloudClient)cloudClient.setMode(mode);else localStorage.setItem('lumi-mode',mode);state=load(mode);lastStored=localStorage.getItem(key(mode));baselines.set(state,lastStored);ctx.state=state;filter='all';shell();go('home');render();toast(mode==='personal'?'这是你的独立空间，从第一条记录开始。':'已进入示例工作区。');}
 function moreMenu(){modal({title:'我的空间',body:`<div class="more-menu">${[...nav.slice(4),['settings','settings','偏好与连接']].map(([id,i,l])=>`<button data-go="${id}">${icon(i,23)}<span>${l}</span>${icon('chevron-right',18)}</button>`).join('')}</div>`});}
-function notifications(){modal({title:'通知与动态',body:`<div class="notification-item"><span class="summary-icon violet">${icon('sparkles',23)}</span><div><strong>欢迎来到拾光</strong><p>${cloudClient?'个人空间已接入私人服务器，保存的内容可以同步到各设备。':'完整界面已就绪，可以开始记录与整理。当前内容仅保存在本机。'}</p><small>界面版本 ${VERSION}</small></div></div><div class="notification-item"><span class="summary-icon cyan">${icon('cloud',23)}</span><div><strong>${cloudClient?esc(cloudClient.label):'云端连接待完成'}</strong><p>${cloudClient?'在偏好与连接中管理 DeepSeek、查看同步状态与导出备份。':'服务器部署后，可启用跨设备同步、模型任务和版本更新通知。'}</p><button class="text-btn" data-go="settings">查看连接状态 ${icon('arrow-right',16)}</button></div></div>`});}
+function notifications(){modal({title:'通知与动态',body:`<div class="notification-item"><span class="summary-icon violet">${icon('sparkles',23)}</span><div><strong>欢迎来到宇宙</strong><p>${cloudClient?'个人空间已接入私人服务器，保存的内容可以同步到各设备。':'完整界面已就绪，可以开始记录与整理。当前内容仅保存在本机。'}</p><small>界面版本 ${VERSION}</small></div></div><div class="notification-item"><span class="summary-icon cyan">${icon('cloud',23)}</span><div><strong>${cloudClient?esc(cloudClient.label):'云端连接待完成'}</strong><p>${cloudClient?'在偏好与连接中管理 DeepSeek、查看同步状态与导出备份。':'服务器部署后，可启用跨设备同步、模型任务和版本更新通知。'}</p><button class="text-btn" data-go="settings">查看连接状态 ${icon('arrow-right',16)}</button></div></div>`});}
 function render(){
   if(!ctx.root)return;
   cleanupView?.();cleanupView=null;
@@ -323,7 +323,7 @@ function render(){
   try{subroute=id?decodeURIComponent(id):'';}catch{subroute='';}
   ctx.root.onclick=null;ctx.root.onchange=null;ctx.root.oninput=null;ctx.root.ondragover=null;ctx.root.ondragleave=null;ctx.root.ondrop=null;
   const label=route==='space'?(state.spaces.find(s=>s.id===subroute)?.title||'工作区'):nav.find(n=>n[0]===route)?.[2]||'偏好与连接';
-  document.title=label+' · 拾光';document.querySelector('#current-page').textContent=label;
+  document.title=label+' · 宇宙';document.querySelector('#current-page').textContent=label;
   document.body.classList.toggle('on-canvas',route==='home');document.body.classList.toggle('on-ai',route==='ai');
   document.querySelectorAll('[data-nav]').forEach(a=>{a.classList.toggle('active',a.dataset.nav===route);if(a.dataset.nav===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   ctx.state=state;const view=makeContext();ctx.save=view.save;
@@ -394,7 +394,7 @@ function updateCloudShell(){
   if(indicator){indicator.dataset.status=cloudClient.status;indicator.innerHTML=`<span class="status-dot"></span><span>${mode==='demo'?'示例 · 仅本机':esc(cloudClient.label)}</span>`;indicator.title=cloudClient.error||cloudClient.label;}
   const modeText=document.querySelector('.mode-banner>span');
   if(modeText&&mode==='personal')modeText.textContent='私人云端空间 · 你的电脑、手机与平板共用一份内容。';
-  const footer=document.querySelector('.page-footer>span:last-child');if(footer)footer.textContent=`拾光 v${VERSION} · 私人云端版`;
+  const footer=document.querySelector('.page-footer>span:last-child');if(footer)footer.textContent=`宇宙 v${VERSION} · 私人云端版`;
   let banner=document.querySelector('.cloud-sync-banner');
   if(!banner){banner=document.createElement('div');banner.className='cloud-sync-banner';banner.setAttribute('role','status');document.querySelector('#main')?.before(banner);}
   const status=cloudClient.status;banner.dataset.status=status;

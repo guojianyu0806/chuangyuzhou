@@ -10,7 +10,7 @@ import { ApiError, createStore, digest, secretEqual, hashPassword, verifyPasswor
 import { isCliEntry } from './is-cli.mjs';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
-export const VERSION = '0.2.0';
+export const VERSION = '0.2.1';
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webmanifest': 'application/manifest+json' };
 const writeMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const localHostnames = new Set(['127.0.0.1', 'localhost', '[::1]']);
@@ -231,6 +231,6 @@ if (isCliEntry(import.meta.url)) {
   if (existsSync(hermesPath)) modelFactory = (await import(hermesPath.href)).createHermesService;
   const app = await createWorkbenchServer({ dataDir: env.DATA_DIR, frontendDir: env.FRONTEND_DIR, publicOrigin: env.PUBLIC_ORIGIN, secureCookie: env.SECURE_COOKIE !== 'false', setupToken, modelFactory, onError: value => console.error(JSON.stringify(value)) });
   const host = env.HOST || '127.0.0.1'; const port = Number(env.PORT || 4180);
-  app.server.listen(port, host, () => console.log(`Shiguang ${VERSION} listening on ${host}:${port}`));
+  app.server.listen(port, host, () => console.log(`Yuzhou ${VERSION} listening on ${host}:${port}`));
   for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, async () => { await app.close(); process.exit(0); });
 }

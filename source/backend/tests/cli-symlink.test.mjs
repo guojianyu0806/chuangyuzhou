@@ -46,7 +46,7 @@ test('server starts through a deployment symlink and serves a symlink FRONTEND_D
   });
   const origin = `http://127.0.0.1:${port}`;
   const health = await fetch(origin + '/api/health'); assert.equal(health.status, 200); assert.equal((await health.json()).mode, 'cloud');
-  const index = await fetch(origin + '/'); assert.equal(index.status, 200); assert.match(await index.text(), /拾光/);
+  const index = await fetch(origin + '/'); assert.equal(index.status, 200); assert.match(await index.text(), /宇宙/);
   const asset = await fetch(origin + '/src/app.js'); assert.equal(asset.status, 200); assert.match(asset.headers.get('content-type'), /javascript/);
   assert.equal((await fetch(origin + '/backend/server.mjs')).status, 404);
 });

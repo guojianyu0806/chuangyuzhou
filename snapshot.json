@@ -1,10 +1,10 @@
 {
-  "archive": "0-2-0-20260920-085429.tar.gz",
-  "version": "0.2.0",
-  "archiveSha256": "1a852b36075d27c75d469c094576eb4ca7750f0cfd3cc63d39b612803caaf373",
-  "bytes": 197777,
+  "archive": "0-2-1-20260920-104247.tar.gz",
+  "version": "0.2.1",
+  "archiveSha256": "bd97b3cd8bbbfdf797affbd6cafd3ef6beef4f265f41e811be817cc6a0b03c5d",
+  "bytes": 198312,
   "relation": "pre-competition-source-snapshot",
-  "recordedAtUtc": "2026-10-19T13:32:20.978066+00:00",
+  "recordedAtUtc": "2026-10-19T13:32:22.329809+00:00",
   "kind": "historical-source-snapshot-recorded-now",
   "sourceSubset": "files present in the retained deployment archive, not an entire original workspace",
   "mainBaselinePreserved": "96bdda69beccf77910b92f2699a4726e90b4711d",
@@ -12,9 +12,22 @@
     "added": [],
     "deleted": [],
     "changed": [
+      "backend/README.md",
+      "backend/backup.mjs",
+      "backend/hermes.mjs",
+      "backend/package.json",
       "backend/server.mjs",
+      "backend/tests/cli-symlink.test.mjs",
       "backend/tests/server.test.mjs",
-      "deployment/README.md"
+      "deployment/README.md",
+      "deployment/shiguang.service",
+      "frontend/README.md",
+      "frontend/icon.svg",
+      "frontend/index.html",
+      "frontend/manifest.webmanifest",
+      "frontend/src/app.js",
+      "frontend/src/cloud.js",
+      "frontend/src/services.js"
     ]
   }
 }
