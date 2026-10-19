@@ -6,6 +6,40 @@ import os
 import sys
 
 
+MAX_FINAL_CHARS = 100000
+TRUNCATION_ERRORS = (
+    "Response remained truncated after 4 continuation attempts",
+    "Response truncated due to output length limit",
+    "First response truncated due to output length limit",
+)
+
+
+def model_output(response):
+    """Transport the final text intact; only the parent validates the action schema."""
+    if not isinstance(response, dict):
+        return {"ok": False, "code": "MODEL_INCOMPLETE"}
+    # Use explicit provider metadata when Hermes exposes it. Do not infer a
+    # truncation from punctuation in user content or try to complete broken JSON.
+    messages = response.get("messages")
+    tail = messages[-1] if isinstance(messages, list) and messages else None
+    tail_truncated = isinstance(tail, dict) and tail.get("role") == "assistant" and tail.get("finish_reason") == "length"
+    if (response.get("finish_reason") in ("length", "max_tokens")
+            or response.get("stop_reason") == "max_tokens"
+            or tail_truncated
+            or response.get("error") in TRUNCATION_ERRORS):
+        return {"ok": False, "code": "MODEL_OUTPUT_TRUNCATED"}
+    if response.get("completed") is False or response.get("partial") or response.get("failed") or response.get("interrupted") or response.get("error"):
+        return {"ok": False, "code": "MODEL_INCOMPLETE"}
+    final = response.get("final_response", "")
+    if not isinstance(final, str) or not final.strip():
+        return {"ok": False, "code": "INVALID_PROPOSAL"}
+    if len(final) > MAX_FINAL_CHARS:
+        return {"ok": False, "code": "MODEL_OUTPUT_TRUNCATED"}
+    # Even fenced or invalid JSON is returned so the parent can perform its
+    # bounded format correction without asking the user to resubmit the request.
+    return {"ok": True, "output": final}
+
+
 def emit(value, code=0):
     sys.stdout.write(json.dumps(value, ensure_ascii=False))
     sys.stdout.flush()
@@ -60,18 +94,7 @@ def main():
                     if method.startswith("_execute_") and "tool" in method and callable(getattr(agent, method, None)):
                         setattr(agent, method, deny_tools)
                 response = agent.run_conversation(user_message=request["user"], system_message=request["system"])
-                if not isinstance(response, dict) or response.get("completed") is False or response.get("failed") or response.get("interrupted") or response.get("error"):
-                    result = {"ok": False, "code": "MODEL_INCOMPLETE"}
-                else:
-                    final = response.get("final_response", "")
-                    if not isinstance(final, str) or len(final) > 100000:
-                        result = {"ok": False, "code": "INVALID_PROPOSAL"}
-                    else:
-                        try:
-                            proposal = json.loads(final)
-                            result = {"ok": True, "proposal": proposal}
-                        except (ValueError, TypeError):
-                            result = {"ok": False, "code": "INVALID_PROPOSAL"}
+                result = model_output(response)
             if callable(getattr(agent, "close", None)):
                 agent.close()
         emit(result, 0 if result.get("ok") else 1)

@@ -1,35 +1,29 @@
 {
-  "archive": "0-11-0-20260921-103006.tar.gz",
-  "version": "0.11.0",
-  "archiveSha256": "cf0353c4eadf438f9b4de5b7d8b4013b7d51e0c8dab0560420c79c3507fa74b9",
-  "bytes": 288857,
+  "archive": "0-11-1-20260921-111337.tar.gz",
+  "version": "0.11.1",
+  "archiveSha256": "cc4eb0a95cd76428fa9ebdd7e2cfaef7fa7794e089b1ee4ae5f2e523e88587d7",
+  "bytes": 295358,
   "relation": "pre-competition-source-snapshot",
   "metadataSha256Matches": true,
-  "recordedAtUtc": "2026-10-19T13:33:05.508349+00:00",
+  "recordedAtUtc": "2026-10-19T13:33:08.726137+00:00",
   "kind": "historical-source-snapshot-recorded-now",
   "sourceSubset": "files present in the retained deployment archive, not an entire original workspace",
   "mainBaselinePreserved": "96bdda69beccf77910b92f2699a4726e90b4711d",
   "deltaFromPreviousArchive": {
-    "added": [],
+    "added": [
+      "backend/tests/hermes_runner_test.py"
+    ],
     "deleted": [],
     "changed": [
       "backend/hermes.mjs",
+      "backend/hermes_runner.py",
       "backend/package.json",
       "backend/server.mjs",
       "backend/tests/hermes.test.mjs",
       "frontend/package.json",
       "frontend/server.mjs",
-      "frontend/src/ai-chat.css",
       "frontend/src/ai-chat.js",
-      "frontend/src/ai-organizer.js",
-      "frontend/src/ai.js",
-      "frontend/src/app.js",
-      "frontend/src/backup.js",
-      "frontend/src/ledger-model.js",
-      "frontend/src/ledger.css",
-      "frontend/src/ledger.js",
-      "frontend/src/services.js",
-      "frontend/src/workspace-model.js"
+      "frontend/src/services.js"
     ]
   }
 }

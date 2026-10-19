@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync, readFileSync, writeFileSync, mkdirSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { createHermesService, validateProposal, workspaceDestinations, buildPrompt } from '../hermes.mjs';
+import { createHermesService, validateProposal, workspaceDestinations, buildPrompt, parseModelOutput } from '../hermes.mjs';
 
 const proposal = (destinationId = 'inbox') => ({ title: '整理结果', summary: '已整理原文内容。', notes: [{ title: '复习安排', content: '明天复习数据结构。', sourceIds: ['input'] }], tasks: [{ title: '复习数据结构', date: '', priority: 'normal', description: '' }], destinationId, reason: '依据用户原文。', warnings: [] });
 const ledgerProposal = (destinationId = 'ledger:holiday-2026') => ({
@@ -336,6 +336,65 @@ function setup(t, overrides = {}) {
   }
   return { service, store, dataDir, call, configure, finish, change: fn => { fn(state); revision++; }, state: () => state };
 }
+
+test('model parser accepts a whole JSON fence without guessing missing or ambiguous content',()=>{
+  const data={reply:'请补充日期。',proposal:null};
+  assert.deepEqual(parseModelOutput('\ufeff '+JSON.stringify(data)),data);
+  assert.deepEqual(parseModelOutput('```json\n'+JSON.stringify(data)+'\n```'),data);
+  assert.deepEqual(parseModelOutput('```\n'+JSON.stringify(data)+'\n```'),data);
+  for(const value of [null,[],3,'true','null','说明'+JSON.stringify(data),JSON.stringify(data)+JSON.stringify(data),'{"reply":"未结束"','{"amount":NaN}',"{'reply':'不合法'}"]){assert.throws(()=>parseModelOutput(value));}
+});
+
+test('format repair stays in the same job, displays progress, and still requires explicit ledger confirmation',async t=>{
+  const attempts=[];let release;const gate=new Promise(resolve=>release=resolve);
+  const ctx=setup(t,{runModel:async input=>{
+    const data=JSON.parse(input.user);attempts.push(data);
+    if(attempts.length===1){const invalid=ledgerProposal();invalid.ledgerEntries[0].amount=25.5;return {ok:true,output:JSON.stringify({reply:'请审核',proposal:invalid})};}
+    assert.match(input.system,/不要为了通过校验编造或改变金额/);assert.equal(data.formatCorrection.code,'INVALID_PROPOSAL');assert.match(data.formatCorrection.issue,/金额/);
+    assert.equal(data.requestedDestination,'ledger:holiday-2026');assert.deepEqual(data.sources,attempts[0].sources);assert.deepEqual(data.conversation,attempts[0].conversation);
+    await gate;return {ok:true,output:JSON.stringify({reply:'请核对后点击确认执行。',proposal:ledgerProposal()})};
+  }});
+  await ctx.configure();const input=addLedgerConversation(ctx,{targetId:'ledger:holiday-2026'}),started=await ctx.call('POST','/api/ai/jobs',input);
+  for(let i=0;i<100&&attempts.length<2;i++)await new Promise(r=>setTimeout(r,2));assert.equal(attempts.length,2);
+  const inProgress=(await ctx.call('GET',`/api/ai/jobs/${started.body.job.id}`)).body.job;assert.equal(inProgress.status,'running');assert.equal(inProgress.phase,'repairing');assert.equal(inProgress.formatAttempt,2);assert.equal(inProgress.maxFormatAttempts,2);assert.equal(ctx.state().aiRequests[0].conversation.messages.length,1);assert.equal(ctx.state().ledger.entries.length,0);
+  assert.equal((await ctx.call('POST','/api/ai/jobs',input)).body.job.id,started.body.job.id);assert.equal(attempts.length,2);
+  release();const ready=await ctx.finish(started.body.job.id);assert.equal(ready.status,'succeeded');assert.equal(ready.phase,'complete');assert.equal(ctx.state().aiRequests[0].conversation.messages.length,2);assert.equal(ctx.state().ledger.entries.length,0);
+  await ctx.call('POST',`/api/ai/jobs/${ready.id}/confirm`,{});await ctx.call('POST',`/api/ai/jobs/${ready.id}/confirm`,{});assert.equal(ctx.state().ledger.entries.length,2);assert.equal(attempts.length,2);
+});
+
+test('whole fenced conversation response works without another provider request',async t=>{
+  let calls=0;const ctx=setup(t,{runModel:async()=>{calls++;return {ok:true,output:'```json\n'+JSON.stringify({reply:'账目日期是什么时候？',proposal:null})+'\n```'};}});
+  await ctx.configure();const input=addLedgerConversation(ctx),started=await ctx.call('POST','/api/ai/jobs',input),ready=await ctx.finish(started.body.job.id);
+  assert.equal(ready.status,'succeeded');assert.equal(calls,1);assert.equal(ready.formatAttempt,1);assert.equal(ctx.state().ledger.entries.length,0);
+});
+
+test('exhausted format repair is bounded, preserves the original request, and never exposes raw failed output',async t=>{
+  let calls=0;const ctx=setup(t,{runModel:async()=>{calls++;return {ok:true,output:'malformed-repair-candidate-private'};}});
+  await ctx.configure();const input=addLedgerConversation(ctx),before=structuredClone(ctx.state()),started=await ctx.call('POST','/api/ai/jobs',input),ready=await ctx.finish(started.body.job.id);
+  assert.equal(ready.status,'failed');assert.equal(calls,2);assert.match(ready.error.message,/已自动校正 1 次/);assert.deepEqual(ctx.state(),before);
+  assert.equal(JSON.stringify(ready).includes('malformed-repair-candidate-private'),false);
+  assert.equal(readFileSync(join(ctx.dataDir,`ai/jobs/${ready.id}.json`),'utf8').includes('malformed-repair-candidate-private'),false);
+});
+
+test('authentication, quota and service failures do not consume automatic format attempts',async t=>{
+  for(const code of ['MODEL_AUTH_FAILED','MODEL_RATE_LIMIT','MODEL_UNAVAILABLE','MODEL_INCOMPLETE']){
+    let calls=0;const ctx=setup(t,{runModel:async()=>{calls++;return {ok:false,code};}});await ctx.configure();const input=addLedgerConversation(ctx),started=await ctx.call('POST','/api/ai/jobs',input),ready=await ctx.finish(started.body.job.id);
+    assert.equal(ready.status,'failed');assert.equal(ready.error.code,code);assert.equal(calls,1);assert.equal(ctx.state().ledger.entries.length,0);
+  }
+});
+
+test('truncated output can retry as clarification without silently saving a partial bill',async t=>{
+  let calls=0;const ctx=setup(t,{runModel:async input=>{calls++;if(calls===1)return {ok:false,code:'MODEL_OUTPUT_TRUNCATED'};assert.equal(JSON.parse(input.user).formatCorrection.code,'MODEL_OUTPUT_TRUNCATED');return {reply:'账目较多，可以分批核对吗？',proposal:null};}});
+  await ctx.configure();const input=addLedgerConversation(ctx),started=await ctx.call('POST','/api/ai/jobs',input),ready=await ctx.finish(started.body.job.id);
+  assert.equal(ready.status,'succeeded');assert.equal(calls,2);assert.equal(ready.proposal,null);assert.equal(ctx.state().ledger.entries.length,0);
+});
+
+test('conversation changes during a failed attempt stop correction of the old input',async t=>{
+  let calls=0,release;const gate=new Promise(r=>release=r);const ctx=setup(t,{runModel:async()=>{calls++;await gate;return 'not-json';}});
+  await ctx.configure();const input=addLedgerConversation(ctx),started=await ctx.call('POST','/api/ai/jobs',input);
+  ctx.change(s=>s.aiRequests[0].conversation.messages.push({id:'new-turn',role:'user',text:'等一下，我要修改日期',createdAt:new Date().toISOString()}));release();const ready=await ctx.finish(started.body.job.id);
+  assert.equal(ready.status,'failed');assert.equal(ready.error.code,'STALE_PROPOSAL');assert.equal(calls,1);assert.equal(ctx.state().aiRequests[0].conversation.messages.length,2);assert.equal(ctx.state().ledger.entries.length,0);
+});
 
 test('unconfigured status is truthful; secret config never returns or changes endpoint', async t => {
   const ctx = setup(t);

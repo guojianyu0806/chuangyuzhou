@@ -70,7 +70,7 @@ export function mountConversationPage(ctx,spaceId,helpers){
     }
     let message='';
     if(request?.status==='waiting_model'){
-      if(working)message='正在结合前文和附件回复…';
+      if(working)message=job?.phase==='repairing'?'正在校正回复格式（2/2），无需重复发送…':'正在结合前文和附件回复…';
       else if(job?.status==='failed')message=job.error?.message||'回复未完成，可以重试。';
       else if(job?.replyError)message=job.replyError;
       else if(job?.replySaved&&request.conversation?.messages.at(-1)?.role==='user')message='回复已完成，正在同步对话。';
