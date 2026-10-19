@@ -1,6 +1,6 @@
 {
   "name": "personal-learning-workbench",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "description": "宇宙私人工作台的本地界面版，无第三方运行依赖。",

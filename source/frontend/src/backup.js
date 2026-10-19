@@ -2,6 +2,7 @@
 import {validateOrganizedProposal} from './ai-organizer.js';
 import {validateLedger} from './ledger-model.js';
 import {validateTimetable, mergeTimetables} from './timetable-model.js';
+import {isRecordColor, assignRecordColor} from './creation-colors.js';
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
 const DRAFT_TYPES = ['writing', 'translation', 'listening'];
 const PRACTICE_TYPES = ['reading', 'writing', 'translation', 'listening', 'vocabulary'];
@@ -58,6 +59,13 @@ function optionalFields(source, target, strings = [], flags = []) {
   for (const key of flags) if (source[key] !== undefined) target[key] = boolean(source[key], key);
   return target;
 }
+function optionalRecordColor(source, target) {
+  if (source.color !== undefined) {
+    if (!isRecordColor(source.color)) fail('卡片颜色');
+    target.color = source.color;
+  }
+  return target;
+}
 function revision(value) {
   const result = {
     title: text(value.title, '修订标题', '', true), content: text(value.content, '修订正文'),
@@ -76,7 +84,7 @@ function note(value) {
     revisions: records(value.revisions, revision, '笔记修订', true),
   };
   if (value.sourceRequestId !== undefined) result.sourceRequestId = identifier(value.sourceRequestId, '来源请求编号');
-  return optionalFields(value, result, ['createdAt'], ['archived']);
+  return optionalRecordColor(value, optionalFields(value, result, ['createdAt'], ['archived']));
 }
 function courseFile(value) {
   const result = {
@@ -86,7 +94,7 @@ function courseFile(value) {
     ...(value.example === undefined ? {} : { example: boolean(value.example, '资料示例标记') }),
   };
   if (value.sourceRequestId !== undefined) result.sourceRequestId = identifier(value.sourceRequestId, '来源请求编号');
-  return optionalFields(value, result, ['source']);
+  return optionalRecordColor(value, optionalFields(value, result, ['source']));
 }
 function course(value) {
   return {
@@ -109,7 +117,7 @@ function task(value) {
   if (value.completedAt !== undefined) result.completedAt = value.completedAt === null ? null : text(value.completedAt, '完成时间');
   if (value.captureId !== undefined) result.captureId = identifier(value.captureId, '来源碎片编号');
   for (const key of ['spaceId', 'sourceRequestId']) if (value[key] !== undefined) result[key] = identifier(value[key], key);
-  return optionalFields(value, result, ['updatedAt'], ['example']);
+  return optionalRecordColor(value, optionalFields(value, result, ['updatedAt'], ['example']));
 }
 function capture(value) {
   const result = {
@@ -119,7 +127,7 @@ function capture(value) {
   };
   if (value.blobId !== undefined) result.blobId = identifier(value.blobId, '碎片文件编号');
   if (value.sourceRequestId !== undefined) result.sourceRequestId = identifier(value.sourceRequestId, '来源请求编号');
-  return optionalFields(value, result, ['fileName', 'fileType', 'source', 'importedDraftKey'], ['example']);
+  return optionalRecordColor(value, optionalFields(value, result, ['fileName', 'fileType', 'source', 'importedDraftKey'], ['example']));
 }
 function space(value) {
   return {
@@ -288,6 +296,10 @@ function workspace(value) {
   if (value.ui !== undefined) {
     const ui = object(value.ui, '界面偏好');
     result.ui = {sidebarPinned: boolean(ui.sidebarPinned, '侧边栏固定状态')};
+    if(ui.lastCreatedColor!==undefined){
+      if(!isRecordColor(ui.lastCreatedColor))fail('新建颜色记录');
+      result.ui.lastCreatedColor=ui.lastCreatedColor;
+    }
     if(ui.inboxView!==undefined){
       if(!['cards','dream'].includes(ui.inboxView))fail('灵感显示方式');
       result.ui.inboxView=ui.inboxView;
@@ -403,7 +415,9 @@ export function mergeBackup(current, incoming) {
     }
   }
   if (!state.ui && source.ui) { state.ui = structuredClone(source.ui); count++; }
-  else if(state.ui?.inboxView===undefined&&source.ui?.inboxView!==undefined){state.ui.inboxView=source.ui.inboxView;count++;}
+  else if(state.ui&&source.ui){
+    for(const key of ['inboxView','lastCreatedColor'])if(state.ui[key]===undefined&&source.ui[key]!==undefined){state.ui[key]=source.ui[key];count++;}
+  }
   if (source.workspaceVersion && (!state.workspaceVersion || state.workspaceVersion < source.workspaceVersion)) state.workspaceVersion = source.workspaceVersion;
   const en = state.english ||= english({});
   const imported = source.english;
@@ -433,6 +447,7 @@ export function mergeBackup(current, incoming) {
       let suffix = 1;
       while (state.captures.some(item => item.id === `imported-english-draft-${key}-${suffix}`)) suffix++;
       state.captures.push({ id: `imported-english-draft-${key}-${suffix}`, text: draft, category: '英语',
+        color: assignRecordColor(state),
         tags: `导入的英语草稿 · ${{ writing: '写作', translation: '翻译', listening: '听力' }[key]}`,
         source: '导入的英语草稿', importedDraftKey: key, example: source.mode === 'demo', archived: false,
         createdAt: imported.draftUpdatedAt[key] || source.updatedAt || '' });

@@ -3,6 +3,16 @@ import {mountSurfaceFullscreen} from './fullscreen.js';
 
 const CLOUD_PATH='M58 155C28 155 12 141 12 122c0-19 13-33 33-35C39 61 59 38 86 43c10-31 51-33 69-8 26-10 55 5 58 30 25-4 49 15 48 39 21 3 31 16 28 30-3 15-17 21-41 21Z';
 const TINTS={'备忘':['#ffe1ef','#b25480'],'学习灵感':['#e6ddff','#7652b2'],'英语':['#eff7bf','#657525'],'链接':['#dceaff','#4974a8'],'消息摘录':['#d2f5ee','#317d72']};
+function cloudPalette(item){
+  const color=String(item.color||'').trim();
+  if(!/^#(?:[a-f\d]{3}|[a-f\d]{6})$/i.test(color))return TINTS[item.category]||TINTS['备忘'];
+  const hex=color.length===4?color.slice(1).split('').map(c=>c+c).join(''):color.slice(1);
+  const rgb=[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16));
+  // Keep every chosen hue recognizable while giving the dark cloud lettering a light surface.
+  const tint=rgb.map(n=>Math.round(n*.3+255*.7));
+  const ink=rgb.map(n=>Math.round(n*.32+32*.68));
+  return [tint,ink].map(channels=>'#'+channels.map(n=>n.toString(16).padStart(2,'0')).join(''));
+}
 const hash=value=>Array.from(String(value)).reduce((n,c)=>(Math.imul(n,31)+c.charCodeAt(0))>>>0,0);
 const cloudSVG=()=>`<svg class="dream-cloud-shape" viewBox="0 0 300 176" aria-hidden="true"><path d="${CLOUD_PATH}"/><path class="dream-cloud-sheen" d="M58 63c4-14 16-22 29-19M99 37c12-14 29-13 39-1"/></svg>`;
 const fullIcon='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg>';
@@ -22,7 +32,7 @@ export function mountDream(ctx, options={}) {
   function draw(){
     const found=matches(),pages=Math.max(1,Math.ceil(found.length/pageSize()));page=Math.min(page,pages-1);
     scene.innerHTML=found.slice(page*pageSize(),(page+1)*pageSize()).map((item,index)=>{
-      const n=hash(item.id),[tint,ink]=TINTS[item.category]||TINTS['备忘'];
+      const n=hash(item.id),[tint,ink]=cloudPalette(item);
       const title=String(item.text||item.fileName||'未命名灵感');
       return `<div class="dream-cloud-slot" role="listitem" style="--cloud-tint:${tint};--cloud-ink:${ink};--cloud-x:${n%15-7}px;--cloud-y:${(n>>>4)%51-25}px;--cloud-turn:${(n%5-2)*.35}deg;--cloud-duration:${24+n%17}s;--cloud-delay:-${n%25}s;--cloud-breathe:${11+n%9}s;--cloud-stagger:${index*65}ms"><button type="button" class="dream-cloud" data-cloud="${esc(item.id)}" aria-label="展开灵感：${esc(title.slice(0,100))}">${cloudSVG()}<span class="dream-cloud-copy"><span class="dream-cloud-category">${esc(item.category||'灵感')}${item.fileName?` · ${icon('file',11)}`:''}</span><strong>${esc(title.slice(0,90))}</strong>${item.tags?`<small># ${esc(String(item.tags).slice(0,28))}</small>`:''}</span><span class="dream-cloud-glint" aria-hidden="true">✦</span></button></div>`;
     }).join('');
@@ -48,7 +58,7 @@ export function mountDream(ctx, options={}) {
     if(selected||!alive)return;
     const item=items.find(item=>item.id===id);if(!item)return;
     selected=item;source=button;closing=false;historyPending=false;
-    const [tint,ink]=TINTS[item.category]||TINTS['备忘'];
+    const [tint,ink]=cloudPalette(item);
     detail.style.setProperty('--cloud-tint',tint);detail.style.setProperty('--cloud-ink',ink);
     const created=new Date(item.createdAt),date=Number.isNaN(created.getTime())?'':created.toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'});
     detail.innerHTML=`<header class="dream-detail-head"><span class="dream-detail-symbol">${icon('cloud',24)}</span><div><span>${esc(item.category||'灵感')}${date?` · ${esc(date)}`:''}</span><h2 id="dream-detail-title">这一刻的想法</h2></div><button type="button" class="icon-btn" data-dream="close" data-close aria-label="收起云朵">${icon('close',20)}</button></header><div class="dream-detail-scroll"><div class="dream-detail-text">${esc(item.text||item.fileName||'这条灵感还没有文字。')}</div>${item.tags?`<p class="dream-detail-tags"># ${esc(item.tags)}</p>`:''}${item.fileName?`<button type="button" class="dream-attachment" data-dream="download" ${options.onDownload?'':'disabled'}>${icon('file',20)}<span>${esc(item.fileName)}</span>${icon('download',17)}</button>`:''}</div><footer class="dream-detail-foot"><button type="button" class="btn" data-dream="edit">${icon('edit',16)} 编辑灵感</button>${options.onArchive?`<button type="button" class="text-btn" data-dream="archive">${icon(item.archived?'refresh':'archive',16)} ${item.archived?'恢复':'归档'}</button>`:''}<button type="button" class="text-btn dream-return" data-dream="close">回到梦境 ${icon('arrow-left',15)}</button></footer>`;

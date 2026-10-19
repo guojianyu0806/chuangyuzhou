@@ -1,4 +1,5 @@
 import { initializeTimetable, validateTimetable, weekForDate, dateForWeek, entriesForWeek, parseWeeks, formatWeeks } from './timetable-model.js';
+import { createColorDraft } from './creation-colors.js';
 
 const views = new WeakMap();
 const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
@@ -47,9 +48,9 @@ export function mountTimetable(ctx) {
   const timeLabel = (t, entry) => `${t.periods.find(p => p.id === entry.startPeriod)?.start || ''}–${t.periods.find(p => p.id === entry.endPeriod)?.end || ''}`;
   const periodLabel = entry => entry.startPeriod === entry.endPeriod ? `第 ${entry.startPeriod} 节` : `${entry.startPeriod}–${entry.endPeriod} 节`;
   function commit(change) {
-    const previous = structuredClone(state.timetable), updatedAt = state.updatedAt;
+    const previous = structuredClone(state.timetable), updatedAt = state.updatedAt, previousColor = state.ui?.lastCreatedColor;
     try { change(); state.timetable = validateTimetable(state.timetable); ctx.save(); }
-    catch (error) { state.timetable = previous; state.updatedAt = updatedAt; throw error; }
+    catch (error) { state.timetable = previous; state.updatedAt = updatedAt;if(state.ui){if(previousColor===undefined)delete state.ui.lastCreatedColor;else state.ui.lastCreatedColor=previousColor;}throw error; }
   }
   function redraw() { if (mounted) draw(); }
   function run(action) { try { action(); } catch (error) { ctx.toast(error.message || '保存失败，请重试。'); } }
@@ -78,8 +79,9 @@ export function mountTimetable(ctx) {
   }
   function editEntry(t = term(), entry) {
     if (!t) return editTerm();
+    const colorDraft = entry ? null : createColorDraft(state);
     const options = selected => t.periods.map(p => `<option value="${p.id}" ${p.id === selected ? 'selected' : ''}>第 ${p.id} 节 · ${p.start}–${p.end}</option>`).join('');
-    ctx.modal({ title: entry ? '编辑课表课程' : '新增课表课程', submitLabel: entry ? '保存修改' : '加入课表', body: `<div class="tt-form"><label class="field">课程名称<input name="title" required maxlength="120" value="${esc(entry?.title || '')}" placeholder="填写课程名称"></label><div class="tt-form-grid"><label class="field">教师<input name="teacher" maxlength="100" value="${esc(entry?.teacher || '')}" placeholder="可稍后填写"></label><label class="field">地点<input name="location" maxlength="200" value="${esc(entry?.location || '')}" placeholder="教学楼 / 教室"></label></div><div class="tt-form-grid"><label class="field">星期<select name="weekday">${weekdays.map((day, index) => `<option value="${index + 1}" ${entry?.weekday === index + 1 ? 'selected' : ''}>${day}</option>`).join('')}</select></label><label class="field">卡片颜色<input name="color" type="color" value="${safeColor(entry?.color || colors[t.entries.length % colors.length])}"></label></div><div class="tt-form-grid"><label class="field">开始节次<select name="startPeriod">${options(entry?.startPeriod || t.periods[0].id)}</select></label><label class="field">结束节次<select name="endPeriod">${options(entry?.endPeriod || t.periods[Math.min(1, t.periods.length - 1)].id)}</select></label></div><label class="field">上课周次<input name="weeks" required maxlength="500" value="${esc(entry ? formatWeeks(entry.weeks) : `1-${Math.max(1, t.teachingWeeks)}`)}" aria-describedby="tt-week-help" placeholder="例如：1-18 或 1-17(单)"><small id="tt-week-help">支持 1-18、1-17(单)、6-8(双)；不连续周次用逗号隔开，例如 1-5,7,9。</small></label><p class="tt-form-note">${esc(t.title)} · 第 1–${t.totalWeeks} 周。课程只保存在学期课表。</p></div>`, onSubmit(data) {
+    ctx.modal({ title: entry ? '编辑课表课程' : '新增课表课程', submitLabel: entry ? '保存修改' : '加入课表', body: `<div class="tt-form"><label class="field">课程名称<input name="title" required maxlength="120" value="${esc(entry?.title || '')}" placeholder="填写课程名称"></label><div class="tt-form-grid"><label class="field">教师<input name="teacher" maxlength="100" value="${esc(entry?.teacher || '')}" placeholder="可稍后填写"></label><label class="field">地点<input name="location" maxlength="200" value="${esc(entry?.location || '')}" placeholder="教学楼 / 教室"></label></div><div class="tt-form-grid"><label class="field">星期<select name="weekday">${weekdays.map((day, index) => `<option value="${index + 1}" ${entry?.weekday === index + 1 ? 'selected' : ''}>${day}</option>`).join('')}</select></label><label class="field">卡片颜色<input name="color" type="color" value="${entry ? safeColor(entry.color) : colorDraft.color}">${entry?'':'<small>自动配色，也可以手动选择。</small>'}</label></div><div class="tt-form-grid"><label class="field">开始节次<select name="startPeriod">${options(entry?.startPeriod || t.periods[0].id)}</select></label><label class="field">结束节次<select name="endPeriod">${options(entry?.endPeriod || t.periods[Math.min(1, t.periods.length - 1)].id)}</select></label></div><label class="field">上课周次<input name="weeks" required maxlength="500" value="${esc(entry ? formatWeeks(entry.weeks) : `1-${Math.max(1, t.teachingWeeks)}`)}" aria-describedby="tt-week-help" placeholder="例如：1-18 或 1-17(单)"><small id="tt-week-help">支持 1-18、1-17(单)、6-8(双)；不连续周次用逗号隔开，例如 1-5,7,9。</small></label><p class="tt-form-note">${esc(t.title)} · 第 1–${t.totalWeeks} 周。课程只保存在学期课表。</p></div>`, onSubmit(data) {
       const currentTerm = targetTerm(t.id);
       const values = { title: String(data.get('title')).trim(), teacher: String(data.get('teacher')).trim(), location: String(data.get('location')).trim(), weekday: Number(data.get('weekday')), startPeriod: Number(data.get('startPeriod')), endPeriod: Number(data.get('endPeriod')), weeks: parseWeeks(String(data.get('weeks')), currentTerm.totalWeeks), color: String(data.get('color')) };
       if (!values.title || values.title.length > 120) throw new Error('请填写课程名称，最多 120 个字。');
@@ -90,10 +92,11 @@ export function mountTimetable(ctx) {
           const target = currentTerm.entries.find(e => e.id === entry.id);
           if (!target) throw new Error('这门课程已不存在，请刷新后重试。');
           Object.assign(target, values);
-        } else currentTerm.entries.push({ id: ctx.uid(), ...values, archived: false });
+        } else currentTerm.entries.push({ id: ctx.uid(), ...values, color:colorDraft.commit(values.color), archived: false });
       });
       ctx.toast(entry ? '课表课程已修改。' : '课程已加入学期课表。'); redraw();
     } });
+    colorDraft?.bind(document.querySelector('#modal form'));
   }
   function editTerm(existing) {
     const periods = existing?.periods || DEFAULT_PERIODS;

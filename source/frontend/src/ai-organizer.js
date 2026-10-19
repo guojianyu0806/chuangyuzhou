@@ -1,5 +1,6 @@
 // Shared by the private-cloud worker and browser. Only these records can be
 // created by an AI proposal; model output never becomes executable code.
+import {assignRecordColor} from './creation-colors.js';
 export function validateOrganizedProposal(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('AI 整理结果格式不正确。');
   const string = (v, max, required = false) => {
@@ -47,7 +48,7 @@ export function applyOrganizedContent(state, requestId, input, {uid = () => cryp
   const add = (collection, containerId, item) => {
     pending.push({collection, containerId, item});
     receipt.items.push({id: item.id, type: {notes:'AI 笔记', files:'原文件', tasks:'待办', captures:'整理记录'}[collection],
-      title: item.title || item.name || item.text?.slice(0, 60) || '记录', collection, containerId, snapshot: JSON.stringify(item)});
+      title: item.title || item.name || item.text?.slice(0, 60) || '记录', collection, containerId});
   };
   const notes = proposal.notes.length ? proposal.notes : proposal.summary ? [{title: proposal.title, content: proposal.summary, sourceIds: []}] : [];
   for (const note of notes) {
@@ -66,7 +67,9 @@ export function applyOrganizedContent(state, requestId, input, {uid = () => cryp
   if (!pending.length) throw new Error('AI 没有返回可以归档的内容。');
   // Validation finishes before modifying the workspace. The caller commits the
   // entire workspace and receipt in one revision-checked transaction.
-  for (const {collection, containerId, item} of pending) {
+  for (const [index, {collection, containerId, item}] of pending.entries()) {
+    item.color = assignRecordColor(state);
+    receipt.items[index].snapshot = JSON.stringify(item);
     const owner = containerId === target && container && ['notes','files'].includes(collection) ? container : state;
     owner[collection] ||= [];
     owner[collection].unshift(item);

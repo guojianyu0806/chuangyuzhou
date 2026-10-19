@@ -1,5 +1,6 @@
 import {initializeLedger} from './ledger-model.js';
 import {initializeTimetable} from './timetable-model.js';
+import {assignRecordColor} from './creation-colors.js';
 export const SPACE_COLORS = ['#7950f2','#00b8b0','#ec4899','#b2cf18','#f58b35','#4088f4'];
 
 export function initializeSpaces(state) {
@@ -41,12 +42,16 @@ export async function routeContent(ctx, {text='',files=[],targetId,requestId}) {
   const now=new Date().toISOString();
   const receipt={destinationId:targetId,destinationLabel:spaceLabel(state,targetId),createdAt:now,items:[]};
   const changes=[];
+  const previousUi=state.ui,hadLastColor=!!state.ui&&Object.hasOwn(state.ui,'lastCreatedColor'),lastColor=state.ui?.lastCreatedColor;
+  changes.push(()=>{if(!previousUi)delete state.ui;else if(hadLastColor)state.ui.lastCreatedColor=lastColor;else delete state.ui.lastCreatedColor;});
   const insert=(list,item)=>{list.unshift(item);changes.push(()=>{const index=list.indexOf(item);if(index>=0)list.splice(index,1);});};
   const record=(collection,containerId,item)=>{
+    item.color=assignRecordColor(state);
     receipt.items.push({id:item.id,type:collection==='files'?'文件':collection==='notes'?'原文笔记':collection==='tasks'?'待办':'原文记录',title:item.title||item.name||item.text?.slice(0,60)||'记录',collection,containerId,snapshot:JSON.stringify(item)});
     return item;
   };
   const sourceRequestId=requestId||uid();
+  try {
   if(targetId.startsWith('space:') || targetId.startsWith('course:')){
     const isSpace=targetId.startsWith('space:');
     const destination=(isSpace?state.spaces:state.courses).find(s=>s.id===targetId.slice(isSpace?6:7)&&!s.archived);
@@ -73,7 +78,8 @@ export async function routeContent(ctx, {text='',files=[],targetId,requestId}) {
   // Destination entries and their receipt are one persisted transaction.
   const request=state.aiRequests.find(r=>r.id===requestId);
   if(request){const previous={...request};changes.push(()=>{for(const key of Object.keys(request))if(!Object.hasOwn(previous,key))delete request[key];Object.assign(request,previous);});Object.assign(request,{receipt,status:'filed',updatedAt:now});}
-  try{save();}catch(error){changes.reverse().forEach(rollback=>rollback());throw error;}
+  save();
+  }catch(error){changes.reverse().forEach(rollback=>rollback());throw error;}
   return receipt;
 }
 

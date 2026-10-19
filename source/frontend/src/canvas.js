@@ -284,9 +284,12 @@ export function mountCanvas(ctx, collection) {
     const d=dataFor(card),minWidth=card.id==='ai'?390:220,minHeight=card.id==='ai'?350:220;
     modal({title:`${d.title} · 卡片外观`,body:`<p class="cv-settings-hint">调节这张卡片的颜色、尺寸和摆放位置。</p><label class="field">卡片颜色<div class="cv-color-options">${COLORS.map(c=>`<button type="button" class="cv-color-swatch" data-pick-color="${c}" style="--swatch:${c}" aria-label="选择颜色 ${c}">${c===d.color?icon('check',17):''}</button>`).join('')}<input type="color" name="color" value="${color(d.color)}" aria-label="自定义卡片颜色"></div></label><div class="form-grid"><label class="field">宽度<input type="number" name="width" value="${Math.round(card.w)}" min="${minWidth}" max="1100" step="1" required></label><label class="field">高度<input type="number" name="height" value="${Math.round(card.h)}" min="${minHeight}" max="850" step="1" required></label><label class="field">横向位置<input type="number" name="x" value="${Math.round(card.x)}" min="-100000" max="100000" step="1" required></label><label class="field">纵向位置<input type="number" name="y" value="${Math.round(card.y)}" min="-100000" max="100000" step="1" required></label></div>${(collection?(collection.onEdit!==undefined?collection.onEdit:ctx.editSpace):!presets[card.id]&&ctx.editSpace)?`<button type="button" class="btn" data-manage-space>${esc(collection?.manageLabel||'编辑卡片内容')}</button>`:''}`,onSubmit:form=>{
       const previous={...card},space=(collection?.items||state.spaces).find(s=>s.id===card.id),previousSpaceColor=space?.color;
+      // Collection cards are display copies. Persist their color on the real
+      // record too, so its dream view and later layouts keep a manual choice.
+      const record=(collection?.sourceItems||collection?.items||state.spaces).find(item=>item.id===card.id),previousRecordColor=record?.color;
       card.color=color(form.get('color'));card.w=clamp(Number(form.get('width')),minWidth,1100);card.h=clamp(Number(form.get('height')),minHeight,850);card.x=clamp(Number(form.get('x')),-100000,100000);card.y=clamp(Number(form.get('y')),-100000,100000);
-      if(space)space.color=card.color;
-      markCustomized();try{save();}catch(error){Object.assign(card,previous);if(space)space.color=previousSpaceColor;throw error;}
+      if(space)space.color=card.color;if(record)record.color=card.color;
+      markCustomized();try{save();}catch(error){Object.assign(card,previous);if(space){if(previousSpaceColor===undefined)delete space.color;else space.color=previousSpaceColor;}if(record){if(previousRecordColor===undefined)delete record.color;else record.color=previousRecordColor;}throw error;}
       placeCard(card);const el=cardEl(card.id);if(el){el.style.setProperty('--card-color',card.color);el.style.setProperty('--card-fill',canvasCardFill(card.color));}announce('卡片外观已保存');
     }});
     const dialog=document.querySelector('#modal');

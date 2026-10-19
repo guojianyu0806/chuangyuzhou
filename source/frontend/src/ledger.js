@@ -1,4 +1,5 @@
 import { initializeLedger, parseAmount, formatMoney, localDate, isValidDate, selectEntries, summarizeEntries } from './ledger-model.js';
+import { createColorDraft } from './creation-colors.js';
 
 const views = new WeakMap();
 const categories = {
@@ -35,9 +36,9 @@ export function mountLedger(ctx) {
   const invalidRange = () => (view.start && !isValidDate(view.start)) || (view.end && !isValidDate(view.end)) || (view.start && view.end && view.start > view.end);
   const selected = () => invalidRange() ? [] : selectEntries(state.ledger, view).slice().sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt) || a.id.localeCompare(b.id));
   function commit(change) {
-    const previous = structuredClone(state.ledger), previousUpdatedAt = state.updatedAt;
+    const previous = structuredClone(state.ledger), previousUpdatedAt = state.updatedAt, previousColor = state.ui?.lastCreatedColor;
     try { change(); ctx.save(); }
-    catch (error) { state.ledger = previous; state.updatedAt = previousUpdatedAt; throw error; }
+    catch (error) { state.ledger = previous; state.updatedAt = previousUpdatedAt;if(state.ui){if(previousColor===undefined)delete state.ui.lastCreatedColor;else state.ui.lastCreatedColor=previousColor;}throw error; }
   }
   function refreshed() { if (mounted) ctx.refresh(); }
   function run(action) { try { action(); } catch (error) { ctx.toast(error.message || '保存失败，请重试。'); } }
@@ -84,9 +85,10 @@ export function mountLedger(ctx) {
     });
   }
   function openProject(project) {
+    const colorDraft = project ? null : createColorDraft(state);
     ctx.modal({ title: project ? '编辑记账项目' : '新建记账项目', submitLabel: project ? '保存项目' : '创建项目', body: `
       <div class="ledger-form"><label class="field">项目名称<input name="title" required maxlength="80" value="${esc(project?.title || '')}" placeholder="例如：学生会迎新、考研准备、日常生活"></label>
-      <label class="field">卡片颜色<input name="color" type="color" value="${safeColor(project?.color)}" aria-label="项目卡片颜色"></label>
+      <label class="field">卡片颜色<input name="color" type="color" value="${project ? safeColor(project.color) : colorDraft.color}" aria-label="项目卡片颜色">${project?'':'<small>自动配色，也可以手动选择。</small>'}</label>
       <p class="ledger-form-note">每笔收支都可以选择所属项目，之后按项目汇总。</p></div>`, onSubmit(data) {
       const title = String(data.get('title')).trim(), color = String(data.get('color'));
       if (!title || title.length > 80) throw new Error('请填写项目名称，最多 80 个字。');
@@ -97,11 +99,12 @@ export function mountLedger(ctx) {
           const target = state.ledger.projects.find(p => p.id === project.id);
           if (!target) throw new Error('这个项目已不存在，请刷新后重试。');
           Object.assign(target, { title, color, updatedAt: stamp() });
-        } else state.ledger.projects.push({ id: ctx.uid(), title, color, archived: false, createdAt: stamp(), updatedAt: stamp() });
+        } else state.ledger.projects.push({ id: ctx.uid(), title, color:colorDraft.commit(color), archived: false, createdAt: stamp(), updatedAt: stamp() });
       });
       ctx.toast(project ? '项目已修改。' : '项目已创建，现在可以给它记账。');
       refreshed();
     } });
+    colorDraft?.bind(document.querySelector('#modal form'));
   }
   function toggleEntry(id, archived) {
     const entry = state.ledger.entries.find(e => e.id === id);

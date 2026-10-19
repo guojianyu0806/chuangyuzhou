@@ -1,4 +1,5 @@
 import {mountCanvas, canvasCardFill} from './canvas.js';
+import {assignRecordColor, createColorDraft} from './creation-colors.js';
 
 export const SPACE_COLORS = ['#7950f2', '#009eab', '#ef3f92', '#78a500', '#f08025', '#4770f5'];
 export const SPACE_ICONS = ['folder', 'book', 'flag', 'code', 'coffee', 'star', 'globe', 'target'];
@@ -26,11 +27,14 @@ export async function saveSpaceFiles(ctx, space, files) {
     if (!file || file.size > 40 * 1024 * 1024) { rejected++; continue; }
     let blobId;
     try { blobId = await ctx.putFile(file); } catch { rejected++; continue; }
-    const entry = {id:ctx.uid(),blobId,name:file.name,size:file.size,type:file.type,createdAt:stamp()};
+    const previousColor = ctx.state.ui?.lastCreatedColor, previousUpdatedAt = ctx.state.updatedAt;
+    const entry = {id:ctx.uid(),blobId,name:file.name,size:file.size,type:file.type,createdAt:stamp(),color:assignRecordColor(ctx.state)};
     const previous = space.updatedAt;
     space.files.unshift(entry); space.updatedAt = stamp();
     try { ctx.save(); saved++; } catch(error) {
       space.files.splice(space.files.indexOf(entry),1); space.updatedAt = previous;
+      ctx.state.updatedAt = previousUpdatedAt;
+      if(previousColor===undefined)delete ctx.state.ui.lastCreatedColor;else ctx.state.ui.lastCreatedColor=previousColor;
       throw error;
     }
   }
@@ -39,13 +43,14 @@ export async function saveSpaceFiles(ctx, space, files) {
 
 export function openSpaceDialog(ctx, space) {
   const {state, esc, icon, modal, toast, uid} = ctx;
-  const initial = {title:space?.title || '',description:space?.description || '',type:space?.type || 'blank',color:spaceColor(space),icon:space?.icon || 'folder'};
+  const colorDraft = space ? null : createColorDraft(state);
+  const initial = {title:space?.title || '',description:space?.description || '',type:space?.type || 'blank',color:space ? spaceColor(space) : colorDraft.color,icon:space?.icon || 'folder'};
   modal({title:space ? '调整我的工作区' : '创建一个属于你的空间',submitLabel:space ? '保存设置' : '创建工作区',body:`
     <div class="sp-form-intro"><span>${icon(space?.icon || 'folder',26)}</span><p>给一件重要的事留个位置。<br><small>主页会出现对应卡片，可自由移动、缩放。</small></p></div>
     <label class="field">空间名称<input name="title" required maxlength="60" value="${esc(initial.title)}" placeholder="例如：学生会宣传部、我的毕业项目"></label>
     <label class="field">这个空间用来做什么？<textarea name="description" maxlength="600" rows="3" placeholder="例如：存放学生会宣传部的会议、活动策划和我的执行任务。">${esc(initial.description)}</textarea><span class="small muted">接入 AI 后，这段说明会帮助它判断内容该放在哪里。</span></label>
     <fieldset class="sp-form-fieldset"><legend>空间模板</legend><div class="sp-template-options">${TEMPLATES.map(([type,label,hint,glyph])=>`<label><input type="radio" name="type" value="${type}" ${initial.type===type?'checked':''}><span>${icon(glyph,21)}<strong>${label}</strong><small>${hint}</small></span></label>`).join('')}</div></fieldset>
-    <div class="form-grid"><label class="field">卡片主题色<div class="sp-color-field"><input type="color" name="color" value="${spaceColor(initial)}" aria-label="卡片主题色"><span>选择你喜欢的颜色</span></div></label><label class="field">空间图标<select name="icon">${SPACE_ICONS.map((item,i)=>`<option value="${item}" ${initial.icon===item?'selected':''}>${['文件夹','学习书本','事务旗帜','代码项目','生活咖啡','星标灵感','世界地图','目标'][i]}</option>`).join('')}</select></label></div>
+    <div class="form-grid"><label class="field">卡片主题色<div class="sp-color-field"><input type="color" name="color" value="${spaceColor(initial)}" aria-label="卡片主题色"><span>${space?'选择你喜欢的颜色':'自动配色，也可以手动选择'}</span></div></label><label class="field">空间图标<select name="icon">${SPACE_ICONS.map((item,i)=>`<option value="${item}" ${initial.icon===item?'selected':''}>${['文件夹','学习书本','事务旗帜','代码项目','生活咖啡','星标灵感','世界地图','目标'][i]}</option>`).join('')}</select></label></div>
     <p class="sp-form-tip">所有模板都能保存笔记、文件和待办，不会添加虚构内容。</p>`,onSubmit(data) {
       const title = String(data.get('title') || '').trim();
       if (!title) { toast('给工作区起个名字吧'); return false; }
@@ -56,6 +61,7 @@ export function openSpaceDialog(ctx, space) {
       state.spaces ||= [];
       if (space) {
         const previous = {...space};
+        const previousUpdatedAt = state.updatedAt;
         const card = state.canvas?.cards?.find(item=>item.id===space.id);
         const hadCardColor = !!card && Object.prototype.hasOwnProperty.call(card,'color');
         const previousCardColor = card?.color;
@@ -63,16 +69,19 @@ export function openSpaceDialog(ctx, space) {
         if(card)card.color=values.color;
         try { ctx.save(); } catch(error) {
           Object.assign(space,previous);
+          state.updatedAt = previousUpdatedAt;
           if(card){if(hadCardColor)card.color=previousCardColor;else delete card.color;}
           throw error;
         }
       } else {
-        const created = {id:uid(),...values,createdAt:stamp(),archived:false,notes:[],files:[]};
+        const previousColor = state.ui?.lastCreatedColor, previousUpdatedAt = state.updatedAt;
+        const created = {id:uid(),...values,color:colorDraft.commit(color),createdAt:stamp(),archived:false,notes:[],files:[]};
         state.spaces.push(created);
-        try { ctx.save(); } catch(error) { state.spaces.splice(state.spaces.indexOf(created),1); throw error; }
+        try { ctx.save(); } catch(error) { state.spaces.splice(state.spaces.indexOf(created),1);state.updatedAt=previousUpdatedAt;if(previousColor===undefined)delete state.ui.lastCreatedColor;else state.ui.lastCreatedColor=previousColor;throw error; }
       }
       toast(space?'空间设置已保存':'工作区已创建，主页卡片已就位'); ctx.refresh?.();
     }});
+  colorDraft?.bind(document.querySelector('#modal form'));
 }
 
 function prose(content, esc) {
@@ -103,8 +112,8 @@ export function mountSpace(ctx, id) {
   function commit(mutation) {
     const before = JSON.parse(JSON.stringify(space));
     const taskBefore = state.tasks.map(item=>({...item}));
-    mutation(); space.updatedAt = stamp();
-    try { ctx.save(); } catch(error) { for(const key of Object.keys(space))delete space[key];Object.assign(space,before);state.tasks=taskBefore;throw error; }
+    const previousColor = state.ui?.lastCreatedColor, previousUpdatedAt = state.updatedAt;
+    try { mutation();space.updatedAt = stamp();ctx.save(); } catch(error) { for(const key of Object.keys(space))delete space[key];Object.assign(space,before);state.tasks=taskBefore;state.updatedAt=previousUpdatedAt;if(state.ui){if(previousColor===undefined)delete state.ui.lastCreatedColor;else state.ui.lastCreatedColor=previousColor;}throw error; }
   }
   const blank = (glyph,title,description,action,label) => `<div class="sp-empty">${icon(glyph,34)}<h3>${title}</h3><p>${description}</p>${action?`<button class="btn sp-primary" data-sp-action="${action}">${icon('plus',17)} ${label}</button>`:''}</div>`;
   const boardHost = () => '<div class="sp-collection" data-sp-board></div>';
@@ -138,7 +147,7 @@ export function mountSpace(ctx, id) {
     const items=currentTab==='overview'?summaries:data.map((item,index)=>({...item,title:currentTab==='files'?item.name:item.title,
       subtitle:currentTab==='notes'?item.content:currentTab==='files'?item.name:item.description,
       icon:currentTab==='notes'?(item.archived?'archive':'file'):currentTab==='files'?'folder':item.done?'check-circle':'target',
-      color:boardColors[index%boardColors.length]}));
+      color:item.color || boardColors[index%boardColors.length]}));
     state.boards ||= {};const key=`space:${space.id}:${currentTab}`;
     const layout=state.boards[key] ||= {};
     const enter=(itemId)=>{
@@ -153,7 +162,7 @@ export function mountSpace(ctx, id) {
     const label={overview:'内容分区',notes:'空间笔记',files:'原始资料',tasks:'空间待办'}[currentTab];
     const empty=currentTab==='notes'?blank('book','第一篇笔记，从你的想法开始','会议记录、学习笔记或项目思路，都可以留下。','new-note','写一篇笔记'):currentTab==='files'?blank('upload','把文件放进这个空间','课件、会议材料、图片或文档，拖到这里即可。','upload','添加文件'):blank('check-circle',archivedTasks?'没有已归档的事项':'记下下一步行动','日期可以留空，等想清楚了再安排。',archivedTasks?'':'new-task','添加待办');
     boardCleanup=mountCanvas({...ctx,root:host,enterCard:enter,createSpace:create,editSpace:edit,mountAIComposer:undefined},
-      {layout,items,hideHeader:true,title:label,cardLabel:label,createLabel:false,canDrop:false,
+      {layout,items,sourceItems:currentTab==='overview'?[]:data,hideHeader:true,title:label,cardLabel:label,createLabel:false,canDrop:false,
       emptyHTML:empty,enterLabel:currentTab==='overview'?'打开分区':currentTab==='notes'?'阅读笔记':currentTab==='files'?'查看原件':'编辑事项',
       footLabel:currentTab==='overview'?'长按摆放 · 点击进入':currentTab==='tasks'?'长按摆放 · 点击编辑':'长按摆放 · 点击查看',
       renderCard:(card,item)=>{
@@ -192,7 +201,7 @@ export function mountSpace(ctx, id) {
       if(!title||!content){toast('请填写标题和正文');return false;}
       const values={title,content,source:String(data.get('source')||'').trim(),updatedAt:stamp()};
       const noteId=note?.id||uid();
-      commit(()=>{if(note){const current=space.notes.find(item=>item.id===note.id);if(!current)throw new Error('这篇笔记已不可用');current.revisions||=[];current.revisions.push({title:current.title,content:current.content,source:current.source,updatedAt:current.updatedAt,savedAt:stamp()});Object.assign(current,values);}else space.notes.unshift({id:noteId,...values,revisions:[],archived:false});});
+      commit(()=>{if(note){const current=space.notes.find(item=>item.id===note.id);if(!current)throw new Error('这篇笔记已不可用');current.revisions||=[];current.revisions.push({title:current.title,content:current.content,source:current.source,updatedAt:current.updatedAt,savedAt:stamp()});Object.assign(current,values);}else space.notes.unshift({id:noteId,...values,color:assignRecordColor(state),revisions:[],archived:false});});
       selectedNote=noteId;tab='notes';localRefresh();toast('笔记已保存，原有修订已保留');
     }});
   }
@@ -200,7 +209,7 @@ export function mountSpace(ctx, id) {
     modal({title:task?'调整这件事':'给空间添加待办',submitLabel:'保存待办',body:`<label class="field">要做什么<input name="title" required maxlength="160" value="${esc(task?.title||'')}" placeholder="例如：整理活动物资清单"></label><div class="form-grid"><label class="field">日期<input name="date" type="date" value="${esc(task?.date||'')}"></label><label class="field">优先级<select name="priority"><option value="normal">按计划进行</option><option value="high" ${task?.priority==='high'?'selected':''}>优先处理</option></select></label></div><label class="field">补充说明<textarea name="description" maxlength="5000" rows="4">${esc(task?.description||'')}</textarea></label>${task?`<label class="sp-check-label"><input name="archived" type="checkbox" ${task.archived?'checked':''}>归档这件事（可恢复）</label>`:''}<p class="muted small">属于「${esc(space.title)}」，同时出现在全局备忘与待办中。没有确定的时间可以留空。</p>`,onSubmit(data){
       const title=String(data.get('title')||'').trim();if(!title){toast('请写下要做的事');return false;}
       const values={title,date:String(data.get('date')||''),priority:data.get('priority')==='high'?'high':'normal',description:String(data.get('description')||'').trim(),archived:data.get('archived')==='on'};
-      commit(()=>{if(task)Object.assign(state.tasks.find(item=>item.id===task.id),values);else state.tasks.unshift({id:uid(),...values,spaceId:space.id,category:'个人',done:false,source:`工作区 · ${space.title}`,createdAt:stamp()});});
+      commit(()=>{if(task)Object.assign(state.tasks.find(item=>item.id===task.id),values);else state.tasks.unshift({id:uid(),...values,color:assignRecordColor(state),spaceId:space.id,category:'个人',done:false,source:`工作区 · ${space.title}`,createdAt:stamp()});});
       tab='tasks';localRefresh();toast('事项已保存到这个空间');
     }});
   }

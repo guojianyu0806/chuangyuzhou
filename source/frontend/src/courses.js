@@ -1,4 +1,5 @@
 import { mountCanvas, canvasCardFill } from './canvas.js';
+import { assignRecordColor, createColorDraft } from './creation-colors.js';
 
 const DEFAULT_PROMPT = `你是我的软件工程课程助教。请以我上传的课程资料和课堂笔记为依据，按章节整理：
 1. 核心概念、概念关系与适用条件。
@@ -167,7 +168,7 @@ export function mountCourses(ctx, courseId) {
     const emptyHTML = isNote ? `<div class="course-board-empty">${glyph('book', 37)}<h2>把这门课的理解铺开</h2><p>每篇笔记都是一张可以摆放的卡片。</p><button class="btn primary" data-course-action="new-note">${glyph('plus', 17)} 写第一篇笔记</button></div>` : `<div class="course-board-empty" data-course-dropzone>${glyph('upload', 37)}<h2>把这一门课的资料放进来</h2><p>拖入课件、课堂记录或截图，原件会留在这里。</p><button class="btn primary" data-course-action="upload">选择文件</button><small>PPT / PDF / TXT / 图片 · 单文件不超过 40 MB</small></div>`;
     const host = root.querySelector('[data-course-detail-canvas]');
     canvasCleanup = mountCanvas({ ...ctx, root: host, createSpace: () => isNote ? editNote() : root.querySelector('[data-course-files]').click(), editSpace: id => isNote && editNote(course.notes.find(item => item.id === id)), enterCard: showDetailItem }, {
-      layout: state.boards[boardKey], items, title: isNote ? '笔记卡片' : '资料卡片', hideHeader: true, createLabel: false, cardLabel: isNote ? '学习笔记' : '原始资料', footLabel: isNote ? '留下自己的理解' : '保留上传原件', enterLabel: isNote ? '阅读笔记' : '打开资料', emptyHTML, canDrop: false, onEdit: isNote ? id => editNote(course.notes.find(item => item.id === id)) : null, manageLabel: '编辑笔记', renderCard: detailCard
+      layout: state.boards[boardKey], sourceItems: isNote ? course.notes : course.files, items, title: isNote ? '笔记卡片' : '资料卡片', hideHeader: true, createLabel: false, cardLabel: isNote ? '学习笔记' : '原始资料', footLabel: isNote ? '留下自己的理解' : '保留上传原件', enterLabel: isNote ? '阅读笔记' : '打开资料', emptyHTML, canDrop: false, onEdit: isNote ? id => editNote(course.notes.find(item => item.id === id)) : null, manageLabel: '编辑笔记', renderCard: detailCard
     });
   }
 
@@ -198,13 +199,18 @@ export function mountCourses(ctx, courseId) {
   }
 
   function newCourse() {
-    modal({ title: '新建课程', submitLabel: '创建课程', body: `<div class="stack"><label class="field">课程名称<input name="title" required maxlength="60" placeholder="例如：软件测试与质量保证" autofocus></label><label class="field">一句话描述<input name="subtitle" maxlength="120" placeholder="这门课，你想弄明白什么？"></label><label class="field">课程颜色<select name="color"><option value="#7950f2">鸢尾紫</option><option value="#008f99">湖水青</option><option value="#df438f">亮玫粉</option><option value="#b46a16">琥珀橙</option></select></label><p class="muted">每门课都会有独立的资料、笔记和助教偏好。</p></div>`, onSubmit(data) {
+    const colorDraft = createColorDraft(state);
+    modal({ title: '新建课程', submitLabel: '创建课程', body: `<div class="stack"><label class="field">课程名称<input name="title" required maxlength="60" placeholder="例如：软件测试与质量保证" autofocus></label><label class="field">一句话描述<input name="subtitle" maxlength="120" placeholder="这门课，你想弄明白什么？"></label><label class="field">课程颜色<input name="color" type="color" value="${colorDraft.color}"><small>自动配色，也可以手动选择。</small></label><p class="muted">每门课都会有独立的资料、笔记和助教偏好。</p></div>`, onSubmit(data) {
       const title = String(data.get('title') || '').trim();
       if (!title) { toast('请填写课程名称'); return false; }
       const id = uid();
-      state.courses.unshift({ id, title, subtitle: String(data.get('subtitle') || '').trim(), color: String(data.get('color')), icon: 'book', example: false, prompt: DEFAULT_PROMPT, notes: [], files: [], updatedAt: new Date().toISOString() });
-      save(); toast('课程已创建'); go('courses', id);
+      const previousColor = state.ui?.lastCreatedColor, previousUpdatedAt = state.updatedAt;
+      const created = { id, title, subtitle: String(data.get('subtitle') || '').trim(), color: colorDraft.commit(String(data.get('color'))), icon: 'book', example: false, prompt: DEFAULT_PROMPT, notes: [], files: [], updatedAt: new Date().toISOString() };
+      state.courses.unshift(created);
+      try { save(); } catch(error) { state.courses.splice(state.courses.indexOf(created), 1);state.updatedAt=previousUpdatedAt;if(previousColor===undefined)delete state.ui.lastCreatedColor;else state.ui.lastCreatedColor=previousColor;throw error; }
+      toast('课程已创建'); go('courses', id);
     } });
+    colorDraft.bind(document.querySelector('#modal form'));
   }
 
   function editCourse(id) {
@@ -213,8 +219,10 @@ export function mountCourses(ctx, courseId) {
     modal({ title: '修改课程', submitLabel: '保存课程', body: `<div class="stack"><label class="field">课程名称<input name="title" required maxlength="60" value="${esc(target.title)}"></label><label class="field">一句话描述<input name="subtitle" maxlength="120" value="${esc(target.subtitle || '')}" placeholder="这门课，你想弄明白什么？"></label><p class="muted">修改名称不会改变这门课已有的资料、笔记和助教偏好。</p></div>`, onSubmit(data) {
       const title = String(data.get('title') || '').trim();
       if (!title) { toast('请填写课程名称'); return false; }
+      const previous = {title:target.title,subtitle:target.subtitle,updatedAt:target.updatedAt}, previousUpdatedAt = state.updatedAt;
       target.title = title; target.subtitle = String(data.get('subtitle') || '').trim(); target.updatedAt = new Date().toISOString();
-      save(); if (alive) refreshCourseCards(); toast('课程已更新');
+      try { save(); } catch(error) { Object.assign(target,previous);state.updatedAt=previousUpdatedAt;throw error; }
+      if (alive) refreshCourseCards(); toast('课程已更新');
     } });
   }
 
@@ -224,16 +232,20 @@ export function mountCourses(ctx, courseId) {
       const content = String(data.get('content') || '').trim();
       if (!title || !content) { toast('请填写笔记标题和正文'); return false; }
       const values = { title, content, chapter: String(data.get('chapter') || '').trim(), source: String(data.get('source') || '').trim(), updatedAt: new Date().toISOString() };
-      if (note) {
-        note.revisions ||= [];
-        note.revisions.push({ title: note.title, content: note.content, chapter: note.chapter, source: note.source, updatedAt: note.updatedAt, savedAt: values.updatedAt });
-        Object.assign(note, values);
-        selectedNoteId = note.id;
-      } else {
-        const created = { id: uid(), ...values, example: false, revisions: [] };
-        course.notes.unshift(created); selectedNoteId = created.id;
-      }
-      activeTab = 'notes'; detailView = 'reader'; touch(); renderDetail(); toast('笔记已保存到本机');
+      const previousNotes = structuredClone(course.notes), previousUpdatedAt = course.updatedAt, previousStateUpdatedAt = state.updatedAt, previousColor = state.ui?.lastCreatedColor, previousSelection = selectedNoteId;
+      try {
+        if (note) {
+          note.revisions ||= [];
+          note.revisions.push({ title: note.title, content: note.content, chapter: note.chapter, source: note.source, updatedAt: note.updatedAt, savedAt: values.updatedAt });
+          Object.assign(note, values);
+          selectedNoteId = note.id;
+        } else {
+          const created = { id: uid(), ...values, color: assignRecordColor(state), example: false, revisions: [] };
+          course.notes.unshift(created); selectedNoteId = created.id;
+        }
+        touch();
+      } catch(error) { if(note){const original=previousNotes.find(item=>item.id===note.id);for(const key of Object.keys(note))delete note[key];Object.assign(note,original);course.notes=previousNotes.map(item=>item.id===note.id?note:item);}else course.notes=previousNotes;course.updatedAt=previousUpdatedAt;state.updatedAt=previousStateUpdatedAt;selectedNoteId=previousSelection;if(state.ui){if(previousColor===undefined)delete state.ui.lastCreatedColor;else state.ui.lastCreatedColor=previousColor;}throw error; }
+      activeTab = 'notes'; detailView = 'reader'; renderDetail(); toast('笔记已保存到本机');
     } });
   }
 
@@ -254,13 +266,15 @@ export function mountCourses(ctx, courseId) {
         if (!['ppt', 'pptx', 'pdf', 'txt', 'md', 'png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext) || file.size > 40 * 1024 * 1024) { rejected++; continue; }
         try {
           const blobId = await putFile(file);
-          const entry = { id: uid(), blobId, name: file.name, size: file.size, type: file.type, createdAt: new Date().toISOString() };
+          const previousColor = state.ui?.lastCreatedColor, previousUpdatedAt = target.updatedAt, previousStateUpdatedAt = state.updatedAt, previousSelection = selectedFileId;
+          const entry = { id: uid(), blobId, name: file.name, size: file.size, type: file.type, createdAt: new Date().toISOString(), color: assignRecordColor(state) };
           target.files ||= [];
-          target.files.unshift(entry); if (target === course) selectedFileId = entry.id; succeeded++;
+          target.files.unshift(entry); target.updatedAt = new Date().toISOString();
+          try { save(); } catch(error) { target.files.splice(target.files.indexOf(entry),1);target.updatedAt=previousUpdatedAt;state.updatedAt=previousStateUpdatedAt;selectedFileId=previousSelection;if(previousColor===undefined)delete state.ui.lastCreatedColor;else state.ui.lastCreatedColor=previousColor;throw error; }
+          if (target === course) selectedFileId = entry.id; succeeded++;
         } catch { rejected++; }
       }
       if (succeeded) {
-        target.updatedAt = new Date().toISOString(); save();
         if (alive && originalView?.isConnected) {
           if (target === course) { activeTab = 'files'; detailView = 'board'; renderDetail(); }
           else refreshCourseCards();
