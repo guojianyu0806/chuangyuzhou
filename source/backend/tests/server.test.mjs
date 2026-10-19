@@ -48,6 +48,15 @@ test('public health is minimal; private APIs require auth; setup cannot be claim
   assert.equal((await f.api('/api/auth/session')).body.username, username);
 });
 
+test('old workspace clients cannot discard conversation history and malformed roles are rejected',async t=>{
+  const f=await fixture(t);await f.setup();const model=state();model.aiRequests=[{id:'chat',text:'活动安排',files:[],conversation:{version:1,messages:[{id:'m1',role:'user',text:'活动安排',createdAt:new Date().toISOString()}]}}];
+  assert.equal((await f.api('/api/workspace',{method:'PUT',body:{baseRevision:0,state:model}})).status,200);
+  const old=structuredClone(model);delete old.aiRequests[0].conversation;
+  assert.equal((await f.api('/api/workspace',{method:'PUT',body:{baseRevision:1,state:old}})).body.error,'workspace_update_required');
+  model.aiRequests[0].conversation.messages[0].role='system';
+  assert.equal((await f.api('/api/workspace',{method:'PUT',body:{baseRevision:1,state:model}})).body.error,'invalid_conversation');
+});
+
 test('setup creation is atomic under concurrent requests', async t => {
   const f = await fixture(t);
   const results = await Promise.all([f.setup(), f.setup()]);

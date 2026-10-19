@@ -1,3 +1,4 @@
+import {validateConversation} from '../frontend/src/ai-conversation-model.js';
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, chmodSync, existsSync, linkSync, unlinkSync } from 'node:fs';
 import { resolve, join } from 'node:path';
@@ -81,6 +82,7 @@ export function validateWorkspace(state) {
   }
   if (state.aiRequests !== undefined) {
     recordList(state.aiRequests, ['id', 'text']);
+    for(const request of state.aiRequests)if(request.conversation!==undefined){try{validateConversation(request.conversation);}catch{throw new ApiError(400,'invalid_conversation');}}
     for (const request of state.aiRequests) if (request.files !== undefined) recordList(request.files, ['id', 'blobId', 'name']);
   }
   if (state.aiDraft !== undefined) {
@@ -177,6 +179,13 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
         if (state.timetable === undefined && current.state) {
           const previousTimetable = JSON.parse(current.state).timetable;
           if (previousTimetable?.terms?.length) throw new ApiError(409, 'workspace_update_required');
+        }
+        if(current.state){
+          const incoming=new Map((state.aiRequests||[]).map(r=>[r.id,r]));
+          for(const old of JSON.parse(current.state).aiRequests||[]){
+            const next=incoming.get(old.id);
+            if(next&&old.conversation?.messages?.length&&!next.conversation)throw new ApiError(409,'workspace_update_required');
+          }
         }
         const missing = [...blobs].filter(id => !fileInfo(id) || !existsSync(filePath(id)));
         if (missing.length) throw new ApiError(409, 'missing_files', { fileIds: missing.slice(0, 100) });

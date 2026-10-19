@@ -524,13 +524,13 @@ function renderCloudSettings(){
 }
 if(cloudClient){
   cloudClient.subscribe(updateCloudShell);
-  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')&&!event.target.matches('[data-ledger-filter],[data-timetable-view],[data-dream-view]')){cloudDirtyFields.add(event.target);cloudEditing=true;cloudEditTick++;}});
+  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')&&!event.target.closest('[data-local-ai-draft]')&&!event.target.matches('[data-ledger-filter],[data-timetable-view],[data-dream-view]')){cloudDirtyFields.add(event.target);cloudEditing=true;cloudEditTick++;}});
   document.addEventListener('ai-request-added',event=>{
     const host=event.target;
     // A successful composer submission saves and clears only its own draft.
     // Other open editors, and anything typed after this event, remain protected.
     if(mode!=='personal'||!host.matches?.('.ai-composer-host')||!ctx.root.contains(host)||!state.aiRequests.some(request=>request.id===event.detail?.id))return;
-    if(state.aiDraft.text||state.aiDraft.files.length||host.querySelector('[name=instruction]')?.value)return;
+    if(host.querySelector('[name=instruction]')?.value)return;
     for(const field of cloudDirtyFields)if(!field.isConnected||host.contains(field))cloudDirtyFields.delete(field);
     cloudEditing=cloudDirtyFields.size>0;
   });

@@ -1,3 +1,4 @@
+import {validateConversation} from './ai-conversation-model.js';
 // Pure backup validation and additive merging. No browser storage or file writes.
 import {validateOrganizedProposal} from './ai-organizer.js';
 import {validateLedger} from './ledger-model.js';
@@ -179,6 +180,7 @@ function aiRequest(value) {
     status: choice(value.status, ['waiting_model','filed','cancelled'], 'AI 请求状态', 'waiting_model'),
     createdAt: text(value.createdAt, 'AI 请求创建时间'), updatedAt: text(value.updatedAt, 'AI 请求更新时间'),
   };
+  if (value.conversation !== undefined) result.conversation=validateConversation(value.conversation);
   if (value.originalText !== undefined) result.originalText = text(value.originalText, 'AI 请求原文');
   if (value.revisions !== undefined) result.revisions = records(value.revisions, aiRevision, 'AI 请求修订');
   if (value.receipt !== undefined && value.receipt !== null) result.receipt = receipt(value.receipt);
@@ -374,6 +376,14 @@ export function mergeBackup(current, incoming) {
     count += merged.count;
   }
   if (source.aiRequests) mergeRecords(state.aiRequests ||= [], source.aiRequests, (existing, item) => {
+    if(item.conversation&&!existing.conversation){existing.conversation=structuredClone(item.conversation);count++;}
+    else if(item.conversation&&existing.conversation){
+      const messages=existing.conversation.messages,known=new Set(messages.map(m=>m.id)),before=messages.length;
+      for(const message of item.conversation.messages)if(!known.has(message.id)){messages.push(structuredClone(message));known.add(message.id);count++;}
+      messages.sort((a,b)=>a.createdAt.localeCompare(b.createdAt));
+      if(messages.length!==before){delete existing.conversation.proposal;delete existing.conversation.pendingJobId;}
+      validateConversation(existing.conversation);
+    }
     mergeRecords(existing.files ||= [], item.files);
     const revisions = existing.revisions ||= [];
     const known = new Set(revisions.map(r => JSON.stringify([r.text,r.targetId,r.savedAt])));

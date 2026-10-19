@@ -1,3 +1,4 @@
+import {ensureConversation} from './ai-conversation-model.js';
 const byState = new WeakMap();
 const entry = state => { if (!byState.has(state)) byState.set(state, {jobs:new Map(), listeners:new Set()}); return byState.get(state); };
 const emit = state => entry(state).listeners.forEach(fn => fn());
@@ -14,9 +15,10 @@ export async function startAIJob(ctx, request) {
     const status = await ctx.cloud.request('/api/model/status'); ctx.cloud.modelStatus = status;
     if (!status.configured) throw new Error('请先在“偏好与连接”中保存 DeepSeek API Key。原文已收好。');
     if (!status.hermesAvailable) throw new Error('Hermes 服务尚未就绪，原文和附件已保留。');
+    ensureConversation(request,ctx.uid);ctx.save(ctx.state);
     await ctx.cloud.flush();
     const {job} = await ctx.cloud.request('/api/ai/jobs', {method:'POST',body:{requestId:request.id,text:request.text,
-      fileIds:[...new Set((request.files||[]).map(f=>f.blobId))],destinationId:request.targetId,kind:'organize',autoFile:true}});
+      fileIds:[...new Set((request.files||[]).map(f=>f.blobId))],destinationId:request.targetId,kind:'conversation',autoFile:false,turnId:request.conversation.messages.at(-1)?.id}});
     cache.jobs.set(request.id, job); emit(ctx.state);
     return job;
   } catch (error) {
@@ -32,7 +34,7 @@ export function watchAIJobs(ctx, onChange) {
   let active = true, fetching = false;
   const update = job => { if (active && ctx.state.aiRequests.some(r=>r.id===job.requestId)) cache.jobs.set(job.requestId,job); };
   const complete = async job => {
-    if (job.status === 'succeeded' && job.autoFiled) await ctx.cloud.poll();
+    if (job.status === 'succeeded' && (job.autoFiled||job.replySaved)) await ctx.cloud.poll();
   };
   const poll = async () => {
     if (!active || fetching || !ctx.cloud.authenticated) return;
@@ -57,6 +59,7 @@ export function watchAIJobs(ctx, onChange) {
       for (const job of result.jobs || []) {
         if (!cache.jobs.has(job.requestId)) update(job);
       }
+      if((result.jobs||[]).some(job=>job.replySaved))await ctx.cloud.poll();
       const incomplete = [...cache.jobs.values()].filter(j=>j.status==='succeeded'&&!j.proposal&&ctx.state.aiRequests.some(r=>r.id===j.requestId&&r.status==='waiting_model')).slice(0,5);
       for (const job of incomplete) {const result=await ctx.cloud.request(`/api/ai/jobs/${encodeURIComponent(job.id)}`);update(result.job);await complete(result.job);}
       if (active) onChange();

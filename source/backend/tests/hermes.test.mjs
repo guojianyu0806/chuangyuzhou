@@ -7,6 +7,40 @@ import { randomUUID } from 'node:crypto';
 import { createHermesService, validateProposal, workspaceDestinations, buildPrompt } from '../hermes.mjs';
 
 const proposal = (destinationId = 'inbox') => ({ title: '整理结果', summary: '已整理原文内容。', notes: [{ title: '复习安排', content: '明天复习数据结构。', sourceIds: ['input'] }], tasks: [{ title: '复习数据结构', date: '', priority: 'normal', description: '' }], destinationId, reason: '依据用户原文。', warnings: [] });
+
+test('conversation asks, remembers corrections, and only explicit confirmation files once',async t=>{
+  const prompts=[];
+  const ctx=setup(t,{runModel:async input=>{const parsed=JSON.parse(input.user);prompts.push(parsed);return prompts.length===1?{reply:'想什么时候复习？',proposal:null}:{reply:'按你补充的时间拟好方案，请确认。',proposal:proposal()};}});
+  await ctx.configure();
+  ctx.change(s=>s.aiRequests.push({id:'chat1',text:'帮我安排复习',targetId:'auto',files:[],status:'waiting_model',conversation:{version:1,messages:[{id:'turn1',role:'user',text:'帮我安排复习',createdAt:new Date().toISOString()}]}}));
+  const input={requestId:'chat1',text:'帮我安排复习',kind:'conversation',turnId:'turn1',autoFile:true};
+  const first=await ctx.call('POST','/api/ai/jobs',input);const reply=await ctx.finish(first.body.job.id);
+  assert.equal(reply.replySaved,true);assert.equal(ctx.state().tasks.length,0);assert.equal(ctx.state().aiRequests[0].conversation.messages[1].text,'想什么时候复习？');
+  assert.equal((await ctx.call('POST',`/api/ai/jobs/${reply.id}/confirm`,{})).status,409);
+  ctx.change(s=>s.aiRequests[0].conversation.messages.push({id:'turn2',role:'user',text:'明天，先复习线性表',createdAt:new Date().toISOString()}));
+  const second=await ctx.call('POST','/api/ai/jobs',{...input,turnId:'turn2'});const ready=await ctx.finish(second.body.job.id);
+  assert.equal(prompts[1].conversation.length,3);assert.match(prompts[1].conversation[1].content,/想什么时候/);assert.equal(ctx.state().tasks.length,0);assert.equal(ctx.state().aiRequests[0].status,'waiting_model');
+  const confirm=await ctx.call('POST',`/api/ai/jobs/${ready.id}/confirm`,{});assert.equal(confirm.status,200);assert.equal(ctx.state().tasks.length,1);
+  assert.equal((await ctx.call('POST',`/api/ai/jobs/${ready.id}/confirm`,{})).status,200);assert.equal(ctx.state().tasks.length,1);
+});
+
+test('conversation rejects outdated proposals and preserves later user messages',async t=>{
+  const ctx=setup(t,{runModel:async()=>({reply:'请确认方案',proposal:proposal()})});await ctx.configure();
+  ctx.change(s=>s.aiRequests.push({id:'chat1',text:'复习',targetId:'auto',files:[],status:'waiting_model',conversation:{version:1,messages:[{id:'t1',role:'user',text:'复习',createdAt:new Date().toISOString()}]}}));
+  const started=await ctx.call('POST','/api/ai/jobs',{requestId:'chat1',text:'复习',kind:'conversation',turnId:'t1'});const ready=await ctx.finish(started.body.job.id);
+  ctx.change(s=>s.aiRequests[0].conversation.messages.push({id:'t2',role:'user',text:'改成后天',createdAt:new Date().toISOString()}));
+  const result=await ctx.call('POST',`/api/ai/jobs/${ready.id}/confirm`,{});assert.equal(result.body.error,'STALE_PROPOSAL');assert.equal(ctx.state().tasks.length,0);
+  assert.equal((await ctx.call('POST','/api/ai/jobs',{requestId:'chat1',text:'复习',kind:'conversation',turnId:'t1'})).body.error,'STALE_TURN');
+});
+
+test('late conversation response cannot replace an edited or cancelled conversation',async t=>{
+  let release;const gate=new Promise(resolve=>release=resolve);
+  const ctx=setup(t,{runModel:async()=>{await gate;return {reply:'旧回复',proposal:proposal()};}});await ctx.configure();
+  ctx.change(s=>s.aiRequests.push({id:'chat1',text:'复习',targetId:'auto',files:[],status:'waiting_model',conversation:{version:1,messages:[{id:'t1',role:'user',text:'复习',createdAt:new Date().toISOString()}]}}));
+  const started=await ctx.call('POST','/api/ai/jobs',{requestId:'chat1',text:'复习',kind:'conversation',turnId:'t1'});
+  ctx.change(s=>s.aiRequests[0].conversation.messages.push({id:'t2',role:'user',text:'等一下',createdAt:new Date().toISOString()}));release();const result=await ctx.finish(started.body.job.id);
+  assert.equal(result.replySaved,false);assert.equal(ctx.state().aiRequests[0].conversation.messages.length,2);assert.equal(ctx.state().tasks.length,0);
+});
 function setup(t, overrides = {}) {
   const dataDir = mkdtempSync(join(tmpdir(), 'shiguang-hermes-test-'));
   let state = { aiRequests: [], courses: [], spaces: [], tasks: [], captures: [] }, revision = 1;
