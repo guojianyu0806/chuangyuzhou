@@ -13,7 +13,7 @@ function monthRange() {
   const date = new Date(), start = `${localDate(date).slice(0, 7)}-01`;
   return { start, end: localDate(new Date(date.getFullYear(), date.getMonth() + 1, 0, 12)) };
 }
-function initialView() { return { ...monthRange(), projectId: 'all', type: 'all', archived: false, query: '', group: 'date', limit: 80 }; }
+function initialView() { return { ...monthRange(), scope:'daily', projectId: 'all', type: 'all', archived: false, query: '', group: 'date', limit: 80 }; }
 
 export function mountLedger(ctx) {
   initializeLedger(ctx.state);
@@ -22,11 +22,11 @@ export function mountLedger(ctx) {
   if (!views.has(viewOwner)) views.set(viewOwner, new Map());
   const ownerViews = views.get(viewOwner);
   if (!ownerViews.has(state.mode)) ownerViews.set(state.mode, initialView());
-  const view = ownerViews.get(state.mode);
+  const view = ownerViews.get(state.mode);view.scope ||= 'daily';
   let mounted = true;
   if (view.projectId !== 'all' && view.projectId && !state.ledger.projects.some(p => p.id === view.projectId)) view.projectId = 'all';
   const money = cents => `¥${formatMoney(cents)}`;
-  const projectTitle = id => state.ledger.projects.find(p => p.id === id)?.title || '未分项目';
+  const projectTitle = id => state.ledger.projects.find(p => p.id === id)?.title || '日常零钱';
   const projectColor = id => safeColor(state.ledger.projects.find(p => p.id === id)?.color);
   const periodLabel = () => !view.start && !view.end ? '全部日期' : view.start === view.end ? view.start : `${view.start || '最早'} → ${view.end || '至今'}`;
   const dateHeading = date => {
@@ -36,14 +36,14 @@ export function mountLedger(ctx) {
   const invalidRange = () => (view.start && !isValidDate(view.start)) || (view.end && !isValidDate(view.end)) || (view.start && view.end && view.start > view.end);
   const selected = () => invalidRange() ? [] : selectEntries(state.ledger, view).slice().sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt) || a.id.localeCompare(b.id));
   function commit(change) {
-    const previous = structuredClone(state.ledger), previousUpdatedAt = state.updatedAt, previousColor = state.ui?.lastCreatedColor;
+    const previousView={...view}, previous = structuredClone(state.ledger), previousUpdatedAt = state.updatedAt, previousColor = state.ui?.lastCreatedColor;
     try { change(); ctx.save(); }
-    catch (error) { state.ledger = previous; state.updatedAt = previousUpdatedAt;if(state.ui){if(previousColor===undefined)delete state.ui.lastCreatedColor;else state.ui.lastCreatedColor=previousColor;}throw error; }
+    catch (error) { Object.assign(view,previousView);state.ledger = previous; state.updatedAt = previousUpdatedAt;if(state.ui){if(previousColor===undefined)delete state.ui.lastCreatedColor;else state.ui.lastCreatedColor=previousColor;}throw error; }
   }
   function refreshed() { if (mounted) ctx.refresh(); }
   function run(action) { try { action(); } catch (error) { ctx.toast(error.message || '保存失败，请重试。'); } }
   function projectOptions(selectedId, includeAll = false) {
-    return `${includeAll ? `<option value="all" ${selectedId === 'all' ? 'selected' : ''}>全部项目</option>` : ''}<option value="" ${selectedId === '' ? 'selected' : ''}>未分项目</option>${state.ledger.projects.filter(p => includeAll || !p.archived || p.id === selectedId).map(p => `<option value="${esc(p.id)}" ${selectedId === p.id ? 'selected' : ''}>${esc(p.title)}${p.archived ? '（已归档）' : ''}</option>`).join('')}`;
+    return `${includeAll ? `<option value="all" ${selectedId === 'all' ? 'selected' : ''}>全部项目</option>` : ''}${includeAll?'':`<option value="" ${selectedId === '' ? 'selected' : ''}>日常零钱</option>`}${state.ledger.projects.filter(p => includeAll || !p.archived || p.id === selectedId).map(p => `<option value="${esc(p.id)}" ${selectedId === p.id ? 'selected' : ''}>${esc(p.title)}${p.archived ? '（已归档）' : ''}</option>`).join('')}`;
   }
   function openEntry(entry) {
     const type = entry?.type || 'expense';
@@ -54,7 +54,7 @@ export function mountLedger(ctx) {
         <label class="field">金额 · 人民币（元）<input name="amount" type="text" inputmode="decimal" autocomplete="off" maxlength="12" placeholder="0.00" value="${entry ? formatMoney(entry.amountCents).replaceAll(',', '') : ''}" required aria-describedby="ledger-amount-hint"><small id="ledger-amount-hint">大于 0，最多两位小数</small></label></div>
         <div class="ledger-form-grid"><label class="field">日期<input name="date" type="date" value="${esc(entry?.date || localDate())}" required min="1900-01-01" max="9999-12-31"></label>
         <label class="field">分类<input name="category" list="ledger-category-options" maxlength="80" value="${esc(entry?.category || categories[type][0])}" required placeholder="选择或输入分类"><datalist id="ledger-category-options">${categories[type].map(c => `<option value="${c}"></option>`).join('')}</datalist></label></div>
-        <label class="field">项目<select name="projectId">${projectOptions(entry?.projectId ?? defaultProject)}</select><small>学习、学生会活动、个人计划，都可以各记各的。</small></label>
+        <label class="field">所属账本<select name="projectId">${projectOptions(entry?.projectId ?? defaultProject)}</select><small>日常开销选「日常零钱」；旅行、活动费用选对应项目。</small></label>
         <label class="field">备注<textarea name="note" maxlength="2000" rows="3" placeholder="记下用途、活动名称或其他细节">${esc(entry?.note || '')}</textarea></label>
         ${entry?.example ? '<p class="ledger-form-note">这是一条示例账目，保存在示例工作区。</p>' : ''}
       </div>`, onSubmit(data) {
@@ -87,9 +87,9 @@ export function mountLedger(ctx) {
   function openProject(project) {
     const colorDraft = project ? null : createColorDraft(state);
     ctx.modal({ title: project ? '编辑记账项目' : '新建记账项目', submitLabel: project ? '保存项目' : '创建项目', body: `
-      <div class="ledger-form"><label class="field">项目名称<input name="title" required maxlength="80" value="${esc(project?.title || '')}" placeholder="例如：学生会迎新、考研准备、日常生活"></label>
+      <div class="ledger-form"><label class="field">项目名称<input name="title" required maxlength="80" value="${esc(project?.title || '')}" placeholder="例如：国庆出游、学生会迎新、考研准备"></label>
       <label class="field">卡片颜色<input name="color" type="color" value="${project ? safeColor(project.color) : colorDraft.color}" aria-label="项目卡片颜色">${project?'':'<small>自动配色，也可以手动选择。</small>'}</label>
-      <p class="ledger-form-note">每笔收支都可以选择所属项目，之后按项目汇总。</p></div>`, onSubmit(data) {
+      <label class="ledger-total-setting"><input type="checkbox" name="includeInTotal" ${project&&project.includeInTotal!==false?'checked':''}><span><strong>计入总账单</strong><small>开启后，这个项目的收入和支出同时计入总账；关闭后仅在项目账本中统计。</small></span></label><p class="ledger-form-note">项目账本和日常零钱始终分别计算。更改设置会作用于该项目的全部历史账目。</p></div>`, onSubmit(data) {
       const title = String(data.get('title')).trim(), color = String(data.get('color'));
       if (!title || title.length > 80) throw new Error('请填写项目名称，最多 80 个字。');
       if (!/^#[\da-f]{6}$/i.test(color)) throw new Error('请选择有效的卡片颜色。');
@@ -98,8 +98,8 @@ export function mountLedger(ctx) {
         if (project) {
           const target = state.ledger.projects.find(p => p.id === project.id);
           if (!target) throw new Error('这个项目已不存在，请刷新后重试。');
-          Object.assign(target, { title, color, updatedAt: stamp() });
-        } else state.ledger.projects.push({ id: ctx.uid(), title, color:colorDraft.commit(color), archived: false, createdAt: stamp(), updatedAt: stamp() });
+          Object.assign(target, { title, color, includeInTotal:data.has('includeInTotal'), updatedAt: stamp() });
+        } else {const id=ctx.uid();state.ledger.projects.push({ id, title, color:colorDraft.commit(color), includeInTotal:data.has('includeInTotal'), archived: false, createdAt: stamp(), updatedAt: stamp() });Object.assign(view,{scope:'projects',projectId:id,start:'',end:'',type:'all',query:'',archived:false});}
       });
       ctx.toast(project ? '项目已修改。' : '项目已创建，现在可以给它记账。');
       refreshed();
@@ -123,10 +123,10 @@ export function mountLedger(ctx) {
     if (!project) return;
     commit(() => Object.assign(project, { archived, updatedAt: stamp() }));
     ctx.closeModal(); refreshed();
-    ctx.toast(archived ? '项目已归档，历史账目仍保留并计入汇总。' : '项目已恢复。');
+    ctx.toast(archived ? '项目已归档，历史账目保留，仍按原设置统计。' : '项目已恢复。');
   }
   function manageProjects() {
-    ctx.modal({ title: '管理记账项目', body: `<div class="ledger-project-manager">${state.ledger.projects.length ? state.ledger.projects.map(p => `<div class="ledger-project-manage-row" data-ledger-project-row="${esc(p.id)}"><span class="ledger-project-dot" style="--project-color:${safeColor(p.color)}"></span><div><strong>${esc(p.title)}</strong><small>${p.archived ? '已归档 · 历史账目保留' : `${state.ledger.entries.filter(e => !e.archived && e.projectId === p.id).length} 笔账目`}</small></div><button type="button" class="btn" data-ledger-action="edit-project" data-id="${esc(p.id)}" aria-label="编辑项目：${esc(p.title)}">编辑</button><button type="button" class="btn" data-ledger-action="${p.archived ? 'restore-project' : 'archive-project'}" data-id="${esc(p.id)}" aria-label="${p.archived ? '恢复' : '归档'}项目：${esc(p.title)}">${p.archived ? '恢复' : '归档'}</button></div>`).join('') : '<p class="ledger-form-note">还没有项目。可以先创建「日常生活」或「学生会活动」。</p>'}<button type="button" class="btn primary" data-ledger-action="add-project">${icon('plus', 16)}新建项目</button></div>` });
+    ctx.modal({ title: '管理记账项目', body: `<div class="ledger-project-manager">${state.ledger.projects.length ? state.ledger.projects.map(p => `<div class="ledger-project-manage-row" data-ledger-project-row="${esc(p.id)}"><span class="ledger-project-dot" style="--project-color:${safeColor(p.color)}"></span><div><strong>${esc(p.title)}</strong><small>${p.archived ? '已归档 · ' : ''}${p.includeInTotal===false?'独立核算':'计入总账单'} · ${state.ledger.entries.filter(e => !e.archived && e.projectId === p.id).length} 笔账目</small></div><button type="button" class="btn" data-ledger-action="edit-project" data-id="${esc(p.id)}" aria-label="编辑项目：${esc(p.title)}">编辑</button><button type="button" class="btn" data-ledger-action="${p.archived ? 'restore-project' : 'archive-project'}" data-id="${esc(p.id)}" aria-label="${p.archived ? '恢复' : '归档'}项目：${esc(p.title)}">${p.archived ? '恢复' : '归档'}</button></div>`).join('') : '<p class="ledger-form-note">还没有项目。可以先创建「日常生活」或「学生会活动」。</p>'}<button type="button" class="btn primary" data-ledger-action="add-project">${icon('plus', 16)}新建项目</button></div>` });
     document.querySelector('#modal .ledger-project-manager')?.addEventListener('click', handleAction);
   }
   function handleAction(event) {
@@ -168,26 +168,37 @@ export function mountLedger(ctx) {
       groupEntries.get(key).push(entry);
     }
     const allProjects = state.ledger.projects.filter(p => !p.archived || p.id === view.projectId);
-    const projectEntries = invalidRange() ? [] : selectEntries(state.ledger, { ...view, projectId: 'all' });
-    const projectCards = [{ id: '', title: '未分项目', color: '#FFBD82' }, ...allProjects].map(p => {
+    const projectEntries = selectEntries(state.ledger, {scope:'projects'});
+    const projectCards = allProjects.map(p => {
       const sums = summarizeEntries(projectEntries.filter(e => e.projectId === p.id));
-      return `<button class="ledger-project-card ${view.projectId === p.id ? 'is-selected' : ''}" data-project-id="${esc(p.id)}" data-ledger-project="${esc(p.id)}" style="--project-color:${safeColor(p.color)}" aria-pressed="${view.projectId === p.id}"><span class="ledger-project-card-title">${icon('layers', 18)}<strong>${esc(p.title)}</strong>${p.archived ? '<small>已归档</small>' : ''}</span><span class="ledger-project-expense"><small>支出</small><strong>${money(sums.expenseCents)}</strong></span><span class="ledger-project-foot"><span>收入 ${money(sums.incomeCents)}</span><span>${sums.count} 笔 ${icon('arrow-right', 13)}</span></span></button>`;
+      return `<button class="ledger-project-card ${view.projectId === p.id ? 'is-selected' : ''}" data-project-id="${esc(p.id)}" data-ledger-project="${esc(p.id)}" style="--project-color:${safeColor(p.color)}" aria-pressed="${view.projectId === p.id}"><span class="ledger-project-card-title">${icon('layers', 18)}<strong>${esc(p.title)}</strong>${p.archived ? '<small>已归档</small>' : ''}</span><span class="ledger-project-expense"><small>累计支出</small><strong>${money(sums.expenseCents)}</strong></span><span class="ledger-project-status">${p.includeInTotal===false?'独立核算 · 不计入总账':'计入总账单'}</span><span class="ledger-project-foot"><span>收入 ${money(sums.incomeCents)}</span><span>${sums.count} 笔 ${icon('arrow-right', 13)}</span></span></button>`;
     }).join('');
-    content.innerHTML = `<div class="ledger-summary" aria-label="筛选范围内的收支汇总"><section class="ledger-total expense"><span>支出</span><strong data-ledger-total="expense">${money(total.expenseCents)}</strong></section><section class="ledger-total income"><span>收入</span><strong data-ledger-total="income">${money(total.incomeCents)}</strong></section><section class="ledger-total net"><span>收支结余</span><strong data-ledger-total="net">${money(total.netCents)}</strong></section></div>
+    const project=state.ledger.projects.find(p=>p.id===view.projectId),title={daily:'日常零钱',projects:project?.title||'所有项目',total:'总账单'}[view.scope];
+    const scopeCopy=view.scope==='daily'?'这里只统计未分配到项目的日常收入和支出。':view.scope==='total'?'日常零钱 + 开启「计入总账单」的项目收支。':project?'只统计本项目，可按日期和收支类型筛选。':'选择一个项目，查看它的完整收支与明细。';
+    content.innerHTML = `<section class="ledger-account-head"><div><h2>${esc(title)}</h2><p>${scopeCopy}</p></div>${view.scope==='projects'&&project?`<div class="ledger-account-actions"><label class="ledger-inline-total"><input type="checkbox" data-ledger-total-switch="${esc(project.id)}" ${project.includeInTotal!==false?'checked':''}>计入总账单</label><button class="btn" data-ledger-action="edit-project" data-id="${esc(project.id)}">项目设置</button></div>`:''}</section><div class="ledger-summary" aria-label="筛选范围内的收支汇总"><section class="ledger-total expense"><span>支出</span><strong data-ledger-total="expense">${money(total.expenseCents)}</strong></section><section class="ledger-total income"><span>收入</span><strong data-ledger-total="income">${money(total.incomeCents)}</strong></section><section class="ledger-total net"><span>收支结余</span><strong data-ledger-total="net">${money(total.netCents)}</strong></section></div>
       <div class="ledger-scope"><span>${esc(periodLabel())} · ${entries.length} 笔${view.archived ? '归档账目 · 不计入正常收支' : '账目'}${view.projectId !== 'all' ? ` · ${esc(projectTitle(view.projectId))}` : ''}</span><span>人民币 CNY</span></div>
-      <section class="ledger-projects" aria-label="项目账本"><div class="ledger-section-head"><h2>项目账本</h2><button class="ledger-text-button" data-ledger-action="manage-projects">管理项目 ${icon('arrow-right', 14)}</button></div><div class="ledger-project-track">${projectCards}</div></section>
+      ${view.scope==='projects'?`<section class="ledger-projects" aria-label="项目账本"><div class="ledger-section-head"><h2>项目账本</h2><button class="ledger-text-button" data-ledger-action="manage-projects">管理项目 ${icon('arrow-right', 14)}</button></div><div class="ledger-project-track">${projectCards||'<p class="ledger-project-empty">还没有项目。新建「国庆出游」，把本次旅行单独记账。</p>'}</div></section>`:''}
       <section class="ledger-journal" aria-label="账目明细"><div class="ledger-section-head"><h2>${view.archived ? '已归档账目' : '账目明细'}</h2><div class="ledger-segments" role="group" aria-label="账目排列方式"><button data-ledger-group="date" aria-pressed="${view.group === 'date'}">按日期</button><button data-ledger-group="project" aria-pressed="${view.group === 'project'}">按项目</button></div></div>
       ${entries.length ? [...groupEntries].map(([key, items]) => groupMarkup(key, items, allGroupEntries.get(key))).join('') : `<div class="ledger-empty">${icon('wallet', 30)}<h3>${view.archived ? '没有符合筛选的归档账目' : '这里还没有账目'}</h3><p>${state.ledger.entries.length ? '可以调整日期、项目或收支筛选。' : '从今天的一顿饭，或一个新项目开始。'}</p>${view.archived ? '' : `<button class="btn primary" data-ledger-action="add-entry">${icon('plus', 16)}记一笔</button>`}</div>`}
       ${entries.length > view.limit ? `<button class="btn ledger-more" data-ledger-action="more">再显示 ${Math.min(80, entries.length - view.limit)} 笔 · 共 ${entries.length} 笔</button>` : ''}</section>`;
   }
-  root.innerHTML = `<div class="ledger-page interior-page"><header class="ledger-head"><div><h1>${icon('wallet', 25)}记账</h1><p>每一笔有日期，每个项目有自己的账本。</p></div><div class="ledger-head-actions"><button class="btn" data-ledger-action="add-project">${icon('layers', 16)}新建项目</button><button class="btn primary" data-ledger-action="add-entry">${icon('plus', 17)}记一笔</button></div></header>
+  root.innerHTML = `<div class="ledger-page interior-page"><header class="ledger-head"><div><h1>${icon('wallet', 25)}记账</h1><p>日常零钱单独记，项目收支自由决定是否计入总账。</p></div><div class="ledger-head-actions"><button class="btn" data-ledger-action="add-project">${icon('layers', 16)}新建项目</button><button class="btn primary" data-ledger-action="add-entry">${icon('plus', 17)}记一笔</button></div></header>
+    <nav class="ledger-account-tabs" aria-label="账本统计范围">${[['daily','日常零钱'],['projects','项目账本'],['total','总账单']].map(([id,label])=>`<button data-ledger-scope="${id}" aria-pressed="${view.scope===id}">${icon(id==='daily'?'wallet':id==='projects'?'layers':'chart',17)}${label}</button>`).join('')}</nav>
     <section class="ledger-filters" aria-label="账目筛选"><div class="ledger-filter-top"><div class="ledger-quick-dates" role="group" aria-label="快捷日期"><button data-ledger-period="month">本月</button><button data-ledger-period="today">今天</button><button data-ledger-period="all">全部日期</button></div><label class="ledger-archived"><input type="checkbox" data-ledger-filter="archived" ${view.archived ? 'checked' : ''}>查看归档账目</label></div>
-    <div class="ledger-filter-fields"><label>开始日期<input type="date" data-ledger-filter="start" aria-label="开始日期" value="${esc(view.start)}" min="1900-01-01" max="9999-12-31"></label><label>结束日期<input type="date" data-ledger-filter="end" aria-label="结束日期" value="${esc(view.end)}" min="1900-01-01" max="9999-12-31"></label><label>项目<select data-ledger-filter="projectId" aria-label="筛选项目">${projectOptions(view.projectId, true)}</select></label><label>收支<select data-ledger-filter="type" aria-label="筛选收支"><option value="all" ${view.type === 'all' ? 'selected' : ''}>全部收支</option><option value="expense" ${view.type === 'expense' ? 'selected' : ''}>支出</option><option value="income" ${view.type === 'income' ? 'selected' : ''}>收入</option></select></label><label class="ledger-query">搜索<input type="search" data-ledger-filter="query" aria-label="搜索分类或备注" placeholder="分类或备注" maxlength="200" value="${esc(view.query)}"></label></div><p class="ledger-range-error" data-ledger-range-error role="status"></p></section><div data-ledger-content aria-live="polite"></div></div>`;
+    <div class="ledger-filter-fields"><label>开始日期<input type="date" data-ledger-filter="start" aria-label="开始日期" value="${esc(view.start)}" min="1900-01-01" max="9999-12-31"></label><label>结束日期<input type="date" data-ledger-filter="end" aria-label="结束日期" value="${esc(view.end)}" min="1900-01-01" max="9999-12-31"></label><label data-ledger-project-filter ${view.scope!=='projects'?'hidden':''}>项目<select data-ledger-filter="projectId" aria-label="筛选项目">${projectOptions(view.projectId, true)}</select></label><label>收支<select data-ledger-filter="type" aria-label="筛选收支"><option value="all" ${view.type === 'all' ? 'selected' : ''}>全部收支</option><option value="expense" ${view.type === 'expense' ? 'selected' : ''}>支出</option><option value="income" ${view.type === 'income' ? 'selected' : ''}>收入</option></select></label><label class="ledger-query">搜索<input type="search" data-ledger-filter="query" aria-label="搜索分类或备注" placeholder="分类或备注" maxlength="200" value="${esc(view.query)}"></label></div><p class="ledger-range-error" data-ledger-range-error role="status"></p></section><div data-ledger-content aria-live="polite"></div></div>`;
   function updateFilter(event) {
+    const totalSwitch=event.target.closest('[data-ledger-total-switch]');
+    if(totalSwitch){if(event.type!=='change')return;run(()=>{const project=state.ledger.projects.find(p=>p.id===totalSwitch.dataset.ledgerTotalSwitch);if(!project)return;commit(()=>Object.assign(project,{includeInTotal:totalSwitch.checked,updatedAt:stamp()}));refreshed();ctx.toast(totalSwitch.checked?'项目收支已计入总账单。':'项目已独立核算，不再计入总账单。');});if(mounted)drawContent();return;}
     const field = event.target.closest('[data-ledger-filter]');
     if (!field) return;
+    if(field.dataset.ledgerFilter==='projectId'){view.start='';view.end='';view.type='all';view.query='';view.archived=false;}
     view[field.dataset.ledgerFilter] = field.type === 'checkbox' ? field.checked : field.value;
-    view.limit = 80; drawContent(); markPeriod();
+    view.limit = 80; syncFilters();drawContent(); markPeriod();
+  }
+  function syncFilters(){
+    root.querySelectorAll('[data-ledger-filter]').forEach(field=>{const value=view[field.dataset.ledgerFilter];if(field.type==='checkbox')field.checked=value;else field.value=value;});
+    root.querySelector('[data-ledger-project-filter]').hidden=view.scope!=='projects';
+    root.querySelectorAll('[data-ledger-scope]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.ledgerScope===view.scope)));
   }
   function markPeriod() {
     const current = monthRange();
@@ -198,6 +209,8 @@ export function mountLedger(ctx) {
   }
   function click(event) {
     handleAction(event);
+    const scope=event.target.closest('[data-ledger-scope]');
+    if(scope){Object.assign(view,{scope:scope.dataset.ledgerScope,projectId:'all',type:'all',query:'',archived:false,limit:80,...(scope.dataset.ledgerScope==='projects'?{start:'',end:''}:monthRange())});syncFilters();drawContent();markPeriod();}
     const period = event.target.closest('[data-ledger-period]');
     if (period) {
       Object.assign(view, period.dataset.ledgerPeriod === 'month' ? monthRange() : period.dataset.ledgerPeriod === 'today' ? { start: localDate(), end: localDate() } : { start: '', end: '' });
@@ -208,9 +221,8 @@ export function mountLedger(ctx) {
     if (group) { view.group = group.dataset.ledgerGroup; view.limit = 80; drawContent(); }
     const project = event.target.closest('[data-ledger-project]');
     if (project) {
-      view.projectId = view.projectId === project.dataset.ledgerProject ? 'all' : project.dataset.ledgerProject;
-      root.querySelector('[data-ledger-filter=projectId]').value = view.projectId;
-      view.limit = 80; drawContent();
+      Object.assign(view,{scope:'projects',projectId:project.dataset.ledgerProject,start:'',end:'',type:'all',query:'',archived:false});
+      syncFilters();view.limit = 80; drawContent();markPeriod();
     }
   }
   root.addEventListener('click', click); root.addEventListener('input', updateFilter); root.addEventListener('change', updateFilter);

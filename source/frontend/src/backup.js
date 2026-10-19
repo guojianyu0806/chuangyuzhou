@@ -373,7 +373,9 @@ export function mergeBackup(current, incoming) {
   }
   if (source.ledger) {
     state.ledger ||= {version:1, currency:'CNY', projects:[], entries:[]};
-    mergeRecords(state.ledger.projects, source.ledger.projects);
+    mergeRecords(state.ledger.projects, source.ledger.projects, (existing, incoming) => {
+      if(existing.includeInTotal === undefined && incoming.includeInTotal !== undefined){existing.includeInTotal=incoming.includeInTotal;count++;}
+    });
     mergeRecords(state.ledger.entries, source.ledger.entries);
     state.ledger = validateLedger(state.ledger);
   }

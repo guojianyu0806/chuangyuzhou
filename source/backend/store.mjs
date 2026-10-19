@@ -181,6 +181,13 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
           const previousLedger = JSON.parse(current.state).ledger;
           if (previousLedger?.entries?.length || previousLedger?.projects?.length) throw new ApiError(409, 'workspace_update_required');
         }
+        if(state.ledger && current.state){
+          const incomingProjects=new Map(state.ledger.projects.map(project=>[project.id,project]));
+          for(const project of JSON.parse(current.state).ledger?.projects||[]){
+            const incoming=incomingProjects.get(project.id);
+            if(incoming && project.includeInTotal !== undefined && incoming.includeInTotal === undefined) throw new ApiError(409,'workspace_update_required');
+          }
+        }
         if (state.calendar === undefined && current.state && JSON.parse(current.state).calendar?.events?.length) throw new ApiError(409, 'workspace_update_required');
         if (state.timetable === undefined && current.state) {
           const previousTimetable = JSON.parse(current.state).timetable;

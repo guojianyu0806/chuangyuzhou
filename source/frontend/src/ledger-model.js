@@ -70,7 +70,8 @@ export function validateLedger(input) {
   const projects = records(input.projects, '项目', value => {
     if (typeof value.color !== 'string' || !/^#[\da-f]{6}$/i.test(value.color)) fail('记账项目颜色格式无效。');
     return {id:identifier(value.id, '项目编号'), title:text(value.title, '项目名称', 80, true), color:value.color,
-      archived:flag(value.archived, '项目归档状态'), createdAt:timestamp(value.createdAt), updatedAt:timestamp(value.updatedAt)};
+      archived:flag(value.archived, '项目归档状态'), createdAt:timestamp(value.createdAt), updatedAt:timestamp(value.updatedAt),
+      ...(value.includeInTotal === undefined ? {} : {includeInTotal:flag(value.includeInTotal, '项目总账设置')})};
   });
   const projectIds = new Set(projects.map(project => project.id));
   const entries = records(input.entries, '记录', value => {
@@ -105,12 +106,15 @@ export function initializeLedger(state) {
   return state.ledger;
 }
 
-export function selectEntries(ledger, {start = '', end = '', projectId = 'all', type = 'all', archived = false, query = ''} = {}) {
+export function selectEntries(ledger, {start = '', end = '', projectId = 'all', type = 'all', archived = false, query = '', scope = 'all'} = {}) {
   if ((start && !isValidDate(start)) || (end && !isValidDate(end)) || (start && end && start > end)) fail('请选择有效的起止日期，开始日期不能晚于结束日期。');
   const term = String(query).trim().toLocaleLowerCase('zh-CN');
   const projects = new Map(ledger.projects.map(project => [project.id, project.title]));
+  const excluded = new Set(ledger.projects.filter(project => project.includeInTotal === false).map(project => project.id));
+  if (!['all','daily','projects','total'].includes(scope)) fail('记账统计范围无效。');
   return ledger.entries.filter(entry =>
     (archived === 'all' || entry.archived === archived)
+    && (scope === 'daily' ? !entry.projectId : scope === 'projects' ? !!entry.projectId : scope === 'total' ? !excluded.has(entry.projectId) : true)
     && (!start || entry.date >= start) && (!end || entry.date <= end)
     && (projectId === 'all' || entry.projectId === projectId)
     && (type === 'all' || entry.type === type)

@@ -11,9 +11,24 @@ export function mountConversationPage(ctx,spaceId,helpers){
   let active='',alive=true,disposeComposer=null,composerKey=null,busy=false,transcriptKey='';
   try{active=sessionStorage.getItem(selectionKey)||'';}catch{}
   if(active&&!state.aiRequests.some(r=>r.id===active))active='';
-  root.innerHTML=`<section class="ai-page ai-chat-page"><header class="ai-chat-heading"><div><h1>AI 收件台<span>✳</span></h1><p>先对话，审核行动方案，再确认执行。</p></div><button class="btn" data-chat="settings">${icon('settings',17)}模型设置</button></header><div class="ai-chat-layout"><aside class="ai-chat-history"><button class="btn primary" data-chat="new">${icon('plus',18)}新对话</button><h2>最近对话</h2><div data-chat-list></div></aside><section class="ai-chat-main" aria-label="当前对话"><div class="ai-chat-stages" data-chat-stages aria-label="行动进度"></div><div data-chat-thread></div><div data-chat-state role="status" aria-live="polite"></div><div data-chat-composer></div></section></div></section>`;
+  root.innerHTML=`<section class="ai-page ai-chat-page"><header class="ai-chat-heading"><div><h1>AI 收件台<span>✳</span></h1><p>先对话，审核行动方案，再确认执行。</p></div><button class="btn" data-chat="settings" aria-label="模型设置" title="模型设置">${icon('settings',17)}<span>模型设置</span></button></header><div class="ai-chat-layout"><aside class="ai-chat-history"><div class="ai-chat-history-tools"><button class="btn primary" data-chat="new">${icon('plus',18)}新对话</button><button class="btn ai-chat-history-toggle" data-chat="history" aria-expanded="false" aria-controls="ai-chat-history-list">${icon('message',16)}历史对话 <span data-chat-count></span>${icon('chevron-down',14)}</button></div><h2>最近对话</h2><div id="ai-chat-history-list" data-chat-list></div></aside><section class="ai-chat-main" aria-label="当前对话"><div class="ai-chat-stages" data-chat-stages aria-label="行动进度"></div><div data-chat-thread tabindex="0" aria-label="当前对话内容"></div><div data-chat-state role="status" aria-live="polite"></div><div data-chat-composer></div></section></div></section>`;
   const page=root.querySelector('.ai-chat-page'),list=page.querySelector('[data-chat-list]'),thread=page.querySelector('[data-chat-thread]'),status=page.querySelector('[data-chat-state]'),composer=page.querySelector('[data-chat-composer]');
   const remember=()=>{try{sessionStorage.setItem(selectionKey,active);}catch{}};
+  const toggleHistory=open=>{page.classList.toggle('is-history-open',open);page.querySelector('[data-chat="history"]').setAttribute('aria-expanded',String(open));};
+  // Size the transcript from the space actually visible above the navigation and
+  // software keyboard, rather than forcing the whole page beyond a phone screen.
+  let viewportFrame=0;
+  const fitViewport=()=>{
+    cancelAnimationFrame(viewportFrame);viewportFrame=requestAnimationFrame(()=>{
+      if(!alive)return;
+      const viewport=window.visualViewport,height=viewport?.height||innerHeight,offset=viewport?.offsetTop||0;
+      const typing=page.contains(document.activeElement)&&document.activeElement?.tagName==='TEXTAREA';
+      page.classList.toggle('is-keyboard-open',typing&&(height<innerHeight-120||height<560));
+      const nav=document.querySelector('.bottom-nav'),navRect=nav?.getBoundingClientRect();
+      const navHeight=navRect&&getComputedStyle(nav).display!=='none'&&navRect.top<offset+height?Math.max(0,offset+height-Math.max(offset,navRect.top)):0;
+      page.style.setProperty('--ai-chat-height',`${Math.max(220,height-Math.max(0,page.getBoundingClientRect().top-offset)-navHeight-10)}px`);
+    });
+  };
   const requestNow=()=>state.aiRequests.find(r=>r.id===active);
   const visit=target=>{if(target.startsWith('space:'))go('space',target.slice(6));else if(target.startsWith('course:'))go('courses',target.slice(7));else go(target,target==='english'?'materials':'');};
   const proposalHTML=p=>{
@@ -24,6 +39,7 @@ export function mountConversationPage(ctx,spaceId,helpers){
     if(!alive)return;
     const request=requestNow(),job=request?jobFor(state,request.id):null,working=jobWorking(job);
     const stage=request?.status==='filed'?3:request?.conversation?.proposal?2:1;
+    page.querySelector('[data-chat-count]').textContent=String(state.aiRequests.length);
     page.querySelector('[data-chat-stages]').innerHTML=['对话沟通','审核方案','确认执行'].map((label,i)=>`<span ${stage===i+1?'aria-current=step':''} class="${stage>i+1?'complete':''}"><b>${i+1}</b>${label}</span>`).join('');
     list.innerHTML=state.aiRequests.length?state.aiRequests.map(r=>`<button data-chat="select" data-id="${esc(r.id)}" class="ai-chat-history-item ${r.id===active?'selected':''}" aria-pressed="${r.id===active}"><strong>${esc(r.text||r.files?.[0]?.name||'附件对话')}</strong><span>${r.status==='filed'?'已执行':r.status==='cancelled'?'已暂停':r.conversation?.proposal?'方案待确认':jobWorking(jobFor(state,r.id))?'正在回复':'继续对话'} · ${esc(new Date(r.updatedAt||r.createdAt).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}))}</span></button>`).join(''):'<p class="muted small">你的对话会留在这里。</p>';
     const nextTranscript=JSON.stringify([request?.id,request?.status,request?.conversation,request?.receipt,request?.files,busy]);
@@ -50,19 +66,25 @@ export function mountConversationPage(ctx,spaceId,helpers){
     const nextComposer=request&&request.status!=='waiting_model'?'closed':request?.id||'new';
     if(nextComposer!==composerKey){
       disposeComposer?.();composer.innerHTML='';composerKey=nextComposer;
-      if(nextComposer!=='closed')disposeComposer=mountAIComposer(ctx,composer,request?{request}:{});
+      if(nextComposer!=='closed'){
+        disposeComposer=mountAIComposer(ctx,composer,request?{request}:{});
+        const attach=composer.querySelector('[data-ai="attach"]');
+        attach?.setAttribute('aria-label','选择附件');attach?.setAttribute('title','选择附件');
+      }
     }
     // A reply writes the conversation atomically on the server. Keep this
     // conversation's input still until it arrives; unsent text stays in a local draft.
     for(const el of composer.querySelectorAll('textarea,select,button,input'))el.disabled=working||busy;
     const input=composer.querySelector('textarea');if(input&&request)input.placeholder='补充信息、回答追问，或者告诉我哪里需要调整…';
     page.querySelector('[data-chat="new"]').disabled=busy;
+    fitViewport();
   }
   async function onClick(event){
     const button=event.target.closest('[data-chat]');if(!button||busy)return;
     const action=button.dataset.chat,request=requestNow();
-    if(action==='new'){active='';remember();render();composer.querySelector('textarea')?.focus();return;}
-    if(action==='select'){active=button.dataset.id;remember();render();return;}
+    if(action==='history'){toggleHistory(!page.classList.contains('is-history-open'));return;}
+    if(action==='new'){active='';remember();toggleHistory(false);render();composer.querySelector('textarea')?.focus();return;}
+    if(action==='select'){active=button.dataset.id;remember();toggleHistory(false);render();return;}
     if(action==='settings'){go('settings');return;}
     if(!request)return;
     try{
@@ -103,7 +125,11 @@ export function mountConversationPage(ctx,spaceId,helpers){
     finally{busy=false;render();}
   }
   const onAdded=event=>{active=event.detail.id;remember();render();};
+  const closeHistory=event=>{if(page.classList.contains('is-history-open')&&!event.target.closest('.ai-chat-history'))toggleHistory(false);};
+  const onKey=event=>{if(event.key==='Escape'&&page.classList.contains('is-history-open')){toggleHistory(false);page.querySelector('[data-chat="history"]').focus();}};
   page.addEventListener('click',onClick);page.addEventListener('ai-request-added',onAdded);
+  document.addEventListener('pointerdown',closeHistory);page.addEventListener('keydown',onKey);page.addEventListener('focusin',fitViewport);page.addEventListener('focusout',fitViewport);
+  window.addEventListener('resize',fitViewport);window.visualViewport?.addEventListener('resize',fitViewport);window.visualViewport?.addEventListener('scroll',fitViewport);
   const disposeCloud=watchAIJobs(ctx,render);render();
-  return ()=>{alive=false;disposeCloud();disposeComposer?.();page.removeEventListener('click',onClick);page.removeEventListener('ai-request-added',onAdded);};
+  return ()=>{alive=false;cancelAnimationFrame(viewportFrame);disposeCloud();disposeComposer?.();page.removeEventListener('click',onClick);page.removeEventListener('ai-request-added',onAdded);document.removeEventListener('pointerdown',closeHistory);page.removeEventListener('keydown',onKey);page.removeEventListener('focusin',fitViewport);page.removeEventListener('focusout',fitViewport);window.removeEventListener('resize',fitViewport);window.visualViewport?.removeEventListener('resize',fitViewport);window.visualViewport?.removeEventListener('scroll',fitViewport);};
 }

@@ -163,8 +163,8 @@ export function mountCanvas(ctx, collection) {
     const d=dataFor(card),courseCount=state.courses?.length||0,taskCount=(state.tasks||[]).filter(t=>!t.done&&!t.archived).length,captureCount=(state.captures||[]).filter(c=>!c.archived).length;
     if(card.id==='ai')return `<div class="cv-ai-title"><span class="cv-ai-orbit" aria-hidden="true">${icon('sparkles',29)}</span><div><h2>有什么事，交给我。</h2><p>先聊清楚，再归入你的空间。</p></div></div><div class="cv-ai-host" data-ai-host></div>`;
     if(card.id==='ledger'){
-      const month=localDate().slice(0,7),last=localDate(new Date(Number(month.slice(0,4)),Number(month.slice(5)),0)),totals=summarizeEntries(selectEntries(state.ledger||{entries:[],projects:[]},{start:month+'-01',end:last}));
-      return `<div class="cv-card-copy"><span class="cv-card-kicker">YOUR DAILY LEDGER</span><h2>记账</h2><p>${esc(d.label)}</p></div><div class="cv-ledger-total"><span>本月支出${state.mode==='demo'?' · 示例':''}</span><strong>¥${formatMoney(totals.expenseCents)}</strong></div><div class="cv-space-counts"><span>${totals.count} 笔收支</span><span>日期 · 项目</span></div>`;
+      const month=localDate().slice(0,7),last=localDate(new Date(Number(month.slice(0,4)),Number(month.slice(5)),0)),totals=summarizeEntries(selectEntries(state.ledger||{entries:[],projects:[]},{start:month+'-01',end:last,scope:'total'}));
+      return `<div class="cv-card-copy"><span class="cv-card-kicker">YOUR DAILY LEDGER</span><h2>记账</h2><p>${esc(d.label)}</p></div><div class="cv-ledger-total"><span>本月总账支出${state.mode==='demo'?' · 示例':''}</span><strong>¥${formatMoney(totals.expenseCents)}</strong></div><div class="cv-space-counts"><span>${totals.count} 笔收支</span><span>日期 · 项目</span></div>`;
     }
     if(card.id==='calendar'){
       const events=eventsOnDate(state.calendar||{events:[]},localDate());
