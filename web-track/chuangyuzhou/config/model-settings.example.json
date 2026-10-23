@@ -1,0 +1,6 @@
+{
+  "provider": "deepseek",
+  "model": "deepseek-v4-pro",
+  "baseUrl": "https://api.deepseek.com",
+  "apiKey": ""
+}

@@ -1,0 +1,19 @@
+{
+  "recordId": "WEB-001",
+  "checkedAt": "2026-10-23T07:44:19.992Z",
+  "node": "25.7.0",
+  "origin": "http://127.0.0.1:4396",
+  "healthStatus": 200,
+  "pageStatus": 200,
+  "instanceIdentityMatched": true,
+  "authenticated": false,
+  "requests": [
+    "GET /api/health",
+    "GET /api/instance",
+    "GET /",
+    "GET /api/auth/session"
+  ],
+  "businessWrites": false,
+  "modelRequests": 0,
+  "serviceStopped": true
+}

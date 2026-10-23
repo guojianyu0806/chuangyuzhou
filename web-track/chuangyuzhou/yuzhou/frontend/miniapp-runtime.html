@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob:; style-src 'self'; worker-src blob:; connect-src 'none'; img-src 'none'; media-src 'none'; font-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>小程序隔离运行</title>
+  <link rel="stylesheet" href="./src/miniapp-runtime.css">
+</head>
+<body>
+  <main id="miniapp-root" aria-label="小程序内容"></main>
+  <p id="miniapp-error" role="alert" hidden></p>
+  <script src="./src/miniapp-frame.js" defer></script>
+</body>
+</html>

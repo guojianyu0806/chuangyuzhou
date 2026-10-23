@@ -1,0 +1,80 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createHash,randomUUID} from 'node:crypto';
+import {CloudClient} from '../src/cloud.js';
+import {createCustomBlock} from '../src/custom-blocks-model.js';
+
+const now='2026-10-15T00:00:00.000Z';
+const originalIndexedDB=Object.getOwnPropertyDescriptor(globalThis,'indexedDB');
+const state=()=>({schema:1,mode:'personal',profile:{},courses:[],spaces:[],tasks:[],captures:[],aiRequests:[],updatedAt:now});
+function block(target,data){createCustomBlock(target,{kind:'miniapp',title:'离线数据工具',config:{code:'app.render([]);'},data},{id:'block:synthetic',now});}
+function fixture(t,target,{local=new Map(),remote=new Map()}={}){
+  const calls=[],reads=[],published=[],persisted=[];
+  // The real getLocalFile helper reads this in-memory IndexedDB substitute.
+  // No browser database, network, account or runtime directory is used.
+  Object.defineProperty(globalThis,'indexedDB',{configurable:true,value:{open(name){
+    const request={};queueMicrotask(()=>{request.result={transaction(){return {objectStore(){return {get(id){
+      reads.push({name,id});const read={};queueMicrotask(()=>{read.result=local.get(id);read.onsuccess?.();});return read;
+    }};}};}};request.onsuccess?.();});return request;
+  }}});
+  const client=Object.assign(Object.create(CloudClient.prototype),{
+    authenticated:true,status:'pending',revision:3,pending:{id:'pending-synthetic',state:structuredClone(target)},listeners:new Set(),scope:`offline-cloud-attachments-${randomUUID()}`,
+    persist(){persisted.push({revision:this.revision,pending:structuredClone(this.pending)});},
+    async request(path,options={}){
+      calls.push({path,...options});
+      if(path==='/api/workspace'&&options.method==='PUT'){published.push(structuredClone(options.body));return {revision:4};}
+      assert.ok(path.startsWith('/api/files/'));const id=decodeURIComponent(path.slice('/api/files/'.length));
+      if(options.method==='HEAD'){
+        if(!remote.has(id))throw Object.assign(new Error('synthetic missing file'),{status:404});
+        return {headers:new Headers({'ETag':`"${remote.get(id)}"`})};
+      }
+      assert.equal(options.method,'PUT');assert.ok(options.body instanceof Blob);
+      remote.set(id,createHash('sha256').update(Buffer.from(await options.body.arrayBuffer())).digest('hex'));return {id};
+    },
+  });
+  t.after(()=>{clearTimeout(client.timer);if(originalIndexedDB)Object.defineProperty(globalThis,'indexedDB',originalIndexedDB);else delete globalThis.indexedDB;});
+  return {client,calls,reads,published,persisted};
+}
+
+test('private custom-block file-like fields sync verbatim without reading or requesting host attachments',async t=>{
+  const target=state();block(target,{blobId:'ordinary customer value',fileId:'not-an-upload',audioId:'track label',nested:[{blobId:'other value',fileId:'',audioId:'local business id'}]});
+  const before=structuredClone(target),f=fixture(t,target);
+  assert.equal(await f.client.flush(),4);
+  assert.deepEqual(f.reads,[]);assert.deepEqual(f.calls.map(call=>[call.path,call.method]),[['/api/workspace','PUT']]);
+  assert.deepEqual(f.published,[{baseRevision:3,state:before}]);assert.deepEqual(target,before);assert.equal(f.client.pending,null);assert.equal(f.client.status,'saved');
+});
+
+test('real attachments still upload before publishing and private fields cannot replace their metadata',async t=>{
+  const target=state(),refs=[['capture-blob','收集.txt'],['course-blob','课程.txt'],['space-blob','空间.txt'],['audio-blob','听力.mp3'],['draft-blob','草稿.txt'],['request-blob','请求.txt'],['legacy-file','旧文件.txt'],['legacy-audio','旧音频.mp3']];
+  target.captures=[{blobId:refs[0][0],fileName:refs[0][1]}];target.courses=[{files:[{blobId:refs[1][0],name:refs[1][1]}]}];target.spaces=[{files:[{blobId:refs[2][0],name:refs[2][1]}]}];
+  target.english={audio:{blobId:refs[3][0],name:refs[3][1]}};target.aiDraft={files:[{blobId:refs[4][0],name:refs[4][1]}]};target.aiRequests=[{files:[{blobId:refs[5][0],name:refs[5][1]}]}];
+  target.legacy=[{fileId:refs[6][0],name:refs[6][1]},{audioId:refs[7][0],name:refs[7][1]}];
+  block(target,{blobId:refs[0][0],name:'不得覆盖真实附件名称',nested:{fileId:refs[6][0],audioId:refs[7][0],name:'也不得替代'}});
+  const local=new Map(refs.map(([id])=>[id,new Blob([`synthetic bytes: ${id}`],{type:'text/plain'})])),f=fixture(t,target,{local});
+  await f.client.flush();
+  assert.deepEqual(f.reads.map(read=>read.id).sort(),refs.map(([id])=>id).sort());assert.ok(f.reads.every(read=>read.name===`czb-yuzhou-files-${f.client.scope}`));
+  const uploaded=f.calls.filter(call=>call.path.startsWith('/api/files/')&&call.method==='PUT');
+  assert.deepEqual(Object.fromEntries(uploaded.map(call=>[decodeURIComponent(call.path.slice('/api/files/'.length)),decodeURIComponent(call.headers['X-File-Name'])])),Object.fromEntries(refs));
+  assert.equal(f.calls.at(-1).path,'/api/workspace');assert.equal(uploaded.length,refs.length);assert.deepEqual(f.published[0].state,target);
+});
+
+test('missing real or unknown-domain file references still block sync and retain the pending state',async t=>{
+  for(const reference of [{blobId:'missing-root'},{captures:[{blobId:'missing-blob'}]},{legacy:{fileId:'missing-file'}},{legacy:{audioId:'missing-audio'}},{legacy:{customBlocks:{data:{blobId:'missing-nested-name'}}}}]){
+    const target={...state(),...reference};block(target,{blobId:'private-value'});const f=fixture(t,target),pending=f.client.pending;
+    await assert.rejects(f.client.flush(),/原件缺失/);
+    assert.equal(f.client.pending,pending);assert.equal(f.client.status,'offline');assert.equal(f.published.length,0);
+    assert.equal(f.reads.length,1);assert.equal(f.calls.length,1);assert.equal(f.calls[0].method,'HEAD');
+  }
+});
+
+test('matching existing attachment bytes are verified without reuploading before a private-data save',async t=>{
+  const target=state(),bytes='real synthetic attachment',blob=new Blob([bytes],{type:'text/plain'});target.captures=[{blobId:'real-blob',fileName:'真实.txt'}];block(target,{blobId:'private-missing-value'});
+  const f=fixture(t,target,{local:new Map([['real-blob',blob]]),remote:new Map([['real-blob',createHash('sha256').update(bytes).digest('hex')]])});
+  await f.client.flush();assert.deepEqual(f.calls.map(call=>[call.path,call.method]),[['/api/files/real-blob','HEAD'],['/api/workspace','PUT']]);assert.equal(f.published.length,1);
+});
+
+test('different bytes under a real attachment ID still prevent workspace publication',async t=>{
+  const target=state();target.captures=[{blobId:'real-blob',fileName:'真实.txt'}];block(target,{fileId:'private-value'});
+  const f=fixture(t,target,{local:new Map([['real-blob',new Blob(['local bytes'])]]),remote:new Map([['real-blob',createHash('sha256').update('different remote bytes').digest('hex')]])}),pending=f.client.pending;
+  await assert.rejects(f.client.flush(),/同名记录不同/);assert.equal(f.published.length,0);assert.equal(f.client.pending,pending);assert.equal(f.client.status,'offline');assert.equal(f.calls.length,1);
+});

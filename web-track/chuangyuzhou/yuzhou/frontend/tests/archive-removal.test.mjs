@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {planArchivedRemoval,applyArchivedRemoval,openArchivedRemoval} from '../src/archive-removal.js';
+const fixture=()=>({spaces:[{id:'gone',title:'Archived',archived:true,notes:[{id:'n',content:'kept in backup'}],files:[]},{id:'child',parentId:'gone',title:'Child',notes:[],files:[]},{id:'keep',title:'Kept',notes:[{id:'safe'}],files:[]}],tasks:[{id:'t1',spaceId:'gone'},{id:'t2',spaceId:'child'},{id:'t3',spaceId:'keep'}],customBlocks:{version:1,items:[{id:'owned',spaceId:'child'},{id:'other',spaceId:'keep'}]},canvas:{cards:[{id:'gone',x:80},{id:'child',x:100},{id:'block:owned',x:20},{id:'keep',x:999}],view:{x:11,y:17,zoom:.7}},boards:{'space:gone:notes':{cards:[]},'space:child:workbench':{cards:[]},'space:keep:workbench':{cards:[{id:'gone'},{id:'owned'},{id:'keep'}]}},fitness:{version:1,entries:[{id:'f1',spaceId:'child'},{id:'f2',spaceId:'keep'}]},calendar:{events:[{id:'chosen',title:'independent'},{id:'same-name',title:'Archived'}]},workbench:{navigation:{version:1,items:[{id:'space:gone'},{id:'space:keep'}]}},aiDraft:{text:'Preserve unsent text',targetId:'space:gone'},aiRequests:[{id:'history',text:'Audit preserved'}],courses:[{id:'course',notes:[{id:'lesson'}]}]});
+
+test('explicit cleanup removes descendants and owned records, preserves unrelated data and independent same-name events',async()=>{
+  const state=fixture(),before=structuredClone(state),plan=planArchivedRemoval(state,{spaceIds:['gone']});assert.deepEqual(state,before);assert.deepEqual(plan.counts,{spaces:2,notes:1,tasks:2,blocks:1,events:0});
+  plan.next.courses=[];await applyArchivedRemoval({state,save:async()=>{}},plan);
+  assert.deepEqual(state.spaces,[before.spaces[2]]);assert.deepEqual(state.tasks,[before.tasks[2]]);assert.deepEqual(state.canvas.cards,[before.canvas.cards[3]]);assert.deepEqual(state.canvas.view,before.canvas.view);assert.deepEqual(state.calendar,before.calendar);assert.deepEqual(state.courses,before.courses);assert.deepEqual(state.aiRequests,before.aiRequests);assert.deepEqual(state.aiDraft,{text:'Preserve unsent text',targetId:'auto'});assert.equal(Object.keys(state.boards).length,1);assert.deepEqual(state.boards['space:keep:workbench'].cards,[{id:'keep'}]);assert.deepEqual(state.customBlocks.items,[before.customBlocks.items[1]]);assert.deepEqual(state.fitness.entries,[before.fitness.entries[1]]);
+});
+test('calendar deletion requires its explicit ID and cleanup refuses live, stale, missing or file-bearing targets',async()=>{
+  const state=fixture();assert.throws(()=>planArchivedRemoval(state),/选择/);assert.throws(()=>planArchivedRemoval(state,{spaceIds:['keep']}),/归档/);assert.throws(()=>planArchivedRemoval(state,{eventIds:['missing']}),/日程/);
+  const plan=planArchivedRemoval(state,{spaceIds:['gone'],eventIds:['chosen']});state.spaces[0].notes[0].content='Concurrent edit';await assert.rejects(applyArchivedRemoval({state,save:()=>assert.fail()},plan),/更新/);
+  state.spaces[1].files=[{blobId:'shared'}];assert.throws(()=>planArchivedRemoval(state,{spaceIds:['gone']}),/附件/);state.spaces[1].files=[];
+  await applyArchivedRemoval({state,save:async()=>{}},planArchivedRemoval(state,{eventIds:['chosen']}));assert.deepEqual(state.calendar.events,[{id:'same-name',title:'Archived'}]);assert.equal(state.spaces.length,3);
+});
+test('save failure and stale workspace cannot destroy current data; UI starts with no selected targets and requires confirmation',async()=>{
+  const state=fixture(),before=structuredClone(state),plan=planArchivedRemoval(state,{spaceIds:['gone']});await assert.rejects(applyArchivedRemoval({state,save:async()=>{throw Error('disk full');}},plan),/disk full/);assert.deepEqual(state,before);
+  await assert.rejects(applyArchivedRemoval({state,isCurrent:()=>false,save:()=>assert.fail()},plan),/更新/);let dialog;openArchivedRemoval({state,modal:value=>dialog=value});assert.doesNotMatch(dialog.body,/input[^>]*checked/);assert.match(dialog.body,/required/);await assert.rejects(dialog.onSubmit(new FormData()),/确认/);assert.deepEqual(state,before);
+});

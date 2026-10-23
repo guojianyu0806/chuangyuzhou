@@ -1,0 +1,2 @@
+# Git checkout helper; release ZIP and manifest retain their original file set.
+* -text whitespace=-blank-at-eof,cr-at-eol

@@ -1,0 +1,45 @@
+// Historical browser script: review only; use documented isolated tests.
+throw new Error('SUBMISSION_LEGACY_BROWSER_DISABLED: configure an isolated browser test explicitly before reuse.');
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+const require=createRequire(import.meta.url);
+const {chromium}=require('playwright');
+const browser=await chromium.launch({channel:'msedge',headless:true});
+const page=await browser.newPage({viewport:{width:1440,height:1000}});
+const errors=[];page.on('pageerror',e=>errors.push(e.message));
+const width=()=>page.locator('.sidebar').evaluate(el=>el.getBoundingClientRect().width);
+try{
+  await page.goto('http://127.0.0.1:4397/');
+  await page.locator('.cv-card').first().waitFor();
+  assert.equal(await width(),80);
+  const mainLeft=await page.locator('.app-main').evaluate(el=>el.getBoundingClientRect().left);
+  await page.locator('.sidebar .brand').hover();await page.waitForTimeout(300);
+  assert.equal(await width(),254);
+  assert.equal(await page.locator('.app-main').evaluate(el=>el.getBoundingClientRect().left),mainLeft);
+  await page.mouse.move(1300,80);await page.waitForTimeout(300);assert.equal(await width(),80);
+  await page.locator('.sidebar .brand').hover();await page.locator('[data-action=pin-nav]').click();await page.mouse.move(1300,80);await page.waitForTimeout(300);assert.equal(await width(),254);
+  await page.reload();await page.locator('.cv-card').first().waitFor();assert.equal(await width(),254);
+  await page.locator('[data-action=pin-nav]').click();await page.mouse.move(1300,80);await page.waitForTimeout(300);
+  console.log('PASS hover rail expands without shifting canvas, contracts, pinned state survives reload');
+  await page.locator('[data-cv=create]').click();
+  await page.locator('#modal [name=title]').fill('导航测试空间');
+  await page.locator('#modal .sp-template-options label').filter({has:page.locator('[name=type][value=affairs]')}).click();
+  await page.locator('#modal [data-close]').first().click();
+  await page.locator('[data-cv=create]').click();
+  assert.equal(await page.locator('#modal [name=type]:checked').inputValue(),'affairs');
+  assert.deepEqual(await page.locator('#modal [name=type]').evaluateAll(els=>els.map(e=>e.value)),['blank','course','affairs','project']);
+  await page.locator('#modal button[type=submit]').click();await page.locator('#modal').waitFor({state:'hidden'});
+  console.log('PASS template draft restores selection without corrupting radio values');
+  await page.setViewportSize({width:390,height:844});await page.reload();await page.locator('.cv-card').first().waitFor();
+  assert.equal(await page.locator('.sidebar').evaluate(el=>el.inert),true);
+  await page.locator('.mobile-menu').click();
+  assert.equal(await page.locator('.sidebar').evaluate(el=>el.inert),false);
+  assert.equal(await page.locator('.app-main').evaluate(el=>el.inert),true);
+  await page.locator('.sidebar [data-nav=ai]').click();await page.locator('.ai-page').waitFor();
+  assert.equal(await page.locator('.sidebar').evaluate(el=>el.inert),true);
+  assert.equal(await page.locator('.app-main').evaluate(el=>el.inert),false);
+  await page.locator('.mobile-menu').click();await page.keyboard.press('Escape');
+  assert.equal(await page.locator('.sidebar').evaluate(el=>el.inert),true);
+  console.log('PASS mobile drawer navigation, background inert, Escape closes');
+  assert.deepEqual(errors,[]);
+}finally{await browser.close();}

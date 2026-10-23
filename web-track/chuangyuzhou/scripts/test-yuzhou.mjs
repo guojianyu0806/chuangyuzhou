@@ -1,0 +1,30 @@
+// Only the copied source is tested. Browser automation and external models are excluded.
+import {mkdirSync,readdirSync,lstatSync,realpathSync,existsSync,createWriteStream} from 'node:fs';
+import {resolve,dirname} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {spawn} from 'node:child_process';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),copy=resolve(root,'yuzhou');
+const canonical=p=>process.platform==='win32'?p.toLowerCase():p;
+for(const dir of [root,copy])if(lstatSync(dir).isSymbolicLink()||canonical(realpathSync(dir))!==canonical(dir))throw Error('Tests require a physical project directory.');
+const temp=resolve(copy,'.cu-runtime/tests-temp');mkdirSync(temp,{recursive:true});
+if(canonical(realpathSync(temp))!==canonical(temp))throw Error('Temporary test directory cannot be linked.');
+const tests=[];
+function walk(dir){for(const entry of readdirSync(dir,{withFileTypes:true})){const p=resolve(dir,entry.name);if(lstatSync(p).isSymbolicLink())throw Error('Linked test rejected');if(entry.isDirectory())walk(p);else if(entry.name.endsWith('.test.mjs'))tests.push(p);}}
+for(const section of ['frontend/tests','backend/tests','mobile/tests'])walk(resolve(copy,section));
+const env={};
+for(const key of ['PATH','Path','SystemRoot','WINDIR','COMSPEC','PATHEXT'])if(process.env[key])env[key]=process.env[key];
+Object.assign(env,{TEMP:temp,TMP:temp,TMPDIR:temp,PYTHONDONTWRITEBYTECODE:'1'});
+const devIndex=process.argv.indexOf('--dev');
+const devId=devIndex<0?'WEB-001':process.argv[devIndex+1];
+if(!/^(?:DEV|WEB)-\d{3}$/.test(devId||''))throw Error('Use --dev WEB-001 or another real development record ID (WEB-NNN or DEV-NNN).');
+const name=devId+'-tests-'+new Date().toISOString().replaceAll(':','-').replaceAll('.','-')+'.tap';
+const output=resolve(root,'evidence/engineering',name);if(existsSync(output))throw Error('Report already exists.');
+const log=createWriteStream(output,{flags:'wx'});
+const child=spawn(process.execPath,['--test','--test-reporter=tap',...tests.sort()],{cwd:copy,env,windowsHide:true,stdio:['ignore','pipe','pipe']});
+let tail='';
+child.stdout.on('data',chunk=>{log.write(chunk);tail=(tail+chunk.toString()).slice(-4000);});
+child.stderr.on('data',chunk=>log.write(chunk));
+const code=await new Promise((done,reject)=>{child.once('error',reject);child.once('exit',done);});
+await new Promise(done=>log.end(done));
+console.log(tail.split('\n').slice(-12).join('\n'));console.log('Report: '+output);
+process.exitCode=code??1;

@@ -1,0 +1,88 @@
+{
+  "recordId": "WEB-001",
+  "product": "创宇宙",
+  "trackId": 10037,
+  "release": "2026-10-23-web-dev-001",
+  "sourceCommit": "e8d1a81008e6e9283bfb9e915ce874cb8c81efb5",
+  "selectedRelease": "2026-10-19-submit-v2",
+  "changes": [
+    {
+      "path": ".env.example",
+      "bytes": 257,
+      "sha256": "401a97d80f36879a89d68bd3da4c46e53af6cf2a36f70705fa045884fd41b94f",
+      "baselineSha256": "441f41e48194209be69dfee27aa22c67e7d1c9ae393b69cb8c961a610040a57b"
+    },
+    {
+      "path": "README.md",
+      "bytes": 8915,
+      "sha256": "49f6c47a8308e1c8eb964828b04f21062cb984714034de47cce07fd8b05a76d9",
+      "baselineSha256": "b75025b0b312800b0fa4fb0c3e7eb60755154ac5c19b386f7dfdd0243d24f3e2"
+    },
+    {
+      "path": "SOURCE-NOTICE.md",
+      "bytes": 1164,
+      "sha256": "286e030cc8bbaa05983097820469c7e594b40259122fd43368119644760200f2",
+      "baselineSha256": "ef1f2996646291b2744c29f833ecaac495dfdad5be0ca8bc2910599a891cb35d"
+    },
+    {
+      "path": "scripts/test-yuzhou.mjs",
+      "bytes": 2500,
+      "sha256": "c195d51670778a351cd06626a33cf0183258b7a4963fefb695bb710b9fbbf984",
+      "baselineSha256": "5d03d51f4f816001ba28ad0d7b96ce3b2f172505b07e67e151a9fa6be1c48ae8"
+    },
+    {
+      "path": "tools/start.mjs",
+      "bytes": 3027,
+      "sha256": "1ed34d35ecc7b4497d4fa07e798eebb65c79c061e87d74698ffbf196cff03f2f",
+      "baselineSha256": "412ea0526e4f152338f7a2beb281725f09cd94a2105b84a7d8a3c86d436f6cac"
+    },
+    {
+      "path": "yuzhou/backend/tests/cli-symlink.test.mjs",
+      "bytes": 2763,
+      "sha256": "eba6114fc704ffa36e87c04040ce0837546c4ed826b699fda15aaa5bfb7501f5",
+      "baselineSha256": "96008004bb84e2a960f14777fc8423149c3acaa5f3bf5b1d9f4f8186f34ebac6"
+    },
+    {
+      "path": "yuzhou/backend/tests/competition-isolation.test.mjs",
+      "bytes": 5554,
+      "sha256": "2e2817944d6c6ba14c2fc080ec4ac60bb7a2ff30775bd156d0733f69853fb118",
+      "baselineSha256": "d029b95fcf10d5d1d0a7236bb2991d7df65444696b012c50d4cd9734ea72c4ee"
+    },
+    {
+      "path": "yuzhou/backend/tests/launch.test.mjs",
+      "bytes": 2283,
+      "sha256": "2c9c3cf5d1664ecfc4539a647709b24e1bcc32d3d703ba9edfec2bc1330b375b",
+      "baselineSha256": "71b6900fe7ddd321770d81cfd016beecf76f7498637820e48fcf7fededea6b54"
+    },
+    {
+      "path": "yuzhou/backend/tests/server.test.mjs",
+      "bytes": 21153,
+      "sha256": "14379cafb34469325f59e26b0ba9c5831753cb67769678396c965914a6801e66",
+      "baselineSha256": "5eff87465d8f1e2c4ae4fb5ad94222e42957f0a21f4ae7b9ba136fc6784be99a"
+    },
+    {
+      "path": "yuzhou/backend/tests/web-entry.test.mjs",
+      "bytes": 1762,
+      "sha256": "cba29a83fa8d4f3d357e27c8f3c5b1db0f55be451f25e8b474cd9e295f4d959a",
+      "baselineSha256": null
+    },
+    {
+      "path": "yuzhou/launch.mjs",
+      "bytes": 2941,
+      "sha256": "5e1e09d24cffe3db08b54e5265f317bbefaf765be6feca1188b8c5fad41248d6",
+      "baselineSha256": "c3d6a28429c11984e4cfa2856ecfd55e910d639b228f241d325a593c740afbd1"
+    },
+    {
+      "path": "yuzhou/runtime.mjs",
+      "bytes": 4059,
+      "sha256": "09e50f54d6336f80ac888bcf4f7396addc63c003b0bf3721e9ca99c6c70cbfff",
+      "baselineSha256": "874bfa987d827db357571e9f7b88e25b3172f46a14d103078c8049b9e5ae9344"
+    },
+    {
+      "path": "yuzhou/start.mjs",
+      "bytes": 2103,
+      "sha256": "7131855f94884d8d99d4b0f8179ce154dd924d4b96ad5852cb88d566ad3cd31a",
+      "baselineSha256": "330d955e2d30901b33be45a0da5f8d7b015c3bdf2aa486101ffd1967d6c33857"
+    }
+  ]
+}
