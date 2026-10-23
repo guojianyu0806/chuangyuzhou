@@ -8,6 +8,9 @@ import {COOKIE_NAME,DEFAULT_PORT,FRONTEND_ROOT,PROJECT_ROOT,RUNTIME_ROOT,resolve
 import {verifySource} from '../chuangyuzhou/tools/verify-source.mjs';
 
 const trackRoot=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const args=process.argv.slice(2);
+if(args.length!==2||args[0]!=='--record'||!/^WEB-\d{3}$/.test(args[1]))throw Error('Use --record WEB-002 for the current check; old stage reports are preserved.');
+const recordId=args[1];
 const repositoryRoot=resolve(trackRoot,'..');
 const applicationRoot=join(trackRoot,'chuangyuzhou');
 const source=join(repositoryRoot,'submission','创宇宙-v2');
@@ -28,6 +31,6 @@ for(const port of [4397,4398,4399])assert.throws(()=>resolveCompetitionOptions({
 const current=verifySource();
 const manifest=JSON.parse(readFileSync(join(applicationRoot,'SOURCE-MANIFEST.json'),'utf8'));
 for(const row of manifest.files)ordinary(join(applicationRoot,row.path));
-const report={recordId:'WEB-001',checkedAt:new Date().toISOString(),oldSourceFilesUnchanged:baseline.files.length,currentSourceFilesVerified:current.files,physicalFilesOnly:true,nestedGit:false,sharedRepository:true,origin:'http://127.0.0.1:4396',cookie:COOKIE_NAME,runtimeDirectory:relative(repositoryRoot,RUNTIME_ROOT).replaceAll('\\','/'),priorPortsRejected:[4397,4398,4399],modelRequest:false};
-writeFileSync(join(trackRoot,'evidence/WEB-001/isolation-check.json'),JSON.stringify(report,null,2)+'\n');
+const report={recordId,checkedAt:new Date().toISOString(),oldSourceFilesUnchanged:baseline.files.length,currentSourceFilesVerified:current.files,physicalFilesOnly:true,nestedGit:false,sharedRepository:true,origin:'http://127.0.0.1:4396',cookie:COOKIE_NAME,runtimeDirectory:relative(repositoryRoot,RUNTIME_ROOT).replaceAll('\\','/'),priorPortsRejected:[4397,4398,4399],modelRequest:false};
+writeFileSync(join(trackRoot,`evidence/${recordId}/isolation-check.json`),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report));

@@ -8,6 +8,7 @@ import {validateConversation, conversationSnapshot} from '../frontend/src/ai-con
 import {WORKSPACE_ACTION_CAPABILITIES,previewWorkspaceActions,listWorkspaceRecords} from '../frontend/src/workspace-actions.js';
 import {WORKSPACE_QUERY_CAPABILITIES,validateWorkspaceQueries,runWorkspaceQuery,workspaceOverview,workspaceFingerprint,validateCustomBlockReadAccess,validateEnglishDraftReadAccess} from './workspace-queries.mjs';
 import { assertRuntimePath, prepareDataDirectory, RUNTIME_ROOT } from '../runtime.mjs';
+import { readModelEnvironment } from './model-environment.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BASE_URL = 'https://api.deepseek.com';
@@ -280,6 +281,7 @@ function publicFailure(code) { return { code: Object.hasOwn(FAILURE_MESSAGES, co
 
 /** Auth and CSRF must be checked by the enclosing server before calling handle(). */
 export function createHermesService({ dataDir, store, runModel, extractFile, engineAvailable, engine = 'hermes', engineName, extractionCapabilities, env = {} } = {}) {
+  const environmentSettings = readModelEnvironment(env);
   const root = resolve(prepareDataDirectory(dataDir), 'ai');
   const jobsDir = join(root, 'jobs');
   const hermesHome = join(root, 'hermes');
@@ -292,17 +294,19 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
   const available = () => engineAvailable ? Boolean(engineAvailable()) : typeof runModel === 'function' || hermesAvailable();
   const jobs = new Map();
   let running = false, closed = false, activeChild = null, activeModelController = null;
-  const config = () => {
+  const storedConfig = () => {
     const value = readJsonFile(configPath);
     if (!value || value.provider !== 'deepseek' || !MODELS.has(value.model) || typeof value.apiKey !== 'string') return null;
     return value;
   };
+  const config = () => environmentSettings || storedConfig();
   const status = () => {
     const current = config();
     const formats = ['txt', 'md', 'csv', 'docx', 'pptx', 'pdf'];
     const supplied = typeof extractionCapabilities === 'function' ? extractionCapabilities() : extractionCapabilities;
     const capabilities = supplied == null ? null : Object.fromEntries(formats.map(format => [format, supplied[format] === true]));
     return { configured: Boolean(current?.apiKey), provider: 'deepseek', model: current?.model || 'deepseek-flash', baseUrl: BASE_URL,
+      configurationSource: environmentSettings ? 'environment' : current?.apiKey ? 'local' : 'none', configurationManaged: Boolean(environmentSettings),
       engine, engineName: engineName || (engine === 'deepseek-direct' ? 'DeepSeek 官方接口' : 'Hermes 独立引擎'), engineAvailable: available(), hermesAvailable: hermesAvailable(),
       extraction: capabilities ? formats.filter(format => capabilities[format]) : formats,
       ...(capabilities ? { extractionCapabilities: capabilities } : {}),
@@ -507,6 +511,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
         }
         if (req.method === 'PUT' && path === '/api/model/config') {
           const body = await readJson(req, 16 * 1024);
+          if (environmentSettings) fail('MODEL_CONFIG_MANAGED', '模型连接由启动环境管理，请修改本目录环境配置并重启服务。', 409);
           if (!body || typeof body !== 'object' || Array.isArray(body)) fail('INVALID_CONFIG', '模型配置格式错误。');
           if (body.enabled === false) {
             if (existsSync(configPath)) unlinkSync(configPath);
@@ -514,7 +519,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
           }
           if (body.provider !== 'deepseek' || !MODELS.has(body.model) || (body.baseUrl && body.baseUrl !== BASE_URL)) fail('INVALID_CONFIG', '请选择官方 DeepSeek 接口与受支持的模型。');
           if (body.apiKey != null && typeof body.apiKey !== 'string') fail('INVALID_CONFIG', 'API Key 格式不正确。');
-          const apiKey = body.apiKey?.trim() || config()?.apiKey || '';
+          const apiKey = body.apiKey?.trim() || storedConfig()?.apiKey || '';
           if (!apiKey || apiKey.length < 12 || apiKey.length > 500 || /[\s\x00-\x1f\x7f]/.test(apiKey)) fail('INVALID_API_KEY', '请输入有效的 DeepSeek API Key。');
           atomicJson(configPath, { provider: 'deepseek', model: body.model, apiKey, baseUrl: BASE_URL, updatedAt: now() });
           json(res, 200, status()); return true;

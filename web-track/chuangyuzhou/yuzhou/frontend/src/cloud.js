@@ -7,7 +7,7 @@ const isLocalInstance=()=>['127.0.0.1','localhost','[::1]'].includes(globalThis.
 const connectionUnavailable=()=>isLocalInstance()?'暂时无法连接本机工作台。电脑重启或服务窗口关闭后，请运行比赛目录中的“启动创宇宙.cmd”，再重试；本设备改动仍保留。':'暂时无法连接工作台，请检查网络后重试；本设备改动仍保留。';
 const clone = value => JSON.parse(JSON.stringify(value));
 const read = (key,storage=localStorage) => { try { return JSON.parse(storage.getItem(key) || 'null'); } catch { return null; } };
-const apiMessages={unauthorized:'登录已过期，请重新登录。',invalid_credentials:'账号或密码不正确。',setup_token_invalid:'初始化口令不正确，请检查后重试。',setup_closed:'账号已经建立，请刷新页面后登录。',csrf_invalid:'登录信息已更新，请重新登录。',csrf_forbidden:'登录信息已更新，请重新登录。',rate_limited:'尝试次数较多，请稍后再试。',revision_conflict:'其他设备有新内容，请先处理同步冲突。',missing_files:'部分附件尚未上传完整，请保留本机副本后重试。',invalid_password:'密码需要包含 12 至 256 位字符。',invalid_username:'请使用 2 至 64 位用户名。',file_not_found:'附件暂时不可用。',model_not_configured:'请先在偏好与连接中配置 DeepSeek。'};
+const apiMessages={unauthorized:'登录已过期，请重新登录。',invalid_credentials:'账号或密码不正确。',setup_token_invalid:'初始化口令不正确，请检查后重试。',setup_closed:'账号已经建立，请刷新页面后登录。',csrf_invalid:'登录信息已更新，请重新登录。',csrf_forbidden:'登录信息已更新，请重新登录。',rate_limited:'尝试次数较多，请稍后再试。',revision_conflict:'其他设备有新内容，请先处理同步冲突。',missing_files:'部分附件尚未上传完整，请保留本机副本后重试。',invalid_password:'密码需要包含 12 至 256 位字符。',invalid_username:'请使用 2 至 64 位用户名。',file_not_found:'附件暂时不可用。',model_not_configured:'请通过启动环境变量或偏好与连接配置 DeepSeek API Key。'};
 Object.assign(apiMessages,{invalid_calendar:'日历格式有误，请检查日期、时间及内容。',authentication_required:'登录已过期，请重新登录。',too_many_attempts:'尝试次数较多，请稍后再试。',password_length_12_to_256:'密码需要包含 12 至 256 位字符。'});
 Object.assign(apiMessages,{invalid_ledger:'账目格式有误，请检查金额、日期及所属项目。',invalid_timetable:'课表格式有误，请检查学期、周次与节次。',workspace_update_required:'此页面缺少新版资料。请先导出本设备改动，再刷新页面并加载云端内容。'});
 Object.assign(apiMessages,{invalid_fitness:'运动记录格式有误，请检查日期、时长、里程和热量。',invalid_fitness_reference:'运动记录关联的空间已不存在，请同步最新工作区后重试。',invalid_space_fitness_enabled:'运动统计开关格式有误，请重新保存空间设置。'});
@@ -347,14 +347,29 @@ export async function bootstrapCloud() {
 }
 
 export function mountModelSettings(container,client,toast) {
-  container.innerHTML=`<div class="section-head"><h2>DeepSeek 与 AI 管家</h2><span class="badge" id="cloud-model-badge">检查连接中</span></div><p class="muted">专用 API 密钥仅保存在本机工作台。保存密钥不会触发模型调用，也不代表真实连接验证已通过。</p><form id="cloud-model-form" autocomplete="off"><label class="field">DeepSeek API Key<input type="password" name="apiKey" autocomplete="new-password" spellcheck="false" placeholder="输入新的 API Key；留空保留现有密钥"></label><label class="field">模型<select name="model"><option value="deepseek-flash">DeepSeek Flash</option><option value="deepseek-v4-pro">DeepSeek V4 Pro</option></select></label><p class="small muted" id="cloud-hermes-state"></p><p class="small muted" id="cloud-extraction-state"></p><p class="cloud-error" role="alert"></p><button class="btn primary" type="submit">保存连接</button></form>`;
-  const form=container.querySelector('form');
-  function show(info){client.modelStatus=info;if(!container.isConnected)return;container.querySelector('#cloud-model-badge').textContent=modelStatusLabel(info);container.querySelector('#cloud-hermes-state').textContent=modelEngineDescription(info);const formats=Object.entries(info.extractionCapabilities||{}).filter(([,available])=>available===true).map(([name])=>name.toUpperCase());container.querySelector('#cloud-extraction-state').textContent=formats.length?`本地正文提取支持：${formats.join('、')}。可在资料预览中提取，不消耗模型额度。`:'本地正文提取能力尚未确认，可在资料预览中查看结果或具体原因。';if(info.model)form.elements.model.value=info.model;}
+  container.innerHTML=`<div class="section-head"><h2>DeepSeek 与 AI 管家</h2><span class="badge" id="cloud-model-badge">检查连接中</span></div><p class="muted" id="cloud-model-configuration">正在检查模型配置来源。保存配置不会触发模型调用，也不代表真实连接验证已通过。</p><form id="cloud-model-form" autocomplete="off"><label class="field">DeepSeek API Key<input type="password" name="apiKey" autocomplete="new-password" spellcheck="false" placeholder="输入新的 API Key；留空保留现有密钥" disabled></label><label class="field">模型<select name="model" disabled><option value="deepseek-flash">DeepSeek Flash</option><option value="deepseek-v4-pro">DeepSeek V4 Pro</option><option value="deepseek-chat">DeepSeek Chat</option><option value="deepseek-reasoner">DeepSeek Reasoner</option></select></label><p class="small muted" id="cloud-hermes-state"></p><p class="small muted" id="cloud-extraction-state"></p><p class="cloud-error" role="alert"></p><button class="btn primary" type="submit" disabled>保存连接</button></form>`;
+  const form=container.querySelector('form'),button=form.querySelector('button');
+  let currentStatus=null,configurationKnown=false,saving=false;
+  const managed=()=>currentStatus?.configurationManaged===true||currentStatus?.configurationSource==='environment';
+  function updateControls(){const disabled=!configurationKnown||managed()||saving;form.elements.apiKey.disabled=disabled;form.elements.model.disabled=disabled;button.disabled=disabled;}
+  function show(info){
+    if(!info||typeof info.configured!=='boolean'){configurationKnown=false;updateControls();throw new Error('模型配置状态暂时无法确认，请刷新后重试。');}
+    currentStatus=info;configurationKnown=true;client.modelStatus=info;if(!container.isConnected)return;
+    container.querySelector('#cloud-model-badge').textContent=modelStatusLabel(info);
+    container.querySelector('#cloud-hermes-state').textContent=modelEngineDescription(info);
+    container.querySelector('#cloud-model-configuration').textContent=managed()?'模型由启动环境配置，修改后重启工作台。页面不显示密钥，也不能保存或清除该配置。':'可通过启动环境变量或下方设置配置模型。下方保存的专用 API Key 仅保存在本机工作台，不会回填到页面；保存配置不会触发模型调用。';
+    form.elements.apiKey.placeholder=managed()?'密钥由启动环境提供，不会返回页面':'输入新的 API Key；留空保留现有密钥';
+    if(managed())form.elements.apiKey.value='';
+    const formats=Object.entries(info.extractionCapabilities||{}).filter(([,available])=>available===true).map(([name])=>name.toUpperCase());
+    container.querySelector('#cloud-extraction-state').textContent=formats.length?`本地正文提取支持：${formats.join('、')}。可在资料预览中提取，不消耗模型额度。`:'本地正文提取能力尚未确认，可在资料预览中查看结果或具体原因。';
+    if(info.model)form.elements.model.value=info.model;updateControls();
+  }
+  updateControls();
   client.request('/api/model/status').then(show).catch(error=>{if(container.isConnected)container.querySelector('.cloud-error').textContent=error.message;});
   form.onsubmit=async event=>{
-    event.preventDefault();const button=form.querySelector('button');button.disabled=true;
-    try{const result=await client.request('/api/model/config',{method:'PUT',body:{provider:'deepseek',apiKey:form.elements.apiKey.value,model:form.elements.model.value}});form.elements.apiKey.value='';show(result);toast('模型配置已保存到本机工作台，未触发模型调用。');container.querySelector('.cloud-error').textContent='';}
-    catch(error){container.querySelector('.cloud-error').textContent=error.message;}
-    finally{button.disabled=false;}
+    event.preventDefault();if(!configurationKnown||managed()||saving)return;saving=true;updateControls();
+    try{const result=await client.request('/api/model/config',{method:'PUT',body:{provider:'deepseek',apiKey:form.elements.apiKey.value,model:form.elements.model.value}});form.elements.apiKey.value='';show(result);toast(managed()?'当前模型由启动环境配置，修改后重启工作台。':'模型配置已保存到本机工作台，未触发模型调用。');container.querySelector('.cloud-error').textContent='';}
+    catch(error){if(error.code==='MODEL_CONFIG_MANAGED')show({...currentStatus,configurationManaged:true,configurationSource:'environment'});if(container.isConnected)container.querySelector('.cloud-error').textContent=error.message;}
+    finally{saving=false;updateControls();}
   };
 }

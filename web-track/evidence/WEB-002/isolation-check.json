@@ -1,0 +1,18 @@
+{
+  "recordId": "WEB-002",
+  "checkedAt": "2026-10-23T08:34:39.504Z",
+  "oldSourceFilesUnchanged": 298,
+  "currentSourceFilesVerified": 304,
+  "physicalFilesOnly": true,
+  "nestedGit": false,
+  "sharedRepository": true,
+  "origin": "http://127.0.0.1:4396",
+  "cookie": "czb_web_yuzhou_session",
+  "runtimeDirectory": "web-track/chuangyuzhou/yuzhou/.cu-runtime",
+  "priorPortsRejected": [
+    4397,
+    4398,
+    4399
+  ],
+  "modelRequest": false
+}

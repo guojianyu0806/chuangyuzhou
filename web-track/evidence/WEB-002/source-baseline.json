@@ -1,0 +1,1506 @@
+{
+  "recordId": "WEB-002",
+  "sourceCommit": "70cd5ed7adb61f563a296a336e8cb217f60c2082",
+  "previousManifest": {
+    "schemaVersion": 1,
+    "product": "创宇宙",
+    "trackId": 10037,
+    "release": "2026-10-23-web-dev-001",
+    "sourceCommit": "e8d1a81008e6e9283bfb9e915ce874cb8c81efb5",
+    "defaultPort": 4396,
+    "privateRuntimeIncluded": false,
+    "baselineRecord": "../evidence/WEB-001/baseline-files.json",
+    "files": [
+      {
+        "path": ".env.example",
+        "bytes": 257,
+        "sha256": "401a97d80f36879a89d68bd3da4c46e53af6cf2a36f70705fa045884fd41b94f"
+      },
+      {
+        "path": ".gitattributes",
+        "bytes": 123,
+        "sha256": "1178612a6efc1a5c72c3abfdadd54d0458809b89c102972010775083a6aee818"
+      },
+      {
+        "path": ".gitignore",
+        "bytes": 92,
+        "sha256": "709f1017539f5dcfcf579771ae49d7e5bce4498ea6081dcdcc1836991bdbeb82"
+      },
+      {
+        "path": "README.md",
+        "bytes": 8915,
+        "sha256": "49f6c47a8308e1c8eb964828b04f21062cb984714034de47cce07fd8b05a76d9"
+      },
+      {
+        "path": "RELEASE-CHANGES.json",
+        "bytes": 3457,
+        "sha256": "2eeb08dcc8dbc99c2d15a7d6e1f6345ebcbc8735fb3da4d59147192d12c6ad6e"
+      },
+      {
+        "path": "SOURCE-NOTICE.md",
+        "bytes": 1164,
+        "sha256": "286e030cc8bbaa05983097820469c7e594b40259122fd43368119644760200f2"
+      },
+      {
+        "path": "config/extractor-config.example.json",
+        "bytes": 106,
+        "sha256": "b7f27469e651b73173c72bef8afc7f0030ee2dfa2e7d84f7713760f975b9c5eb"
+      },
+      {
+        "path": "config/model-settings.example.json",
+        "bytes": 116,
+        "sha256": "80bf5fd04171252a55bc4c55b5cd74d36fbc226bcec58f5301d50c95cd3768f2"
+      },
+      {
+        "path": "evidence/engineering/.gitkeep",
+        "bytes": 1,
+        "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      {
+        "path": "evidence/provenance/yuzhou-0.15.0-import.json",
+        "bytes": 22376,
+        "sha256": "23620f232ad55e1f588282934201bdbda2425b238e7a81d167000be7c2c6df68"
+      },
+      {
+        "path": "requirements-extractor.txt",
+        "bytes": 240,
+        "sha256": "ed0bb3d9afe027009df77a940f1d25faf8a899d67d1509c2f3ecca2778b7abe0"
+      },
+      {
+        "path": "scripts/configure-yuzhou-extractor.mjs",
+        "bytes": 1208,
+        "sha256": "b0213b4e1d90ea8b6d5e32ca0594ca5e8e3c492f60985ad9cd5ed4f69abde280"
+      },
+      {
+        "path": "scripts/test-yuzhou.mjs",
+        "bytes": 2500,
+        "sha256": "c195d51670778a351cd06626a33cf0183258b7a4963fefb695bb710b9fbbf984"
+      },
+      {
+        "path": "tools/start.mjs",
+        "bytes": 3027,
+        "sha256": "1ed34d35ecc7b4497d4fa07e798eebb65c79c061e87d74698ffbf196cff03f2f"
+      },
+      {
+        "path": "tools/verify-source.mjs",
+        "bytes": 1343,
+        "sha256": "bf4ac4853425c840184dee828e20a3eafc743c938a4efe159405cbb193809ca5"
+      },
+      {
+        "path": "yuzhou/README.md",
+        "bytes": 471,
+        "sha256": "a2c4f8cf688d5497d29bf9d872f1976d404a78b81f7cc23e6502a388e2971e50"
+      },
+      {
+        "path": "yuzhou/backend/README.md",
+        "bytes": 475,
+        "sha256": "7947fa3aee71e3ed0255afbeea8355ef9213fb47358db7afd9c1d539d6cad602"
+      },
+      {
+        "path": "yuzhou/backend/backup.mjs",
+        "bytes": 9075,
+        "sha256": "9734ab276faeadfc30e365306cec41d3568cdecb07fbf4f2bcfa784204aeaec8"
+      },
+      {
+        "path": "yuzhou/backend/deepseek.mjs",
+        "bytes": 4385,
+        "sha256": "f4472a7ea7012d5477608011cf3a6fe32c7023f14b1a82db8ef016ce78ec7b6e"
+      },
+      {
+        "path": "yuzhou/backend/extract.py",
+        "bytes": 11605,
+        "sha256": "0964e35bf27c0fff9b0ab9172c1af9c7cf679d8fa5c9191792ff8a179fffda4a"
+      },
+      {
+        "path": "yuzhou/backend/extractor.mjs",
+        "bytes": 12489,
+        "sha256": "b616db8b8afce0987d483183275e4a664f17c7aed295277491a8ac81b6da2d83"
+      },
+      {
+        "path": "yuzhou/backend/hermes.mjs",
+        "bytes": 58530,
+        "sha256": "3c2ab072c7e2a0f60015369c876a2ef01fe4b9241fc890cec07c8da38c5c407d"
+      },
+      {
+        "path": "yuzhou/backend/hermes_runner.py",
+        "bytes": 8499,
+        "sha256": "c730b000efca00ff13fc9b432a91cfb5d68e1c8c74460ab514d3694928b9e5f1"
+      },
+      {
+        "path": "yuzhou/backend/is-cli.mjs",
+        "bytes": 381,
+        "sha256": "968c8e96204722fd62c7a1c53017e869211f53fea97d394bfef2a17441d639da"
+      },
+      {
+        "path": "yuzhou/backend/package.json",
+        "bytes": 222,
+        "sha256": "e128851a48b1c9eb3140266b83d25eb0faadaabfd5dcf13033cbd4767dca54e8"
+      },
+      {
+        "path": "yuzhou/backend/server.mjs",
+        "bytes": 18985,
+        "sha256": "8f1c5d7c95aa836286241828c3c73041576b8ac37689e24eff4a84772592c25d"
+      },
+      {
+        "path": "yuzhou/backend/store.mjs",
+        "bytes": 20161,
+        "sha256": "a4f8e3445704c2cda8f346a84e4de30291c95b0f4980ba514ba842c657177f6a"
+      },
+      {
+        "path": "yuzhou/backend/tests/backup.test.mjs",
+        "bytes": 7120,
+        "sha256": "8b42636e6093862baa09420a1753ef1c0c9681ea5e19d2b5158d255c70a04512"
+      },
+      {
+        "path": "yuzhou/backend/tests/calendar-links-query.test.mjs",
+        "bytes": 5798,
+        "sha256": "c8de4c8b0ac4d4611c870972ad5dd3295a1edae46c3e6c1ab1091e932f05f5c1"
+      },
+      {
+        "path": "yuzhou/backend/tests/canvas-layout.test.mjs",
+        "bytes": 1886,
+        "sha256": "eee26db2e1912243112bd1484b936b22efed6f0b11c0e4592146afec0c6d2903"
+      },
+      {
+        "path": "yuzhou/backend/tests/cli-symlink.test.mjs",
+        "bytes": 2763,
+        "sha256": "eba6114fc704ffa36e87c04040ce0837546c4ed826b699fda15aaa5bfb7501f5"
+      },
+      {
+        "path": "yuzhou/backend/tests/competition-isolation.test.mjs",
+        "bytes": 5554,
+        "sha256": "2e2817944d6c6ba14c2fc080ec4ac60bb7a2ff30775bd156d0733f69853fb118"
+      },
+      {
+        "path": "yuzhou/backend/tests/competition_python_cli_test.py",
+        "bytes": 4624,
+        "sha256": "12e368e82d4586c237f60c0e14675621a76526208c2aab7ca20a298e711f611e"
+      },
+      {
+        "path": "yuzhou/backend/tests/competitions-ai.test.mjs",
+        "bytes": 10355,
+        "sha256": "11a8547a60693a2f24774be68e3005edebe4cbb55e7ac55cc1ff2874c6c3c63f"
+      },
+      {
+        "path": "yuzhou/backend/tests/competitions-persistence.test.mjs",
+        "bytes": 8406,
+        "sha256": "40bf5efa1221924a2b26589d1e13478225e0c2fd05535150c07946584b14de9f"
+      },
+      {
+        "path": "yuzhou/backend/tests/custom-blocks.test.mjs",
+        "bytes": 12264,
+        "sha256": "83de4281ad881c3d7ed075eb0a9d9c43b93dae3541ad7dffd705da25fda74602"
+      },
+      {
+        "path": "yuzhou/backend/tests/deepseek.test.mjs",
+        "bytes": 7330,
+        "sha256": "277aa472f3b9c6e31479ce703d2b195f6f549a16a121ee4ad9f9d9b66a3f90e5"
+      },
+      {
+        "path": "yuzhou/backend/tests/english-draft-reads.test.mjs",
+        "bytes": 10049,
+        "sha256": "e166547270372a7106d09c6f652cb6e6422d7f58ddf7fa6b105df64200074a86"
+      },
+      {
+        "path": "yuzhou/backend/tests/extract_test.py",
+        "bytes": 4321,
+        "sha256": "d24c94fdbfea1a2afdfe7fe6f0d91127b54b90fc92eed34d8a15c30e5db6ad19"
+      },
+      {
+        "path": "yuzhou/backend/tests/extractor.test.mjs",
+        "bytes": 10336,
+        "sha256": "efad473db50484086a3745ebad8ab73e1269ec61f178253f36126be0d78f4591"
+      },
+      {
+        "path": "yuzhou/backend/tests/fitness-persistence.test.mjs",
+        "bytes": 7713,
+        "sha256": "1bf37b0379dd2f2e6ab4212f37c7aab0d800ded83d37c81ec15072b938377ad1"
+      },
+      {
+        "path": "yuzhou/backend/tests/fitness-queries.test.mjs",
+        "bytes": 4260,
+        "sha256": "32099940b361009b10d281171c36ffff9389a82868a31e9ce637f39ecd3c1e1a"
+      },
+      {
+        "path": "yuzhou/backend/tests/hermes.test.mjs",
+        "bytes": 45934,
+        "sha256": "a628363100360eb1e4e8f73c0df786d539382246971634905963f452b2bba2cd"
+      },
+      {
+        "path": "yuzhou/backend/tests/hermes_runner_test.py",
+        "bytes": 10187,
+        "sha256": "794d87f4572ca47d99e8bf4090307859abddc53d8c0a9203a73341cb064fb585"
+      },
+      {
+        "path": "yuzhou/backend/tests/launch.test.mjs",
+        "bytes": 2283,
+        "sha256": "2c9c3cf5d1664ecfc4539a647709b24e1bcc32d3d703ba9edfec2bc1330b375b"
+      },
+      {
+        "path": "yuzhou/backend/tests/ledger.test.mjs",
+        "bytes": 5880,
+        "sha256": "907d518cccbe387f4960608d08232bb5e317f3925ec22222ef9bea35eb47611e"
+      },
+      {
+        "path": "yuzhou/backend/tests/miniapp-prompt.test.mjs",
+        "bytes": 3969,
+        "sha256": "1ad61e50de838926242840d882bae0aa2d84ea44894d68bec64f8658b5e670ea"
+      },
+      {
+        "path": "yuzhou/backend/tests/navigation-persistence.test.mjs",
+        "bytes": 4862,
+        "sha256": "89ca25d9bf7beba9f24eec5cc0062f9c6012a570065b36c20b4e22f40a9e96fe"
+      },
+      {
+        "path": "yuzhou/backend/tests/server.test.mjs",
+        "bytes": 21153,
+        "sha256": "14379cafb34469325f59e26b0ba9c5831753cb67769678396c965914a6801e66"
+      },
+      {
+        "path": "yuzhou/backend/tests/space-workbench.test.mjs",
+        "bytes": 2581,
+        "sha256": "a118e3712c205efbbd5c09bb12ea73c2d391929943471f6ef8a9ef4d63a0c823"
+      },
+      {
+        "path": "yuzhou/backend/tests/timetable-import.test.mjs",
+        "bytes": 3998,
+        "sha256": "7e660ad01a31384619357a25b945926cbbb7d32f4476672a23fa0d8abab9c145"
+      },
+      {
+        "path": "yuzhou/backend/tests/timetable.test.mjs",
+        "bytes": 3044,
+        "sha256": "f08efab8b63002dfd21957bf116b3e38262f71f539a38cddb1617d74f7db6520"
+      },
+      {
+        "path": "yuzhou/backend/tests/web-entry.test.mjs",
+        "bytes": 1762,
+        "sha256": "cba29a83fa8d4f3d357e27c8f3c5b1db0f55be451f25e8b474cd9e295f4d959a"
+      },
+      {
+        "path": "yuzhou/backend/tests/workbench-platform.test.mjs",
+        "bytes": 15810,
+        "sha256": "de37b9f20b69c8e1339159b418e3a415f62f6577a8b28172a76a845bf506a49c"
+      },
+      {
+        "path": "yuzhou/backend/tests/workspace-ai.test.mjs",
+        "bytes": 26809,
+        "sha256": "de2b95936111aed9e29d166a7a5681108bdf8497950e22bcc9be3643fed1eb23"
+      },
+      {
+        "path": "yuzhou/backend/tests/workspace-queries.test.mjs",
+        "bytes": 8397,
+        "sha256": "073e3d68e0c4f568c2c18d3b3bc28440a9799db61fc51867c39385e7f553af3b"
+      },
+      {
+        "path": "yuzhou/backend/workspace-queries.mjs",
+        "bytes": 25496,
+        "sha256": "53a57ccee546fc35fb9319c1cc369ce0ea502c9d8b7bb7aaa32cce499396a369"
+      },
+      {
+        "path": "yuzhou/deployment/README.md",
+        "bytes": 440,
+        "sha256": "5f41126140c823e15fea96ae4a8833d3f59e5ff56d54dba70173120885081ca5"
+      },
+      {
+        "path": "yuzhou/deployment/activate-release.py",
+        "bytes": 2716,
+        "sha256": "46e1b0b2d740651d0249e3dff0930cee15f33d70f52ce72389582441b2504efa"
+      },
+      {
+        "path": "yuzhou/deployment/import-timetable.mjs",
+        "bytes": 2251,
+        "sha256": "fe929fdc9517f82062f954ff4f1760e3301635e9be4ac2c3b22d88592578eee5"
+      },
+      {
+        "path": "yuzhou/deployment/prepare-server.py",
+        "bytes": 1842,
+        "sha256": "a416eb6111850aef3ce1b41944b9b7dde91e0c95ea8f41628b4f774081c25549"
+      },
+      {
+        "path": "yuzhou/deployment/publish-android.py",
+        "bytes": 3496,
+        "sha256": "1f4a2b1c1368eacb79e7086cab5b3a736c45d0aaa8e7bf06e214bce8fae65a5b"
+      },
+      {
+        "path": "yuzhou/deployment/shiguang.service",
+        "bytes": 1182,
+        "sha256": "5fe5bfab156c2bb37e170ada41902382b87d4e0272c35090077e6ca00f909722"
+      },
+      {
+        "path": "yuzhou/deployment/workbench-ip.caddy",
+        "bytes": 738,
+        "sha256": "451d10aa4fa454d943c1c223aa4e48038c47ec97106981640ab6eae22585c69a"
+      },
+      {
+        "path": "yuzhou/frontend/.gitignore",
+        "bytes": 73,
+        "sha256": "6d48891d0deb8093c1161cf27971154faec1425e252ff9373f40f2edc02394af"
+      },
+      {
+        "path": "yuzhou/frontend/README.md",
+        "bytes": 476,
+        "sha256": "4c930d8046b27b464d593ac8468983018e603fa7ce2f367b3ede12757636a8a7"
+      },
+      {
+        "path": "yuzhou/frontend/icon.svg",
+        "bytes": 640,
+        "sha256": "4234d08946ca19cba16ddd36e40c89ceedfb9909327f8f0dc521a6d114e7d760"
+      },
+      {
+        "path": "yuzhou/frontend/index.html",
+        "bytes": 2474,
+        "sha256": "c62b5c98d212ce0f906c15080683f2fdeb9bfa64022ca3ac9333c216abf6032e"
+      },
+      {
+        "path": "yuzhou/frontend/launch.mjs",
+        "bytes": 173,
+        "sha256": "4e7d78328eedd0482cf0cda7936c7d05cbc5bd278c8e282a26911d2e4477f5bb"
+      },
+      {
+        "path": "yuzhou/frontend/manifest.webmanifest",
+        "bytes": 238,
+        "sha256": "03b9a0d18aa0353caa5ab932aebd00ed24ada91c5747abe61dfcee0c6c877ffd"
+      },
+      {
+        "path": "yuzhou/frontend/miniapp-runtime.html",
+        "bytes": 716,
+        "sha256": "e0da5268ae17fc747835fa95060a00156bc69e9791819ebc9ea314290625d81a"
+      },
+      {
+        "path": "yuzhou/frontend/package.json",
+        "bytes": 237,
+        "sha256": "e40310c70dadf7c9a23f4aad7e0a7b0b488983c84d2ebf3c2cc2818591a46acd"
+      },
+      {
+        "path": "yuzhou/frontend/server.mjs",
+        "bytes": 173,
+        "sha256": "4e7d78328eedd0482cf0cda7936c7d05cbc5bd278c8e282a26911d2e4477f5bb"
+      },
+      {
+        "path": "yuzhou/frontend/src/ai-chat.css",
+        "bytes": 19712,
+        "sha256": "89b15d2c1c368463d1ad144824884a40e39feecd0dbb20fdea6ddf3813608fb6"
+      },
+      {
+        "path": "yuzhou/frontend/src/ai-chat.js",
+        "bytes": 27084,
+        "sha256": "1e3105b8d01dd5f214a131c395634e652a43e44ec0a3f106a796a535168aa366"
+      },
+      {
+        "path": "yuzhou/frontend/src/ai-cloud.js",
+        "bytes": 4454,
+        "sha256": "0fc2a066c0fe0b8bca51f0716c785cc9a9dc34bb817305d2fb2358e4f5965b60"
+      },
+      {
+        "path": "yuzhou/frontend/src/ai-conversation-model.js",
+        "bytes": 2119,
+        "sha256": "bea6662b06e925107c8f975a3c829e3cb8c0561a4d82ddb86f641af8cea02eba"
+      },
+      {
+        "path": "yuzhou/frontend/src/ai-organizer.js",
+        "bytes": 12644,
+        "sha256": "f88092aacd9c5487aaf574911f2f754e7fd39de2007a58c01148fafa1ded5cf1"
+      },
+      {
+        "path": "yuzhou/frontend/src/ai.css",
+        "bytes": 24692,
+        "sha256": "ab1289518325978e3848140b5c6ee92e9c76ee87984f0c9bf6a7c14963622e57"
+      },
+      {
+        "path": "yuzhou/frontend/src/ai.js",
+        "bytes": 15871,
+        "sha256": "92ed9d62b33cecfb742b73f8cce67eed3ef8fc0a0666469a9dab9d697d244290"
+      },
+      {
+        "path": "yuzhou/frontend/src/app.css",
+        "bytes": 44385,
+        "sha256": "1e2673db31252c4099b5cb7e1ded0caa10630634b5aa97d1790b05e29ddfce39"
+      },
+      {
+        "path": "yuzhou/frontend/src/app.js",
+        "bytes": 83954,
+        "sha256": "a15cfe00d93860a81a4f761f2d1b7196239801e80d5dfafaf67e739e426fee04"
+      },
+      {
+        "path": "yuzhou/frontend/src/archive-removal.js",
+        "bytes": 5167,
+        "sha256": "97fc2dc9ef80420456c298d331b4328d11604f18d8710a6d8767249d00b4680a"
+      },
+      {
+        "path": "yuzhou/frontend/src/backup.js",
+        "bytes": 35755,
+        "sha256": "b55bac1de965464118561e864279fe24899caa08afc8f7682789598d0d8bd912"
+      },
+      {
+        "path": "yuzhou/frontend/src/builder-scope.js",
+        "bytes": 2681,
+        "sha256": "2af4f3c8c9e060829e5fb5b67f24715ab4aa219a705421c39d1b71efb6c815c2"
+      },
+      {
+        "path": "yuzhou/frontend/src/builder.css",
+        "bytes": 13222,
+        "sha256": "84597b641c5db34239e57925f417d6018f5dc658a18109d2ee6e654bb4532a30"
+      },
+      {
+        "path": "yuzhou/frontend/src/builder.js",
+        "bytes": 17429,
+        "sha256": "8ed90912c51a36fd191c9bdd9e3b1cff3c3d1e6a15498e2c603a3dc2a5641752"
+      },
+      {
+        "path": "yuzhou/frontend/src/calendar-links.js",
+        "bytes": 6993,
+        "sha256": "eaf29eb51a0be1c599097ab5510f0292d69c69fe7a7fb992a375fcd3b159c675"
+      },
+      {
+        "path": "yuzhou/frontend/src/calendar-model.js",
+        "bytes": 3621,
+        "sha256": "71cfa7de53054b1d6da721c40e98490a38552cca60ccc45f21101159082fda38"
+      },
+      {
+        "path": "yuzhou/frontend/src/calendar.css",
+        "bytes": 17910,
+        "sha256": "842067ab747441e557fcb0097706d60e63ffb48b78a919af4160f5d3e9771677"
+      },
+      {
+        "path": "yuzhou/frontend/src/calendar.js",
+        "bytes": 21821,
+        "sha256": "75baa17b3fa4775a69151b3ecac088fb5f2ac5361dc580a0cffda6995baf8648"
+      },
+      {
+        "path": "yuzhou/frontend/src/canvas-controls.css",
+        "bytes": 3644,
+        "sha256": "9dbd24c320df288188e6a9c252cbbb6129c3273a573f4d34812ea2e40b57f063"
+      },
+      {
+        "path": "yuzhou/frontend/src/canvas-responsive.css",
+        "bytes": 6242,
+        "sha256": "2221bb51ae8f70e37d0416865b116e87dfe81c3004fa83d13fcc9f5625e3275f"
+      },
+      {
+        "path": "yuzhou/frontend/src/canvas.css",
+        "bytes": 47910,
+        "sha256": "0afdc313f1c303572b0f90d453b418f186c275a005fb748b0ae725979b5a0ad6"
+      },
+      {
+        "path": "yuzhou/frontend/src/canvas.js",
+        "bytes": 56100,
+        "sha256": "be8979726a27b3e3d8eab027f5aa15b107d42d1f06c9e9171a97a808fb63e161"
+      },
+      {
+        "path": "yuzhou/frontend/src/card-layouts.js",
+        "bytes": 3152,
+        "sha256": "74fb60855affc7689450fb6658f2e44e7287567964929f0e5cc646c58909557c"
+      },
+      {
+        "path": "yuzhou/frontend/src/card-previews.js",
+        "bytes": 5108,
+        "sha256": "3c3a46fdd306b5c32ea9a30c89983b23eccc766ff81096abdacbd4eb7621be11"
+      },
+      {
+        "path": "yuzhou/frontend/src/cloud.css",
+        "bytes": 3471,
+        "sha256": "58531db13593c4e25428e1c3b223a7385989142af6a7f13bee2a70b4167b5e5c"
+      },
+      {
+        "path": "yuzhou/frontend/src/cloud.js",
+        "bytes": 26552,
+        "sha256": "d5001ae2735d32e91d6c056806a3928cbb6589d561450a360ee6fc436864bc56"
+      },
+      {
+        "path": "yuzhou/frontend/src/companion.css",
+        "bytes": 2934,
+        "sha256": "b49deb13aa76a6c806dc5a7c1c3124af3fc28cbd068423c4503247b0d32437ec"
+      },
+      {
+        "path": "yuzhou/frontend/src/companion.js",
+        "bytes": 3604,
+        "sha256": "e4a56d2c5f7e18e6427748d3a8e0f8e6049577cb3cf6a7d281facaeaa514c3f7"
+      },
+      {
+        "path": "yuzhou/frontend/src/competitions-model.js",
+        "bytes": 8681,
+        "sha256": "36c4df2e6efc4d285d3805d589c1ac5b4fc2aea458a7a0760554539289dc50cc"
+      },
+      {
+        "path": "yuzhou/frontend/src/competitions.css",
+        "bytes": 20545,
+        "sha256": "22400db3f3cf4201f38a6a9cf3f3b37559735f971c3ef0516ae4865ccbd58b2e"
+      },
+      {
+        "path": "yuzhou/frontend/src/competitions.js",
+        "bytes": 29882,
+        "sha256": "63b922e5ba9b10ad2eff7b1da83eccf8a892fd136c1c6b6c52b781f54ca4abfe"
+      },
+      {
+        "path": "yuzhou/frontend/src/content-layout.css",
+        "bytes": 16563,
+        "sha256": "3c2a98769d411c6952f3f9b9d5d56fb479e8d751bb93898d28fcb842e4408853"
+      },
+      {
+        "path": "yuzhou/frontend/src/courses.css",
+        "bytes": 29957,
+        "sha256": "e5656464bc0438ea2e542584e9069859ccecd9646166213c9308ffc78583c54b"
+      },
+      {
+        "path": "yuzhou/frontend/src/courses.js",
+        "bytes": 37551,
+        "sha256": "605986e2cbf1ff3a117d475218be560e536420ab2d4f2ea323fce314aee2aabf"
+      },
+      {
+        "path": "yuzhou/frontend/src/creation-colors.js",
+        "bytes": 1968,
+        "sha256": "06d0a2930ca138d2efefbc0620a4e2cd05ec9d3950c3ac795d9715591187b9b1"
+      },
+      {
+        "path": "yuzhou/frontend/src/custom-block-presets.js",
+        "bytes": 6562,
+        "sha256": "4fda2200f8d6e7239eab7fbc6df9bb29c422b4e1b27883b2608453b217d2a535"
+      },
+      {
+        "path": "yuzhou/frontend/src/custom-blocks-model.js",
+        "bytes": 9676,
+        "sha256": "4fe2c483b8623bb1df63350c6179ea0cdc20f3b33c7feb51dec06114f5cc98b3"
+      },
+      {
+        "path": "yuzhou/frontend/src/custom-blocks.css",
+        "bytes": 4644,
+        "sha256": "4e7bcfc724ba6cb21f723a83e40241b10aac9060be778f85e29e7b486ea46191"
+      },
+      {
+        "path": "yuzhou/frontend/src/custom-blocks.js",
+        "bytes": 22061,
+        "sha256": "2ae099747f19ac29de6462d8eb0ad92ce029cea943c2c07c63dd33781b5f796e"
+      },
+      {
+        "path": "yuzhou/frontend/src/daily-workspace.js",
+        "bytes": 13690,
+        "sha256": "d4c31c0f5e0e9b5275c86ba9eada9451f8a57998e72b2248ca0f3288cd5dbba3"
+      },
+      {
+        "path": "yuzhou/frontend/src/dream-flow.js",
+        "bytes": 2678,
+        "sha256": "e56b7c72b3596dc45599fa6d47eb91cda552d4e6242768d1c824c7bd338632a6"
+      },
+      {
+        "path": "yuzhou/frontend/src/dream-layout.js",
+        "bytes": 2383,
+        "sha256": "42fa13e8f43f3c603513727d438af96eac861a82d3c7aa8ce784bf1f3d17f515"
+      },
+      {
+        "path": "yuzhou/frontend/src/dream-motion.js",
+        "bytes": 3996,
+        "sha256": "0c2d11b0abf2dba8d270d650d7cf1a1bd841df6532510129b4e274b0a395e58c"
+      },
+      {
+        "path": "yuzhou/frontend/src/dream.css",
+        "bytes": 14872,
+        "sha256": "17e8ea48fa4a5cc5d660b07b37ae47957ab6075172fa933017378205d2ba66fd"
+      },
+      {
+        "path": "yuzhou/frontend/src/dream.js",
+        "bytes": 24457,
+        "sha256": "4b01bb24d56414f6a0ff2708fd384cf3824b9d7721f20abc198908c2c0ecbb0c"
+      },
+      {
+        "path": "yuzhou/frontend/src/english-content.js",
+        "bytes": 31296,
+        "sha256": "a80c302aaf4fe353eb7c7bf23d3dc443d6ea31b3e5c19e0eaef905df136264b2"
+      },
+      {
+        "path": "yuzhou/frontend/src/english-practice-model.js",
+        "bytes": 7865,
+        "sha256": "3a462be929282de4e39c5f583a1e60e68a7766b46a407e8d6e5ec0bbfc4b4d09"
+      },
+      {
+        "path": "yuzhou/frontend/src/english.css",
+        "bytes": 41515,
+        "sha256": "02337a658ee1373bc2992189fd83b997bce9339796986796c3a34aa02a01b0df"
+      },
+      {
+        "path": "yuzhou/frontend/src/english.js",
+        "bytes": 38694,
+        "sha256": "37649a7aad5f9cfaf131fad5efe5b94e6d969bfe5112d276b8ec45ef8f59e6e5"
+      },
+      {
+        "path": "yuzhou/frontend/src/file-text.js",
+        "bytes": 3389,
+        "sha256": "031a7fde935b5a3170124287ee0c114e379d1a297f39145a60807223c4b6935b"
+      },
+      {
+        "path": "yuzhou/frontend/src/fitness-model.js",
+        "bytes": 8205,
+        "sha256": "5441656d084757d39539ada8e319877dca6deb27c2f0b4f9e92d3ad03cd7c91c"
+      },
+      {
+        "path": "yuzhou/frontend/src/fitness.css",
+        "bytes": 15280,
+        "sha256": "ef8863584f24122f4401e2ebc3e5e31744ead57679604a8ea12550df3f0f06c0"
+      },
+      {
+        "path": "yuzhou/frontend/src/fitness.js",
+        "bytes": 17055,
+        "sha256": "4e9560122e0652a15f0ed90569da31349fbf590520f180d769a0c86c09dc147d"
+      },
+      {
+        "path": "yuzhou/frontend/src/fullscreen.css",
+        "bytes": 2232,
+        "sha256": "b759545cc13b91834ae392f24bed1935d9638cef44a8e38aba5247735729c3c1"
+      },
+      {
+        "path": "yuzhou/frontend/src/fullscreen.js",
+        "bytes": 6527,
+        "sha256": "413fd379731ed7339a041f7413094bd83fb58d3d8a575f0c8e7a1fc9c4224411"
+      },
+      {
+        "path": "yuzhou/frontend/src/icons.js",
+        "bytes": 3606,
+        "sha256": "d5b0cbc1942db1dd50763df5b7e67d27a4c571abfb127ec64c17cf7cf5e4ece6"
+      },
+      {
+        "path": "yuzhou/frontend/src/inspiration.css",
+        "bytes": 13395,
+        "sha256": "7f84cd4ee24fa9e93080e89a9bc4aefd6b526e406a54f120d758d90bc9175dce"
+      },
+      {
+        "path": "yuzhou/frontend/src/inspiration.js",
+        "bytes": 8490,
+        "sha256": "df15608fa5b88ce43e019b1585696114c64758940ca33dd5e7da0400d9d77b9a"
+      },
+      {
+        "path": "yuzhou/frontend/src/interior.css",
+        "bytes": 10642,
+        "sha256": "b36c61b07f8993df6e467f901f9d168e1501e2f7789dae0ff4a6b3e5ddd28bd8"
+      },
+      {
+        "path": "yuzhou/frontend/src/ledger-entry-categories.js",
+        "bytes": 800,
+        "sha256": "7e8610bbea2ad2c8293450235d864e6d0182985823e5be6ecdfc3060dc0b9256"
+      },
+      {
+        "path": "yuzhou/frontend/src/ledger-model.js",
+        "bytes": 9586,
+        "sha256": "508660a7d19d5cb5cf53f4cf11e76cb9dc1cfea3a5a549b2f166a130dc8f0fb3"
+      },
+      {
+        "path": "yuzhou/frontend/src/ledger.css",
+        "bytes": 14691,
+        "sha256": "8df2a2f6cb591beea26c078be6d6b96e803a62d34474f47a580c49380255008c"
+      },
+      {
+        "path": "yuzhou/frontend/src/ledger.js",
+        "bytes": 29958,
+        "sha256": "a8198451f1d9eefe04c161bd499d2c0217d67bfefe55259a5ef22dcb4a2ca60d"
+      },
+      {
+        "path": "yuzhou/frontend/src/miniapp-frame.js",
+        "bytes": 14977,
+        "sha256": "9182ed4203d09a900362efa2cf1b702dbf42cb8b958d09bf90460ed16a34a8b4"
+      },
+      {
+        "path": "yuzhou/frontend/src/miniapp-runtime.css",
+        "bytes": 1362,
+        "sha256": "ff06d12da26d51a2c5c9936249e40f7cb8b46cf3152853b7e0f6f2b385cb1821"
+      },
+      {
+        "path": "yuzhou/frontend/src/miniapp-runtime.js",
+        "bytes": 6696,
+        "sha256": "83933556718f9617b5ba00b6164f7e19f744b09e420b335a790563ad12c71578"
+      },
+      {
+        "path": "yuzhou/frontend/src/model-status.js",
+        "bytes": 1272,
+        "sha256": "47f7ddaa4722bac6461264d34c4ac18728a1cb4fee25b01a02220f4a60f3eb0b"
+      },
+      {
+        "path": "yuzhou/frontend/src/navigation-editor.css",
+        "bytes": 7157,
+        "sha256": "cff035e971bd1071439c5fa7aaaf34468be45ccedbcceb8764e82ae7286b6e6a"
+      },
+      {
+        "path": "yuzhou/frontend/src/navigation-editor.js",
+        "bytes": 11789,
+        "sha256": "5b55b9244f6056b2791295f2a6e864e3b6769565b93c241a95d51e3a85b4d844"
+      },
+      {
+        "path": "yuzhou/frontend/src/navigation-model.js",
+        "bytes": 4012,
+        "sha256": "fc29772bc9604f7a600bd1d190df7e8df62b72483177a95aa04d9fad81d7109d"
+      },
+      {
+        "path": "yuzhou/frontend/src/navigation-shell.js",
+        "bytes": 2995,
+        "sha256": "4eb84fb190f742a1f09126fb6558f1e933425cd3ab95b1a654cde50d55fe0db4"
+      },
+      {
+        "path": "yuzhou/frontend/src/placement-camera.js",
+        "bytes": 1553,
+        "sha256": "dd1fdb8f00cf8c740ed5c21d8e3265c37f1a3010fb0e5e1f69bd380c3aac1e1c"
+      },
+      {
+        "path": "yuzhou/frontend/src/placement-model.js",
+        "bytes": 5652,
+        "sha256": "021838b501673caf443f4a9f5e7a70a7bd482524b9b91850e652169fefc64ae4"
+      },
+      {
+        "path": "yuzhou/frontend/src/placement.css",
+        "bytes": 20426,
+        "sha256": "13fc477f4cfd62d802c409ba94a1ef879bcd8ebdaed56cee0344959ae8ee2d4b"
+      },
+      {
+        "path": "yuzhou/frontend/src/placement.js",
+        "bytes": 28190,
+        "sha256": "d56b4364d71aadd0ec04f60981a553cb48c7a902a2e9715a3e574f237208599b"
+      },
+      {
+        "path": "yuzhou/frontend/src/return-navigation.js",
+        "bytes": 4513,
+        "sha256": "f2a6e91ab6adebc54cb037f439a89b83f34370977d63880df16ffddacb2846e7"
+      },
+      {
+        "path": "yuzhou/frontend/src/services.js",
+        "bytes": 2516,
+        "sha256": "89ebd68088aba306c2513b096eec8a6b02df65c1fe6acc83dc95cc0b2e5d79c2"
+      },
+      {
+        "path": "yuzhou/frontend/src/shell.css",
+        "bytes": 18897,
+        "sha256": "65c2f76ce6cf13e377b389c50e3c44edd746825dcdffa4ee8e58341aaf22597b"
+      },
+      {
+        "path": "yuzhou/frontend/src/showcase-examples.js",
+        "bytes": 14508,
+        "sha256": "7dd8b64105c8ad5095214370155ff3727864126f221e9583dc69bb0b230a07ac"
+      },
+      {
+        "path": "yuzhou/frontend/src/showcase-gallery.js",
+        "bytes": 25019,
+        "sha256": "17b70de20439dc131c7c567a1c8fb5dda11434f5b1f9cea7bad7c511749af7de"
+      },
+      {
+        "path": "yuzhou/frontend/src/sidebar-navigation.js",
+        "bytes": 856,
+        "sha256": "ecdf42ba013a2fb26812aa561a3e7de65844b19284743ba9c574e6702ca6c6fa"
+      },
+      {
+        "path": "yuzhou/frontend/src/sidebar-resize.js",
+        "bytes": 6404,
+        "sha256": "dfba44abcfa282e4e3d290303f3e3ebd10b0a78f8336579759307562bb1dc8a9"
+      },
+      {
+        "path": "yuzhou/frontend/src/space-builder.js",
+        "bytes": 3919,
+        "sha256": "47ee25d02e909819cde046460994c17264dbb6bb289eefe953be814c829aa65f"
+      },
+      {
+        "path": "yuzhou/frontend/src/space-workbench-config.js",
+        "bytes": 2626,
+        "sha256": "86e6d71bcae2b0fbd36706c1a8cb2d26c7a871f9fc7547c74eb9b80ca19b53b4"
+      },
+      {
+        "path": "yuzhou/frontend/src/space-workbench-model.js",
+        "bytes": 5274,
+        "sha256": "03479924ec3454d6a0cd8322b1354f023c898b68f9da262b7882020ffbce42b2"
+      },
+      {
+        "path": "yuzhou/frontend/src/spaces.css",
+        "bytes": 22333,
+        "sha256": "fa36ec35c5a22f3cab8b00bee327d3ad917e8d0ee8e7f0c2308810aff618b86d"
+      },
+      {
+        "path": "yuzhou/frontend/src/spaces.js",
+        "bytes": 38096,
+        "sha256": "2be3d2dc6d8ba9f7bb7671e5863f8b38491c058000fa5fb1c7870e76f0fd1904"
+      },
+      {
+        "path": "yuzhou/frontend/src/timetable-courses.js",
+        "bytes": 5640,
+        "sha256": "99769b837d470890e3812091157335e40809151b1fd76a3d3d861b2ad9477f78"
+      },
+      {
+        "path": "yuzhou/frontend/src/timetable-display.js",
+        "bytes": 1390,
+        "sha256": "eb681c12ef93a539446aece77081c873e20d5209250f83006f82fdfaa2d179ec"
+      },
+      {
+        "path": "yuzhou/frontend/src/timetable-model.js",
+        "bytes": 10241,
+        "sha256": "190c7904eea2d8cf929fb6b2447ca0c57d66f0eac3d2843ff915087f983a5461"
+      },
+      {
+        "path": "yuzhou/frontend/src/timetable.css",
+        "bytes": 22715,
+        "sha256": "7fe636b221e3dbb9dfe387c4cc86c49384e693a17b739ff8a64ebae587a5c1cf"
+      },
+      {
+        "path": "yuzhou/frontend/src/timetable.js",
+        "bytes": 31182,
+        "sha256": "61ba9e8abdbe378f11b8bb643209cd56905c30bbcf2a1675cb5dbb8cd905cceb"
+      },
+      {
+        "path": "yuzhou/frontend/src/updates.css",
+        "bytes": 2099,
+        "sha256": "3b1ae5e0a3c754849958be44bb12a267188cd9205d073da0461e374cc3e6e4a7"
+      },
+      {
+        "path": "yuzhou/frontend/src/welcome-layout-controls.js",
+        "bytes": 3978,
+        "sha256": "16f0d64a543d3335d41f74d78d08542412b996ebcb6ba34b04396f7b2af53489"
+      },
+      {
+        "path": "yuzhou/frontend/src/welcome-layout-view.js",
+        "bytes": 7044,
+        "sha256": "c9b447a7a916d6ccab6943a2bee558fb60fc1b5c560cc08cafd28392d297f52b"
+      },
+      {
+        "path": "yuzhou/frontend/src/welcome-layout.js",
+        "bytes": 7954,
+        "sha256": "941ccd5dd4cf6512e494f9a29413f4dd7e4861a74e6ddf1912b7806f9a9d9047"
+      },
+      {
+        "path": "yuzhou/frontend/src/welcome-model.js",
+        "bytes": 5480,
+        "sha256": "82ca95041f593ca15b43908e197882ded9eefa4cb4792230356d3706a2931f1f"
+      },
+      {
+        "path": "yuzhou/frontend/src/welcome-motion.js",
+        "bytes": 11454,
+        "sha256": "6deed1163df5004720ecdfc626cd140b97befc74ff2cc252587cc837ad082365"
+      },
+      {
+        "path": "yuzhou/frontend/src/welcome-route.js",
+        "bytes": 445,
+        "sha256": "cf88be72534a1068356521fb23efa4707a9ddf647bd36c1164a2b52641f45f8e"
+      },
+      {
+        "path": "yuzhou/frontend/src/welcome.css",
+        "bytes": 15213,
+        "sha256": "bf82ecbf9e492f984126c0ccf945c7547fc1321a5d3fd76408296791316a33c3"
+      },
+      {
+        "path": "yuzhou/frontend/src/welcome.js",
+        "bytes": 6684,
+        "sha256": "228403241323088c9159830e368c37557deb8081ee996a0e90409a6ea1d5954f"
+      },
+      {
+        "path": "yuzhou/frontend/src/workbench-model.js",
+        "bytes": 9835,
+        "sha256": "6bc83409cd9cfbad8dab82130d64d0efa44457f47facde76e1f5597a5274404a"
+      },
+      {
+        "path": "yuzhou/frontend/src/workspace-actions-competitions.js",
+        "bytes": 9289,
+        "sha256": "3ab8e459fb986d82fcce11c12bb1202d0e8c04b921f611f5c4db53d249bb5437"
+      },
+      {
+        "path": "yuzhou/frontend/src/workspace-actions-core.js",
+        "bytes": 24130,
+        "sha256": "548f9dbbcc1356eaff04223705a1893851503a6a4525834a7a135caa6268efeb"
+      },
+      {
+        "path": "yuzhou/frontend/src/workspace-actions-custom-blocks.js",
+        "bytes": 7152,
+        "sha256": "f56d453e83d98f4d746dde8866d09259011c6d0872b2e903776b435f570dc48b"
+      },
+      {
+        "path": "yuzhou/frontend/src/workspace-actions-fitness.js",
+        "bytes": 10090,
+        "sha256": "e6f334f39c64719a3d4fe51aa2fb0b8d02d48029dd904d79fcc26b1d509f0add"
+      },
+      {
+        "path": "yuzhou/frontend/src/workspace-actions-platform.js",
+        "bytes": 5596,
+        "sha256": "1f913296a2e1d28b503807fc30fd7c1bf2c43d49fa7de17f0bf2c52a1bdaa850"
+      },
+      {
+        "path": "yuzhou/frontend/src/workspace-actions-study.js",
+        "bytes": 34440,
+        "sha256": "ba2ae0b861a76f1888f1309e7f7c4468f7ce797d8fbe9d841997a2393b24de24"
+      },
+      {
+        "path": "yuzhou/frontend/src/workspace-actions.js",
+        "bytes": 19957,
+        "sha256": "d10d6219b562554cf31abc43dd7d4d78394a341db627c72889dc6d56301365f1"
+      },
+      {
+        "path": "yuzhou/frontend/src/workspace-model.js",
+        "bytes": 8962,
+        "sha256": "07b12facf1ca29ed8526e7f6b62f38937a823d5376514a6a30b1b5393b700a00"
+      },
+      {
+        "path": "yuzhou/frontend/src/workspace-storage.js",
+        "bytes": 5943,
+        "sha256": "c4c274b237a222b9b96776fb886ab809efad00c51a0bcffcb63b6ded45068489"
+      },
+      {
+        "path": "yuzhou/frontend/start.cmd",
+        "bytes": 80,
+        "sha256": "1cae25988ac6a0e062580a90c0168bdd8a3abd7346df64ed8416062c19110444"
+      },
+      {
+        "path": "yuzhou/frontend/tests/ai-cloud.mjs",
+        "bytes": 11206,
+        "sha256": "bee00efb6b55d06f9e12db4a0f89680ca97393f0ad7a2bd88cb47cc4c57ce9e9"
+      },
+      {
+        "path": "yuzhou/frontend/tests/ai-integration.mjs",
+        "bytes": 9332,
+        "sha256": "155ce32995f4e18f0dabd68f571cbf9cece8be76eaa146ea9711b1be7e5081a0"
+      },
+      {
+        "path": "yuzhou/frontend/tests/ai-ledger.test.mjs",
+        "bytes": 5772,
+        "sha256": "77a05d93ee8c960a870968ea9d9f504550b47b45ffa6f315917148e02905a4ea"
+      },
+      {
+        "path": "yuzhou/frontend/tests/ai-organizer-colors.test.mjs",
+        "bytes": 3166,
+        "sha256": "f6976c321d7783f07689da1b9ee304f0ecf2ddddc00a6dd951a7ef1eb293a9b4"
+      },
+      {
+        "path": "yuzhou/frontend/tests/ai-review.test.mjs",
+        "bytes": 1985,
+        "sha256": "c9158abbf7799586ada79b019cea1a9ed49654d4ddcab941221209791c359428"
+      },
+      {
+        "path": "yuzhou/frontend/tests/archive-removal.test.mjs",
+        "bytes": 4104,
+        "sha256": "368704a7af865ff8f59d19a1b3c144aaa2e5570e8c3701ebb9796e1bdb73325f"
+      },
+      {
+        "path": "yuzhou/frontend/tests/backup.test.mjs",
+        "bytes": 32403,
+        "sha256": "ee700699a76e62635a63b7ab3362c777f0d805f034b3b6036a082f118c3b5851"
+      },
+      {
+        "path": "yuzhou/frontend/tests/builder-scope.test.mjs",
+        "bytes": 2944,
+        "sha256": "c8f40f247e8fa2508525a82d537729c7baaef6eb23a66c4839d15c72155f4a13"
+      },
+      {
+        "path": "yuzhou/frontend/tests/builder.test.mjs",
+        "bytes": 10059,
+        "sha256": "330ce5ad8d459bcfb2025c3281b6c4c16c69d82f965eb4847c75b94b4dd577f8"
+      },
+      {
+        "path": "yuzhou/frontend/tests/calendar-links.test.mjs",
+        "bytes": 10135,
+        "sha256": "3ae27a735265f8fe5a2330fd4dd846a1292f0a13e1c0af5a401de341617e00a1"
+      },
+      {
+        "path": "yuzhou/frontend/tests/calendar.test.mjs",
+        "bytes": 2865,
+        "sha256": "b5a0960854232047d334a0c053ebb014516bdf87bea21a02f1a9fa3bde91344a"
+      },
+      {
+        "path": "yuzhou/frontend/tests/canvas.mjs",
+        "bytes": 9238,
+        "sha256": "472d259090e2e574f18adb402badd73c350285dcdcc7bac28d3d63032c27cdc6"
+      },
+      {
+        "path": "yuzhou/frontend/tests/card-layouts.test.mjs",
+        "bytes": 6789,
+        "sha256": "afac18b03312c8e626273d94107ab38d82c18f1785ebc7f6486417ac06155608"
+      },
+      {
+        "path": "yuzhou/frontend/tests/card-previews.test.mjs",
+        "bytes": 4624,
+        "sha256": "45d7709a3a11f9e14c4ace0ec5b8b057bb1d0abbc7c7aa60d14f35b9a53750df"
+      },
+      {
+        "path": "yuzhou/frontend/tests/cloud-attachments.test.mjs",
+        "bytes": 7116,
+        "sha256": "a0a6adf3d7e2d1617546acc0733e0e8c3a7e3dcf2a35be560ee22d65590d55ef"
+      },
+      {
+        "path": "yuzhou/frontend/tests/cloud-enqueue.test.mjs",
+        "bytes": 4138,
+        "sha256": "1075ed44942a57c889faf89c9ddfe792fd40f7a989e84df5054da90c37db23ba"
+      },
+      {
+        "path": "yuzhou/frontend/tests/cloud-mutation.test.mjs",
+        "bytes": 4426,
+        "sha256": "41641f8f5337ea85bdd57ee669f54a20f0d0d218f46bff22a7a9afc2d8ed2bec"
+      },
+      {
+        "path": "yuzhou/frontend/tests/cloud-real.mjs",
+        "bytes": 5430,
+        "sha256": "585b84f271f17d067b2915698dddb2cc7dade7f0f3d9ff2ad2b3d1d2cb50d031"
+      },
+      {
+        "path": "yuzhou/frontend/tests/cloud.mjs",
+        "bytes": 9851,
+        "sha256": "b83260af7d07ec979fe000440566f900ebead9beef40fc31076ee5cb6b0cecc0"
+      },
+      {
+        "path": "yuzhou/frontend/tests/companion.test.mjs",
+        "bytes": 3080,
+        "sha256": "ad8bab5db876b58a302ef4b04c244c9a466a69b684ceb4a9c3d0b17268b9e92c"
+      },
+      {
+        "path": "yuzhou/frontend/tests/competition-storage-isolation.test.mjs",
+        "bytes": 3470,
+        "sha256": "57856d59ee255f1b970b8527e344d9b220fe88695d8e60a3ec6b20d8761d7038"
+      },
+      {
+        "path": "yuzhou/frontend/tests/competitions-backup.test.mjs",
+        "bytes": 7251,
+        "sha256": "dcbf96845e29ec97732dd71a3a0e5abd463e197ff69893cd23d4d4c154c229f4"
+      },
+      {
+        "path": "yuzhou/frontend/tests/competitions-model.test.mjs",
+        "bytes": 6731,
+        "sha256": "e3cc545ffb9cb6012abe50316cc7a7009d60ae96f8351755ea4cec08caaa07b9"
+      },
+      {
+        "path": "yuzhou/frontend/tests/course-canvas.mjs",
+        "bytes": 6438,
+        "sha256": "8d44404bfac010a7d3d5a534207d844b257c32445b226b3bd71db21ae3af475d"
+      },
+      {
+        "path": "yuzhou/frontend/tests/course-detail-canvas.mjs",
+        "bytes": 6949,
+        "sha256": "2876966e8f0f09309499fc3bc4bf3303c6fc89f3868b78974d7370ae7d5bce5d"
+      },
+      {
+        "path": "yuzhou/frontend/tests/courses.mjs",
+        "bytes": 8264,
+        "sha256": "c0b0e7700074c93410e9a24e9628094c21e96dc1ff32fcc6e117925f6018376d"
+      },
+      {
+        "path": "yuzhou/frontend/tests/creation-colors.test.mjs",
+        "bytes": 4169,
+        "sha256": "1f489a76690692de91b546723435e1ed0140b852c76bf79a53366df03aa6cd9e"
+      },
+      {
+        "path": "yuzhou/frontend/tests/custom-block-presets.test.mjs",
+        "bytes": 2934,
+        "sha256": "cf1a10f2e69734f6d7f4d736f4acf2ff6615fc5e90adb9db9c13108e69ecd350"
+      },
+      {
+        "path": "yuzhou/frontend/tests/custom-blocks-builder-integration.test.mjs",
+        "bytes": 10852,
+        "sha256": "4e4326b5f2d4083b1d10bb64d402d0711b336ff661216f5a2b2a1a027afdf495"
+      },
+      {
+        "path": "yuzhou/frontend/tests/custom-blocks-ui-state.test.mjs",
+        "bytes": 12366,
+        "sha256": "1c59d2c721c5af5e8c801450c6e64e532a32d361c3dc084de62677cb35136a2c"
+      },
+      {
+        "path": "yuzhou/frontend/tests/custom-blocks.test.mjs",
+        "bytes": 18122,
+        "sha256": "2a8d0ab1ffec527900c50152e35cee324ea641a564ef27ca7f37fc09fc12bacd"
+      },
+      {
+        "path": "yuzhou/frontend/tests/daily-workspace.test.mjs",
+        "bytes": 3225,
+        "sha256": "18954c830906336d1ccded00b1d73ebfc2dd0be1ae8383ceba03dc3eb1138ca7"
+      },
+      {
+        "path": "yuzhou/frontend/tests/dream-flow.test.mjs",
+        "bytes": 9166,
+        "sha256": "56197db43dd8c3e05099deff75bbbc22e8ef201e29bd7abc12582fd506400bbc"
+      },
+      {
+        "path": "yuzhou/frontend/tests/dream-layout.test.mjs",
+        "bytes": 3129,
+        "sha256": "02d109b83f38aabe546e99503d69fd8068b43025330960a867695505dc75f1c4"
+      },
+      {
+        "path": "yuzhou/frontend/tests/dream-motion.test.mjs",
+        "bytes": 7479,
+        "sha256": "09f39435ef2f915cb9709ad93bc6c6d9bb6b476e1c5fdc25226ca3465afb8068"
+      },
+      {
+        "path": "yuzhou/frontend/tests/dream-view.test.mjs",
+        "bytes": 37914,
+        "sha256": "bcbadbebc38463a6277e83a431a9eb2eb4e1a75308a82a95404af5aa88563993"
+      },
+      {
+        "path": "yuzhou/frontend/tests/english-content.test.mjs",
+        "bytes": 4190,
+        "sha256": "25d149a70409443be0ab3826b513c505b97694e5c5006664d2da2af8bc695bfa"
+      },
+      {
+        "path": "yuzhou/frontend/tests/english-draft-actions.test.mjs",
+        "bytes": 5662,
+        "sha256": "3c1e5eea3528012e79be817b81f36f1df82833aeeb1c9c71bd27d572e434d262"
+      },
+      {
+        "path": "yuzhou/frontend/tests/english-naming-compatibility.test.mjs",
+        "bytes": 4666,
+        "sha256": "3001d4d49af3a6c682090e208086624be4a59f3d297f8ba9aac036e9899928ae"
+      },
+      {
+        "path": "yuzhou/frontend/tests/english-practice-model.test.mjs",
+        "bytes": 12270,
+        "sha256": "5c6559eaafb834a31453a1b12e81159a06731b9d750265acfcbffe35604b63d2"
+      },
+      {
+        "path": "yuzhou/frontend/tests/english-ui-state.test.mjs",
+        "bytes": 9733,
+        "sha256": "47ebfa5cc2b05eb0eb74458f73ebc536395314bd6c209ffe8ecd7cea271cdfc1"
+      },
+      {
+        "path": "yuzhou/frontend/tests/english.mjs",
+        "bytes": 8145,
+        "sha256": "fe65342bd978c91d50eb7562b9c678e61df46627d072c6f9ef5cdb9ef51ad856"
+      },
+      {
+        "path": "yuzhou/frontend/tests/file-text.test.mjs",
+        "bytes": 3730,
+        "sha256": "142e252af1ff3e0617826148541b4402d700be5fa2cdacfeb2b518ef7921b81a"
+      },
+      {
+        "path": "yuzhou/frontend/tests/fitness-backup.test.mjs",
+        "bytes": 5673,
+        "sha256": "1edb88cfc96dd26a9f2137a316d8f9a41943c43118fc2961dcf273a0fbbd3cf1"
+      },
+      {
+        "path": "yuzhou/frontend/tests/fitness-model.test.mjs",
+        "bytes": 6132,
+        "sha256": "c2d844656b956cf62bf4189305fc2d7a6425d9a7d58ab91cadc8b5254541c327"
+      },
+      {
+        "path": "yuzhou/frontend/tests/flows.mjs",
+        "bytes": 6656,
+        "sha256": "91efcb52c50c732b9343310187b91cf596a2fa0366d0e9c704e72974d9efe3de"
+      },
+      {
+        "path": "yuzhou/frontend/tests/inspiration-view.test.mjs",
+        "bytes": 5469,
+        "sha256": "781094ccc7bd742b8bec7f35763c66f623b925867faf717db84ce0198d86cd7b"
+      },
+      {
+        "path": "yuzhou/frontend/tests/inspiration.test.mjs",
+        "bytes": 10376,
+        "sha256": "92d992c39ea44d8f6b9e4aa2bf8c0538649754b72def6998a3760c1084109258"
+      },
+      {
+        "path": "yuzhou/frontend/tests/interior.mjs",
+        "bytes": 4680,
+        "sha256": "aff88e43e8f67422503436ced10cdab55e0be302b188a564baf87891c7232f57"
+      },
+      {
+        "path": "yuzhou/frontend/tests/layout.mjs",
+        "bytes": 4027,
+        "sha256": "f590ef718825ae4e8c53d1d274eaaeee6e7901baf61b59e9c1eccb3dd8baf186"
+      },
+      {
+        "path": "yuzhou/frontend/tests/ledger-categories.test.mjs",
+        "bytes": 2744,
+        "sha256": "4669eb35e862ba4851025a04fa78df0f3b9b7e03a41d71f4cdc635424c0e35e5"
+      },
+      {
+        "path": "yuzhou/frontend/tests/ledger-cloud.mjs",
+        "bytes": 16477,
+        "sha256": "af518c98289bee35e99ed023f11a49d6e3b3990f8557af3ed588798f11b6e852"
+      },
+      {
+        "path": "yuzhou/frontend/tests/ledger-entry-categories.test.mjs",
+        "bytes": 1228,
+        "sha256": "e60c077f986ccdb93d02c0e757e40a5c3ecd801fb0b6f858cea602114b1c0011"
+      },
+      {
+        "path": "yuzhou/frontend/tests/ledger-model.test.mjs",
+        "bytes": 12410,
+        "sha256": "b94b1e43107e9a106cb56c0e6f38fe7a9c7976363186493a429273c93aac7950"
+      },
+      {
+        "path": "yuzhou/frontend/tests/longpress.mjs",
+        "bytes": 6288,
+        "sha256": "036612aced8160b1afea93be44dfb128f84912171d894840abe9ee05e3470918"
+      },
+      {
+        "path": "yuzhou/frontend/tests/migration.mjs",
+        "bytes": 6540,
+        "sha256": "f95f4f54e43d89ebdb15eddf31771c0f09c26d55e4fd19f0519af29e718939fe"
+      },
+      {
+        "path": "yuzhou/frontend/tests/miniapp-page-lifecycle.test.mjs",
+        "bytes": 10985,
+        "sha256": "cb328b4a350edca0b23a8f6c16a20ca6baadd379d51fe469aa04e11b6cb8bcc3"
+      },
+      {
+        "path": "yuzhou/frontend/tests/miniapp-runtime.test.mjs",
+        "bytes": 15147,
+        "sha256": "29be193dd431c1e13cfa51a01ef199a9bf3cd6f22ecd91b4c3e725f30a3302f1"
+      },
+      {
+        "path": "yuzhou/frontend/tests/model-status.test.mjs",
+        "bytes": 3290,
+        "sha256": "d614af808fdf75ac4f9681ea5417dbfb3504905fa7c47268e33b5d411164cb64"
+      },
+      {
+        "path": "yuzhou/frontend/tests/navigation-editor.test.mjs",
+        "bytes": 8628,
+        "sha256": "a03abd8f51f05e7ff3acb0c9efd9eaa1bb7fa712a8d39475269f601d7b0b3032"
+      },
+      {
+        "path": "yuzhou/frontend/tests/navigation-model.test.mjs",
+        "bytes": 8083,
+        "sha256": "973fef66e45c2f6560b2d3f89eabdf863ce12ec17b9a936f842e96caab67c6a9"
+      },
+      {
+        "path": "yuzhou/frontend/tests/navigation-shell.test.mjs",
+        "bytes": 3133,
+        "sha256": "23fa4b26c13de45d9ff8ac84e6f84e58c23902dadad2ab6b7437e861936ff046"
+      },
+      {
+        "path": "yuzhou/frontend/tests/navigation.mjs",
+        "bytes": 3469,
+        "sha256": "c979cd90e1ccf89295de019130c146cce5d3987084b808c6f76dbc00a37270a6"
+      },
+      {
+        "path": "yuzhou/frontend/tests/placement-camera.test.mjs",
+        "bytes": 5024,
+        "sha256": "04e03f6ec54bb72552e615adb0114611a85fe3d529ff2b7cfbef5c2b9b1c7eaf"
+      },
+      {
+        "path": "yuzhou/frontend/tests/placement-model.test.mjs",
+        "bytes": 7596,
+        "sha256": "54d88bd6e3b9d2521403126f1f769868f44ccf1eaa4ad50a36e98dfbfdd32212"
+      },
+      {
+        "path": "yuzhou/frontend/tests/placement-navigation.test.mjs",
+        "bytes": 20542,
+        "sha256": "373c63cf4c1d42650a82c0c2b9ca2ab8d6dd6d3f11d1b586ca75a86ae425d1d8"
+      },
+      {
+        "path": "yuzhou/frontend/tests/placement.test.mjs",
+        "bytes": 6057,
+        "sha256": "d090c368f08a39dd6cb2c4d5b26f4194a94943e9cdc7076393d7b690e2914b07"
+      },
+      {
+        "path": "yuzhou/frontend/tests/showcase-examples.test.mjs",
+        "bytes": 7996,
+        "sha256": "a5118ead156c2e24993a3fd0a2d73e96d08cb7e8fb333feee63a14ad430a3166"
+      },
+      {
+        "path": "yuzhou/frontend/tests/showcase-gallery.test.mjs",
+        "bytes": 16082,
+        "sha256": "71b992508cd4adaa6f35de90bf5a78bc955c6964bb7fb9dee1ac9173a6393858"
+      },
+      {
+        "path": "yuzhou/frontend/tests/showcase-relations.test.mjs",
+        "bytes": 6643,
+        "sha256": "a9a0a2d9908799ed772c26a0daf04a50af82dc9a4a87213d514c6bac359b694f"
+      },
+      {
+        "path": "yuzhou/frontend/tests/sidebar-navigation.test.mjs",
+        "bytes": 3801,
+        "sha256": "b434696b9d9e3e121db88a7615cc6361f5fbdb72581183f11a4ca0156d00325d"
+      },
+      {
+        "path": "yuzhou/frontend/tests/sidebar-resize.test.mjs",
+        "bytes": 22481,
+        "sha256": "ec86989cc19e582178dbbb5bd66725eeca0a4cf8a6f31a85941ed5a5286aecfa"
+      },
+      {
+        "path": "yuzhou/frontend/tests/space-workbench.test.mjs",
+        "bytes": 10091,
+        "sha256": "c1b8238340c6bbc22ffb541d41c092126539505e874716f3029c3be81956ca6f"
+      },
+      {
+        "path": "yuzhou/frontend/tests/spaces.mjs",
+        "bytes": 16951,
+        "sha256": "79a4388728f021a013a25bc90d5fb0b19ec90cdde09a47f775ce902d45234675"
+      },
+      {
+        "path": "yuzhou/frontend/tests/storage.mjs",
+        "bytes": 7085,
+        "sha256": "897e8f2a8971ac29195266d35b0c05e7514de9547117bb49a1e00600baced288"
+      },
+      {
+        "path": "yuzhou/frontend/tests/timetable-courses.test.mjs",
+        "bytes": 5561,
+        "sha256": "06e9dc5d585e722309c0fdb35028db9817cb86bfbc1ff7ddf009e9330749982b"
+      },
+      {
+        "path": "yuzhou/frontend/tests/timetable-display.test.mjs",
+        "bytes": 2412,
+        "sha256": "35e1f04d742f259b41a6824d2a23b711834d5e4aea283e9d1f291789a5357c36"
+      },
+      {
+        "path": "yuzhou/frontend/tests/timetable-model.test.mjs",
+        "bytes": 8275,
+        "sha256": "129210ba3d5875e87b8a21c4a2782feba22e8387b1ab05231f705981874fdf8f"
+      },
+      {
+        "path": "yuzhou/frontend/tests/welcome-layout-controls.test.mjs",
+        "bytes": 11119,
+        "sha256": "7a07aad5632a72ccd210c9d4571ff931cfdb6f1f7c5c4937804b7cfd9cbf07b5"
+      },
+      {
+        "path": "yuzhou/frontend/tests/welcome-layout-view.test.mjs",
+        "bytes": 16509,
+        "sha256": "1b8b725d5c4540ccba820eb44b28513fb524a501fbe0131bcaff7e4baa8fc89f"
+      },
+      {
+        "path": "yuzhou/frontend/tests/welcome-layout.test.mjs",
+        "bytes": 8172,
+        "sha256": "0d1161b82244d4d9c32481a6004cedcb0ba8d5084a0587019e479d8fd7a457df"
+      },
+      {
+        "path": "yuzhou/frontend/tests/welcome-model.test.mjs",
+        "bytes": 8970,
+        "sha256": "f603b943ce2049c6ff1f310a77c8de5a14de13e8608c0b18a232069fe469044b"
+      },
+      {
+        "path": "yuzhou/frontend/tests/welcome-motion.test.mjs",
+        "bytes": 17123,
+        "sha256": "5118fcbf272299b0979d199dad72a4070aa6c27f7a1dedd99c93f8b10aae6e1b"
+      },
+      {
+        "path": "yuzhou/frontend/tests/welcome-route.test.mjs",
+        "bytes": 1584,
+        "sha256": "0ab7914173fb0409f4598ce35f4a88f9ad873d5b8184cfd67d3b4d61e64b5c1b"
+      },
+      {
+        "path": "yuzhou/frontend/tests/welcome-view.test.mjs",
+        "bytes": 13562,
+        "sha256": "28f2acd9d67d513fa3920d931584aba37c54d33d8588d85bdea4133cfd01f8e2"
+      },
+      {
+        "path": "yuzhou/frontend/tests/workbench-model.test.mjs",
+        "bytes": 8266,
+        "sha256": "9f7bdc7df9d1f7d0cc17e918e158d5ef2368ea23bcc53d17bda704efce2a2ec8"
+      },
+      {
+        "path": "yuzhou/frontend/tests/workspace-actions-competitions.test.mjs",
+        "bytes": 8673,
+        "sha256": "5fe44ff70ebc5adf48d78a306c1f1ea7056539a5bee9a28e603c78e120b9917f"
+      },
+      {
+        "path": "yuzhou/frontend/tests/workspace-actions-core.test.mjs",
+        "bytes": 17446,
+        "sha256": "0075fee861abb337a0166c65c53c50eb297505eb856a261478311e8e18f2454f"
+      },
+      {
+        "path": "yuzhou/frontend/tests/workspace-actions-fitness.test.mjs",
+        "bytes": 10696,
+        "sha256": "5398d49e4a1beb867082bd537aeec8dc851906b41d74dde0d55d4d3b1249a69d"
+      },
+      {
+        "path": "yuzhou/frontend/tests/workspace-actions-study.test.mjs",
+        "bytes": 19874,
+        "sha256": "df3a4fb97180306f60553c09cc5d641594a010cd0c3c845052cccfeb85759d38"
+      },
+      {
+        "path": "yuzhou/frontend/tests/workspace-board-undo.test.mjs",
+        "bytes": 6917,
+        "sha256": "e4d109b24712dfb2b5d74bb466d708f7ea5b13cef57fca9bdd100e1a23a4743b"
+      },
+      {
+        "path": "yuzhou/frontend/tests/workspace-model.test.mjs",
+        "bytes": 4065,
+        "sha256": "46e815f386c9add8a32e8c051420afea2f7c93acea801c7286e8e059fbcbf22d"
+      },
+      {
+        "path": "yuzhou/frontend/tests/workspace-storage.test.mjs",
+        "bytes": 10873,
+        "sha256": "998066a154b2095ddd834e5f6ecd12ba493dee8ecf88879cc7e8604e5ff8ccbf"
+      },
+      {
+        "path": "yuzhou/frontend/tests/workspace-undo-lifecycle.test.mjs",
+        "bytes": 3574,
+        "sha256": "325f2508dc2c29e9f8113c037e95211f9defa326923b62f51f3e71af9aabee4f"
+      },
+      {
+        "path": "yuzhou/launch.mjs",
+        "bytes": 2941,
+        "sha256": "5e1e09d24cffe3db08b54e5265f317bbefaf765be6feca1188b8c5fad41248d6"
+      },
+      {
+        "path": "yuzhou/mobile/README.md",
+        "bytes": 436,
+        "sha256": "09a3deb8f7b7fedc77ad7cadf40d2d4988e48815bd0a8918ee3effef61ee6bbd"
+      },
+      {
+        "path": "yuzhou/mobile/android/app/src/main/AndroidManifest.xml",
+        "bytes": 1214,
+        "sha256": "2d595af99c7ba838ef94781940c70d9b4c483736e2ba93311393dea84fef1a7e"
+      },
+      {
+        "path": "yuzhou/mobile/android/app/src/main/assets/download-bridge.js",
+        "bytes": 10547,
+        "sha256": "b9927f76425accc082b9771828352566f542212c05541337aae5439ee89711e5"
+      },
+      {
+        "path": "yuzhou/mobile/android/app/src/main/java/cn/yuzhou/workbench/MainActivity.java",
+        "bytes": 35813,
+        "sha256": "0d1fcb28ae8d43951fce42ae25e762ed3ab7ea493d3aa84877ff6c5a4ff8db82"
+      },
+      {
+        "path": "yuzhou/mobile/android/app/src/main/res/drawable/ic_universe_foreground.xml",
+        "bytes": 1370,
+        "sha256": "8abc5ed94f21a8f5a87bd3fcf4c580a6f7fe8163ca2ad81a40b41eafa0489548"
+      },
+      {
+        "path": "yuzhou/mobile/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+        "bytes": 263,
+        "sha256": "d346d137000a846ea17df0c6bfedc722372880b9885c5d491924fb5484b30e2b"
+      },
+      {
+        "path": "yuzhou/mobile/android/app/src/main/res/values/colors.xml",
+        "bytes": 168,
+        "sha256": "0876ae155a4f4608726767803563ed5ae5384aaf2ea6f09537203da1f8461063"
+      },
+      {
+        "path": "yuzhou/mobile/android/app/src/main/res/values/strings.xml",
+        "bytes": 111,
+        "sha256": "03cd23f8a5ba5af33ba1e770908b75822195a3ade122826f23c0fc15cd12f04b"
+      },
+      {
+        "path": "yuzhou/mobile/android/app/src/main/res/values/styles.xml",
+        "bytes": 717,
+        "sha256": "b6b2968d451d6789b05d6a648a4b2e7edb36d99cdeefbcf0b7313d66df4de0c3"
+      },
+      {
+        "path": "yuzhou/mobile/build-android.mjs",
+        "bytes": 7032,
+        "sha256": "34630c229b1b823a116a9bb5bd80bd90ed2a1418881ea1686abe86d8ad933a54"
+      },
+      {
+        "path": "yuzhou/mobile/download-page/index.template.html",
+        "bytes": 3531,
+        "sha256": "e20b783a2bba3e92a6ca666da8da976e4e1b9507f42e89dbd4087e26d2b5c084"
+      },
+      {
+        "path": "yuzhou/mobile/tests/android-smoke/AndroidManifest.xml",
+        "bytes": 620,
+        "sha256": "f281f7612e8d10c60e0a22721823e3fb5cf28769894dfc3a1fa06e8abaf90e37"
+      },
+      {
+        "path": "yuzhou/mobile/tests/android-smoke/NativeSmoke.java",
+        "bytes": 9023,
+        "sha256": "ea5783a61aca24b04571b37d19cce8ae649beea75c4edb2642d97978c25b7214"
+      },
+      {
+        "path": "yuzhou/mobile/tests/competition-isolation.test.mjs",
+        "bytes": 3159,
+        "sha256": "480a04bd1378ccb381617205c860afe0b98682f26cc01b02c8bcf945af707cf8"
+      },
+      {
+        "path": "yuzhou/mobile/tests/download-bridge.test.mjs",
+        "bytes": 17584,
+        "sha256": "72d5904e90082266a786f9f9dd60e0005a13ec78f0c4dae7d50351c5f70fabca"
+      },
+      {
+        "path": "yuzhou/runtime.mjs",
+        "bytes": 4059,
+        "sha256": "09e50f54d6336f80ac888bcf4f7396addc63c003b0bf3721e9ca99c6c70cbfff"
+      },
+      {
+        "path": "yuzhou/start.mjs",
+        "bytes": 2103,
+        "sha256": "7131855f94884d8d99d4b0f8179ce154dd924d4b96ad5852cb88d566ad3cd31a"
+      },
+      {
+        "path": "启动创宇宙.cmd",
+        "bytes": 51,
+        "sha256": "0613ff7596f9a78e4ef9cf33dfa39617d8dd71d198655d42914d75237a0708bc"
+      }
+    ]
+  }
+}

@@ -19,6 +19,14 @@ test('direct engine readiness does not require Hermes, while legacy status remai
   assert.equal(modelReady(undefined),false);
 });
 
+test('environment source reports configuration without claiming that its key was saved by the page',()=>{
+  const status={configured:true,engine:'deepseek-direct',engineAvailable:true,configurationSource:'environment',configurationManaged:true};
+  assert.equal(modelReady(status),true);
+  assert.match(modelStatusLabel(status),/环境变量已配置/);
+  assert.match(modelEngineDescription(status),/由启动环境配置，修改后重启/);
+  assert.match(modelStatusLabel({...status,engineAvailable:false}),/环境变量已配置.*引擎待配置/);
+});
+
 function fixture(status) {
   const calls=[];
   const request={id:'synthetic-request',text:'整理合成会议记录',files:[{blobId:'synthetic-file'}],targetId:'inbox'};
@@ -60,4 +68,10 @@ test('status check is not displayed as a running reply and prevents duplicate su
   resolveStatus({configured:false,engineAvailable:true});
   await assert.rejects(starting,/API Key/);
   assert.equal(jobFor(ctx.state,request.id).status,'failed');
+});
+
+test('unconfigured AI explains both startup environment and settings configuration paths',async()=>{
+  const {ctx,request,calls}=fixture({configured:false,engineAvailable:true});
+  await assert.rejects(startAIJob(ctx,request),/启动环境变量.*偏好与连接.*API Key/);
+  assert.deepEqual(calls,['/api/model/status']);
 });

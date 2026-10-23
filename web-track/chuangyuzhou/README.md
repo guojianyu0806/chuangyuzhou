@@ -2,7 +2,7 @@
 
 **让每个人搭建自己的工作台。** 创宇宙是一款可组合的个人工作台：用模块、空间和方块组织资料、日程与任务，由AI伙伴协助查询、提出方案，在用户审核确认后执行。
 
-第九届传智杯AI WEB网页开发挑战赛（10037）· 开发版 WEB-001 · 2026-10-23。当前应用文件清单见 `SOURCE-MANIFEST.json`，本阶段改动见 `RELEASE-CHANGES.json`。
+第九届传智杯AI WEB网页开发挑战赛（10037）· 开发版 WEB-002 · 2026-10-23。当前应用文件清单见 `SOURCE-MANIFEST.json`，本阶段改动见 `RELEASE-CHANGES.json`。
 
 ## 主要功能
 
@@ -17,12 +17,12 @@
 
 | 项目 | 条件 |
 | --- | --- |
-| 基础网页应用 | Node.js ≥22.13，现代桌面浏览器；本轮检查环境见上级evidence/WEB-001.md |
+| 基础网页应用 | Node.js ≥22.13，现代桌面浏览器；本轮检查环境见上级evidence/WEB-002.md |
 | npm依赖与前端构建 | 基础应用没有npm运行依赖，无需`npm install`或前端构建 |
 | TXT/Markdown/CSV正文 | Node内建能力，无额外依赖 |
 | DOCX/PPTX正文 | 可选Python ≥3.10；标准库实现 |
 | 文字PDF正文 | 可选Python及`requirements-extractor.txt`锁定的pypdf；不支持OCR、旧DOC/PPT |
-| 真实AI | 网络、自己的DeepSeek API Key及可用模型额度；通过应用设置配置 |
+| 真实AI | 网络、自己的DeepSeek API Key及可用模型额度；支持启动环境变量或本机设置页 |
 
 运行时下载：[Node.js](https://nodejs.org/en/download)、[Python](https://www.python.org/downloads/)。运行时不捆绑进源码包。最低版本是代码要求，不表示测试了所有更高版本或操作系统。
 
@@ -46,7 +46,7 @@ node tools/start.mjs
 
 数据保存在本目录自己的`yuzhou/.cu-runtime/`。Web入口使用独立登录Cookie与固定4396端口，浏览器存储依照origin隔离。不要把当前使用中的账号导出包当作参赛源码。
 
-基础复现不要求API Key，也不会自动调用付费模型。当前目录的检查见上级 `evidence/WEB-001.md`；历史正式包的计时与验证仍归属原报告，本轮没有重新计时十分钟完整操作流程。
+基础复现不要求API Key，也不会自动调用付费模型。当前配置检查见上级 `evidence/WEB-002.md`，独立目录建立记录为 `evidence/WEB-001.md`；历史正式包的计时与验证仍归属原报告。
 
 ## 3. 环境变量模板
 
@@ -61,10 +61,18 @@ Copy-Item -LiteralPath .env.example -Destination .env -ErrorAction Stop
 | --- | --- |
 | CZB_YUZHOU_HOST | 固定为127.0.0.1，本开发版仅供本机复现 |
 | CZB_YUZHOU_PORT | 固定为4396；端口被占用时保留其他服务并检查冲突 |
+| DEEPSEEK_API_KEY | 默认留空；填写本Web环境专用Key后由环境配置接管模型连接 |
+| DEEPSEEK_MODEL | 默认deepseek-flash；支持deepseek-v4-pro、deepseek-chat、deepseek-reasoner |
 
-配置一行一个`名称=值`，不加引号；未知字段、重复字段及非本入口端口会被拒绝。当前阶段不要加入密钥、数据库路径或旧服务器配置。模型Key的环境变量接入及示例是下一阶段工作。启动入口不继承外部应用配置。
+在本机编辑新建的 `.env`，填写 `DEEPSEEK_API_KEY`，按需要选择 `DEEPSEEK_MODEL`，保存后启动或重启工作台。示例文件中的Key保持空白；真实Key只写入被Git忽略的 `.env`。本轮没有为你填写或读取真实Key。
 
-`config/model-settings.example.json`与`config/extractor-config.example.json`仅为字段参考，不自动加载。模型Key通过登录后的“偏好与连接”填写，解析器使用下一节命令生成自己的配置。
+配置一行一个 `名称=值`，不加引号，不使用变量替换、表达式或行内注释。Key须为12至500个不含空白的可打印ASCII字符。未知字段、重复字段及非本入口端口会被拒绝，错误信息不会回显配置值。
+
+也可由当前启动终端设置这两个模型环境变量。同名变量优先级为：**启动终端 > 本目录 `.env`**；Key有效时，环境配置优先于设置页保存的连接。终端中显式设置空Key会覆盖文件Key。空Key视为未启用环境连接，仅有模型名不会改动原本机配置。除这两个模型变量外，启动器继续拒绝继承其他应用密钥、引擎目录和数据路径。
+
+环境连接在启动时读入并仅保存在服务端内存，不写入 `ai/model-config.json`，状态接口不返回Key或任何片段。设置页会显示“由启动环境配置”，禁用Key、模型和保存按钮；直接调用保存或清除接口也会被拒绝。修改后需要重启。移除或清空有效环境Key并重启后，原设置页配置仍保留并恢复可用。
+
+`config/model-settings.example.json`与`config/extractor-config.example.json`仅为字段参考，不自动加载。未启用环境连接时仍可通过登录后的“偏好与连接”配置模型；解析器使用下一节命令生成自己的配置。
 
 ## 4. 可选文档解析
 
@@ -82,14 +90,14 @@ node scripts/configure-yuzhou-extractor.mjs --python "$extractorPython"
 
 ## 5. 可选AI体验
 
-登录后进入“偏好与连接”，选择DeepSeek，填写自己的专用Key与受支持模型。参考配置使用`deepseek-v4-pro`，实际可用性取决于供应商与账号。Key保存、供应商响应、业务完成是不同状态。
+先按上一节配置环境Key，或在未启用环境连接时通过“偏好与连接”填写自己的专用Key与受支持模型。环境连接默认 `deepseek-flash`，模型实际可用性取决于供应商与账号。配置就绪、供应商响应和业务完成是不同状态；启动、配置检查和查看状态均不会调用模型。
 
 例如发送“为周末读书分享会建立筹备空间，并列出三项准备任务”，查看查询结果与审核单，需要时继续修订，再点击“确认执行”。检查任务和空间是否落地、刷新后是否保留。小程序创建后需单独点击运行；历史真实模型验证不代表未来每次生成都成功。模型额度由使用者自行准备，基础复现与本次打包验证不自动收费调用。
 
 ## 6. 测试与结构
 
 ```powershell
-node scripts/test-yuzhou.mjs --dev WEB-001
+node scripts/test-yuzhou.mjs --dev WEB-002
 ```
 
 测试使用独立合成数据，输出在`evidence/engineering/`；`.test.mjs`是本包自动回归入口。旧的非`.test.mjs`浏览器脚本保留可读源码，但已加显式禁用保护，避免意外连接其他实例；不要把它们当作评委复现步骤。
@@ -121,4 +129,4 @@ node scripts/test-yuzhou.mjs --dev WEB-001
 
 产品：创宇宙。赛道：AI WEB网页开发挑战赛（10037）。参赛人员、指导老师和组别按本赛道实际报名信息补齐。
 
-本阶段建立Web赛道独立开发目录及运行隔离，未调用真实模型、安装解析依赖或生成新的技术PDF、视频和正式源码ZIP。模型Key的环境变量接入、完整AI流程及Web材料定稿按后续阶段推进。
+本阶段补齐模型Key环境变量配置及相关检查，使用合成Key和模拟模型接口验证。没有读取其他环境的Key、调用真实供应商、安装解析依赖或修改技术PDF、视频及正式源码ZIP。真实AI流程和Web材料定稿按后续阶段推进。
