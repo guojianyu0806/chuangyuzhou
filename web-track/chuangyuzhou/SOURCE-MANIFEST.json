@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-10-23-web-dev-002",
-  "sourceCommit": "70cd5ed7adb61f563a296a336e8cb217f60c2082",
+  "release": "2026-10-23-web-dev-003",
+  "sourceCommit": "42af76a06f138567a22e327f4af1e4904eab0fd5",
   "defaultPort": 4396,
   "privateRuntimeIncluded": false,
-  "baselineRecord": "../evidence/WEB-002/source-baseline.json",
+  "baselineRecord": "../evidence/WEB-003/source-baseline.json",
   "files": [
     {
       "path": ".env.example",
@@ -25,13 +25,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 10358,
-      "sha256": "c8b648290b629f55d5ac0ac55c7f63b532d3158a91ee7bd44316ef7e8ff083a8"
+      "bytes": 10551,
+      "sha256": "78185488bb743d0fccbee094b81baccd31785a15b6d13db789a47e632d5fcef5"
     },
     {
       "path": "RELEASE-CHANGES.json",
-      "bytes": 4046,
-      "sha256": "3428f2bfec8984a716a564672768af243f91d904c2b8fd42924178853c5bb5b9"
+      "bytes": 478,
+      "sha256": "1d02e9c9e35f9682df5c3e258340279f0eddc257f6acb3d75bdced94445ad8d0"
     },
     {
       "path": "SOURCE-NOTICE.md",

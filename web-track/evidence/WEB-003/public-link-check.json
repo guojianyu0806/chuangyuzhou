@@ -1,0 +1,21 @@
+{
+  "recordId": "WEB-003",
+  "checkedAt": "2026-10-23T09:36:49.339Z",
+  "checkedFiles": [
+    "README.md",
+    "web-track/README.md",
+    "web-track/chuangyuzhou/README.md",
+    "web-track/materials/README.md",
+    "web-track/evidence/WEB-003.md"
+  ],
+  "localLinksChecked": 40,
+  "missingTrackedTargets": [],
+  "memberOrder": [
+    "郭剑宇",
+    "单汝巨",
+    "栾健"
+  ],
+  "group": "A组（211组）",
+  "registrationStatus": "已报名",
+  "registrationSource": "user-confirmed"
+}
