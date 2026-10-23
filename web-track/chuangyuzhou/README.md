@@ -2,7 +2,7 @@
 
 **让每个人搭建自己的工作台。** 创宇宙是一款可组合的个人工作台：用模块、空间和方块组织资料、日程与任务，由AI伙伴协助查询、提出方案，在用户审核确认后执行。
 
-第九届传智杯AI WEB网页开发挑战赛（10037）· 开发版 WEB-003 · 2026-10-23。当前应用文件清单见 `SOURCE-MANIFEST.json`，本阶段改动见 `RELEASE-CHANGES.json`。
+第九届传智杯AI WEB网页开发挑战赛（10037）· 开发版 WEB-004 · 2026-10-23。当前应用文件清单见 `SOURCE-MANIFEST.json`，本阶段改动见 `RELEASE-CHANGES.json`。
 
 ## 主要功能
 
@@ -17,7 +17,7 @@
 
 | 项目 | 条件 |
 | --- | --- |
-| 基础网页应用 | Node.js ≥22.13，现代桌面浏览器；本轮检查环境见上级evidence/WEB-002.md |
+| 基础网页应用 | Node.js ≥22.13，现代桌面浏览器；本轮检查环境见上级evidence/WEB-004.md |
 | npm依赖与前端构建 | 基础应用没有npm运行依赖，无需`npm install`或前端构建 |
 | TXT/Markdown/CSV正文 | Node内建能力，无额外依赖 |
 | DOCX/PPTX正文 | 可选Python ≥3.10；标准库实现 |
@@ -59,16 +59,18 @@ Copy-Item -LiteralPath .env.example -Destination .env -ErrorAction Stop
 
 | 字段 | 默认与范围 |
 | --- | --- |
-| CZB_YUZHOU_HOST | 固定为127.0.0.1，本开发版仅供本机复现 |
+| CZB_YUZHOU_HOST | 固定为127.0.0.1；Web模式由同机反向代理提供网站入口 |
 | CZB_YUZHOU_PORT | 固定为4396；端口被占用时保留其他服务并检查冲突 |
+| CZB_YUZHOU_MODE | 默认local；配置为web后启用HTTPS网站模式 |
+| CZB_YUZHOU_PUBLIC_ORIGIN | 默认空；web模式必须提供自己的HTTPS原点，不含路径、查询或片段 |
 | DEEPSEEK_API_KEY | 默认留空；填写本Web环境专用Key后由环境配置接管模型连接 |
 | DEEPSEEK_MODEL | 默认deepseek-flash；支持deepseek-v4-pro、deepseek-chat、deepseek-reasoner |
 
-在本机编辑新建的 `.env`，填写 `DEEPSEEK_API_KEY`，按需要选择 `DEEPSEEK_MODEL`，保存后启动或重启工作台。示例文件中的Key保持空白；真实Key只写入被Git忽略的 `.env`。本轮没有为你填写或读取真实Key。
+在本机编辑新建的 `.env`，填写 `DEEPSEEK_API_KEY`，按需要选择 `DEEPSEEK_MODEL`，保存后启动或重启工作台。示例文件中的Key保持空白；真实Key只写入被Git忽略的 `.env`。本轮没有为你填写或读取真实Key。默认local模式保持本机使用；网站模式的配置、反向代理与上线验收见[Web服务指南](web-deployment/README.md)。
 
 配置一行一个 `名称=值`，不加引号，不使用变量替换、表达式或行内注释。Key须为12至500个不含空白的可打印ASCII字符。未知字段、重复字段及非本入口端口会被拒绝，错误信息不会回显配置值。
 
-也可由当前启动终端设置这两个模型环境变量。同名变量优先级为：**启动终端 > 本目录 `.env`**；Key有效时，环境配置优先于设置页保存的连接。终端中显式设置空Key会覆盖文件Key。空Key视为未启用环境连接，仅有模型名不会改动原本机配置。除这两个模型变量外，启动器继续拒绝继承其他应用密钥、引擎目录和数据路径。
+也可由当前启动终端设置两个模型环境变量，以及`CZB_YUZHOU_MODE`和`CZB_YUZHOU_PUBLIC_ORIGIN`。同名变量优先级为：**启动终端 > 本目录 `.env`**；Key有效时，环境配置优先于设置页保存的连接。终端中显式设置空Key会覆盖文件Key。空Key视为未启用环境连接，仅有模型名不会改动原本机配置。启动器继续拒绝继承其他应用密钥、引擎目录和数据路径；监听地址和端口保持固定。
 
 环境连接在启动时读入并仅保存在服务端内存，不写入 `ai/model-config.json`，状态接口不返回Key或任何片段。设置页会显示“由启动环境配置”，禁用Key、模型和保存按钮；直接调用保存或清除接口也会被拒绝。修改后需要重启。移除或清空有效环境Key并重启后，原设置页配置仍保留并恢复可用。
 
@@ -97,7 +99,7 @@ node scripts/configure-yuzhou-extractor.mjs --python "$extractorPython"
 ## 6. 测试与结构
 
 ```powershell
-node scripts/test-yuzhou.mjs --dev WEB-002
+node scripts/test-yuzhou.mjs --dev WEB-004
 ```
 
 测试使用独立合成数据，输出在`evidence/engineering/`；`.test.mjs`是本包自动回归入口。旧的非`.test.mjs`浏览器脚本保留可读源码，但已加显式禁用保护，避免意外连接其他实例；不要把它们当作评委复现步骤。
@@ -123,7 +125,7 @@ node scripts/test-yuzhou.mjs --dev WEB-002
 | AI未接入或请求失败 | 检查自己的模型配置、额度与网络，按界面提示重试 |
 | 显示本机连接失败 | 重新运行“启动创宇宙.cmd”，检查地址与端口 |
 
-安全与兼容边界：仅本机访问；不提供已验证的公网部署或安卓安装包；未完成独立真人收益试验、完整真机兼容或外部安全审计。“宇宙”与“创宇宙”为同一项目；早期快照补录的性质明确标注，不把工程核查作为赛事资格认可。
+安全与兼容边界：支持本机模式与HTTPS反向代理下的Web服务配置；本轮未部署公网、未验证真实TLS或Linux服务安装，也不提供安卓安装包；未完成独立真人收益试验、完整真机兼容或外部安全审计。“宇宙”与“创宇宙”为同一项目；早期快照补录的性质明确标注，不把工程核查作为赛事资格认可。
 
 ## 8. 参赛信息与当前阶段
 
@@ -137,4 +139,4 @@ node scripts/test-yuzhou.mjs --dev WEB-002
 
 指导老师信息尚未提供。成员顺序按本赛道报名位次保留。
 
-模型环境变量接入及相关检查已于WEB-002完成，验证使用合成Key和模拟接口。当前阶段补齐团队及公开仓库信息，应用逻辑保持不变；后续Web端转换、真实AI流程与材料定稿另按具体任务推进。本轮不修改技术PDF、视频或旧正式源码ZIP。
+模型环境变量接入于WEB-002完成，团队及公开仓库信息于WEB-003完成。WEB-004增加Web模式、HTTPS原点配置、安全登录Cookie、浏览器兼容提示及Web专用运行示例，保留原业务功能与数据格式；测试与浏览器证据见[本轮记录](../evidence/WEB-004.md)。真实公网、真实AI流程与材料定稿另按具体任务推进。本轮不修改技术PDF、视频或旧正式源码ZIP。

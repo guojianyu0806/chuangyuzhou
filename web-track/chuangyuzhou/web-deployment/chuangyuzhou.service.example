@@ -1,0 +1,22 @@
+# Reference only; adapt the dedicated service account, paths and Node executable.
+# No installation or service modification is performed by the application.
+[Unit]
+Description=Chuangyuzhou Web workbench
+After=network.target
+
+[Service]
+Type=simple
+User=chuangyuzhou
+Group=chuangyuzhou
+WorkingDirectory=/srv/chuangyuzhou/web-track/chuangyuzhou
+ExecStart=/usr/bin/node tools/start.mjs
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGTERM
+KillMode=mixed
+TimeoutStopSec=150
+UMask=0077
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

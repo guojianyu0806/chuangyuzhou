@@ -19,8 +19,8 @@ export function modelEngineDescription(status) {
   const configuration = status?.configurationManaged === true || status?.configurationSource === 'environment' ? '模型由启动环境配置，修改后重启工作台。' : '';
   if (status?.engine === 'deepseek-direct') {
     return configuration + (engineAvailable(status)
-      ? '本机工作台使用独立 DeepSeek 直连，无需安装 Hermes。只有发送 AI 请求才会调用模型；保存密钥与提取文档正文不会调用模型。'
-      : '本机工作台的 DeepSeek 直连暂不可用，请检查工作台服务；配置密钥不代表连接测试成功。');
+      ? '工作台服务使用 DeepSeek 直连，无需安装 Hermes。只有发送 AI 请求才会调用模型；保存密钥与提取文档正文不会调用模型。'
+      : '工作台服务的 DeepSeek 直连暂不可用，请检查服务；配置密钥不代表连接测试成功。');
   }
   return configuration + (engineAvailable(status)
     ? '独立 AI 引擎已配置，真实调用效果仍待验证。'

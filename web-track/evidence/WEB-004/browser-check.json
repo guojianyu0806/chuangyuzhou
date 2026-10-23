@@ -1,0 +1,120 @@
+{
+  "recordId": "WEB-004",
+  "synthetic": true,
+  "origin": "http://127.0.0.1:57255",
+  "login": true,
+  "createdTask": "浏览器保存刷新验收",
+  "savedAfterReload": true,
+  "logoutAndLogin": true,
+  "taskRetainedAfterLogin": true,
+  "settingsOriginVisible": true,
+  "routeChecks": [
+    {
+      "path": "#/home",
+      "heading": [
+        "113 heading 我的工作台., Value: 1, ID: canvas-title",
+        "132 heading AI伙伴, Value: 2",
+        "167 heading 课程空间, Value: 2"
+      ],
+      "savedTask": true
+    },
+    {
+      "path": "#/builder",
+      "heading": [
+        "113 heading 我的工作台, Value: 1, ID: wb-heading",
+        "130 heading 像摆积木一样，搭好你的工作台, Value: 2, ID: wb-placement-title",
+        "136 heading 方块库, Value: 3"
+      ],
+      "savedTask": false
+    },
+    {
+      "path": "#/ai",
+      "heading": [
+        "+\t\t\t43 heading 小宇 · AI伙伴✳, Value: 1",
+        "+\t\t\t50 heading 最近对话, Value: 2",
+        "+\t\t\t\t\t59 heading 你的想法，我帮你搭起来。, Value: 2"
+      ],
+      "savedTask": false
+    },
+    {
+      "path": "#/courses",
+      "heading": [
+        "+\t\t\t\t\t45 heading 课程空间., Value: 1, ID: canvas-title"
+      ],
+      "savedTask": false
+    },
+    {
+      "path": "#/english",
+      "heading": [
+        "80 heading 英语学习, Value: 1",
+        "87 heading 慢慢积累， 也在稳稳向前。, Value: 2",
+        "136 heading A quieter kind of progress, Value: 2"
+      ],
+      "savedTask": false
+    },
+    {
+      "path": "#/inbox",
+      "heading": [
+        "~\t\t\t\t80 heading 接住，这一闪念。, Value: 1",
+        "~\t\t\t101 heading 下一闪念，从这里开始。, Value: 2"
+      ],
+      "savedTask": false
+    },
+    {
+      "path": "#/tasks",
+      "heading": [
+        "~\t\t\t78 heading 给每件事，一个着落。, Value: 1"
+      ],
+      "savedTask": true
+    },
+    {
+      "path": "#/review",
+      "heading": [
+        "+\t\t\t83 heading 你走过的路，都算数。, Value: 1",
+        "+\t\t\t88 heading 把注意力放在成长上。, Value: 2",
+        "+\t\t\t\t103 heading 积累的足迹, Value: 2"
+      ],
+      "savedTask": false
+    },
+    {
+      "path": "#/ledger",
+      "heading": [
+        "~\t\t\t\t84 heading 记账, Value: 1",
+        "+\t\t\t\t145 heading 日常零钱, Value: 2",
+        "+\t\t\t\t\t157 heading 账目明细, Value: 2"
+      ],
+      "savedTask": false
+    },
+    {
+      "path": "#/calendar",
+      "heading": [
+        "78 heading 日历✦, Value: 1",
+        "337 heading 10月23日, Value: 2"
+      ],
+      "savedTask": true
+    },
+    {
+      "path": "#/timetable",
+      "heading": [
+        "~\t\t\t78 heading 学期课表, Value: 1",
+        "~\t\t\t81 heading 从一个学期开始, Value: 2"
+      ],
+      "savedTask": false
+    },
+    {
+      "path": "#/competitions",
+      "heading": [
+        "~\t\t\t78 heading 比赛✦, Value: 1",
+        "+\t\t\t108 heading 从一项比赛开始, Value: 2"
+      ],
+      "savedTask": false
+    }
+  ],
+  "viewport": {
+    "width": 1265,
+    "scrollWidth": 1265
+  },
+  "realTLS": false,
+  "mobileTested": false,
+  "modelRequest": false
+}

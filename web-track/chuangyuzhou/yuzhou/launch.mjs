@@ -20,7 +20,7 @@ export async function probeInstance(url, expectedId, fetchImpl=fetch) {
       }
     } finally {reader.releaseLock();}
     const info=JSON.parse(Buffer.concat(chunks,bytes).toString('utf8'));
-    return info.application==='czb-yuzhou'&&info.instanceId===expectedId;
+    return info.application==='czb-yuzhou'&&info.instanceId===expectedId&&info.accessMode!=='web';
   } catch {return false;}
 }
 
@@ -39,6 +39,7 @@ function openPage(url) {
 export async function launchWorkbench({env=process.env,open=openPage,probe=probeInstance,isFree=portFree,start}={}) {
   if(process.argv[1])assertOrdinaryPath(process.argv[1]);
   const runtime=resolveCompetitionOptions({},env);
+  if(runtime.mode==='web')throw new Error('Web模式请使用node tools/start.mjs，由HTTPS反向代理提供网站入口。');
   const url=`http://${runtime.host}:${runtime.port}`;
   const expectedId=digest(`${runtime.frontendDir}\n${runtime.dataDir}`);
   if(await probe(url,expectedId)){console.log(`创宇宙 · Web赛道开发版已运行：${url}`);open(url);return {reused:true};}

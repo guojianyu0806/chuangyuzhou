@@ -5,6 +5,7 @@ import {launchWorkbench,probeInstance} from '../../launch.mjs';
 test('launcher only recognizes this application and this physical copy',async()=>{
  const reply=body=>async()=>new Response(JSON.stringify(body));
  assert.equal(await probeInstance('http://127.0.0.1:4397','expected',reply({application:'czb-yuzhou',instanceId:'expected'})),true);
+ assert.equal(await probeInstance('http://127.0.0.1:4396','expected',reply({application:'czb-yuzhou',instanceId:'expected',accessMode:'web'})),false);
  for(const body of [{application:'old-workbench',instanceId:'expected'},{application:'czb-yuzhou',instanceId:'other'},{}])
   assert.equal(await probeInstance('http://127.0.0.1:4397','expected',reply(body)),false);
  assert.equal(await probeInstance('http://127.0.0.1:4397','expected',async()=>{throw Error('offline');}),false);

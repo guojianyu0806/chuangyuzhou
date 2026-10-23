@@ -1,0 +1,8 @@
+# Copy to the application root as .env only when no .env already exists.
+# Replace the example HTTPS origin with the actual site origin before deployment.
+CZB_YUZHOU_HOST=127.0.0.1
+CZB_YUZHOU_PORT=4396
+CZB_YUZHOU_MODE=web
+CZB_YUZHOU_PUBLIC_ORIGIN=https://workbench.example.com
+DEEPSEEK_API_KEY=
+DEEPSEEK_MODEL=deepseek-flash

@@ -15,8 +15,7 @@ export async function startCompetitionWorkbench(options = {}, env = process.env)
   const setupToken = loadOrCreateSetupCode(runtime.setupTokenFile);
   const extractor = createDocumentExtractor(loadExtractorConfig());
   // Only the two model variables are forwarded; legacy engine paths stay isolated.
-  const app = await createWorkbenchServer({ ...runtime, secureCookie: false,
-    publicOrigin: `http://${runtime.host}:${runtime.port}`, setupToken, extractFile: extractor.extractFile,
+  const app = await createWorkbenchServer({ ...runtime, setupToken, extractFile: extractor.extractFile,
     modelFactory: ({ dataDir, store }) => createHermesService({ dataDir, store, env: modelEnvironment,
       engine: 'deepseek-direct', runModel: createDeepSeekRunner(), extractFile: extractor.extractFile,
       extractionCapabilities: () => extractor.capabilities }),
@@ -25,9 +24,12 @@ export async function startCompetitionWorkbench(options = {}, env = process.env)
   try {
     await new Promise((ready, reject) => { app.server.once('error', reject); app.server.listen(runtime.port, runtime.host, ready); });
   } catch (error) { await app.close(); throw error; }
-  console.log(`创宇宙 · Web赛道开发版 ${VERSION} listening on ${runtime.host}:${runtime.port}`);
+  console.log(`创宇宙 · Web赛道开发版 ${VERSION} (${runtime.mode}) listening on ${runtime.host}:${runtime.port}`);
+  console.log(`浏览器入口：${runtime.publicOrigin}${runtime.mode==='web'?'（须由HTTPS反向代理提供）':''}`);
   console.log('首次使用请自行查看当前目录 .cu-runtime/data/setup-code.txt；不要向聊天提供口令或 Key。');
-  for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, async () => { await app.close(); process.exit(0); });
+  const close=app.close.bind(app),handlers=new Map();
+  app.close=async()=>{for(const [signal,handler] of handlers)process.removeListener(signal,handler);await close();};
+  for (const signal of ['SIGINT', 'SIGTERM']) { const handler=async()=>{await app.close();process.exit(0);};handlers.set(signal,handler);process.once(signal,handler); }
   return app;
 }
 

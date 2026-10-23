@@ -124,7 +124,7 @@ test('Web child environment carries the explicit model choice and only the OS al
   const env=cleanEnvironment(config,temp,source);
   assert.deepEqual(env,{
     PATH:source.PATH,Path:source.Path,SystemRoot:source.SystemRoot,WINDIR:source.WINDIR,COMSPEC:source.COMSPEC,PATHEXT:source.PATHEXT,
-    CZB_YUZHOU_HOST:'127.0.0.1',CZB_YUZHOU_PORT:'4396',DEEPSEEK_API_KEY:'synthetic-file-key-123',DEEPSEEK_MODEL:'deepseek-v4-pro',
+    CZB_YUZHOU_HOST:'127.0.0.1',CZB_YUZHOU_PORT:'4396',CZB_YUZHOU_MODE:'local',CZB_YUZHOU_PUBLIC_ORIGIN:'',DEEPSEEK_API_KEY:'synthetic-file-key-123',DEEPSEEK_MODEL:'deepseek-v4-pro',
     TEMP:temp,TMP:temp,TMPDIR:temp,PYTHONDONTWRITEBYTECODE:'1',
   });
 });

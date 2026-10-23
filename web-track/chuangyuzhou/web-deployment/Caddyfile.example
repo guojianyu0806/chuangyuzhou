@@ -1,0 +1,9 @@
+# Replace this domain with the exact host in CZB_YUZHOU_PUBLIC_ORIGIN.
+# Serve the whole origin through Node; never expose the source/runtime directory.
+workbench.example.com {
+    request_body {
+        # More than the application's 40 MiB original-file limit.
+        max_size 43000000
+    }
+    reverse_proxy 127.0.0.1:4396
+}

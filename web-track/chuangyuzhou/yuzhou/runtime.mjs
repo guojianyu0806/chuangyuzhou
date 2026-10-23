@@ -2,6 +2,7 @@ import { lstatSync, realpathSync, readdirSync, mkdirSync, existsSync, readFileSy
 import { resolve, relative, isAbsolute, dirname, join, parse } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
+import { resolveWebAccess } from './web-access.mjs';
 
 export const PROJECT_ROOT = dirname(fileURLToPath(import.meta.url));
 export const RUNTIME_ROOT = join(PROJECT_ROOT, '.cu-runtime');
@@ -56,6 +57,7 @@ export function resolveCompetitionOptions(options = {}, env = {}) {
   if (host !== '127.0.0.1') throw new Error('competition_localhost_only');
   const port = Number(options.port ?? env.CZB_YUZHOU_PORT ?? env.PORT ?? DEFAULT_PORT);
   if (port !== DEFAULT_PORT) throw new Error('competition_port_must_be_4396');
+  const access = resolveWebAccess(options.mode ?? env.CZB_YUZHOU_MODE ?? 'local', options.publicOrigin ?? env.CZB_YUZHOU_PUBLIC_ORIGIN ?? '');
   const dataDir = assertRuntimePath(options.dataDir ?? env.CZB_YUZHOU_DATA_DIR ?? env.DATA_DIR ?? join(RUNTIME_ROOT, 'data'));
   const frontendDir = assertOrdinaryPath(options.frontendDir ?? env.FRONTEND_DIR ?? FRONTEND_ROOT, FRONTEND_ROOT);
   if (frontendDir !== FRONTEND_ROOT) throw new Error('competition_frontend_must_be_copied_frontend');
@@ -64,7 +66,7 @@ export function resolveCompetitionOptions(options = {}, env = {}) {
   for (const name of ['SHIGUANG_HERMES_DIR', 'SHIGUANG_HERMES_PYTHON', 'SHIGUANG_EXTRACT_PYTHON']) {
     if (env[name]) assertRuntimePath(env[name]);
   }
-  return { host, port, dataDir, frontendDir, setupTokenFile };
+  return { host, port, dataDir, frontendDir, setupTokenFile, ...access };
 }
 
 /** Only this copy's token is read. Its value is never printed or placed in metadata. */

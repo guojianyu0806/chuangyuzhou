@@ -15,6 +15,20 @@ Object.assign(apiMessages,{invalid_competitions:'比赛记录格式有误，请�
 function errorMessage(result,fallback){const value=typeof result.error==='string'?result.error:result.error?.message;return apiMessages[value]||result.message||value||fallback;}
 const statusNames = {ready:'工作台已连接',saved:'已同步',saving:'正在同步',pending:'等待同步',offline:'离线 · 待同步',conflict:'同步冲突 · 已保留',remote:'其他设备有更新',result:'本次操作结果待加载',storage:'本机保存待重试',auth:'请重新登录'};
 
+// UUIDs and attachment hashes require a secure browser context. Check before
+// authentication or workspace initialization so an HTTP deployment never turns
+// into a blank page or asks the visitor to enter credentials over that connection.
+export function browserSupportProblem(environment=globalThis) {
+  if(environment.isSecureContext===false)return {title:'请通过安全连接打开工作台',message:'网页工作台需要 HTTPS。请使用管理员提供的 HTTPS 网址；在本机运行时，请使用 localhost 或 127.0.0.1 地址。当前页面尚未读取工作区，也不会提交账号或密码。'};
+  if(typeof environment.crypto?.randomUUID!=='function'||typeof environment.crypto?.subtle?.digest!=='function')return {title:'当前浏览器缺少必要功能',message:'工作台需要安全的随机编号和文件校验功能。请通过 HTTPS 使用较新版本的 Chrome、Edge、Firefox 或 Safari；本机运行可使用 localhost 或 127.0.0.1。'};
+  try {
+    if(!environment.indexedDB||!environment.localStorage||!environment.sessionStorage)throw new Error('storage unavailable');
+    // Reading length checks access permissions without reading existing records.
+    void environment.localStorage.length;void environment.sessionStorage.length;
+  }catch{return {title:'浏览器数据存储暂不可用',message:'请检查此网站的存储权限，或使用允许本地存储的普通浏览器窗口后重试。已有内容仍保留；请勿清除浏览器数据。'};}
+  return null;
+}
+
 // Each tab owns its revision and pending snapshot. Sharing a browser cache must
 // never make an old tab inherit a newer revision and overwrite another device.
 export class CloudClient {
@@ -297,7 +311,7 @@ export class CloudClient {
 
 function authView(setup,error='') {
   const app=document.querySelector('#app');
-  app.innerHTML=`<main class="cloud-entry" id="main"><section class="cloud-welcome"><img src="./icon.svg" alt="" width="56" height="56"><span class="eyebrow">创宇宙</span><h1>搭建一个，<br>属于你的工作台。</h1><p>从空白或模板开始，组合你需要的模块。<br>让 AI 伙伴帮你搭建、排列和管理。</p><div class="cloud-entry-tags"><span>自由组合</span><span>场景模板</span><span>AI 伙伴</span></div></section><section class="cloud-login-card"><span class="cloud-entry-mark">✳</span><h2>${setup?'建立你的工作台':'欢迎回到创宇宙'}</h2><p class="muted">${setup?'设置账号，开始建立自己的工作台。':'登录账号，继续你的记录与计划。'}</p><form id="cloud-auth-form"><label class="field">账号<input name="username" required minlength="2" maxlength="64" autocomplete="username" placeholder="例如 yuzhou"></label><label class="field">密码<input name="password" type="password" required ${setup?'minlength="12"':''} maxlength="256" autocomplete="${setup?'new-password':'current-password'}" placeholder="${setup?'至少 12 位字符':'输入你的密码'}"></label>${setup?'<label class="field">初始化口令<input name="setupToken" type="password" required autocomplete="off" placeholder="部署时生成的初始化口令"></label><p class="small muted">口令仅用于首次建立账号，不会保存到浏览器。</p>':''}<p id="cloud-auth-error" class="cloud-error" role="alert">${esc(error)}</p><button class="btn primary full" type="submit">${setup?'创建账号并进入':'登录工作台'} →</button></form><p class="cloud-entry-foot">私人工作台 · 当前仅本机访问</p></section></main>`;
+  app.innerHTML=`<main class="cloud-entry" id="main"><section class="cloud-welcome"><img src="./icon.svg" alt="" width="56" height="56"><span class="eyebrow">创宇宙</span><h1>搭建一个，<br>属于你的工作台。</h1><p>从空白或模板开始，组合你需要的模块。<br>让 AI 伙伴帮你搭建、排列和管理。</p><div class="cloud-entry-tags"><span>自由组合</span><span>场景模板</span><span>AI 伙伴</span></div></section><section class="cloud-login-card"><span class="cloud-entry-mark">✳</span><h2>${setup?'建立你的工作台':'欢迎回到创宇宙'}</h2><p class="muted">${setup?'设置账号，开始建立自己的工作台。':'登录账号，继续你的记录与计划。'}</p><form id="cloud-auth-form"><label class="field">账号<input name="username" required minlength="2" maxlength="64" autocomplete="username" placeholder="例如 yuzhou"></label><label class="field">密码<input name="password" type="password" required ${setup?'minlength="12"':''} maxlength="256" autocomplete="${setup?'new-password':'current-password'}" placeholder="${setup?'至少 12 位字符':'输入你的密码'}"></label>${setup?'<label class="field">初始化口令<input name="setupToken" type="password" required autocomplete="off" placeholder="部署时生成的初始化口令"></label><p class="small muted">口令仅用于首次建立账号，不会保存到浏览器。</p>':''}<p id="cloud-auth-error" class="cloud-error" role="alert">${esc(error)}</p><button class="btn primary full" type="submit">${setup?'创建账号并进入':'登录工作台'} →</button></form><p class="cloud-entry-foot">私人工作台 · 登录后访问你的工作区</p></section></main>`;
   return app.querySelector('form');
 }
 
@@ -322,6 +336,12 @@ async function authenticate(session) {
 }
 
 export async function bootstrapCloud() {
+  const problem=browserSupportProblem();
+  if(problem){
+    document.querySelector('#app').innerHTML=`<main class="cloud-entry cloud-unavailable"><section class="cloud-login-card"><h1>${esc(problem.title)}</h1><p role="alert">${esc(problem.message)}</p><button class="btn primary" id="browser-retry">重新检查</button></section></main>`;
+    document.querySelector('#browser-retry').onclick=()=>location.reload();
+    return new Promise(()=>{});
+  }
   let health;
   try{
     const response=await fetch('/api/health',{cache:'no-store',signal:AbortSignal.timeout(6000)});
@@ -338,8 +358,7 @@ export async function bootstrapCloud() {
   try{const res=await fetch('/api/auth/session',{cache:'no-store',credentials:'same-origin'});if(!res.ok)throw new Error();session=await res.json();}
   catch{const form=authView(false,'暂时无法检查登录状态，请重试。');form.onsubmit=event=>{event.preventDefault();location.reload();};return new Promise(()=>{});}
   if(!session.authenticated)session=await authenticate(session);
-  const client=new CloudClient(session);
-  try{await client.prepareStorage();return client;}
+  try{const client=new CloudClient(session);await client.prepareStorage();return client;}
   catch{
     document.querySelector('#app').innerHTML='<main class="cloud-entry cloud-unavailable"><section class="cloud-login-card"><h1>本机数据存储暂不可用</h1><p>旧缓存仍保留。请保留原页面，检查浏览器存储权限后重试；请勿清除浏览器数据。</p><button class="btn primary" id="storage-retry">重试加载</button></section></main>';
     document.querySelector('#storage-retry').onclick=()=>location.reload();return new Promise(()=>{});
@@ -357,7 +376,7 @@ export function mountModelSettings(container,client,toast) {
     currentStatus=info;configurationKnown=true;client.modelStatus=info;if(!container.isConnected)return;
     container.querySelector('#cloud-model-badge').textContent=modelStatusLabel(info);
     container.querySelector('#cloud-hermes-state').textContent=modelEngineDescription(info);
-    container.querySelector('#cloud-model-configuration').textContent=managed()?'模型由启动环境配置，修改后重启工作台。页面不显示密钥，也不能保存或清除该配置。':'可通过启动环境变量或下方设置配置模型。下方保存的专用 API Key 仅保存在本机工作台，不会回填到页面；保存配置不会触发模型调用。';
+    container.querySelector('#cloud-model-configuration').textContent=managed()?'模型由启动环境配置，修改后重启工作台。页面不显示密钥，也不能保存或清除该配置。':'可通过启动环境变量或下方设置配置模型。下方保存的专用 API Key 仅保存在工作台服务端，不会回填到页面；保存配置不会触发模型调用。';
     form.elements.apiKey.placeholder=managed()?'密钥由启动环境提供，不会返回页面':'输入新的 API Key；留空保留现有密钥';
     if(managed())form.elements.apiKey.value='';
     const formats=Object.entries(info.extractionCapabilities||{}).filter(([,available])=>available===true).map(([name])=>name.toUpperCase());
@@ -368,7 +387,7 @@ export function mountModelSettings(container,client,toast) {
   client.request('/api/model/status').then(show).catch(error=>{if(container.isConnected)container.querySelector('.cloud-error').textContent=error.message;});
   form.onsubmit=async event=>{
     event.preventDefault();if(!configurationKnown||managed()||saving)return;saving=true;updateControls();
-    try{const result=await client.request('/api/model/config',{method:'PUT',body:{provider:'deepseek',apiKey:form.elements.apiKey.value,model:form.elements.model.value}});form.elements.apiKey.value='';show(result);toast(managed()?'当前模型由启动环境配置，修改后重启工作台。':'模型配置已保存到本机工作台，未触发模型调用。');container.querySelector('.cloud-error').textContent='';}
+    try{const result=await client.request('/api/model/config',{method:'PUT',body:{provider:'deepseek',apiKey:form.elements.apiKey.value,model:form.elements.model.value}});form.elements.apiKey.value='';show(result);toast(managed()?'当前模型由启动环境配置，修改后重启工作台。':'模型配置已保存到工作台服务端，未触发模型调用。');container.querySelector('.cloud-error').textContent='';}
     catch(error){if(error.code==='MODEL_CONFIG_MANAGED')show({...currentStatus,configurationManaged:true,configurationSource:'environment'});if(container.isConnected)container.querySelector('.cloud-error').textContent=error.message;}
     finally{saving=false;updateControls();}
   };

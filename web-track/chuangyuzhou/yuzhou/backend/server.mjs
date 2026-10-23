@@ -134,7 +134,7 @@ export async function createWorkbenchServer(options = {}) {
     const url = new URL(req.url || '/', 'http://localhost');
     if (path === '/api/health' && req.method === 'GET') { json(res, 200, { ok: true, mode: 'cloud', version: VERSION, edition: 'competition-copy' }); return; }
     if (path === '/api/instance' && req.method === 'GET') {
-      json(res, 200, { application: 'czb-yuzhou', instanceId: digest(`${frontendDir}\n${dataDir}`), version: VERSION }); return;
+      json(res, 200, { application: 'czb-yuzhou', instanceId: digest(`${frontendDir}\n${dataDir}`), version: VERSION, accessMode: secureCookie ? 'web' : 'local' }); return;
     }
     if (path === '/version.json') {
       if (!['GET', 'HEAD'].includes(req.method)) throw new ApiError(405, 'method_not_allowed');

@@ -1,16 +1,148 @@
 {
-  "recordId": "WEB-003",
+  "recordId": "WEB-004",
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-10-23-web-dev-003",
-  "sourceCommit": "42af76a06f138567a22e327f4af1e4904eab0fd5",
-  "selectedRelease": "2026-10-23-web-dev-002",
+  "release": "2026-10-23-web-dev-004",
+  "sourceCommit": "1e831f12077ec0207820746c93cf066344412502",
+  "selectedRelease": "2026-10-23-web-dev-003",
   "changes": [
     {
+      "path": ".env.example",
+      "bytes": 685,
+      "sha256": "b2ab2976bdfd5e835abcf9aff1b78b53010936ea69dc7435473675824f76c2ae",
+      "baselineSha256": "40308bb8adc6a4bd11384155457d5062ea40d7fa839a1009dc97da3e21f0ab0e"
+    },
+    {
       "path": "README.md",
-      "bytes": 10551,
-      "sha256": "78185488bb743d0fccbee094b81baccd31785a15b6d13db789a47e632d5fcef5",
-      "baselineSha256": "c8b648290b629f55d5ac0ac55c7f63b532d3158a91ee7bd44316ef7e8ff083a8"
+      "bytes": 11174,
+      "sha256": "4d872a70419dfded36efe6c2bd21d7cafc28c47d97ed2d8a308a77d56940a0cf",
+      "baselineSha256": "78185488bb743d0fccbee094b81baccd31785a15b6d13db789a47e632d5fcef5"
+    },
+    {
+      "path": "tools/start.mjs",
+      "bytes": 4598,
+      "sha256": "1561c9d1ce9a0becc90d5c30bedb4f8dbe0ec25d3848872fa7e4b766a68b4775",
+      "baselineSha256": "c019dc0954bce2f02c47ee17c0fe12458cb0ecbe68ebdd1ee04aea0842328576"
+    },
+    {
+      "path": "web-deployment/Caddyfile.example",
+      "bytes": 329,
+      "sha256": "8c19da9e46b9bb79da9fcf8a1c6056e9fc7c077c2378722a9c7090eb6d22d37e",
+      "baselineSha256": null
+    },
+    {
+      "path": "web-deployment/README.md",
+      "bytes": 5794,
+      "sha256": "900dd3843c21496a4603a07a120c0c35820765ae98b7f32f643e8472d37fd4c5",
+      "baselineSha256": null
+    },
+    {
+      "path": "web-deployment/chuangyuzhou.service.example",
+      "bytes": 537,
+      "sha256": "ed06e5afef58c6182ec49626bfa937dbb99a3ee719e175a1b6ec433d26c47e58",
+      "baselineSha256": null
+    },
+    {
+      "path": "web-deployment/environment.example",
+      "bytes": 325,
+      "sha256": "fea40f74f669365e2c7a4ea0ae45d1b65d128f6b6212097a7cad4606ed3e7cf0",
+      "baselineSha256": null
+    },
+    {
+      "path": "yuzhou/backend/server.mjs",
+      "bytes": 19029,
+      "sha256": "f3a39d47436380273fc57f0413bd9bb3b794e11ccf3fb089db8dedda597d8f51",
+      "baselineSha256": "8f1c5d7c95aa836286241828c3c73041576b8ac37689e24eff4a84772592c25d"
+    },
+    {
+      "path": "yuzhou/backend/tests/launch.test.mjs",
+      "bytes": 2434,
+      "sha256": "81f1f0fcd564d48d23e665199019b21c97569160159dc410420ef5451544880d",
+      "baselineSha256": "2c9c3cf5d1664ecfc4539a647709b24e1bcc32d3d703ba9edfec2bc1330b375b"
+    },
+    {
+      "path": "yuzhou/backend/tests/model-environment-startup.test.mjs",
+      "bytes": 6496,
+      "sha256": "6c8bef9b136e01aeeeac43e5d3be9fc6e3f7c4b7482938fcb7690996bdab51f6",
+      "baselineSha256": "4d0965fc539f8a364d18045edc121a499802b59c7bd1258a3801cc2350e55667"
+    },
+    {
+      "path": "yuzhou/backend/tests/web-access.test.mjs",
+      "bytes": 4798,
+      "sha256": "c1bfcf10f515cc7d25d6e52bb6a8d59aaf5886922cd07e90b16847ddb2b15269",
+      "baselineSha256": null
+    },
+    {
+      "path": "yuzhou/backend/tests/web-deployment.test.mjs",
+      "bytes": 11357,
+      "sha256": "bf76feafc39ea12885b5016a999aa03657d9c687e9b6434204af0310712b1a12",
+      "baselineSha256": null
+    },
+    {
+      "path": "yuzhou/backend/tests/web-entry.test.mjs",
+      "bytes": 8943,
+      "sha256": "95396b2c207a3deb21db728b2d59dd02efd360b783cd53ed44db350fa501aed3",
+      "baselineSha256": "43792ecb846b00d1f6bbc18922736ecc85681203f5442a9b494f1a553592b226"
+    },
+    {
+      "path": "yuzhou/frontend/src/app.js",
+      "bytes": 84028,
+      "sha256": "766d95237112bf13bec6152bd04811eef2a8dab47bd9ecf3e9f61408a04353df",
+      "baselineSha256": "a15cfe00d93860a81a4f761f2d1b7196239801e80d5dfafaf67e739e426fee04"
+    },
+    {
+      "path": "yuzhou/frontend/src/cloud.js",
+      "bytes": 30235,
+      "sha256": "3b534e9deca3e3ed1607e8134382ca69b20bce12b56154eaef12690a19c1a2bb",
+      "baselineSha256": "98d433cbb2027089043736c03191685d205408062d23fc12efdb35969cdbff7c"
+    },
+    {
+      "path": "yuzhou/frontend/src/courses.js",
+      "bytes": 37548,
+      "sha256": "f544076f7c08043d4671668219c05605aebaed98f8765af964050505e5c9bacb",
+      "baselineSha256": "605986e2cbf1ff3a117d475218be560e536420ab2d4f2ea323fce314aee2aabf"
+    },
+    {
+      "path": "yuzhou/frontend/src/model-status.js",
+      "bytes": 1695,
+      "sha256": "6715ee5a03d64d2914f7df3b5ebf68a8d044bbb0ab3a5fcc1db1db9e13b86697",
+      "baselineSha256": "529680793c7ff4c918ac92fa411c4cfab8694362cc19112918c3da6ec6a2c0e2"
+    },
+    {
+      "path": "yuzhou/frontend/src/spaces.js",
+      "bytes": 38111,
+      "sha256": "946cae3fa862b051b8c22889de2917b34e49263bf0526a957da76684a74af6ef",
+      "baselineSha256": "2be3d2dc6d8ba9f7bb7671e5863f8b38491c058000fa5fb1c7870e76f0fd1904"
+    },
+    {
+      "path": "yuzhou/frontend/tests/web-browser-startup.test.mjs",
+      "bytes": 6069,
+      "sha256": "c8fc63a1c3390aa6d4200ce3c217443fb3d7c0e21699238752d7f2fbe4b51ad7",
+      "baselineSha256": null
+    },
+    {
+      "path": "yuzhou/launch.mjs",
+      "bytes": 3095,
+      "sha256": "1de6ec0b1927990973e45a86057a56963824db1d6ed7fa8def0f1162fa47105d",
+      "baselineSha256": "5e1e09d24cffe3db08b54e5265f317bbefaf765be6feca1188b8c5fad41248d6"
+    },
+    {
+      "path": "yuzhou/runtime.mjs",
+      "bytes": 4266,
+      "sha256": "6ab9ee45e7dac8b9f10a1794a351d91eedccd6028763d77110087fa9b97482d0",
+      "baselineSha256": "09e50f54d6336f80ac888bcf4f7396addc63c003b0bf3721e9ca99c6c70cbfff"
+    },
+    {
+      "path": "yuzhou/start.mjs",
+      "bytes": 2684,
+      "sha256": "5fc3561cb3a8c3c265242f9ff932c9d7b05a67f13f51b1de7506acbd1283dfc8",
+      "baselineSha256": "7e5edb84d994a631ccba4b30b6588ebfda2051e140451fd1f53399ab21c50887"
+    },
+    {
+      "path": "yuzhou/web-access.mjs",
+      "bytes": 1436,
+      "sha256": "43a642c6adee6ed13851edd7365f28e3d44a495b6c113f75cf8fa0dbf52b52bc",
+      "baselineSha256": null
     }
   ]
 }
