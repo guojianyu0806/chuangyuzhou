@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-11-10-web-dev-022",
-  "sourceCommit": "a9701c75a5340e778980d62bec7c3aff93f268b4",
+  "release": "2026-11-10-web-dev-024",
+  "sourceCommit": "d8bdc3f12dd1f3f03bf49026b688e2ce1d300e55",
   "defaultPort": 4396,
   "privateRuntimeIncluded": false,
-  "baselineRecord": "../evidence/WEB-022/source-baseline.json",
+  "baselineRecord": "../evidence/WEB-024/source-baseline.json",
   "files": [
     {
       "path": ".env.example",
@@ -30,8 +30,8 @@
     },
     {
       "path": "RELEASE-CHANGES.json",
-      "bytes": 2537,
-      "sha256": "354b9f91ebdd2cd38a283eb2f3702ad77bcd042c9fa1a1f6735a7883f9166dd6"
+      "bytes": 901,
+      "sha256": "7d36b432aeeca0864c94bcc56fd03aee883774852abffec701f2c5a53fed5f15"
     },
     {
       "path": "SOURCE-NOTICE.md",
@@ -160,8 +160,13 @@
     },
     {
       "path": "yuzhou/backend/server.mjs",
-      "bytes": 19047,
-      "sha256": "be6aa1df8503df90de44fece402af16c7c75d005b14186561f5b9c18ee8cba55"
+      "bytes": 19419,
+      "sha256": "4d6ad5d34f6a3357cc5e25a612848f1bff5d8b4cb9b30a5a04e682e22886899d"
+    },
+    {
+      "path": "yuzhou/backend/static-text.mjs",
+      "bytes": 4328,
+      "sha256": "eceef262ff50f97fac541148e4508482eca7208d894e0e19e7dbb87430f9ee67"
     },
     {
       "path": "yuzhou/backend/store.mjs",
@@ -327,6 +332,11 @@
       "path": "yuzhou/backend/tests/web-entry.test.mjs",
       "bytes": 8943,
       "sha256": "95396b2c207a3deb21db728b2d59dd02efd360b783cd53ed44db350fa501aed3"
+    },
+    {
+      "path": "yuzhou/backend/tests/web-static-assets.test.mjs",
+      "bytes": 8054,
+      "sha256": "67a944af8347f60227d8c0b5f5e2da79c3a0edc80637a10a35dd83e154510a49"
     },
     {
       "path": "yuzhou/backend/tests/workbench-platform.test.mjs",
