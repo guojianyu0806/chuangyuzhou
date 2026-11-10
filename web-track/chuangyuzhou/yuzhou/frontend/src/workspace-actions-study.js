@@ -3,7 +3,7 @@
 import {validateCalendar} from './calendar-model.js';
 import {validateTimetable} from './timetable-model.js';
 import {isValidDate} from './ledger-model.js';
-import {WRITING_PROMPTS,TRANSLATION_PROMPTS} from './english-content.js';
+import {ENGLISH_DRAFT_PROMPTS} from './english-draft-prompts.js';
 
 const fail = message => { throw new Error(message); };
 const clone = value => structuredClone(value);
@@ -251,7 +251,7 @@ const termSettingsAdapter=singleton({entity:'timetableSettings',label:'当前学
   write:(state,record)=>{state.timetable=validateTimetable({...timetableOf(state),activeTermId:record.activeTermId});},
 });
 const draftRecord=value=>fields(value,{content:v=>text(v,100000),updatedAt:v=>v===''?'':stamp(v)},['content','updatedAt']);
-const draftPrompts={writing:WRITING_PROMPTS,translation:TRANSLATION_PROMPTS};
+const draftPrompts={writing:Object.values(ENGLISH_DRAFT_PROMPTS.writing),translation:Object.values(ENGLISH_DRAFT_PROMPTS.translation)};
 const draftTargets=[...DRAFTS.map(type=>({id:type,type,legacy:true,title:type==='listening'?'听力笔记':`${type==='writing'?'写作':'翻译'} · ${draftPrompts[type].find(prompt=>prompt.legacy)?.title||'原有草稿'}`})),
   ...Object.entries(draftPrompts).flatMap(([type,prompts])=>prompts.filter(prompt=>!prompt.legacy).map(prompt=>({id:`${type}:${prompt.id}`,type,promptId:prompt.id,legacy:false,title:`${type==='writing'?'写作':'翻译'} · ${prompt.title}`})))];
 const draftTarget=draftId=>{const target=draftTargets.find(target=>target.id===draftId);if(!target)fail('请选择已知题目的英语草稿编号。');return target;};

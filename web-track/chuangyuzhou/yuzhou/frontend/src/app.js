@@ -1,8 +1,6 @@
 import {icon} from './icons.js';
 import {escapeHTML as esc,putFile,getFile,download,VERSION} from './services.js';
-import {mountCourses} from './courses.js';
-import {seedEnglish,mountEnglish} from './english.js';
-import {validateBackup,mergeBackup} from './backup.js';
+import {seedEnglish} from './english-state.js';
 import {mountCanvas,ensureCanvas} from './canvas.js';
 import {mountWorkspaceTopics} from './workspace-topics.js';
 import {visibleWorkspaceTopicCards} from './workspace-topics-model.js';
@@ -34,6 +32,32 @@ import {renderSidebarNavigation} from './navigation-shell.js';
 import {getCustomBlocks} from './custom-blocks-model.js';
 import {customBlockEditor,mountCustomBlockPage} from './custom-blocks.js';
 
+function lazyPage(name, importMount) {
+  let mount;
+  let loading;
+  return {
+    get mount() { return mount; },
+    load() {
+      // Keep the original stylesheet order relative to common and responsive rules.
+      loading ??= Promise.all([importMount(), new Promise((resolve, reject) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = new URL('./' + name + '.css', import.meta.url).href;
+        link.onload = resolve;
+        link.onerror = () => {
+          link.remove();
+          reject(new Error('页面样式加载失败'));
+        };
+        document.head.querySelector('[data-route-style="' + name + '"]').before(link);
+      })]).then(([loadedMount]) => mount = loadedMount);
+      return loading;
+    }
+  };
+}
+const deferredPages = {
+  courses: lazyPage('courses', () => import('./courses.js').then(module => module.mountCourses)),
+  english: lazyPage('english', () => import('./english.js').then(module => module.mountEnglish))
+};
 const cloudClient=await bootstrapCloud();
 const workspaceStorage=cloudClient?.storage||globalThis.localStorage;
 const returnNavigation=createReturnNavigation({storage:globalThis.sessionStorage,key:`czb-yuzhou-return-navigation-${cloudClient?.account||'local'}`});
@@ -459,23 +483,23 @@ function renderSettings(){
 async function exportBackup(dataState=state){
   try{
     toast('正在打包当前空间与附件…');
-    const fileIds=new Set();function scan(value){if(value&&typeof value==='object'){for(const [k,v] of Object.entries(value)){if(typeof v==='string'&&/blobId|fileId|audioId/i.test(k))fileIds.add(v);else if(typeof v==='object')scan(v);}}}scan(dataState);
-    const files=[];for(const id of fileIds){const blob=await getFile(id);if(!blob)throw new Error('有附件在本机存储中缺失，请重新添加原件后再导出完整备份。');const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob);});files.push({id,type:blob.type,data});}
-    const backupBlob=new Blob([JSON.stringify({format:'lumi-backup',version:1,exportedAt:new Date().toISOString(),state:dataState,files},null,2)],{type:'application/json'});
-    if(backupBlob.size>512*1024*1024)throw new Error('完整备份超过本地界面版 512 MB 上限，请先逐份下载附件，并在服务器接入后使用云端备份。');
-    download(backupBlob,`创宇宙-工作台-备份-${today()}.json`);toast('备份已导出，附件已一并打包。');
-  }catch(error){toast(`导出失败：${error.message}`);}
+    const {createWorkspaceBackup}=await import('./backup-io.js');
+    const backupBlob=await createWorkspaceBackup(dataState);
+    download(backupBlob,'创宇宙-工作台-备份-'+today()+'.json');
+    toast('备份已导出，附件已一并打包。');
+  }catch(error){toast('导出失败：'+error.message);}
 }
 function importBackup(){
-  modal({title:'导入创宇宙备份',body:'<p class="muted">导入到当前空间，补充缺少的课程、笔记、记录与未设置的计划。已有文字会保留，内容不同的英语草稿会另存到收集箱。单份备份上限 512 MB。</p><label class="field">备份文件<input type="file" name="file" accept=".json,application/json" required></label>',submitLabel:'导入数据',onSubmit:async data=>{
-    const file=data.get('file');if(!file?.size||file.size>512*1024*1024)throw new Error('请选择小于 512 MB 的创宇宙 JSON 备份。');
-    let backup;try{backup=JSON.parse(await file.text());}catch{throw new Error('文件不是有效的 JSON 备份。');}
-    backup=validateBackup(backup);
-    const refs=new Set();function collect(value){if(value&&typeof value==='object')for(const [k,v] of Object.entries(value)){if(typeof v==='string'&&/blobId|fileId|audioId/i.test(k))refs.add(v);else if(typeof v==='object')collect(v);}}collect(backup.state);
-    const available=new Set(backup.files.map(f=>f.id));for(const id of refs)if(!available.has(id)&&!await getFile(id))throw new Error('备份缺少附件原件，无法完整恢复，请选择完整备份。');
-    for(const file of backup.files){if(!await getFile(file.id)){const raw=atob(file.data.slice(file.data.indexOf(',')+1));await putFile(new Blob([Uint8Array.from(raw,c=>c.charCodeAt(0))],{type:file.type}),file.id);}}
-    const merged=mergeBackup(state,backup);Object.assign(state,merged.state);
-    save();render();toast(`已补充 ${merged.count} 条记录，已有内容保持原样。`);
+  modal({title:'导入创宇宙备份',body:'<p class="muted">导入到当前空间，补充缺少的课程、笔记、记录与未设置的计划。已有文字会保留，内容不同的英语草稿会另存到收集箱。单份备份上限 512 MB。</p><label class="field">备份文件<input type="file" name="file" accept=".json,application/json" required></label>',submitLabel:'导入数据',onSubmit:async (data,form)=>{
+    const target=state;
+    const current=()=>state===target&&dialog.open&&dialog.querySelector('form')===form;
+    const {prepareWorkspaceImport}=await import('./backup-io.js');
+    if(!current())return false;
+    const merged=await prepareWorkspaceImport(target,data.get('file'),current);
+    if(!merged||!current())return false;
+    Object.assign(target,merged.state);
+    save(target);
+    render();toast('已补充 '+merged.count+' 条记录，已有内容保持原样。');
   }});
 }
 
@@ -503,6 +527,39 @@ function renderReturnNavigation(){
     else{history.replaceState({...history.state,czbWorkspaceEntry:{hash:next,id:crypto.randomUUID()}},'',next);render();resetRouteScroll();}
   };ctx.root.before(navigation);
 }
+function animatePage(root){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  root.animate([{opacity:0,transform:'translateY(15px) scale(.985)'},{opacity:1,transform:'none'}],
+    {duration:350,easing:'cubic-bezier(.22,1,.36,1)'});
+}
+
+function mountDeferredPage(view, detail, page, label){
+  const root=view.root;
+  const hash=location.hash;
+  const mountPage=mount=>{
+    const unmount=mount(view,detail);
+    if(root===ctx.root&&location.hash===hash&&view.isCurrent())animatePage(root);
+    return unmount;
+  };
+  if(page.mount)return mountPage(page.mount);
+
+  root.innerHTML='<div role="status">'+empty('正在加载'+label,'首次进入时需要下载页面资源。')+'</div>';
+  let active=true,unmount;
+  const isCurrent=()=>active&&root===ctx.root&&location.hash===hash&&view.isCurrent();
+  page.load().then(mount=>{
+    if(!isCurrent())return;
+    const dispose=mountPage(mount);
+    if(active)unmount=dispose;
+    else dispose?.();
+  }).catch(()=>{
+    if(!isCurrent())return;
+    root.innerHTML=empty(label+'暂时未能加载','请检查连接，然后重新加载当前页面。',
+      '<button class="btn primary" type="button" data-reload-page>重新加载</button>');
+    root.querySelector('[data-reload-page]').onclick=()=>location.reload();
+  });
+  return ()=>{active=false;unmount?.();};
+}
+
 function render(){
   if(!ctx.root)return;
   sidebarResize?.sync();
@@ -549,14 +606,14 @@ function render(){
   if(route==='ai')cleanupView=mountAI(view,state.spaces.some(s=>s.id===subroute)?`space:${subroute}`:subroute);
   if(route==='space')cleanupView=mountSpace(view,subroute);
   if(route==='block')cleanupView=mountCustomBlockPage(view,subroute);
-  if(route==='courses')cleanupView=mountCourses(view,subroute);
-  if(route==='english')cleanupView=mountEnglish(view,subroute);
+  const deferredPage=deferredPages[route];
+  if(deferredPage)cleanupView=mountDeferredPage(view,subroute,deferredPage,label);
   if(route==='ledger')cleanupView=mountLedger(view,subroute);
   if(route==='calendar')cleanupView=mountCalendar(view);
   if(route==='timetable')cleanupView=mountTimetable(view);
   if(route==='competitions')cleanupView=mountCompetitions(view,subroute);
   if(route==='tasks')renderTasks();if(route==='inbox')renderInbox();if(route==='review')renderReview();if(route==='settings')renderSettings();
-  if(!['welcome','home','builder'].includes(route)&&!matchMedia('(prefers-reduced-motion: reduce)').matches)ctx.root.animate([{opacity:0,transform:'translateY(15px) scale(.985)'},{opacity:1,transform:'none'}],{duration:350,easing:'cubic-bezier(.22,1,.36,1)'});
+  if(!deferredPage&&!['welcome','home','builder'].includes(route))animatePage(ctx.root);
   cloudEditing=false;cloudDirtyFields.clear();
   if(cloudClient)updateCloudShell();
 }

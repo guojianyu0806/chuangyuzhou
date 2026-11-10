@@ -1,6 +1,9 @@
 import {openAIConversation} from './ai.js';
-import {VOCABULARY,READINGS,WRITING_PROMPTS,TRANSLATION_PROMPTS} from './english-content.js';
+import {READINGS,WRITING_PROMPTS,TRANSLATION_PROMPTS} from './english-content.js';
+import {VOCABULARY,localDate,seedEnglish} from './english-state.js';
 import {getReadingResult,getExerciseDraft,saveReadingAnswer,submitReadingPractice,resetReadingPractice,saveExerciseDraft,saveEnglishPractice} from './english-practice-model.js';
+
+export {seedEnglish} from './english-state.js';
 const TYPES = { vocabulary: '词汇', reading: '阅读', listening: '听力', writing: '写作', translation: '翻译' };
 export function missingBuiltinWords(en){
   const ids=new Set((en.words||[]).map(word=>word.id)),words=new Set((en.words||[]).map(word=>String(word.word).toLowerCase()));
@@ -11,26 +14,6 @@ export function addBuiltinWords(ctx){
   if((ctx.state.english.words||[]).length+additions.length>100000)throw new Error('词汇数量已达上限，请先整理再添加。');
   saveEnglishPractice(ctx,en=>{en.words=[...(en.words||[]),...additions];});return additions.length;
 }
-function localDate(date = new Date()) {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-export function seedEnglish(demo = false) {
-  const recent = (days) => { const d = new Date(); d.setDate(d.getDate() - days); return localDate(d); };
-  return {
-    plan: { examDate: '', target: demo ? 550 : '', dailyMinutes: demo ? 30 : '', focus: 'reading' },
-    words: VOCABULARY.map((v, i) => ({ id: `builtin-word-${i}`, word: v[0], phonetic: v[1], meaning: v[2], example: v[3], translation: v[4], source: 'builtin', status: demo && i < 2 ? 'mastered' : demo && i === 2 ? 'review' : 'new' })),
-    sessions: demo ? [
-      { id: 'demo-en-1', date: recent(4), minutes: 20, type: 'reading', note: '演示记录：阅读理解' },
-      { id: 'demo-en-2', date: recent(2), minutes: 15, type: 'vocabulary', note: '演示记录：词汇复习' },
-      { id: 'demo-en-3', date: recent(1), minutes: 25, type: 'listening', note: '演示记录：听力精听' }
-    ] : [],
-    readingAnswers: {}, readingResult: null, attempts: [], mistakes: [],
-    drafts: { writing: '', translation: '', listening: '' }, audio: null, draftUpdatedAt: {}
-  };
-}
-
 export function mountEnglish(ctx, initialSection = '') {
   const { root, state, save, esc, icon, toast, modal, go, uid } = ctx;
   if (!state.english) state.english = seedEnglish(state.mode === 'demo');

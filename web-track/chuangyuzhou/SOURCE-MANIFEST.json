@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-11-10-web-dev-024",
-  "sourceCommit": "d8bdc3f12dd1f3f03bf49026b688e2ce1d300e55",
+  "release": "2026-11-10-web-dev-025",
+  "sourceCommit": "413ec17256fcd5f0ff0812adc67cb313ed56ff8a",
   "defaultPort": 4396,
   "privateRuntimeIncluded": false,
-  "baselineRecord": "../evidence/WEB-024/source-baseline.json",
+  "baselineRecord": "../evidence/WEB-025/source-baseline.json",
   "files": [
     {
       "path": ".env.example",
@@ -30,8 +30,8 @@
     },
     {
       "path": "RELEASE-CHANGES.json",
-      "bytes": 901,
-      "sha256": "7d36b432aeeca0864c94bcc56fd03aee883774852abffec701f2c5a53fed5f15"
+      "bytes": 2677,
+      "sha256": "b6303b05d7ce5e4de3033987114ac66f9227b63f70b391bc4b961697d9acbd12"
     },
     {
       "path": "SOURCE-NOTICE.md",
@@ -420,8 +420,8 @@
     },
     {
       "path": "yuzhou/frontend/index.html",
-      "bytes": 2534,
-      "sha256": "92cdfa4f66ce274fa89cec5243f976653d58b9a39cc502dfcfc6f3f98191d634"
+      "bytes": 2504,
+      "sha256": "65853a7e0bcb535cf620b7bdb44e23f2a4de0000e9c87b1d41d7331d3ec8965f"
     },
     {
       "path": "yuzhou/frontend/launch.mjs",
@@ -490,13 +490,18 @@
     },
     {
       "path": "yuzhou/frontend/src/app.js",
-      "bytes": 85816,
-      "sha256": "06aa39dc537f5eeaca7956d29fb9df163beaa6aa0b7c76faff31a9e2e1666e07"
+      "bytes": 86355,
+      "sha256": "085324b7391b194bdd35648ca8ff7f1dfb6be79e692b106d8a5f2409361d66d8"
     },
     {
       "path": "yuzhou/frontend/src/archive-removal.js",
       "bytes": 5167,
       "sha256": "97fc2dc9ef80420456c298d331b4328d11604f18d8710a6d8767249d00b4680a"
+    },
+    {
+      "path": "yuzhou/frontend/src/backup-io.js",
+      "bytes": 2502,
+      "sha256": "d679f07032f90b566559846afc11d43ef6be8b58b76eb3aa8ff93d63896c27c0"
     },
     {
       "path": "yuzhou/frontend/src/backup.js",
@@ -515,8 +520,8 @@
     },
     {
       "path": "yuzhou/frontend/src/builder.js",
-      "bytes": 17429,
-      "sha256": "8ed90912c51a36fd191c9bdd9e3b1cff3c3d1e6a15498e2c603a3dc2a5641752"
+      "bytes": 18111,
+      "sha256": "b536a8995c91346aabb32b9230059c742220050b7fe4ea80ae28eda05b6bfddf"
     },
     {
       "path": "yuzhou/frontend/src/calendar-links.js",
@@ -675,13 +680,23 @@
     },
     {
       "path": "yuzhou/frontend/src/english-content.js",
-      "bytes": 31296,
-      "sha256": "a80c302aaf4fe353eb7c7bf23d3dc443d6ea31b3e5c19e0eaef905df136264b2"
+      "bytes": 27340,
+      "sha256": "4ea92b9f25fafbaae3e7ca33190576ec9104c01d5d302bf0f0300895853cea4c"
+    },
+    {
+      "path": "yuzhou/frontend/src/english-draft-prompts.js",
+      "bytes": 1163,
+      "sha256": "646d2513656f804d3c297dc5529e0c085eaaa28c30b317f645df2752e1d7cbdb"
     },
     {
       "path": "yuzhou/frontend/src/english-practice-model.js",
       "bytes": 7865,
       "sha256": "3a462be929282de4e39c5f583a1e60e68a7766b46a407e8d6e5ec0bbfc4b4d09"
+    },
+    {
+      "path": "yuzhou/frontend/src/english-state.js",
+      "bytes": 5238,
+      "sha256": "dcfc8e642e6d1d4a768b6577173b7e5472e9bd0bd4aeb2765b119d6d39659513"
     },
     {
       "path": "yuzhou/frontend/src/english.css",
@@ -690,8 +705,8 @@
     },
     {
       "path": "yuzhou/frontend/src/english.js",
-      "bytes": 38694,
-      "sha256": "37649a7aad5f9cfaf131fad5efe5b94e6d969bfe5112d276b8ec45ef8f59e6e5"
+      "bytes": 37569,
+      "sha256": "c21aaf36f3baa19963af718f46dc9192dc9fad676fc2b9ec698391ed8094c6f1"
     },
     {
       "path": "yuzhou/frontend/src/file-text.js",
@@ -990,8 +1005,8 @@
     },
     {
       "path": "yuzhou/frontend/src/workspace-actions-study.js",
-      "bytes": 34440,
-      "sha256": "ba2ae0b861a76f1888f1309e7f7c4468f7ce797d8fbe9d841997a2393b24de24"
+      "bytes": 34490,
+      "sha256": "20647d9bf106b891de690a0fe062d1afa846c0c41837efab273345705b631784"
     },
     {
       "path": "yuzhou/frontend/src/workspace-actions.js",
@@ -1070,8 +1085,8 @@
     },
     {
       "path": "yuzhou/frontend/tests/builder.test.mjs",
-      "bytes": 10059,
-      "sha256": "330ce5ad8d459bcfb2025c3281b6c4c16c69d82f965eb4847c75b94b4dd577f8"
+      "bytes": 10628,
+      "sha256": "d68144976d657fe03d3b455dbc3e3ca968b4eee51d807c0e82d6dd1125a54122"
     },
     {
       "path": "yuzhou/frontend/tests/calendar-links.test.mjs",
