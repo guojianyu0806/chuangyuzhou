@@ -4,6 +4,8 @@ import {mountCourses} from './courses.js';
 import {seedEnglish,mountEnglish} from './english.js';
 import {validateBackup,mergeBackup} from './backup.js';
 import {mountCanvas,ensureCanvas} from './canvas.js';
+import {mountWorkspaceTopics} from './workspace-topics.js';
+import {visibleWorkspaceTopicCards} from './workspace-topics-model.js';
 import {mountSpace,openSpaceDialog,saveSpaceFiles} from './spaces.js';
 import {mountAI,mountAIComposer,openAIConversation} from './ai.js';
 import {mountLedger} from './ledger.js';
@@ -36,6 +38,9 @@ const cloudClient=await bootstrapCloud();
 const workspaceStorage=cloudClient?.storage||globalThis.localStorage;
 const returnNavigation=createReturnNavigation({storage:globalThis.sessionStorage,key:`czb-yuzhou-return-navigation-${cloudClient?.account||'local'}`});
 const builderSessions=new Map();
+const topicsSession={};
+const topicsHash=workspaceRoute('home','topics');
+const topicsDraftKey=cloudClient?.draftKey('workspace-topics');
 let lastNavigationEntry=null;
 
 const uid=()=>crypto.randomUUID();
@@ -251,6 +256,39 @@ function updateShellCounts(){
     const el=document.querySelector(`[data-count="${id}"]`);if(el)el.textContent=count||'';
   }
 }
+function mountTopics(view){
+  return mountWorkspaceTopics({
+    root:view.root, state:()=>state, cards:()=>visibleWorkspaceTopicCards(state), session:topicsSession,
+    openCard:id=>{
+      if(!visibleWorkspaceTopicCards(state).some(card=>card.id===id)){toast('这张卡片已不在工作台上。');return;}
+      return makeContext().enterCard(id);
+    },
+    showCanvas:()=>go('home'),
+    loadDraft:()=>{
+      if(!topicsDraftKey)return null;
+      try{return JSON.parse(workspaceStorage.getItem(topicsDraftKey)||'null');}catch{return null;}
+    },
+    saveDraft:async draft=>{
+      if(!topicsDraftKey)return;
+      if(draft===null)workspaceStorage.removeItem(topicsDraftKey);
+      else workspaceStorage.setItem(topicsDraftKey,JSON.stringify(draft));
+      await cloudClient.waitForStorage();
+    },
+    request:cloudClient?cloudClient.request.bind(cloudClient):null,
+    sync:cloudClient?()=>cloudClient.flush():null,
+    mutate:cloudClient?operation=>{
+      const source=state,editTick=cloudEditTick;
+      return cloudClient.runWorkspaceMutation(operation,{
+        canApply:()=>state===source&&cloudEditTick===editTick&&!dialog.open&&!hasUnsavedCloudFields(),
+        apply:adoptCloudState
+      });
+    }:null,
+    scrollTarget:window
+  });
+}
+function resetRouteScroll(){
+  if(location.hash!==topicsHash)window.scrollTo({top:0,behavior:'instant'});
+}
 function go(page,id='',detail='',item=''){const hash=workspaceRoute(page,id,detail,item);if(location.hash===hash)render();else location.hash=hash;}
 function pageHead(title,description,action=''){return `<div class="page-head"><div><h1>${title}</h1><p>${description}</p></div>${action}</div>`;}
 function empty(title,description,action=''){return `<div class="empty-state"><span class="empty-symbol">${icon('layers',30)}</span><h3>${title}</h3><p>${description}</p>${action}</div>`;}
@@ -462,7 +500,7 @@ function renderReturnNavigation(){
     const entry=history.state?.czbWorkspaceEntry,targetEntry=returnNavigation.targetEntry(state,location.hash),next=returnNavigation.back(state,location.hash);
     if(next===location.hash){render();return;}
     if(entry?.fromId&&entry.fromId===targetEntry?.entryId&&entry.fromHash===next)history.back();
-    else{history.replaceState({...history.state,czbWorkspaceEntry:{hash:next,id:crypto.randomUUID()}},'',next);render();window.scrollTo({top:0,behavior:'instant'});}
+    else{history.replaceState({...history.state,czbWorkspaceEntry:{hash:next,id:crypto.randomUUID()}},'',next);render();resetRouteScroll();}
   };ctx.root.before(navigation);
 }
 function render(){
@@ -483,9 +521,9 @@ function render(){
   }
   returnNavigation.visit(location.hash,navigationEntry.id);
   lastNavigationEntry=navigationEntry;
-  const label=route==='space'?(state.spaces.find(s=>s.id===subroute)?.title||'工作区'):route==='block'?(getCustomBlocks(state).items.find(block=>block.id===subroute)?.title||'自定义方块'):navigationLabel(route);
+  const label=route==='home'&&subroute==='topics'?'按主题查看':route==='space'?(state.spaces.find(s=>s.id===subroute)?.title||'工作区'):route==='block'?(getCustomBlocks(state).items.find(block=>block.id===subroute)?.title||'自定义方块'):navigationLabel(route);
   document.title=label+' · 创宇宙';document.querySelector('#current-page').textContent=label;
-  document.body.classList.toggle('on-canvas',route==='home');document.body.classList.toggle('on-ai',route==='ai');document.body.classList.toggle('on-welcome',route==='welcome');
+  document.body.classList.toggle('on-canvas',route==='home'&&subroute!=='topics');document.body.classList.toggle('on-ai',route==='ai');document.body.classList.toggle('on-welcome',route==='welcome');
   document.querySelectorAll('[data-nav]').forEach(a=>{a.classList.toggle('active',a.dataset.nav===route);if(a.dataset.nav===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   ctx.state=state;const view=makeContext();ctx.save=view.save;
   renderReturnNavigation();
@@ -502,7 +540,12 @@ function render(){
   }
   if(route==='welcome')cleanupView=mountWelcome(view);
   if(route==='builder')cleanupView=subroute?mountSpaceBuilder(view,subroute):mountBuilder(view);
-  if(route==='home'){ensureCanvas(state);cleanupView=mountCanvas({...view,fitOnMount:subroute==='layout'});if(subroute==='layout')history.replaceState(null,'','#/home');}
+  if(route==='home'&&subroute==='topics')cleanupView=mountTopics(view);
+  else if(route==='home'){
+    ensureCanvas(state);
+    cleanupView=mountCanvas({...view,fitOnMount:subroute==='layout',showTopics:()=>go('home','topics')});
+    if(subroute==='layout')history.replaceState(null,'','#/home');
+  }
   if(route==='ai')cleanupView=mountAI(view,state.spaces.some(s=>s.id===subroute)?`space:${subroute}`:subroute);
   if(route==='space')cleanupView=mountSpace(view,subroute);
   if(route==='block')cleanupView=mountCustomBlockPage(view,subroute);
@@ -568,7 +611,7 @@ document.addEventListener('click',e=>{
   if(action==='assistant-note'){closeAssistant();captureDialog();}
 });
 document.addEventListener('keydown',e=>{if(e.defaultPrevented)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(document.querySelector('dialog[open]'))return;closeAssistant();searchDialog();}if(e.key==='Escape'){if(dialog.open||document.querySelector('[data-dream-detail-open],.surface-is-fullscreen'))return;closeAssistant();setMobileNav(false);}const drawer=document.querySelector('#ai-drawer');if(e.key==='Tab'&&!drawer.hidden){const items=[...drawer.querySelectorAll('button,a,input,textarea,select')].filter(el=>!el.disabled);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}});
-window.addEventListener('hashchange',()=>{filter='all';closeAssistant();setMobileNav(false);render();window.scrollTo({top:0,behavior:'instant'});});
+window.addEventListener('hashchange',()=>{filter='all';closeAssistant();setMobileNav(false);render();resetRouteScroll();});
 window.addEventListener('storage',event=>{if(event.key===key(mode)){const banner=document.querySelector('.mode-banner');if(banner)banner.innerHTML=`${icon('refresh',15)}<span>另一个窗口已更新此空间。</span><button data-action="reload-latest">加载最新内容 ${icon('arrow-right',14)}</button>`;}});
 window.addEventListener('unhandledrejection',event=>{if(event.reason?.name==='StorageConflictError')event.preventDefault();});
 window.addEventListener('error',e=>{if(e.error?.name==='StorageConflictError')e.preventDefault();else console.error(e.error);});

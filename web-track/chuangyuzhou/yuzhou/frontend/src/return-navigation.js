@@ -15,6 +15,7 @@ export function routeAvailable(state,hash){
 }
 export function routeLabel(state,hash){
   const route=parseWorkspaceRoute(hash);if(!route)return '工作台';
+  if(route.page==='home'&&route.id==='topics')return '按主题查看';
   if(route.page==='builder')return route.id?`${state.spaces?.find(space=>space.id===route.id)?.title||'空间'}搭建台`:'搭建台';
   if(route.page==='space')return `${state.spaces?.find(space=>space.id===route.id)?.title||'空间'}${route.detail?` · ${{notes:'笔记',files:'资料',tasks:'待办',fitness:'运动',overview:'内容总览'}[route.detail]||'工作台'}`:''}`;
   if(route.page==='block')return state.customBlocks?.items?.find(block=>block.id===route.id)?.title||'方块';

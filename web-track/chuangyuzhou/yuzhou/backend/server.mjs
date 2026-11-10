@@ -205,7 +205,7 @@ export async function createWorkbenchServer(options = {}) {
       const fileMatch = path.match(/^\/api\/files\/([^/]+)$/);
       if (fileMatch && req.method === 'PUT') { await uploadFile(req, res, fileMatch[1], session); return; }
       if (fileMatch && ['GET', 'HEAD'].includes(req.method)) { sendFile(req, res, fileMatch[1]); return; }
-      if (/^\/api\/(?:model|ai)(?:\/|$)/.test(path)) {
+      if (/^\/api\/(?:model|ai|workspace\/topics)(?:\/|$)/.test(path)) {
         if (modelService && await modelService.handle(req, res, { url, session, readJson, json })) return;
         if (path === '/api/model/status' && req.method === 'GET') { json(res, 200, { configured: false, provider: 'deepseek', hermesAvailable: false }); return; }
       }

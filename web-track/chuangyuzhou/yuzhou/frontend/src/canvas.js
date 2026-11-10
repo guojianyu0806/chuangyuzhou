@@ -139,7 +139,16 @@ export function mountCanvas(ctx, collection) {
   fullscreenButton.type='button';fullscreenButton.className='cv-fullscreen-toggle';fullscreenButton.dataset.cv='fullscreen';
   fullscreenButton.setAttribute('aria-label','全屏画布');fullscreenButton.setAttribute('aria-pressed','false');fullscreenButton.title='全屏画布';
   fullscreenButton.innerHTML=`${fitIcon}<span>全屏</span>`;
-  section.querySelector('.cv-head-actions').append(section.querySelector('.cv-zoom-controls'));
+  const headerActions=section.querySelector('.cv-head-actions');
+  if(!collection&&ctx.showTopics){
+    const topicsButton=document.createElement('button');
+    topicsButton.type='button';
+    topicsButton.className='cv-button cv-topics-toggle';
+    topicsButton.innerHTML=icon('layers',17)+'<span>按主题查看</span>';
+    topicsButton.addEventListener('click',ctx.showTopics);
+    headerActions.prepend(topicsButton);
+  }
+  headerActions.append(section.querySelector('.cv-zoom-controls'));
   section.querySelector('.cv-compact-header').append(fullscreenButton);
   const stackScroll=viewport.querySelector('.cv-stack-scroll'),stackRail=viewport.querySelector('.cv-stack-rail'),stackPointer=viewport.querySelector('.cv-stack-pointer'),stackLine=viewport.querySelector('.cv-stack-focusline'),stackControls=viewport.querySelector('.cv-stack-controls');
   section.querySelector('.cv-statusbar').append(stackControls);

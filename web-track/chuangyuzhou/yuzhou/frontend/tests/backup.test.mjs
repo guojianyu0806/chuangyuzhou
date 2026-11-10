@@ -484,3 +484,36 @@ test('unsafe new field types, invalid geometry, invalid states and receipt conta
   ];
   for (const change of changes) {const data = backup();change(data);assert.throws(()=>validateBackup(data));}
 });
+
+test('confirmed topics round trip while imports preserve newer assignments and undone ones', () => {
+  const batch=(id,status,entries)=>({
+    batchId:id,status,requestHash:'a'.repeat(64),confirmedAt:stamp,
+    changes:entries.map(([id,topic])=>({id,topic,previous:null})),
+    ...(status==='undone'?{undoneAt:stamp,skipped:[]}:{})
+  });
+  const oldId='00000000-0000-4000-8000-000000000001';
+  const undoId='00000000-0000-4000-8000-000000000002';
+  const newId='00000000-0000-4000-8000-000000000003';
+  const source=state();
+  const old=[['tasks','旧分组'],['ledger','从备份恢复'],['calendar','不应复活']];
+  source.workspaceTopics={
+    assignments:old.map(([id,topic])=>({id,topic,batchId:oldId})),
+    receipts:[batch(oldId,'confirmed',old)]
+  };
+  const roundTrip=validateBackup(JSON.parse(JSON.stringify(backup(source))));
+  assert.deepEqual(mergeBackup(state(),roundTrip).state.workspaceTopics,source.workspaceTopics);
+  const current=state();
+  current.workspaceTopics={
+    assignments:[{id:'tasks',topic:'当前分组',batchId:newId},{id:'calendar',topic:null,batchId:undoId}],
+    receipts:[batch(undoId,'undone',[['calendar','已撤销']]),batch(newId,'confirmed',[['tasks','当前分组']])]
+  };
+  const before=structuredClone(current);
+  const merged=mergeBackup(current,roundTrip).state;
+  assert.deepEqual(merged.workspaceTopics.assignments,[...before.workspaceTopics.assignments,{id:'ledger',topic:'从备份恢复',batchId:oldId}]);
+  assert.deepEqual(current,before);
+  assert.deepEqual(mergeBackup(merged,roundTrip).state.workspaceTopics,merged.workspaceTopics);
+  assert.deepEqual(mergeBackup(merged,state()).state.workspaceTopics,merged.workspaceTopics);
+  const invalid=structuredClone(source);
+  invalid.workspaceTopics.assignments.push(invalid.workspaceTopics.assignments[0]);
+  assert.throws(()=>validateBackup(backup(invalid)),/主题归类/);
+});

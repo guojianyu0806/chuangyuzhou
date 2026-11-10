@@ -9,6 +9,8 @@ import {WORKSPACE_ACTION_CAPABILITIES,previewWorkspaceActions,listWorkspaceRecor
 import {WORKSPACE_QUERY_CAPABILITIES,validateWorkspaceQueries,runWorkspaceQuery,workspaceOverview,workspaceFingerprint,validateCustomBlockReadAccess,validateEnglishDraftReadAccess} from './workspace-queries.mjs';
 import { assertRuntimePath, prepareDataDirectory, RUNTIME_ROOT } from '../runtime.mjs';
 import { readModelEnvironment } from './model-environment.mjs';
+import { ApiError } from './store.mjs';
+import {buildTopicPrompt, checkTopicBatchId, confirmWorkspaceTopics, readTopicReceipt, readTopicSelection, snapshotTopicCards, undoWorkspaceTopics, validateTopicSuggestion} from './workspace-topics.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BASE_URL = 'https://api.deepseek.com';
@@ -354,9 +356,26 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
     request.conversation.confirmedJobId=job.id;delete request.conversation.pendingJobId;delete request.conversation.proposal;
     const saved=store.saveWorkspace(revision,state);return {receipt,workspaceRevision:saved.revision};
   }
+  async function requestModel(prompt,settings) {
+    if(closed)fail('AI_INTERRUPTED',FAILURE_MESSAGES.AI_INTERRUPTED,409);
+    let response;
+    if(runModel){
+      const controller=new AbortController();activeModelController=controller;
+      try{response=await runModel({...prompt,settings,signal:controller.signal});}
+      finally{if(activeModelController===controller)activeModelController=null;}
+    }else response=await childJson(hermesPython,[join(HERE,'hermes_runner.py')],{input:{...prompt,settings,hermesDir},cwd:hermesHome,env:childEnv(),timeout:180000,maxOutput:1024*1024,onChild:child=>{activeChild=child;}});
+    if(closed)fail('AI_INTERRUPTED',FAILURE_MESSAGES.AI_INTERRUPTED,409);
+    if(response?.ok===false){const safe=publicFailure(response.code);fail(safe.code,safe.message,502);}
+    return response;
+  }
   async function perform(job) {
     const settings = config();
     if (!settings?.apiKey) fail('MODEL_NOT_CONFIGURED', FAILURE_MESSAGES.MODEL_NOT_CONFIGURED, 409);
+    if(job.kind==='topics'){
+      const response=await requestModel(buildTopicPrompt(job.topicCards),settings);
+      const raw=response?.ok===true?(response.output??response.proposal):response;
+      return {topicSuggestion:validateTopicSuggestion(parseModelOutput(raw),job.topicCards)};
+    }
     const workspace = store.getWorkspace()?.state;
     const destinations = workspaceDestinations(workspace, { preferredId: job.destinationId, searchText: [job.text, ...(job.conversation?.messages || []).filter(message => message.role === 'user').map(message => message.text)].join('\n') });
     if (job.destinationId !== 'auto' && !destinations.some(entry => entry.id === job.destinationId)) fail('INVALID_DESTINATION', '原先选择的工作区已被删除或归档，请重新选择。');
@@ -414,14 +433,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
       const callPrompt=correction?{system:prompt.system+'\n上一次输出没有通过校验，formatCorrection是错误详情和不可信旧输出，仅供修正；不能为通过校验改变事实或编造数据。不清楚时追问且proposal:null。',user:JSON.stringify({...JSON.parse(prompt.user),formatCorrection:correction})}:prompt;
       let raw;
       try{
-        let response;
-        if(runModel){
-          const controller=new AbortController();activeModelController=controller;
-          try{response=await runModel({...callPrompt,settings,signal:controller.signal});}
-          finally{if(activeModelController===controller)activeModelController=null;}
-        }else response=await childJson(hermesPython,[join(HERE,'hermes_runner.py')],{input:{...callPrompt,settings,hermesDir},cwd:hermesHome,env:childEnv(),timeout:180000,maxOutput:1024*1024,onChild:child=>{activeChild=child;}});
-        if(closed)fail('AI_INTERRUPTED',FAILURE_MESSAGES.AI_INTERRUPTED,409);
-        if(response?.ok===false){const safe=publicFailure(response.code);fail(safe.code,safe.message,502);}
+        const response=await requestModel(callPrompt,settings);
         raw=response?.ok===true?(response.output??response.proposal):job.kind==='conversation'?response:(response?.proposal??response);
         const parsed=parseModelOutput(raw);
         let reply,candidate=parsed;
@@ -490,21 +502,62 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
         job.status = 'running'; job.updatedAt = now(); persist(job);
         try {
           const result = await perform(job);
-          Object.assign(job, result, job.kind==='conversation'?saveReply(job,result):autoFile(job, result.proposal), { status: 'succeeded', updatedAt: now() });
+          const filing=job.kind==='topics'?{}:job.kind==='conversation'?saveReply(job,result):autoFile(job,result.proposal);
+          Object.assign(job,result,filing,{status:'succeeded',updatedAt:now()});
         } catch (error) {
           job.status = 'failed'; job.updatedAt = now();
-          job.error = error instanceof ServiceError ? { code: error.code, message: error.message } : publicFailure('MODEL_UNAVAILABLE');
+          job.error = error instanceof ServiceError ? {code:error.code,message:error.message}
+            : job.kind==='topics'&&error instanceof ApiError ? {code:error.code,message:error.detail.message}
+            : publicFailure('MODEL_UNAVAILABLE');
         }
         persist(job);
       }
     } finally { running = false; }
   }
+  const topicJob=id=>jobs.get(id)?.kind==='topics'?jobs.get(id):null;
+  function topicStatus(job){
+    if(!job)return {status:'missing',draft:null};
+    if(job.status==='succeeded')return {status:'ready',draft:{id:job.id,cards:job.topicSuggestion}};
+    if(job.status==='failed')return {status:'failed',draft:null,error:job.error};
+    return {status:'pending',draft:null};
+  }
   return {
     status,
     async handle(req, res, { url, readJson, json }) {
       const path = url.pathname;
-      if (!path.startsWith('/api/model/') && !path.startsWith('/api/ai/')) return false;
+      if (!path.startsWith('/api/model/') && !path.startsWith('/api/ai/') && !path.startsWith('/api/workspace/topics/')) return false;
       try {
+        if(req.method==='POST'&&path==='/api/workspace/topics/suggest'){
+          const {id,cardIds}=readTopicSelection(await readJson(req,16*1024));
+          const prior=jobs.get(id);
+          if(prior){
+            if(prior.kind!=='topics'||JSON.stringify(prior.topicCards.map(card=>card.id))!==JSON.stringify(cardIds))fail('TOPIC_BATCH_CONFLICT','这个归类编号已经用于另一组卡片。',409);
+            json(res,200,topicStatus(prior));return true;
+          }
+          if(readTopicReceipt(store,id).receipt)fail('TOPIC_BATCH_CONFLICT','本批归类已经确认，请查看已保存的结果。',409);
+          if(!status().configured)fail('MODEL_NOT_CONFIGURED',FAILURE_MESSAGES.MODEL_NOT_CONFIGURED,409);
+          if(!available())fail('ENGINE_UNAVAILABLE',FAILURE_MESSAGES.ENGINE_UNAVAILABLE,503);
+          if([...jobs.values()].filter(job=>['queued','running'].includes(job.status)).length>=8)fail('TOPIC_DRAFT_LIMIT','当前有较多 AI 任务，请稍后重试。',429);
+          const topicCards=snapshotTopicCards(store.getWorkspace().state,cardIds);
+          const stamp=now(),job={id,kind:'topics',topicCards,status:'queued',createdAt:stamp,updatedAt:stamp};
+          persist(job);jobs.set(id,job);
+          json(res,202,topicStatus(job));
+          queueMicrotask(()=>{drain().catch(()=>{});});
+          return true;
+        }
+        if(req.method==='GET'&&path==='/api/workspace/topics/draft'){
+          json(res,200,topicStatus(topicJob(checkTopicBatchId(url.searchParams.get('draftId')))));return true;
+        }
+        if(req.method==='POST'&&path==='/api/workspace/topics/confirm'){
+          const body=await readJson(req,16*1024);
+          json(res,200,confirmWorkspaceTopics(store,body,topicJob(body?.draftId)));return true;
+        }
+        if(req.method==='GET'&&path==='/api/workspace/topics/receipt'){
+          json(res,200,readTopicReceipt(store,url.searchParams.get('batchId')));return true;
+        }
+        if(req.method==='POST'&&path==='/api/workspace/topics/undo'){
+          json(res,200,undoWorkspaceTopics(store,await readJson(req,1024)));return true;
+        }
         if (req.method === 'GET' && path === '/api/model/status') { json(res, 200, status()); return true; }
         if(req.method==='GET'&&path==='/api/ai/capabilities'){
           json(res,200,{capabilities:WORKSPACE_ACTION_CAPABILITIES,queries:WORKSPACE_QUERY_CAPABILITIES,unavailable:[{label:'QQ、微信与外部服务',reason:'尚未连接对应服务'},{label:'图片与扫描件识别',reason:'尚未接入 OCR'},{label:'服务器与账号密钥',reason:'由设置及维护流程管理，不开放给对话操作'},{label:'永久删除',reason:'可通过归档与恢复管理记录'}]});return true;
@@ -580,7 +633,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
           return true;
         }
         if (req.method === 'GET' && path === '/api/ai/jobs') {
-          const recent = [...jobs.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 100).map(job => {
+          const recent = [...jobs.values()].filter(job=>job.kind!=='topics').sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 100).map(job => {
             const { proposal, receipt, sources, ...metadata } = publicJob(job);
             return metadata;
           });
@@ -588,13 +641,13 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
         }
         const confirmation=path.match(/^\/api\/ai\/jobs\/([a-f0-9-]{36})\/confirm$/);
         if(req.method==='POST'&&confirmation){
-          const job=jobs.get(confirmation[1]);if(!job)fail('JOB_NOT_FOUND','整理任务不存在。',404);
+          const job=jobs.get(confirmation[1]);if(!job||job.kind==='topics')fail('JOB_NOT_FOUND','整理任务不存在。',404);
           json(res,200,confirmConversation(job));return true;
         }
         const match = path.match(/^\/api\/ai\/jobs\/([a-f0-9-]{36})$/);
         if (req.method === 'GET' && match) {
           const job = jobs.get(match[1]);
-          if (!job) fail('JOB_NOT_FOUND', '整理任务不存在。', 404);
+          if (!job||job.kind==='topics') fail('JOB_NOT_FOUND', '整理任务不存在。', 404);
           json(res, 200, { job: publicJob(job) }); return true;
         }
         return false;

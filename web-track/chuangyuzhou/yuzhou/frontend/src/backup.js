@@ -8,6 +8,7 @@ import {validateTimetable, mergeTimetables} from './timetable-model.js';
 import {validateFitness, mergeFitness} from './fitness-model.js';
 import {validateCompetitions, mergeCompetitions} from './competitions-model.js';
 import {validateWorkbench} from './workbench-model.js';
+import {validateWorkspaceTopics} from './workspace-topics-model.js';
 import {validateCustomBlocks,mergeCustomBlocks} from './custom-blocks-model.js';
 import {validateSpaceWorkbench,validateSpaceStructure} from './space-workbench-config.js';
 import {isRecordColor, assignRecordColor} from './creation-colors.js';
@@ -313,6 +314,7 @@ function workspace(value) {
   }
   if (value.competitions !== undefined) result.competitions = validateCompetitions(value.competitions);
   if (value.workbench !== undefined) result.workbench = validateWorkbench(value.workbench);
+  if (value.workspaceTopics !== undefined) result.workspaceTopics = validateWorkspaceTopics(value.workspaceTopics);
   if (value.customBlocks !== undefined) {
     result.customBlocks = validateCustomBlocks(value.customBlocks);
     const occupied=new Set([...(result.spaces||[]).map(item=>item.id),...result.courses.map(item=>item.id)]);
@@ -493,6 +495,24 @@ export function mergeBackup(current, incoming) {
   // saved configuration; completed current choices still win over a backup.
   if (source.workbench !== undefined && (state.workbench === undefined || state.workbench.onboardingComplete === false)
       && JSON.stringify(state.workbench) !== JSON.stringify(source.workbench)) { state.workbench = structuredClone(source.workbench); count++; }
+  if (source.workspaceTopics) {
+    if (!state.workspaceTopics) {
+      state.workspaceTopics = structuredClone(source.workspaceTopics);
+      count++;
+    } else {
+      const topics = state.workspaceTopics;
+      const knownCards = new Set(topics.assignments.map(entry => entry.id));
+      const knownBatches = new Set(topics.receipts.map(receipt => receipt.batchId));
+      const additions = source.workspaceTopics.assignments.filter(entry => !knownCards.has(entry.id) && !knownBatches.has(entry.batchId));
+      if (additions.length) {
+        const addedBatches = new Set(additions.map(entry => entry.batchId));
+        topics.assignments.push(...structuredClone(additions));
+        topics.receipts.push(...structuredClone(source.workspaceTopics.receipts.filter(receipt => addedBatches.has(receipt.batchId))));
+        validateWorkspaceTopics(topics);
+        count += additions.length;
+      }
+    }
+  }
   if (source.workspaceVersion && (!state.workspaceVersion || state.workspaceVersion < source.workspaceVersion)) state.workspaceVersion = source.workspaceVersion;
   const en = state.english ||= english({});
   const imported = source.english;
