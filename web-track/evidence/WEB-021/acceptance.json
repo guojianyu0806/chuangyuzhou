@@ -1,0 +1,88 @@
+{
+  "record": "WEB-021",
+  "source": "ba456e0",
+  "fixture": "synthetic workspace in isolated Edge and SQLite",
+  "checks": {
+    "sameProjectGrouped": true,
+    "unrelatedControlSeparated": true,
+    "reviewHasNoWorkspaceWrites": true,
+    "manualAdjustmentSurvivesDraftRefresh": true,
+    "confirmAndReloadReviewedGroups": true,
+    "undoAndReloadPreserveOriginalWorkspace": true
+  },
+  "provider": {
+    "requestedModel": "deepseek-flash",
+    "calls": [
+      {
+        "startedAt": "2026-11-10T06:48:21.633Z",
+        "httpStatus": 200,
+        "model": "deepseek-flash",
+        "responseId": "ff59a74d-df88-4f76-9b29-fd1fec10efef",
+        "finishReason": "stop",
+        "usage": {
+          "prompt_tokens": 249,
+          "completion_tokens": 111,
+          "total_tokens": 360
+        },
+        "durationMs": 996
+      }
+    ]
+  },
+  "sentCards": [
+    {
+      "id": "block:setup-checklist",
+      "title": "布展前核对",
+      "kind": "block"
+    },
+    {
+      "id": "creative-expo",
+      "title": "校园创作展筹备",
+      "kind": "space"
+    },
+    {
+      "id": "reading-log",
+      "title": "个人阅读记录",
+      "kind": "space"
+    }
+  ],
+  "rawSuggestion": [
+    {
+      "id": "creative-expo",
+      "topic": "校园创作展筹备",
+      "displayedReason": "标题与简介直接指向校内创作展的展位、海报和志愿者安排。"
+    },
+    {
+      "id": "block:setup-checklist",
+      "topic": "校园创作展筹备",
+      "displayedReason": "展位物料与值班核对属于校园创作展筹备范围，与对应空间卡片主题一致。"
+    },
+    {
+      "id": "reading-log",
+      "topic": "个人阅读与书单",
+      "displayedReason": "内容为读书笔记、借阅进度和书单，主题独立且与展览筹备无关。"
+    }
+  ],
+  "confirmed": {
+    "revision": 2,
+    "groups": [
+      {
+        "id": "creative-expo",
+        "topic": "校园创作展筹备"
+      },
+      {
+        "id": "block:setup-checklist",
+        "topic": "校园创作展现场筹备"
+      }
+    ],
+    "changes": 2
+  },
+  "undone": {
+    "revision": 3,
+    "restored": 2,
+    "skipped": 0
+  },
+  "baselineRevision": 1,
+  "result": "passed",
+  "browserPageErrors": 0,
+  "fixtureCleaned": true
+}
