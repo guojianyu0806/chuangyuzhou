@@ -1,6 +1,7 @@
 import {ensureCanvas,visibleCanvasCards} from './canvas.js';
 import {WORKBENCH_MODULES,getWorkbench,configureWorkbench} from './workbench-model.js';
 import {getCustomBlocks,CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
+import {getSpaceIconMap} from './space-icons.js';
 
 const clone=value=>structuredClone(value);
 const knownModules=new Map(WORKBENCH_MODULES.map(module=>[module.id,module]));
@@ -22,12 +23,13 @@ export function placementLayout(state) {
 export function placementCards(state) {
   const modules=new Map(getWorkbench(state).modules.map(module=>[module.id,module]));
   const spaces=new Map((state?.spaces||[]).map(space=>[space.id,space]));
+  const spaceIcons=getSpaceIconMap(state);
   const blocks=new Map(getCustomBlocks(state).items.map(block=>[block.id,block]));
   return visibleCanvasCards(state,placementLayout(state)).map(card=>{
     const block=blocks.get(card.id);
     if(block){const type=CUSTOM_BLOCK_KINDS.find(type=>type.kind===block.kind||type.id===block.kind);return {...card,title:block.title,icon:type?.icon||'layers',description:block.description||type?.description||'自定义方块',kind:'block'};}
     const module=knownModules.get(card.id),item=module?modules.get(card.id):spaces.get(card.id);
-    return {...card,title:item?.title||module?.title||'未命名空间',icon:module?.icon||item?.icon||'folder',description:module?.description||item?.description||'保存这个主题的文件、笔记与待办。',kind:module?'module':'space'};
+    return {...card,title:item?.title||module?.title||'未命名空间',icon:module?.icon||spaceIcons.get(card.id)||'folder',description:module?.description||item?.description||'保存这个主题的文件、笔记与待办。',kind:module?'module':'space'};
   });
 }
 

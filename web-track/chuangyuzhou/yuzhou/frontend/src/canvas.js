@@ -8,6 +8,7 @@ import {weekForDate,entriesForWeek} from './timetable-model.js';
 import {mountSurfaceFullscreen} from './fullscreen.js';
 import {WORKBENCH_MODULES,getWorkbench} from './workbench-model.js';
 import {getCustomBlocks,updateCustomBlock,CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
+import {getSpaceIconMap} from './space-icons.js';
 import {customBlockSummary,customBlockType} from './custom-blocks.js';
 import {blockCardPreview,spaceCardPreview,mountCardPreviewFit} from './card-previews.js';
 const POSITIONS = {
@@ -34,6 +35,15 @@ export function canvasCardFill(value) {
   let weight=.83,mixed;
   do{mixed=rgb.map(n=>Math.round(n*weight+255*(1-weight)));weight-=.04;}while(luminance(mixed)<.46&&weight>0);
   return `#${mixed.map(n=>n.toString(16).padStart(2,'0')).join('')}`;
+}
+
+export function homeCanvasCardAppearance(card, record, spaceIcon) {
+  const preset=PRESETS[card.id];
+  if(preset)return {color:color(card.color||preset.color),icon:preset.icon};
+  const icon=card.id.startsWith('block:')
+    ? CUSTOM_BLOCK_KINDS.find(type=>type.kind===record?.kind)?.icon||'layers'
+    : spaceIcon||'folder';
+  return {color:color(record?.color||card.color),icon};
 }
 const customSpot=index=>index===0?{x:340,y:456,w:236,h:238}:index===1?{x:612,y:656,w:310,h:238}:{x:36+((index-2)%3)*346,y:930+Math.floor((index-2)/3)*286,w:310,h:250};
 
@@ -90,6 +100,7 @@ export function mountCanvas(ctx, collection) {
   const {root,state,save,icon,esc,toast,modal,go}=ctx;
   const homeItems=()=>[...(state.spaces||[]),...getCustomBlocks(state).items];
   const itemById=new Map((collection?.items||homeItems()).map(item=>[item.id,item]));
+  const spaceIcons=collection?null:getSpaceIconMap(state);
   const presets=collection?Object.fromEntries(collection.items.map((item,index)=>[item.id,{...item,x:36+(index%3)*380,y:40+Math.floor(index/3)*366,w:340,h:330,label:item.subtitle||''}])):PRESETS;
   const addedCard=collection?.layout?.initialized?collection.items.find(item=>!collection.layout.cards?.some(card=>card.id===item.id)):null;
   if(collection&&collection.layout?.cards?.length){
@@ -112,10 +123,11 @@ export function mountCanvas(ctx, collection) {
   const dataFor=card=>{
     if(collection){const item=itemById.get(card.id);return {...item,color:color(card.color||item?.color),label:item?.subtitle||''};}
     const preset=presets[card.id];
-    if(preset)return {...preset,title:getWorkbench(state).modules.find(module=>module.id===card.id)?.title||preset.title,color:color(card.color||preset.color),id:card.id};
-    const space=itemById.get(card.id);
-    if(card.id.startsWith('block:'))return {...space,color:color(space?.color||card.color),icon:CUSTOM_BLOCK_KINDS.find(type=>type.kind===space?.kind)?.icon||'layers',label:space?.description||customBlockType(space?.kind)};
-    return {...space,color:color(space?.color||card.color),icon:space?.icon||'folder',label:space?.description||'文件、笔记和事务，都有自己的位置。'};
+    const item=itemById.get(card.id);
+    const appearance=homeCanvasCardAppearance(card,item,spaceIcons.get(card.id));
+    if(preset)return {...preset,...appearance,title:getWorkbench(state).modules.find(module=>module.id===card.id)?.title||preset.title,id:card.id};
+    const label=item?.description||(card.id.startsWith('block:')?customBlockType(item?.kind):'文件、笔记和事务，都有自己的位置。');
+    return {...item,...appearance,label};
   };
   const persist=()=>{if(!alive)return false;try{save();return true;}catch{return false;/* App save handler explains quota or concurrent-window errors. */}};
   const markCustomized=()=>{canvas.customized=true;canvas.modifiedAt=new Date().toISOString();};

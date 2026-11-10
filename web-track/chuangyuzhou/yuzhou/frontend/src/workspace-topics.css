@@ -167,12 +167,13 @@
   align-items: center;
   gap: 4px;
   border-radius: 10px;
-  background: #f8f7fc;
-  border: 1px solid #eeebf5;
+  background: color-mix(in srgb, var(--wt-card-fill) 20%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--wt-card-color) 30%, var(--line));
+  border-inline-start: 4px solid var(--wt-card-color);
 }
 .wt-card:has(input:checked) {
-  border-color: #cbb9ed;
-  background: #f3edff;
+  background: color-mix(in srgb, var(--wt-card-fill) 35%, var(--surface));
+  box-shadow: 0 0 0 1px var(--accent);
 }
 .wt-card-link {
   display: flex;
@@ -185,15 +186,15 @@
   text-align: start;
   white-space: normal;
 }
-.wt-card-link:hover { background: #eee8f9; }
+.wt-card-link:hover { background: color-mix(in srgb, var(--wt-card-fill) 34%, transparent); }
 .wt-card-mark {
   width: 34px;
   height: 34px;
   flex: 0 0 34px;
   display: grid;
   place-items: center;
-  color: #7154a6;
-  background: #eee6f9;
+  color: #30243f;
+  background: var(--wt-card-fill);
   border-radius: 8px;
 }
 .wt-card-label { min-width: 0; overflow-wrap: anywhere; }

@@ -1,6 +1,9 @@
 import {icon} from './icons.js';
 import {escapeHTML as esc} from './services.js';
 import {normalizeTopicName, TOPIC_CARD_LIMIT, TOPIC_NAME_LIMIT} from './workspace-topics-model.js';
+import {canvasCardFill, homeCanvasCardAppearance} from './canvas.js';
+import {getCustomBlocks} from './custom-blocks-model.js';
+import {getSpaceIconMap} from './space-icons.js';
 
 const API = '/api/workspace/topics';
 const sessions = new WeakMap();
@@ -150,20 +153,25 @@ export function mountWorkspaceTopics({
     const selected = new Set(view.selected);
     const closed = new Set(view.closed);
     const locked = !connected || Boolean(view.review || view.operation) || busy();
+    const workspace = get(state);
+    const layouts = new Map((workspace?.canvas?.cards || []).map(card => [card.id, card]));
+    const records = new Map([...(workspace?.spaces || []), ...getCustomBlocks(workspace).items].map(card => [card.id, card]));
+    const spaceIcons = getSpaceIconMap(workspace);
     paint(groupsHost, topics.map(([topic, entries]) => {
       const key = topicKey(topic);
       return '<details class="wt-group" data-topics-group="'+esc(key)+'"'+(closed.has(key) ? '' : ' open')+'>'+
         '<summary><span class="wt-group-dot" aria-hidden="true"></span><strong>'+esc(topic || '未归类')+
         '</strong><span class="wt-count">'+entries.length+' 张</span></summary>'+
-        '<ul class="wt-cards">'+entries.map(card =>
-          '<li class="wt-card">'+
-          '<button type="button" class="wt-card-link" data-topics-open="'+esc(card.id)+'">'+
-          '<span class="wt-card-mark" aria-hidden="true">'+icon(card.kind === 'space' ? 'folder' : 'layers', 18)+'</span>'+
-          '<span class="wt-card-label"><small>'+esc(kinds[card.kind] || '')+'</small><strong>'+esc(card.title)+'</strong></span>'+
-          '</button>'+
-          '<label class="wt-select"><input type="checkbox" data-topics-select="'+esc(card.id)+'" aria-label="选择'+esc(card.title)+'"'+
-          (selected.has(card.id) ? ' checked' : '')+(locked ? ' disabled' : '')+'></label></li>'
-        ).join('')+'</ul></details>';
+        '<ul class="wt-cards">'+entries.map(card => {
+          const appearance = homeCanvasCardAppearance(layouts.get(card.id) || card, records.get(card.id), spaceIcons.get(card.id));
+          return '<li class="wt-card" style="--wt-card-color:'+appearance.color+';--wt-card-fill:'+canvasCardFill(appearance.color)+'">'+
+            '<button type="button" class="wt-card-link" data-topics-open="'+esc(card.id)+'">'+
+            '<span class="wt-card-mark" aria-hidden="true">'+icon(appearance.icon, 18)+'</span>'+
+            '<span class="wt-card-label"><small>'+esc(kinds[card.kind] || '')+'</small><strong>'+esc(card.title)+'</strong></span>'+
+            '</button>'+
+            '<label class="wt-select"><input type="checkbox" data-topics-select="'+esc(card.id)+'" aria-label="选择'+esc(card.title)+'"'+
+            (selected.has(card.id) ? ' checked' : '')+(locked ? ' disabled' : '')+'></label></li>';
+        }).join('')+'</ul></details>';
     }).join('') || '<p class="wt-empty">'+(view.query.trim() ? '没有符合搜索条件的卡片。' : '工作台还没有可查看的卡片。')+'</p>');
   }
 

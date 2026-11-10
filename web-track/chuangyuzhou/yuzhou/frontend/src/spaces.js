@@ -6,9 +6,10 @@ import {assignRecordColor, createColorDraft} from './creation-colors.js';
 import {mountFileText,supportsFileText} from './file-text.js';
 import {spaceWorkbenchCards,spaceWorkbenchLayout,spaceBoardKey} from './space-workbench-model.js';
 import {blockCardPreview} from './card-previews.js';
+import {getSpaceIconMap,spaceIconPicker,SPACE_ICON_OPTIONS} from './space-icons.js';
 
 export const SPACE_COLORS = ['#7950f2', '#009eab', '#ef3f92', '#78a500', '#f08025', '#4770f5'];
-export const SPACE_ICONS = ['folder', 'book', 'flag', 'code', 'coffee', 'star', 'globe', 'target'];
+export const SPACE_ICONS = SPACE_ICON_OPTIONS.map(([key])=>key);
 const TEMPLATES = [
   ['blank', '自由空间', '灵感、生活和任何值得留下的事', 'folder'],
   ['course', '课程学习', '课件、学习笔记与复习安排', 'book'],
@@ -51,22 +52,25 @@ export async function saveSpaceFiles(ctx, space, files) {
 export function openSpaceDialog(ctx, space) {
   const {state, esc, icon, modal, toast, uid} = ctx;
   const colorDraft = space ? null : createColorDraft(state);
-  let manualFitnessChoice=space?.fitnessEnabled!==undefined;
-  const initial = {title:space?.title || '',description:space?.description || '',type:space?.type || 'blank',color:space ? spaceColor(space) : colorDraft.color,icon:space?.icon || 'folder'};
+  const picker=spaceIconPicker(state,space);
+  let manualFitnessChoice=space?.fitnessEnabled!==undefined,manualIconChoice=!!space;
+  const initial = {title:space?.title || '',description:space?.description || '',type:space?.type || 'blank',color:space ? spaceColor(space) : colorDraft.color,icon:picker.current};
   modal({title:space ? '调整我的工作区' : '创建一个属于你的空间',submitLabel:space ? '保存设置' : '创建工作区',body:`
-    <div class="sp-form-intro"><span>${icon(space?.icon || 'folder',26)}</span><p>给一件重要的事留个位置。<br><small>${ctx.parentSpaceId?'当前空间画布会出现对应卡片，可自由移动、缩放。':'主页会出现对应卡片，可自由移动、缩放。'}</small></p></div>
+    <div class="sp-form-intro"><span data-sp-icon-preview>${icon(initial.icon,26)}</span><p>给一件重要的事留个位置。<br><small>${ctx.parentSpaceId?'当前空间画布会出现对应卡片，可自由移动、缩放。':'主页会出现对应卡片，可自由移动、缩放。'}</small></p></div>
     <label class="field">空间名称<input name="title" required maxlength="60" value="${esc(initial.title)}" placeholder="例如：学生会宣传部、我的毕业项目"></label>
     <label class="field">这个空间用来做什么？<textarea name="description" maxlength="600" rows="3" placeholder="例如：存放学生会宣传部的会议、活动策划和我的执行任务。">${esc(initial.description)}</textarea><span class="small muted">接入 AI 后，这段说明会帮助它判断内容该放在哪里。</span></label>
     <fieldset class="sp-form-fieldset"><legend>空间模板</legend><div class="sp-template-options">${TEMPLATES.map(([type,label,hint,glyph])=>`<label><input type="radio" name="type" value="${type}" ${initial.type===type?'checked':''}><span>${icon(glyph,21)}<strong>${label}</strong><small>${hint}</small></span></label>`).join('')}</div></fieldset>
     <label class="fitness-enable-setting"><input type="checkbox" name="fitnessEnabled" ${isFitnessSpace(space,state)?'checked':''}><span><strong>启用运动统计</strong><small>按日、周、月记录运动时长、里程与消耗。关闭后记录仍保留，原有笔记、文件和待办不受影响。</small></span></label>
-    <div class="form-grid"><label class="field">卡片主题色<div class="sp-color-field"><input type="color" name="color" value="${spaceColor(initial)}" aria-label="卡片主题色"><span>${space?'选择你喜欢的颜色':'自动配色，也可以手动选择'}</span></div></label><label class="field">空间图标<select name="icon">${SPACE_ICONS.map((item,i)=>`<option value="${item}" ${initial.icon===item?'selected':''}>${['文件夹','学习书本','事务旗帜','代码项目','生活咖啡','星标灵感','世界地图','目标'][i]}</option>`).join('')}</select></label></div>
+    <div class="form-grid"><label class="field">卡片主题色<div class="sp-color-field"><input type="color" name="color" value="${spaceColor(initial)}" aria-label="卡片主题色"><span>${space?'选择你喜欢的颜色':'自动配色，也可以手动选择'}</span></div></label><label class="field">空间图标<select name="icon">${picker.options.map(({key,label,taken})=>`<option value="${key}" ${initial.icon===key?'selected':''} ${taken?'disabled':''}>${label}${taken?'（已使用）':''}</option>`).join('')}</select></label></div>
     <p class="sp-form-tip">所有模板都能保存笔记、文件和待办，不会添加虚构内容。</p>`,onSubmit(data) {
       const title = String(data.get('title') || '').trim();
       if (!title) { toast('给工作区起个名字吧'); return false; }
       const type = String(data.get('type') || 'blank');
       const color = String(data.get('color') || '');
-      const glyph = String(data.get('icon') || 'folder');
-      const values = {title,description:String(data.get('description') || '').trim(),fitnessEnabled:data.has('fitnessEnabled'),type:TEMPLATES.some(x=>x[0]===type)?type:'blank',color:/^#[a-f\d]{6}$/i.test(color)?color:'#7950f2',icon:SPACE_ICONS.includes(glyph)?glyph:'folder',updatedAt:stamp()};
+      const glyph = String(data.get('icon') || initial.icon);
+      const values = {title,description:String(data.get('description') || '').trim(),fitnessEnabled:data.has('fitnessEnabled'),type:TEMPLATES.some(x=>x[0]===type)?type:'blank',color:/^#[a-f\d]{6}$/i.test(color)?color:'#7950f2',updatedAt:stamp()};
+      const selectedIcon=picker.options.find(option=>option.key===glyph&&!option.taken);
+      if(!space||glyph!==initial.icon)values.icon=selectedIcon?.key||initial.icon;
       state.spaces ||= [];
       if (space) {
         const previous = {...space};
@@ -96,7 +100,14 @@ export function openSpaceDialog(ctx, space) {
   colorDraft?.bind(form);
   form?.querySelector('[name=fitnessEnabled]')?.addEventListener('change',()=>{manualFitnessChoice=true;});
   form?.addEventListener('change',event=>{
+    const iconSelect=form.querySelector('[name=icon]');
+    const iconPreview=form.querySelector('[data-sp-icon-preview]');
+    if(event.target===iconSelect){manualIconChoice=true;iconPreview.innerHTML=icon(iconSelect.value,26);return;}
     if(!event.target.matches('[name=type],[name=title]'))return;
+    if(!manualIconChoice){
+      iconSelect.value=picker.suggest({title:form.querySelector('[name=title]').value,type:form.querySelector('[name=type]:checked')?.value});
+      iconPreview.innerHTML=icon(iconSelect.value,26);
+    }
     const enabled=form.querySelector('[name=fitnessEnabled]'),type=form.querySelector('[name=type]:checked')?.value||'blank';
     if(event.target.name==='type'&&type==='fitness'){enabled.checked=true;return;}
     if(!manualFitnessChoice)enabled.checked=isFitnessSpace({...space,id:space?.id||'',title:form.querySelector('[name=title]').value,type,fitnessEnabled:undefined},state);
@@ -144,7 +155,8 @@ export function mountSpace(ctx, id) {
   const taskList = () => tasks().filter(item=>archivedTasks?item.archived:!item.archived);
   function mountSpaceCanvas(){
     const host=root.querySelector('[data-sp-board]');if(!host)return;
-    const items=spaceWorkbenchCards(state,space.id);state.boards||={};const key=spaceBoardKey(space.id);state.boards[key]||=spaceWorkbenchLayout(state,space.id);
+    const spaceIcons=getSpaceIconMap(state);
+    const items=spaceWorkbenchCards(state,space.id).map(item=>item.kind==='space'?{...item,icon:spaceIcons.get(item.id)||'folder'}:item);state.boards||={};const key=spaceBoardKey(space.id);state.boards[key]||=spaceWorkbenchLayout(state,space.id);
     const enter=itemId=>{const item=items.find(item=>item.id===itemId);if(!item)return;if(item.kind==='section'){if(item.id==='assistant')openSpaceAI();else go('space',space.id,item.id);}else if(item.kind==='module')go(item.id.slice(7));else go(item.kind==='block'?'block':'space',item.id);};
     boardCleanup=mountCanvas({...ctx,root:host,enterCard:enter,createSpace:()=>go('builder',space.id),editSpace:undefined,mountAIComposer:undefined},{layout:state.boards[key],items,hideHeader:true,title:space.title,cardLabel:'空间方块',createLabel:false,canDrop:false,enterLabel:item=>item.kind==='module'?'打开共享模块':'进入内容',footLabel:'双击或点击进入 · 长按摆放',renderCard:(_card,item)=>{
       const records=item.id==='notes'?noteList():item.id==='files'?fileList():item.id==='tasks'?taskList():[];
@@ -210,7 +222,7 @@ export function mountSpace(ctx, id) {
     if(!active)return;boardCleanup?.();boardCleanup=null;fitnessCleanup?.();fitnessCleanup=null;release();
     const fitnessEnabled=isFitnessSpace(space,state);if(!fitnessEnabled&&tab==='fitness')tab='workbench';hadFitness=fitnessEnabled;
     const countNotes=space.notes.filter(item=>!item.archived).length;
-    root.innerHTML=`<section class="sp-page ${fitnessEnabled?'has-fitness':''}" style="--sp-color:${spaceColor(space)};--sp-on-color:${foreground(spaceColor(space))}"><div class="sp-back-row"><button class="sp-back" data-sp-action="home">${icon('arrow-left',17)} ${space.parentId?'回到上级空间':'回到主工作台'}</button><span>${icon('shield',14)} ${ctx.cloud?.enabled&&state.mode==='personal'?'连接工作台服务':'仅本机保存'}</span></div><header class="sp-hero"><div class="sp-hero-copy"><span class="sp-hero-icon">${icon(space.icon||'folder',34)}</span><div><span class="sp-hero-kicker">${esc(template()[1])} / MY SPACE</span><h1>${esc(space.title)}</h1><p>${esc(space.description||'笔记、资料和下一步行动，都有自己的位置。')}</p></div></div><div class="sp-hero-actions"><button class="btn sp-primary" data-sp-action="builder">${icon('layers',17)} 搭建这个空间</button><button class="btn" data-sp-action="settings">${icon('settings',17)} 空间设置</button><button class="btn sp-primary" data-sp-action="ai">${icon('sparkles',18)} 交给 AI</button></div><div class="sp-hero-bottom"><span>${countNotes} 篇笔记</span><span>${fileList().length} 份文件</span><span>${tasks().filter(item=>!item.done&&!item.archived).length} 件待办</span><button data-sp-action="archive-space">${icon(space.archived?'refresh':'archive',15)} ${space.archived?'恢复到主页':'归档空间'}</button></div></header>${space.archived?'<div class="sp-archived-banner">这个空间已归档，资料完整保留。点击「恢复到主页」可重新放回画布。</div>':''}<nav class="sp-tabs" aria-label="工作区内容">${[...(fitnessEnabled?[['fitness','运动统计','chart']]:[]),['workbench','空间画布','orbit'],['overview','内容总览','layers'],['notes','笔记','book'],['files','文件','folder'],['tasks','待办','check-circle']].map(([key,label,glyph])=>`<button class="${tab===key?'active':''}" data-sp-action="tab" data-tab="${key}" aria-current="${tab===key?'page':'false'}">${icon(glyph,19)} ${label}</button>`).join('')}</nav><div class="sp-tab-content">${tab==='fitness'?'<div data-fitness-host></div>':tab==='workbench'?'<div class="sp-section-tools"><p>从搭建台加入方块，在这里自由移动、缩放和使用。</p><button class="btn" data-sp-action="builder">添加或摆放方块</button></div>'+boardHost():tab==='overview'?overview():tab==='notes'?notesView():tab==='files'?filesView():tasksView()}</div><div class="sp-drop-overlay" aria-hidden="true">${icon('upload',46)}<strong>放入「${esc(space.title)}」</strong><span>文件会保存在这个工作区</span></div><input type="file" hidden multiple data-sp-file-input aria-label="添加工作区文件"></section>`;
+    root.innerHTML=`<section class="sp-page ${fitnessEnabled?'has-fitness':''}" style="--sp-color:${spaceColor(space)};--sp-on-color:${foreground(spaceColor(space))}"><div class="sp-back-row"><button class="sp-back" data-sp-action="home">${icon('arrow-left',17)} ${space.parentId?'回到上级空间':'回到主工作台'}</button><span>${icon('shield',14)} ${ctx.cloud?.enabled&&state.mode==='personal'?'连接工作台服务':'仅本机保存'}</span></div><header class="sp-hero"><div class="sp-hero-copy"><span class="sp-hero-icon">${icon(getSpaceIconMap(state).get(id)||space.icon||'folder',34)}</span><div><span class="sp-hero-kicker">${esc(template()[1])} / MY SPACE</span><h1>${esc(space.title)}</h1><p>${esc(space.description||'笔记、资料和下一步行动，都有自己的位置。')}</p></div></div><div class="sp-hero-actions"><button class="btn sp-primary" data-sp-action="builder">${icon('layers',17)} 搭建这个空间</button><button class="btn" data-sp-action="settings">${icon('settings',17)} 空间设置</button><button class="btn sp-primary" data-sp-action="ai">${icon('sparkles',18)} 交给 AI</button></div><div class="sp-hero-bottom"><span>${countNotes} 篇笔记</span><span>${fileList().length} 份文件</span><span>${tasks().filter(item=>!item.done&&!item.archived).length} 件待办</span><button data-sp-action="archive-space">${icon(space.archived?'refresh':'archive',15)} ${space.archived?'恢复到主页':'归档空间'}</button></div></header>${space.archived?'<div class="sp-archived-banner">这个空间已归档，资料完整保留。点击「恢复到主页」可重新放回画布。</div>':''}<nav class="sp-tabs" aria-label="工作区内容">${[...(fitnessEnabled?[['fitness','运动统计','chart']]:[]),['workbench','空间画布','orbit'],['overview','内容总览','layers'],['notes','笔记','book'],['files','文件','folder'],['tasks','待办','check-circle']].map(([key,label,glyph])=>`<button class="${tab===key?'active':''}" data-sp-action="tab" data-tab="${key}" aria-current="${tab===key?'page':'false'}">${icon(glyph,19)} ${label}</button>`).join('')}</nav><div class="sp-tab-content">${tab==='fitness'?'<div data-fitness-host></div>':tab==='workbench'?'<div class="sp-section-tools"><p>从搭建台加入方块，在这里自由移动、缩放和使用。</p><button class="btn" data-sp-action="builder">添加或摆放方块</button></div>'+boardHost():tab==='overview'?overview():tab==='notes'?notesView():tab==='files'?filesView():tasksView()}</div><div class="sp-drop-overlay" aria-hidden="true">${icon('upload',46)}<strong>放入「${esc(space.title)}」</strong><span>文件会保存在这个工作区</span></div><input type="file" hidden multiple data-sp-file-input aria-label="添加工作区文件"></section>`;
     root.querySelector('.sp-page').style.setProperty('--sp-fill',canvasCardFill(spaceColor(space)));
     if(tab==='fitness')fitnessCleanup=mountFitness({...ctx,root:root.querySelector('[data-fitness-host]')},space);else if(tab==='workbench')mountSpaceCanvas();else mountBoard();
     if(tab==='files'&&selectedFile){const file=fileList().find(item=>item.id===selectedFile);if(file)preview(file);}

@@ -1,5 +1,6 @@
 import {getWorkbench,getVisibleModules} from './workbench-model.js';
 import {CUSTOM_BLOCK_KINDS,getCustomBlocks} from './custom-blocks-model.js';
+import {getSpaceIconMap} from './space-icons.js';
 
 export const MAX_WELCOME_CARDS=100;
 const blockKinds=new Map(CUSTOM_BLOCK_KINDS.map(kind=>[kind.id,kind]));
@@ -7,7 +8,6 @@ const rows=value=>Array.isArray(value)?value:[];
 const active=value=>rows(value).filter(item=>item&&!item.archived);
 const color=(value,fallback='#AE88FF')=>typeof value==='string'&&/^#[a-f\d]{6}$/i.test(value)?value:fallback;
 const label=(value,fallback,limit=80)=>typeof value==='string'&&value.trim()?value.trim().slice(0,limit):fallback;
-const iconName=value=>typeof value==='string'&&/^[a-z][a-z\d-]{0,39}$/i.test(value)?value:'folder';
 const spaceId=value=>typeof value==='string'&&!!value.trim()&&value.length<=512&&!/[\u0000-\u001f\u007f-\u009f]/.test(value);
 
 function moduleMetric(state,id) {
@@ -66,13 +66,14 @@ export function getWelcomeModel(input) {
     id:module.id,title:module.title,icon:module.icon,color:cardColor(module.id,module.color),kind:'module',
     summary:module.description,metric:moduleMetric(state,module.id),route:module.id,
   }));
+  const spaceIcons=getSpaceIconMap(state);
   const extra=new Map(),seen=new Set(workbench.modules.map(module=>module.id));
   for(const space of active(state.spaces)){
     if(space.parentId)continue;
     if(!spaceId(space.id)||seen.has(space.id))continue;
     seen.add(space.id);
     extra.set(space.id,{
-      id:space.id,title:label(space.title,'未命名工作区'),icon:iconName(space.icon),color:cardColor(space.id,space.color),kind:'space',
+      id:space.id,title:label(space.title,'未命名工作区'),icon:spaceIcons.get(space.id)||'folder',color:cardColor(space.id,space.color),kind:'space',
       summary:'把笔记、资料和事项放在一起。',metric:`${active(space.notes).length} 篇笔记`,route:'space',subroute:space.id,
     });
   }

@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-11-10-web-dev-020",
-  "sourceCommit": "a533e9a588ee244fc7f44aaaeadaf2b1a1625e74",
+  "release": "2026-11-10-web-dev-022",
+  "sourceCommit": "a9701c75a5340e778980d62bec7c3aff93f268b4",
   "defaultPort": 4396,
   "privateRuntimeIncluded": false,
-  "baselineRecord": "../evidence/WEB-020/source-baseline.json",
+  "baselineRecord": "../evidence/WEB-022/source-baseline.json",
   "files": [
     {
       "path": ".env.example",
@@ -30,8 +30,8 @@
     },
     {
       "path": "RELEASE-CHANGES.json",
-      "bytes": 3584,
-      "sha256": "c93610f0361cf7db94bf1433061c07538a2195924406d7be75abe327ec398b56"
+      "bytes": 2537,
+      "sha256": "354b9f91ebdd2cd38a283eb2f3702ad77bcd042c9fa1a1f6735a7883f9166dd6"
     },
     {
       "path": "SOURCE-NOTICE.md",
@@ -545,8 +545,8 @@
     },
     {
       "path": "yuzhou/frontend/src/canvas.js",
-      "bytes": 56499,
-      "sha256": "6e66e3447357f41f6c735f20306d13ef0c283d47241b5b2cb9d8b8934c584fd9"
+      "bytes": 56848,
+      "sha256": "c2b895de91d41572829da80619f5bef35a54a1b2a9b77a1fc7184ae39b2458ac"
     },
     {
       "path": "yuzhou/frontend/src/card-layouts.js",
@@ -715,8 +715,8 @@
     },
     {
       "path": "yuzhou/frontend/src/icons.js",
-      "bytes": 3606,
-      "sha256": "d5b0cbc1942db1dd50763df5b7e67d27a4c571abfb127ec64c17cf7cf5e4ece6"
+      "bytes": 5037,
+      "sha256": "dc885511f977a2d3a60bfa1ee25537043b13d02cea888eac88727f82d2d9e15d"
     },
     {
       "path": "yuzhou/frontend/src/inspiration.css",
@@ -785,8 +785,8 @@
     },
     {
       "path": "yuzhou/frontend/src/navigation-model.js",
-      "bytes": 4012,
-      "sha256": "fc29772bc9604f7a600bd1d190df7e8df62b72483177a95aa04d9fad81d7109d"
+      "bytes": 4092,
+      "sha256": "48c0d5c2ea082e58508bba253695b4862783aae54c8a62db65c77fb756776865"
     },
     {
       "path": "yuzhou/frontend/src/navigation-shell.js",
@@ -800,8 +800,8 @@
     },
     {
       "path": "yuzhou/frontend/src/placement-model.js",
-      "bytes": 5652,
-      "sha256": "021838b501673caf443f4a9f5e7a70a7bd482524b9b91850e652169fefc64ae4"
+      "bytes": 5758,
+      "sha256": "add1ec10dd70cf51d9624c19b016b40807674234ff28b76f56397ba1cf761229"
     },
     {
       "path": "yuzhou/frontend/src/placement.css",
@@ -854,6 +854,11 @@
       "sha256": "47ee25d02e909819cde046460994c17264dbb6bb289eefe953be814c829aa65f"
     },
     {
+      "path": "yuzhou/frontend/src/space-icons.js",
+      "bytes": 3050,
+      "sha256": "fb1121733f509f4b276c97e598d819789adef0678baa664b5c46741059bc9991"
+    },
+    {
       "path": "yuzhou/frontend/src/space-workbench-config.js",
       "bytes": 2626,
       "sha256": "86e6d71bcae2b0fbd36706c1a8cb2d26c7a871f9fc7547c74eb9b80ca19b53b4"
@@ -870,8 +875,8 @@
     },
     {
       "path": "yuzhou/frontend/src/spaces.js",
-      "bytes": 38111,
-      "sha256": "946cae3fa862b051b8c22889de2917b34e49263bf0526a957da76684a74af6ef"
+      "bytes": 38944,
+      "sha256": "d144257bc329097e77d3c3c6e9289edc2a8b33741b0e611d530e216b87938a6d"
     },
     {
       "path": "yuzhou/frontend/src/timetable-courses.js",
@@ -920,8 +925,8 @@
     },
     {
       "path": "yuzhou/frontend/src/welcome-model.js",
-      "bytes": 5480,
-      "sha256": "82ca95041f593ca15b43908e197882ded9eefa4cb4792230356d3706a2931f1f"
+      "bytes": 5487,
+      "sha256": "9f91c2990c3f7975274a131a329e193adc9da96d06d12a738605643b1c67ffd1"
     },
     {
       "path": "yuzhou/frontend/src/welcome-motion.js",
@@ -1000,13 +1005,13 @@
     },
     {
       "path": "yuzhou/frontend/src/workspace-topics.css",
-      "bytes": 5133,
-      "sha256": "3b30eb70b9248d00d4886c9461fddbf44cee76a85ed48467568fc19b66d291b3"
+      "bytes": 5417,
+      "sha256": "2413341e0cfd19b95eb1af754c017904ec2810b0d7a34a32e85547e6103ee89f"
     },
     {
       "path": "yuzhou/frontend/src/workspace-topics.js",
-      "bytes": 23497,
-      "sha256": "905b5b674e71393664d840fb275a2d8b939ef86012220f33aa4522334525008e"
+      "bytes": 24203,
+      "sha256": "83d016151d7b01d72ddb17970e9b33ae404377190baa1f93e3be67b37ff98f98"
     },
     {
       "path": "yuzhou/frontend/start.cmd",
