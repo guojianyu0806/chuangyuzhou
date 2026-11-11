@@ -35,6 +35,14 @@ export function visibleWorkspaceTopicCards(state){
   return [...modules,...blocks,...spaces].filter(card=>isTopicCardId(card.id)&&!seen.has(card.id)&&seen.add(card.id));
 }
 
+export function validateCanvasTopicLabels(value){
+  return list(value,TOPIC_ASSIGNMENT_LIMIT,row=>{
+    fields(row,['id','offsetX','offsetY']);
+    if([row.offsetX,row.offsetY].some(offset=>typeof offset!=='number'||!Number.isFinite(offset)||Math.abs(offset)>100000))invalid();
+    return {id:cardId(row.id),offsetX:row.offsetX,offsetY:row.offsetY};
+  },row=>row.id);
+}
+
 function fields(value,required,optional=[]){
   if(!plain(value)||required.some(key=>!Object.hasOwn(value,key))||Object.keys(value).some(key=>!required.includes(key)&&!optional.includes(key)))invalid();
 }

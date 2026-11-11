@@ -9,6 +9,7 @@ import {mountSurfaceFullscreen} from './fullscreen.js';
 import {WORKBENCH_MODULES,getWorkbench} from './workbench-model.js';
 import {getCustomBlocks,updateCustomBlock,CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
 import {getSpaceIconMap} from './space-icons.js';
+import {validateCanvasTopicLabels} from './workspace-topics-model.js';
 import {customBlockSummary,customBlockType} from './custom-blocks.js';
 import {blockCardPreview,spaceCardPreview,mountCardPreviewFit} from './card-previews.js';
 const POSITIONS = {
@@ -96,6 +97,21 @@ export function visibleCanvasCards(state,canvas=state.canvas) {
     .sort((a,b)=>(byId.get(a.id)?.index??modules.length)-(byId.get(b.id)?.index??modules.length));
 }
 
+export function homeCanvasTopicLabels(state){
+  if(state.canvas?.topicLabels===undefined)return [];
+  let labels;
+  try{labels=validateCanvasTopicLabels(state.canvas.topicLabels);}catch{return [];}
+  const cards=new Map(visibleCanvasCards(state).map(card=>[card.id,card]));
+  const assignments=new Map((state.workspaceTopics?.assignments||[]).map(row=>[row.id,row.topic]));
+  const seen=new Set();
+  return labels.flatMap(label=>{
+    const card=cards.get(label.id),topic=assignments.get(label.id)??null;
+    if(!card||seen.has(topic))return [];
+    seen.add(topic);
+    return [{...label,text:topic??'未归类',x:card.x+label.offsetX,y:card.y+label.offsetY}];
+  });
+}
+
 export function mountCanvas(ctx, collection) {
   const {root,state,save,icon,esc,toast,modal,go}=ctx;
   const homeItems=()=>[...(state.spaces||[]),...getCustomBlocks(state).items];
@@ -115,7 +131,7 @@ export function mountCanvas(ctx, collection) {
   const canvas=collection?ensureCanvas({canvas:collection.layout,spaces:[]},presets):ensureCanvas(state);
   const collectionText=(key,item,fallback)=>typeof collection?.[key]==='function'?collection[key](item):collection?.[key]??fallback;
   let alive=true,editing=false,spaceHeld=false,interaction=null,suppressClickUntil=0,saveTimer=0,composerCleanup=null,previewCleanup=null,raf=0,dragDepth=new Map();
-  const pointers=new Map(),cardElements=new Map();
+  const pointers=new Map(),cardElements=new Map(),labelElements=new Map();
   let presentation=normalizePresentation(canvas.presentation,matchMedia('(max-width:680px)').matches?'list':'canvas');
   let stackRaf=0,stackReady=false,stackFocus=0,stackDrag=null,lastStackPointer=0;
   const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)');
@@ -241,6 +257,11 @@ export function mountCanvas(ctx, collection) {
       <div class="cv-card-body">${cardContent(card)}</div><footer class="cv-card-foot"><span>${esc(collectionText('footLabel',d,card.id==='ai'?'对话 → 确认 → 归档':card.id.startsWith('block:')?'自己定义内容与交互':card.id==='competitions'?'截止 · 清单 · 参赛档案':card.id==='calendar'?'计划 · 标注 · 注意事项':card.id==='ledger'?'按日期记录 · 按项目汇总':card.id==='timetable'?'教学周 · 单双周 · 上课地点':'拖入文件，直接收进这里'))}</span><button type="button" data-cv="enter" aria-label="进入${esc(d.title)}">${esc(collectionText('enterLabel',d,card.id==='ai'?'打开伙伴':card.id.startsWith('block:')?'打开方块':'进入空间'))}${icon('arrow-right',17)}</button></footer>
       <button class="cv-resize" type="button" data-cv="resize" title="拖动调整大小；方向键微调" aria-label="调整${esc(d.title)}卡片大小">${resizeIcon}</button><div class="cv-drop-overlay">${icon('upload',34)}<strong>松手，放入${esc(d.title)}</strong><span>文件保存在本机</span></div></article>`;
     }).join('');
+    if(!collection){
+      world.insertAdjacentHTML('beforeend',homeCanvasTopicLabels(state).map(label=>
+        `<span class="cv-topic-label" data-topic-anchor="${esc(label.id)}" data-offset-x="${label.offsetX}" data-offset-y="${label.offsetY}" style="transform:translate(${label.x}px,${label.y}px)">${esc(label.text)}</span>`).join(''));
+    }
+    labelElements.clear();for(const element of world.querySelectorAll('[data-topic-anchor]'))labelElements.set(element.dataset.topicAnchor,element);
     cardElements.clear();for(const element of world.querySelectorAll('[data-card]'))cardElements.set(element.dataset.card,element);
     const host=world.querySelector('[data-ai-host]');
     if(host&&ctx.mountAIComposer)composerCleanup=ctx.mountAIComposer(host);
@@ -355,6 +376,8 @@ export function mountCanvas(ctx, collection) {
     if(presentation==='stack'){requestStackPaint();return;}
     const el=cardEl(card.id);if(!el)return;
     el.style.transform=`translate(${card.x}px,${card.y}px)`;el.style.width=`${card.w}px`;el.style.height=`${card.h}px`;
+    const label=labelElements.get(card.id);
+    if(label)label.style.transform=`translate(${card.x+Number(label.dataset.offsetX)}px,${card.y+Number(label.dataset.offsetY)}px)`;
     el.classList.toggle('cv-compact',card.h<260);el.classList.toggle('cv-short',card.h<330);
   }
   function announce(message) {live.textContent=message;}

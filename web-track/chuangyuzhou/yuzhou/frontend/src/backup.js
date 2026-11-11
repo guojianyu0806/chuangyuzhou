@@ -8,7 +8,7 @@ import {validateTimetable, mergeTimetables} from './timetable-model.js';
 import {validateFitness, mergeFitness} from './fitness-model.js';
 import {validateCompetitions, mergeCompetitions} from './competitions-model.js';
 import {validateWorkbench} from './workbench-model.js';
-import {validateWorkspaceTopics} from './workspace-topics-model.js';
+import {validateWorkspaceTopics,validateCanvasTopicLabels} from './workspace-topics-model.js';
 import {validateCustomBlocks,mergeCustomBlocks} from './custom-blocks-model.js';
 import {validateSpaceWorkbench,validateSpaceStructure} from './space-workbench-config.js';
 import {isRecordColor, assignRecordColor} from './creation-colors.js';
@@ -221,6 +221,7 @@ function canvas(value, label = '主页画布') {
   }
   if (value.presentation !== undefined) result.presentation = choice(value.presentation, ['canvas','list','grid-2','grid-3','stack'], '画布展示方式');
   if (value.stackPointer !== undefined) result.stackPointer = finite(value.stackPointer, '堆叠指针位置', 0, 1);
+  if (value.topicLabels !== undefined) result.topicLabels = validateCanvasTopicLabels(value.topicLabels);
   return optionalFields(value, result, ['modifiedAt'], ['customized']);
 }
 function word(value) {

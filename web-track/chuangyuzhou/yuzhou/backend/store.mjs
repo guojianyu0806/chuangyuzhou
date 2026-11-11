@@ -10,7 +10,7 @@ import { validateTimetable } from '../frontend/src/timetable-model.js';
 import { validateFitness } from '../frontend/src/fitness-model.js';
 import { validateCompetitions } from '../frontend/src/competitions-model.js';
 import { validateWorkbench } from '../frontend/src/workbench-model.js';
-import {validateWorkspaceTopics} from '../frontend/src/workspace-topics-model.js';
+import {validateWorkspaceTopics,validateCanvasTopicLabels} from '../frontend/src/workspace-topics-model.js';
 import { validateCustomBlocks } from '../frontend/src/custom-blocks-model.js';
 import {validateSpaceStructure} from '../frontend/src/space-workbench-config.js';
 import { validateEnglishPracticeState } from '../frontend/src/english-practice-model.js';
@@ -136,6 +136,10 @@ export function validateWorkspace(state) {
   if (state.workspaceTopics !== undefined) {
     try { validateWorkspaceTopics(state.workspaceTopics); }
     catch { throw new ApiError(400, 'invalid_workspace_topics'); }
+  }
+  if (state.canvas?.topicLabels !== undefined) {
+    try { validateCanvasTopicLabels(state.canvas.topicLabels); }
+    catch { throw new ApiError(400, 'invalid_canvas_topic_labels'); }
   }
   if (state.customBlocks !== undefined) {
     try { validateCustomBlocks(state.customBlocks); }
