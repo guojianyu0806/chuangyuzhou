@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-11-11-web-dev-028",
-  "sourceCommit": "397e9e83590b01ad4109fee595eda1ae664533c8",
+  "release": "2026-11-11-web-dev-029",
+  "sourceCommit": "d34cb81da172c5455b03a5ecd942b59dc5849224",
   "defaultPort": 4396,
   "privateRuntimeIncluded": false,
-  "baselineRecord": "../evidence/WEB-028/source-baseline.json",
+  "baselineRecord": "../evidence/WEB-029/source-baseline.json",
   "files": [
     {
       "path": ".env.example",
@@ -30,8 +30,8 @@
     },
     {
       "path": "RELEASE-CHANGES.json",
-      "bytes": 756,
-      "sha256": "247814dbcb6c6ae19ea7dfc9874b8ffd9822d09ae579d7a6f2c4a49a89973993"
+      "bytes": 507,
+      "sha256": "4bae770194760b18d1df3d2e20efdf80033b50f394ee1d194c76e3fdd9161f06"
     },
     {
       "path": "SOURCE-NOTICE.md",
@@ -610,8 +610,8 @@
     },
     {
       "path": "yuzhou/frontend/src/content-layout.css",
-      "bytes": 16563,
-      "sha256": "3c2a98769d411c6952f3f9b9d5d56fb479e8d751bb93898d28fcb842e4408853"
+      "bytes": 17318,
+      "sha256": "95f13c29f5b3debe0a2f06ed523795c692ef9ae0dce6f5b3247f082f0696c163"
     },
     {
       "path": "yuzhou/frontend/src/courses.css",

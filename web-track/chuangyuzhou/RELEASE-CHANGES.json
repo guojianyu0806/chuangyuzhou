@@ -1,22 +1,16 @@
 {
-  "recordId": "WEB-028",
+  "recordId": "WEB-029",
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-11-11-web-dev-028",
-  "sourceCommit": "397e9e83590b01ad4109fee595eda1ae664533c8",
-  "selectedRelease": "2026-11-11-web-dev-027",
+  "release": "2026-11-11-web-dev-029",
+  "sourceCommit": "d34cb81da172c5455b03a5ecd942b59dc5849224",
+  "selectedRelease": "2026-11-11-web-dev-028",
   "changes": [
     {
-      "path": "yuzhou/frontend/src/canvas.css",
-      "bytes": 48124,
-      "sha256": "be3bce4ec064ff4ed31e05f374da8d06f0d31a304dfc51bd436f004d060bba3b",
-      "baselineSha256": "7c318d8d8f5ac3c5c49064197fd6ebc3db6db01a1f1f9e2981b137d7f11634bd"
-    },
-    {
-      "path": "yuzhou/frontend/src/canvas.js",
-      "bytes": 58052,
-      "sha256": "902bbb74401f2a777ef6c28d5b6a1768aa2e2af13160a876bcb89f8bbed004e8",
-      "baselineSha256": "e58e466fe772ea3805d20fe5024c350fa88b243ede3d8f4adca92e8ec7427f5d"
+      "path": "yuzhou/frontend/src/content-layout.css",
+      "bytes": 17318,
+      "sha256": "95f13c29f5b3debe0a2f06ed523795c692ef9ae0dce6f5b3247f082f0696c163",
+      "baselineSha256": "3c2a98769d411c6952f3f9b9d5d56fb479e8d751bb93898d28fcb842e4408853"
     }
   ]
 }
