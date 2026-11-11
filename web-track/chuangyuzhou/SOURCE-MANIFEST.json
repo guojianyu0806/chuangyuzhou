@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-11-11-web-dev-029",
-  "sourceCommit": "d34cb81da172c5455b03a5ecd942b59dc5849224",
+  "release": "2026-11-11-web-dev-030",
+  "sourceCommit": "6aef80c3b54a2be95679027fc25225502af2ad2a",
   "defaultPort": 4396,
   "privateRuntimeIncluded": false,
-  "baselineRecord": "../evidence/WEB-029/source-baseline.json",
+  "baselineRecord": "../evidence/WEB-030/source-baseline.json",
   "files": [
     {
       "path": ".env.example",
@@ -30,8 +30,8 @@
     },
     {
       "path": "RELEASE-CHANGES.json",
-      "bytes": 507,
-      "sha256": "4bae770194760b18d1df3d2e20efdf80033b50f394ee1d194c76e3fdd9161f06"
+      "bytes": 770,
+      "sha256": "8fe26acf12d0521d8ea3794f94a707fdb517eb75d3866040bb50f6cc088f2906"
     },
     {
       "path": "SOURCE-NOTICE.md",
@@ -570,8 +570,8 @@
     },
     {
       "path": "yuzhou/frontend/src/card-previews.js",
-      "bytes": 5108,
-      "sha256": "3c3a46fdd306b5c32ea9a30c89983b23eccc766ff81096abdacbd4eb7621be11"
+      "bytes": 6747,
+      "sha256": "9dc4924af95b539e5466b77f7101b732bdf1727f64214af3a63cd45af416043d"
     },
     {
       "path": "yuzhou/frontend/src/cloud.css",
@@ -610,8 +610,8 @@
     },
     {
       "path": "yuzhou/frontend/src/content-layout.css",
-      "bytes": 17318,
-      "sha256": "95f13c29f5b3debe0a2f06ed523795c692ef9ae0dce6f5b3247f082f0696c163"
+      "bytes": 17413,
+      "sha256": "7a53fc0cd5967e3cc3b60e671d62550f5ab49ff8ceac28fd2ca9a814374a6748"
     },
     {
       "path": "yuzhou/frontend/src/courses.css",
