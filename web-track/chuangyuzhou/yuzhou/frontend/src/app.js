@@ -259,7 +259,7 @@ function shell(){
   const sidebar=document.querySelector('.sidebar'),handle=document.createElement('div');
   handle.className='rail-resize';handle.tabIndex=0;handle.setAttribute('role','separator');
   sidebar.id='workspace-sidebar';handle.setAttribute('aria-label','调整侧边栏宽度');handle.setAttribute('aria-orientation','vertical');handle.setAttribute('aria-valuemin','80');handle.setAttribute('aria-controls','workspace-sidebar');
-  handle.title='拖动调节宽度，双击恢复默认；也可用左右方向键调节';sidebar.append(handle);
+  handle.title='双击或按 Enter 展开或收起侧边栏，拖动或用左右方向键调节宽度';sidebar.append(handle);
   sidebarResize=mountSidebarResize({body:document.body,sidebar,handle,pinButton:document.querySelector('[data-action="pin-nav"]'),readExpanded:()=>state.ui.sidebarPinned,writeExpanded:setSidebarExpanded,readWidth:()=>workspaceStorage.getItem(`${key(mode)}:sidebar-width`),writeWidth:width=>workspaceStorage.setItem(`${key(mode)}:sidebar-width`,String(width)),onError:error=>toast(error.message)});
   updateModuleNavigation();
   syncNavigationState();

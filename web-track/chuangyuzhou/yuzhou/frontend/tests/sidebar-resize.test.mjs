@@ -78,7 +78,7 @@ test('opening by drag reveals labels at 180 pixels but commits the expanded stat
 test('dragging down to the 80-pixel boundary collapses while reopening retains the last custom width',t=>{
   const f=fixture(t,{expanded:true,width:'310'});f.drag(-230);
   assert.equal(f.paintWidth(),80);assert.deepEqual(f.writes,[['expanded',false]]);assert.equal(f.stored(),'310');assert.equal(f.pinButton.span.textContent,'展开侧边栏');
-  f.key('Enter');assert.equal(f.paintWidth(),310);assert.deepEqual(f.writes.slice(1),[['expanded',true],['width',310]]);
+  f.key('Enter');assert.equal(f.paintWidth(),310);assert.deepEqual(f.writes.slice(1),[['expanded',true]]);
 });
 
 test('every intermediate width, including subpixel values, persists and restores without snapping on remount',t=>{
@@ -169,10 +169,11 @@ test('an expanded-state persistence failure rolls the appearance back and never 
   }
 });
 
-test('an unreadable width preference falls back to default and double-click resets an active preview',t=>{
+test('an unreadable width preference falls back to default and double-click cancels an active drag before toggling',t=>{
   const f=fixture(t,{expanded:true,width:360,readFailure:true});assert.equal(f.paintWidth(),254);assert.deepEqual(f.writes,[]);
-  f.drag(90,{end:false});assert.equal(f.paintWidth(),344);f.handle.fire('dblclick');assert.equal(f.paintWidth(),254);assert.equal(f.handle.hasPointerCapture(1),false);assert.deepEqual(f.writes,[['width',254]]);
-  f.handle.fire('pointerup');assert.deepEqual(f.writes,[['width',254]]);
+  f.drag(90,{end:false});assert.equal(f.paintWidth(),344);f.handle.fire('dblclick');assert.equal(f.paintWidth(),80);assert.equal(f.handle.hasPointerCapture(1),false);
+  f.handle.fire('pointerup');assert.deepEqual(f.writes,[['expanded',false]]);
+  f.handle.fire('dblclick');assert.equal(f.paintWidth(),254);assert.deepEqual(f.writes,[['expanded',false],['expanded',true]]);
 });
 
 test('a pointer that never moves does not persist, and destroy releases capture and all listeners',t=>{
@@ -182,16 +183,28 @@ test('a pointer that never moves does not persist, and destroy releases capture 
   f.drag(50);f.key('Home');f.win.innerWidth=800;f.win.fire('resize');f.controller.sync();assert.equal(f.paintWidth(),300);assert.deepEqual(f.writes,[]);assert.deepEqual(f.state,before);
 });
 
-test('double-click reset eases through intermediate widths, rebounds gently and saves only the destination once',t=>{
-  const f=fixture(t,{expanded:true,width:360,animate:true}),before=structuredClone(f.state);
+test('double-click restores the remembered width with an elastic finish and a second double-click collapses',t=>{
+  const f=fixture(t,{width:310.25,animate:true}),tasks=structuredClone(f.state.tasks);
   f.handle.fire('dblclick');
-  assert.equal(f.paintWidth(),360,'reset starts at the displayed width');
-  assert.deepEqual(f.writes,[['width',254]]);assert.equal(f.stored(),254);assert.equal(f.frames.size,1);
-  f.step();f.step(54);const early=f.paintWidth();assert.ok(early>254&&early<360);
-  f.step(126);assert.ok(f.paintWidth()<254&&f.paintWidth()>248,'a small overshoot supplies the elastic finish');
+  assert.equal(f.paintWidth(),80,'opening starts at the displayed width');
+  assert.deepEqual(f.writes,[['expanded',true]]);assert.equal(f.frames.size,1);
+  f.step();f.step(54);const early=f.paintWidth();assert.ok(early>80&&early<310.25);
+  f.step(126);assert.ok(f.paintWidth()>310.25&&f.paintWidth()<330,'a small overshoot supplies the elastic finish');
   f.step(RAIL_MOTION_MS-180);
-  assert.equal(f.paintWidth(),254);assert.equal(f.frames.size,0);assert.equal(f.body.classList.contains('rail-animating'),false);
-  assert.deepEqual(f.writes,[['width',254]]);assert.deepEqual(f.state,before);
+  assert.equal(f.paintWidth(),310.25);assert.equal(f.frames.size,0);
+  f.handle.fire('dblclick');f.step();f.step(RAIL_MOTION_MS);
+  assert.equal(f.paintWidth(),80);assert.equal(f.frames.size,0);assert.equal(f.body.classList.contains('rail-animating'),false);
+  assert.deepEqual(f.writes,[['expanded',true],['expanded',false]]);assert.equal(f.stored(),310.25);assert.deepEqual(f.state.tasks,tasks);
+});
+
+test('opening a narrow window only caps the displayed width and preserves the full width for later',t=>{
+  const f=fixture(t,{width:360,viewport:775});
+  f.handle.fire('dblclick');assert.equal(f.paintWidth(),295);
+  f.handle.fire('dblclick');assert.equal(f.paintWidth(),80);
+  f.key('Enter');assert.equal(f.paintWidth(),295);
+  f.win.innerWidth=1200;f.win.fire('resize');assert.equal(f.paintWidth(),360);
+  assert.equal(f.stored(),360);
+  assert.deepEqual(f.writes,[['expanded',true],['expanded',false],['expanded',true]]);
 });
 
 test('animated expand and collapse survive ordinary render synchronization without saving frame values',t=>{
@@ -211,12 +224,12 @@ test('animated expand and collapse survive ordinary render synchronization witho
 test('reversing an animated toggle begins at the current width and cancels the previous frame chain',t=>{
   const f=fixture(t,{width:310,animate:true});
   f.key('Enter');f.step();f.step(54);const opening=f.paintWidth();
-  assert.ok(opening>80&&opening<310);assert.deepEqual(f.writes,[['expanded',true],['width',310]]);
+  assert.ok(opening>80&&opening<310);assert.deepEqual(f.writes,[['expanded',true]]);
   f.key('Enter');assert.equal(f.paintWidth(),opening);assert.equal(f.frames.size,1);
   f.step();f.step(54);const closing=f.paintWidth();assert.ok(closing>80&&closing<opening);
   f.key('Enter');assert.equal(f.paintWidth(),closing);assert.equal(f.frames.size,1);
   f.step();f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),310);assert.equal(f.frames.size,0);
-  assert.deepEqual(f.writes,[['expanded',true],['width',310],['expanded',false],['expanded',true],['width',310]]);
+  assert.deepEqual(f.writes,[['expanded',true],['expanded',false],['expanded',true]]);
   f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),310,'cancelled chains cannot repaint later');
 });
 
@@ -227,22 +240,22 @@ test('dragging interrupts an animation at its displayed width and persists the e
   assert.equal(f.body.classList.contains('rail-animating'),false);assert.equal(f.body.classList.contains('rail-resizing'),true);
   f.handle.fire('pointermove',{clientX:117.25});assert.equal(f.paintWidth(),visual+17.25);
   f.controller.sync();assert.equal(f.paintWidth(),visual+17.25);
-  f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),visual+17.25);assert.deepEqual(f.writes,[['width',254]]);
+  f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),visual+17.25);assert.deepEqual(f.writes,[['expanded',false]]);
   f.handle.fire('pointerup',{clientX:117.25});assert.equal(f.stored(),visual+17.25);
-  assert.deepEqual(f.writes,[['width',254],['width',visual+17.25]]);assert.equal(f.frames.size,0);
+  assert.deepEqual(f.writes,[['expanded',false],['expanded',true],['width',visual+17.25]]);assert.equal(f.frames.size,0);
 });
 
 test('reduced-motion preference settles instantly and enabling it mid-animation cancels pending frames',t=>{
   const reduced=fixture(t,{expanded:true,width:360,animate:true,reducedMotion:true});
-  reduced.handle.fire('dblclick');assert.equal(reduced.paintWidth(),254);assert.equal(reduced.frames.size,0);
-  reduced.key('Enter');assert.equal(reduced.paintWidth(),80);assert.equal(reduced.frames.size,0);
+  reduced.handle.fire('dblclick');assert.equal(reduced.paintWidth(),80);assert.equal(reduced.frames.size,0);
+  reduced.key('Enter');assert.equal(reduced.paintWidth(),360);assert.equal(reduced.frames.size,0);
   const f=fixture(t,{expanded:true,width:360,animate:true});
-  f.handle.fire('dblclick');f.step();f.step(54);assert.ok(f.paintWidth()>254);
-  f.setReduced(true);assert.equal(f.paintWidth(),254);assert.equal(f.frames.size,0);
-  assert.equal(f.body.classList.contains('rail-animating'),false);assert.deepEqual(f.writes,[['width',254]]);
-  f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),254);
+  f.handle.fire('dblclick');f.step();f.step(54);assert.ok(f.paintWidth()>80&&f.paintWidth()<360);
+  f.setReduced(true);assert.equal(f.paintWidth(),80);assert.equal(f.frames.size,0);
+  assert.equal(f.body.classList.contains('rail-animating'),false);assert.deepEqual(f.writes,[['expanded',false]]);
+  f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),80);
   f.setReduced(false);assert.equal(f.frames.size,0,'reenabling motion does not replay completed changes');
-  f.key('Enter');assert.equal(f.frames.size,1);f.step();f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),80);
+  f.key('Enter');assert.equal(f.frames.size,1);f.step();f.step(RAIL_MOTION_MS);assert.equal(f.paintWidth(),360);
 });
 
 test('resize, window blur and destruction settle animations and remove pending work without extra persistence',t=>{

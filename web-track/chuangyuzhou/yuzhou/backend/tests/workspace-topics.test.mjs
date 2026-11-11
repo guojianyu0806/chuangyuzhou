@@ -81,6 +81,8 @@ test('topic preview sends only selected card metadata, survives process restart,
   assert.equal((await f.anonymous(`${apiRoot}/receipt?batchId=${randomUUID()}`)).status,401);
   const invalid=await f.first(`${apiRoot}/suggest`,'POST',{draftId:randomUUID(),cardIds:['hidden-space']});
   assert.equal(invalid.status,409);assert.deepEqual(invalid.body.cardIds,['hidden-space']);
+  const withAssistant=await f.first(`${apiRoot}/suggest`,'POST',{draftId:randomUUID(),cardIds:['ai','tasks']});
+  assert.equal(withAssistant.status,409);assert.deepEqual(withAssistant.body.cardIds,['ai']);
   assert.equal(calls.length,0);
   const draftId=randomUUID(),cardIds=['tasks','project-space'];
   const input={draftId,cardIds};
@@ -100,6 +102,9 @@ test('topic preview sends only selected card metadata, survives process restart,
   await f.restart();
   assert.deepEqual(await f.draft(draftId),ready);
   assert.equal(calls.length,1);
+  const forged=await confirm(f.first,draftId,[{id:'ai',topic:'拒绝额外对象'}]);
+  assert.equal(forged.body.error,'TOPIC_INVALID_INPUT');
+  assert.deepEqual(f.workspace(),before);
   const saved=await confirm(f.first,draftId,[{id:'tasks',topic:'人工修订'}]);
   assert.equal(saved.status,200);
   assert.deepEqual(f.workspace().state.workspaceTopics.assignments,[{id:'tasks',topic:'人工修订',batchId:draftId}]);

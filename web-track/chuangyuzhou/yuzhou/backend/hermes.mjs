@@ -11,6 +11,7 @@ import { assertRuntimePath, prepareDataDirectory, RUNTIME_ROOT } from '../runtim
 import { readModelEnvironment } from './model-environment.mjs';
 import { ApiError } from './store.mjs';
 import {buildTopicPrompt, checkTopicBatchId, confirmWorkspaceTopics, readTopicReceipt, readTopicSelection, snapshotTopicCards, undoWorkspaceTopics, validateTopicSuggestion} from './workspace-topics.mjs';
+import {isWorkspaceTopicCandidateId} from '../frontend/src/workspace-topics-model.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BASE_URL = 'https://api.deepseek.com';
@@ -517,7 +518,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
   const topicJob=id=>jobs.get(id)?.kind==='topics'?jobs.get(id):null;
   function topicStatus(job){
     if(!job)return {status:'missing',draft:null};
-    if(job.status==='succeeded')return {status:'ready',draft:{id:job.id,cards:job.topicSuggestion}};
+    if(job.status==='succeeded')return {status:'ready',draft:{id:job.id,cards:job.topicSuggestion.filter(({id})=>isWorkspaceTopicCandidateId(id))}};
     if(job.status==='failed')return {status:'failed',draft:null,error:job.error};
     return {status:'pending',draft:null};
   }

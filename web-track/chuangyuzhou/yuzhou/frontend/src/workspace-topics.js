@@ -1,6 +1,6 @@
 import {icon} from './icons.js';
 import {escapeHTML as esc} from './services.js';
-import {normalizeTopicName, TOPIC_CARD_LIMIT, TOPIC_NAME_LIMIT} from './workspace-topics-model.js';
+import {isWorkspaceTopicCandidateId, normalizeTopicName, TOPIC_CARD_LIMIT, TOPIC_NAME_LIMIT} from './workspace-topics-model.js';
 import {canvasCardFill, homeCanvasCardAppearance} from './canvas.js';
 import {getCustomBlocks} from './custom-blocks-model.js';
 import {getSpaceIconMap} from './space-icons.js';
@@ -10,6 +10,7 @@ const sessions = new WeakMap();
 const kinds = {module: '模块', space: '空间', block: '方块'};
 const topicKey = topic => JSON.stringify(topic);
 const get = value => typeof value === 'function' ? value() : value;
+const isCandidate = ({id}) => isWorkspaceTopicCandidateId(id);
 
 function viewSession(key, loadDraft) {
   if (!sessions.has(key)) {
@@ -111,9 +112,10 @@ export function mountWorkspaceTopics({
     return view.selected.filter(id => allowed.has(id));
   };
   const busy = () => shared.generation || shared.writing;
+  const reviewCards = () => (view.review?.cards || []).filter(isCandidate);
   function chosenChanges() {
     try {
-      return (view.review?.cards || []).filter(card => !card.skip)
+      return reviewCards().filter(card => !card.skip)
         .map(card => ({id: card.id, topic: normalizeTopicName(card.topic), currentTopic: card.currentTopic}))
         .filter(card => card.topic !== card.currentTopic)
         .map(({id, topic}) => ({id, topic}));
@@ -208,15 +210,21 @@ export function mountWorkspaceTopics({
           (retry === 'regenerate' ? '重新生成建议' : '重试获取建议')+'</button>')+reset+'</div></section>');
       return;
     }
-    const topicNames = [...new Set([...(currentTopics().assignments || []).map(item => item.topic),
-      ...review.cards.map(item => item.suggestedTopic)].filter(Boolean))];
+    const cards = reviewCards();
+    if (!cards.length) {
+      paint(reviewHost, '<section class="wt-review" aria-label="AI 归类草稿">'+
+        '<p>草稿中没有可归类的卡片。</p><div class="wt-review-actions">'+reset+'</div></section>');
+      return;
+    }
+    const topicNames = [...new Set([...(currentTopics().assignments || []).filter(isCandidate).map(item => item.topic),
+      ...cards.map(item => item.suggestedTopic)].filter(Boolean))];
     const visible = new Set(currentCards().map(card => card.id));
     paint(reviewHost, '<section class="wt-review" aria-labelledby="wt-review-title">'+
       '<h2 id="wt-review-title">审核归类建议</h2><p>'+esc(review.stale
         ? (review.error || '工作台已有变化。重新生成后，请核对保留的人工调整。')
         : '可以修改主题或跳过卡片，确认后生效。')+'</p>'+
       '<datalist id="wt-known-topics">'+topicNames.map(topic => '<option value="'+esc(topic)+'"></option>').join('')+'</datalist>'+
-      '<ul class="wt-review-list">'+review.cards.map(card =>
+      '<ul class="wt-review-list">'+cards.map(card =>
         '<li class="wt-review-card"><div class="wt-review-copy"><strong>'+esc(card.title)+'</strong><small>'+
         esc(card.currentTopic ? '当前主题 · '+card.currentTopic : '当前未归类')+
         (visible.has(card.id) ? '' : ' · 当前不可见')+'</small>'+
@@ -241,16 +249,17 @@ export function mountWorkspaceTopics({
         '>查询并重试</button></div>');
       return;
     }
-    const receipts = currentTopics().receipts || [];
+    const receipts = (currentTopics().receipts || []).filter(receipt => receipt.changes.some(isCandidate));
     const receipt = receipts.find(item => item.batchId === view.lastBatchId) || receipts.at(-1);
     if (!receipt) {
       paint(receiptHost, '');
       return;
     }
     const undone = receipt.status === 'undone';
-    const skipped = receipt.skipped?.length || 0;
-    const text = undone ? '已恢复 '+(receipt.changes.length - skipped)+' 张卡片的原分组'+(skipped ? '，保留了 '+skipped+' 张卡片后续调整' : '')+'。'
-      : '本批已归类 '+receipt.changes.length+' 张卡片。';
+    const count = receipt.changes.filter(isCandidate).length;
+    const skipped = receipt.skipped?.filter(isWorkspaceTopicCandidateId).length || 0;
+    const text = undone ? '已恢复 '+(count - skipped)+' 张卡片的原分组'+(skipped ? '，保留了 '+skipped+' 张卡片后续调整' : '')+'。'
+      : '本批已归类 '+count+' 张卡片。';
     paint(receiptHost, '<div class="wt-receipt"><span>'+text+'</span>'+
       (undone ? '' : '<button type="button" class="btn" data-topics-action="undo" data-batch="'+esc(receipt.batchId)+
         '"'+(!connected || busy() || view.review ? ' disabled' : '')+'>撤销此批归类</button>')+'</div>');

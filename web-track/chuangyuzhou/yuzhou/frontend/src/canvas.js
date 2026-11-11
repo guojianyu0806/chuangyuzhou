@@ -9,7 +9,7 @@ import {mountSurfaceFullscreen} from './fullscreen.js';
 import {WORKBENCH_MODULES,getWorkbench} from './workbench-model.js';
 import {getCustomBlocks,updateCustomBlock,CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
 import {getSpaceIconMap} from './space-icons.js';
-import {validateCanvasTopicLabels} from './workspace-topics-model.js';
+import {isWorkspaceTopicCandidateId,validateCanvasTopicLabels} from './workspace-topics-model.js';
 import {customBlockSummary,customBlockType} from './custom-blocks.js';
 import {blockCardPreview,spaceCardPreview,mountCardPreviewFit} from './card-previews.js';
 const POSITIONS = {
@@ -106,7 +106,7 @@ export function homeCanvasTopicLabels(state){
   const seen=new Set();
   return labels.flatMap(label=>{
     const card=cards.get(label.id),topic=assignments.get(label.id)??null;
-    if(!card||seen.has(topic))return [];
+    if(!card||!isWorkspaceTopicCandidateId(label.id)||seen.has(topic))return [];
     seen.add(topic);
     return [{...label,text:topic??'未归类',x:card.x+label.offsetX,y:card.y+label.offsetY}];
   });
@@ -254,7 +254,7 @@ export function mountCanvas(ctx, collection) {
     const labeledTopics=new Set((collection?[]:homeCanvasTopicLabels(state)).map(label=>topicsByCard.get(label.id)??null));
     world.innerHTML=visibleCards().map((card,index)=>{
       const d=dataFor(card);
-      const topic=topicsByCard.get(card.id)??null,showTopic=labeledTopics.has(topic);
+      const topic=topicsByCard.get(card.id)??null,showTopic=isWorkspaceTopicCandidateId(card.id)&&labeledTopics.has(topic);
       const typeLabel=collection?collectionText('cardLabel',d,'内容卡片'):card.id==='ai'?'智能伙伴':presets[card.id]?'工作台模块':card.id.startsWith('block:')?'自定义方块':'自建空间';
       return `<article class="cv-card cv-card-${collection?'collection':presets[card.id]?card.id:'custom'} ${card.h<260?'cv-compact':''} ${card.h<330?'cv-short':''}" data-card="${esc(card.id)}" style="--card-color:${color(d.color)};--card-fill:${canvasCardFill(d.color)};--card-order:${index};width:${card.w}px;height:${card.h}px;transform:translate(${card.x}px,${card.y}px)" tabindex="0" aria-label="${esc(d.title)}，按Enter打开">
       <header class="cv-card-head"><span class="cv-space-symbol">${safeIcon(d.icon,20)}</span><span class="cv-stack-title">${esc(d.title)}</span><span class="cv-card-top-label${showTopic?' cv-topic-label':''}"${showTopic?` data-topic-anchor="${esc(card.id)}"`:''}>${esc(showTopic?topic??'未归类':typeLabel)}</span><button type="button" class="cv-drag" data-cv="drag" title="拖动卡片；方向键移动" aria-label="拖动${esc(d.title)}卡片，或使用方向键调整位置">${dragIcon}</button><button type="button" class="cv-card-menu" data-cv="card-menu" title="卡片设置" aria-label="设置${esc(d.title)}卡片">${icon('more',19)}</button></header>

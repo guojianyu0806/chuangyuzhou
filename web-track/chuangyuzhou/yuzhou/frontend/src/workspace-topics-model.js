@@ -14,6 +14,9 @@ export function isTopicBatchId(value){return typeof value==='string'&&UUID.test(
 export function isTopicCardId(value){
   return typeof value==='string'&&value.length>0&&value.length<=160&&!/[\x00-\x1f\x7f]/.test(value)&&!['__proto__','constructor','prototype'].includes(value);
 }
+export function isWorkspaceTopicCandidateId(value){
+  return value!=='ai'&&isTopicCardId(value);
+}
 export function normalizeTopicName(value){
   if(typeof value!=='string'||/[\x00-\x1f\x7f]/.test(value))invalid();
   const topic=value.trim().replace(/\s+/gu,' ');
@@ -21,7 +24,7 @@ export function normalizeTopicName(value){
   return topic;
 }
 
-/** Read the same identities as the home canvas, without initializing card geometry. */
+/** Read classifiable home canvas cards without initializing card geometry. */
 export function visibleWorkspaceTopicCards(state){
   if(!state)return [];
   const modules=getVisibleModules(state).map(({id,title,description})=>({id,title,description,kind:'module'}));
@@ -32,7 +35,7 @@ export function visibleWorkspaceTopicCards(state){
     id:space.id,title:String(space.title||'').slice(0,160),kind:'space',description:String(space.description||'').slice(0,400),
   }));
   const seen=new Set();
-  return [...modules,...blocks,...spaces].filter(card=>isTopicCardId(card.id)&&!seen.has(card.id)&&seen.add(card.id));
+  return [...modules,...blocks,...spaces].filter(card=>isWorkspaceTopicCandidateId(card.id)&&!seen.has(card.id)&&seen.add(card.id));
 }
 
 export function validateCanvasTopicLabels(value){

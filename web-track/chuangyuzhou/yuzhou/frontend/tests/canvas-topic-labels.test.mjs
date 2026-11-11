@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {homeCanvasTopicLabels} from '../src/canvas.js';
-import {validateCanvasTopicLabels} from '../src/workspace-topics-model.js';
+import {homeCanvasTopicLabels,visibleCanvasCards} from '../src/canvas.js';
+import {validateCanvasTopicLabels,visibleWorkspaceTopicCards} from '../src/workspace-topics-model.js';
 import {validateBackup,mergeBackup} from '../src/backup.js';
 import {createWorkbench} from '../src/workbench-model.js';
 import {createCustomBlock} from '../src/custom-blocks-model.js';
@@ -73,8 +73,20 @@ test('multiple anchors in one current theme produce one group label',()=>{
     {id:'project',topic:'同一主题'},{id:'second',topic:'同一主题'},
   ],receipts:[]};
   const labels=homeCanvasTopicLabels(state);
-  assert.deepEqual(labels.map(row=>[row.id,row.text]),[['project','同一主题'],['ai','未归类']]);
+  assert.deepEqual(labels.map(row=>[row.id,row.text]),[['project','同一主题'],['ungrouped','未归类']]);
   assert.equal(state.canvas.cards.length,4,'labels do not become extra cards');
+});
+
+test('the built-in AI partner stays on the canvas but cannot carry a topic, even in older layouts',()=>{
+  const state=workspace();
+  state.canvas.topicLabels=[label('ai'),label('project')];
+  state.workspaceTopics={assignments:[{id:'ai',topic:'旧主题'}],receipts:[]};
+  createCustomBlock(state,{kind:'note',title:'AI伙伴'},{id:'block:same-name',now:stamp});
+  const before=structuredClone(state);
+  assert.deepEqual(visibleCanvasCards(state).map(row=>row.id),['ai','project']);
+  assert.deepEqual(visibleWorkspaceTopicCards(state).map(row=>row.id),['block:same-name','project']);
+  assert.deepEqual(homeCanvasTopicLabels(state).map(row=>[row.id,row.text]),[['project','未归类']]);
+  assert.deepEqual(state,before);
 });
 
 test('labels exclude hidden modules, archived records, nested records and missing anchors',()=>{
