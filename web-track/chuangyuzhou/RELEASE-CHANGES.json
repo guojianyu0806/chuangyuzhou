@@ -1,52 +1,22 @@
 {
-  "recordId": "WEB-027",
+  "recordId": "WEB-028",
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-11-11-web-dev-027",
-  "sourceCommit": "22ea789307a94a312c266ef697003b7f2d4b04d4",
-  "selectedRelease": "2026-11-10-web-dev-026",
+  "release": "2026-11-11-web-dev-028",
+  "sourceCommit": "397e9e83590b01ad4109fee595eda1ae664533c8",
+  "selectedRelease": "2026-11-11-web-dev-027",
   "changes": [
     {
-      "path": "yuzhou/backend/store.mjs",
-      "bytes": 20781,
-      "sha256": "7a8333c19900093f73ab54cedbe954d86c9377f284721ef91fdf674611b4abc6",
-      "baselineSha256": "b352a763aa8929e3ab8dcc6fb7a2e28958d551eb6bf39285243ad9079e7fffe9"
-    },
-    {
-      "path": "yuzhou/backend/tests/canvas-layout.test.mjs",
-      "bytes": 2404,
-      "sha256": "faa1eacb65717eba537d1c4dfd8b3dbc73fcc0c76a7302bd20bdf77daf9bddf8",
-      "baselineSha256": "eee26db2e1912243112bd1484b936b22efed6f0b11c0e4592146afec0c6d2903"
-    },
-    {
-      "path": "yuzhou/frontend/src/backup.js",
-      "bytes": 36983,
-      "sha256": "b3560caa3c67c283d3ed219a0aed57d8de8dead629f49408b4f961111aaee95d",
-      "baselineSha256": "28ac852073996ded114606373480a2a266d80c32eda3eabcfbe632dfbb6c5039"
-    },
-    {
       "path": "yuzhou/frontend/src/canvas.css",
-      "bytes": 48192,
-      "sha256": "7c318d8d8f5ac3c5c49064197fd6ebc3db6db01a1f1f9e2981b137d7f11634bd",
-      "baselineSha256": "0afdc313f1c303572b0f90d453b418f186c275a005fb748b0ae725979b5a0ad6"
+      "bytes": 48124,
+      "sha256": "be3bce4ec064ff4ed31e05f374da8d06f0d31a304dfc51bd436f004d060bba3b",
+      "baselineSha256": "7c318d8d8f5ac3c5c49064197fd6ebc3db6db01a1f1f9e2981b137d7f11634bd"
     },
     {
       "path": "yuzhou/frontend/src/canvas.js",
-      "bytes": 58286,
-      "sha256": "e58e466fe772ea3805d20fe5024c350fa88b243ede3d8f4adca92e8ec7427f5d",
-      "baselineSha256": "c2b895de91d41572829da80619f5bef35a54a1b2a9b77a1fc7184ae39b2458ac"
-    },
-    {
-      "path": "yuzhou/frontend/src/workspace-topics-model.js",
-      "bytes": 5413,
-      "sha256": "a2b9066153e691598be9b66e0dcc7df1fa221bdafa55564b4700dcde8166ad4c",
-      "baselineSha256": "1ff9d6cf8e52028c8144bb624b74b90c338323d81226000dc5937d18a0351547"
-    },
-    {
-      "path": "yuzhou/frontend/tests/canvas-topic-labels.test.mjs",
-      "bytes": 7143,
-      "sha256": "18a9c5beebcfb601592dc7f688ab84bf9674d29951ea77ec04e518227f1cb2a4",
-      "baselineSha256": null
+      "bytes": 58052,
+      "sha256": "902bbb74401f2a777ef6c28d5b6a1768aa2e2af13160a876bcb89f8bbed004e8",
+      "baselineSha256": "e58e466fe772ea3805d20fe5024c350fa88b243ede3d8f4adca92e8ec7427f5d"
     }
   ]
 }

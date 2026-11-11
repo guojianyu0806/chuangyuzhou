@@ -233,5 +233,5 @@
   .cv-viewport.is-stack .cv-stack-scroll{scroll-behavior:auto}
 }
 
-.cv-home .cv-topic-label{position:absolute;left:0;top:0;z-index:1;pointer-events:none;user-select:none;white-space:nowrap;font-size:26px;font-weight:750;line-height:28px;letter-spacing:0;color:#55347f;text-shadow:0 1px 1px #fff}
-.cv-home.is-list-mode .cv-topic-label{display:none}
+.cv-home .cv-card .cv-topic-label{flex:1;min-width:0;white-space:normal;overflow-wrap:anywhere;font-size:16px;font-weight:750;line-height:1.25;letter-spacing:0;color:#55347f;pointer-events:none;user-select:none}
+
