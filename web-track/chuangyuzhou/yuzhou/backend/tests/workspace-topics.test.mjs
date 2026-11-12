@@ -129,6 +129,7 @@ test('stale targets or assignments block a whole batch while unrelated newer edi
   withEdits.tasks[0].title='第二窗口刚编辑的待办';
   withEdits.spaces[0].notes[0].content='第二窗口保存的笔记正文';
   withEdits.canvas.cards[1].x=477;
+  withEdits.canvas.topicBoxes=[{id:randomUUID(),title:'第二窗口的收纳盒',x:180,y:440,collapsed:true,cardIds:['project-space']}];
   assert.equal((await f.second('/api/workspace','PUT',{baseRevision:snapshot.revision,state:withEdits})).status,200);
   assert.equal((await confirm(f.first,next.id,[{id:'project-space',topic:'改进项目'}])).status,200);
   assert.deepEqual(withoutTopics(f.workspace().state),withoutTopics(withEdits));

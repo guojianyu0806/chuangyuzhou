@@ -379,6 +379,30 @@ test('canvas import uses saved layout until customized, then only fills missing 
   assert.equal(mergeBackup(result.state, incoming).count, 0);
 });
 
+test('home topic boxes restore with their layout and survive legacy imports', () => {
+  const source = state();
+  source.canvas = layout(true);
+  source.canvas.topicBoxes = [{
+    id: '9dab1966-2aa4-4bfb-9b36-c3dfbcf36cc6', title: '活动资料',
+    x: -25, y: 452, collapsed: true, cardIds: ['student-union', 'hidden-module'],
+  }];
+  const exported = validateBackup(JSON.parse(JSON.stringify(backup(source))));
+  assert.deepEqual(exported.state.canvas, source.canvas);
+  assert.deepEqual(mergeBackup(state(), exported).state.canvas, source.canvas);
+
+  const current = structuredClone(source);
+  current.canvas.topicBoxes[0].x = 734;
+  current.canvas.topicBoxes[0].cardIds = ['student-union'];
+  assert.deepEqual(mergeBackup(current, exported).state.canvas.topicBoxes, current.canvas.topicBoxes);
+
+  current.canvas.customized = false;
+  const old = state();
+  old.canvas = layout();
+  const legacy = validateBackup(backup(old));
+  assert.equal(Object.hasOwn(legacy.state.canvas, 'topicBoxes'), false);
+  assert.deepEqual(mergeBackup(current, legacy).state.canvas.topicBoxes, current.canvas.topicBoxes);
+});
+
 test('course canvas restores from backups independently of the home canvas and remains optional', () => {
   const incoming = state(); incoming.courseCanvas = layout(true);
   incoming.courseCanvas.cards = incoming.courseCanvas.cards.map((card, index) => ({...card,id:`course-${index}`}));

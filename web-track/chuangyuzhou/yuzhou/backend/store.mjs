@@ -11,6 +11,7 @@ import { validateFitness } from '../frontend/src/fitness-model.js';
 import { validateCompetitions } from '../frontend/src/competitions-model.js';
 import { validateWorkbench } from '../frontend/src/workbench-model.js';
 import {validateWorkspaceTopics,validateCanvasTopicLabels} from '../frontend/src/workspace-topics-model.js';
+import {validateCanvasTopicBoxes} from '../frontend/src/canvas-topic-boxes.js';
 import { validateCustomBlocks } from '../frontend/src/custom-blocks-model.js';
 import {validateSpaceStructure} from '../frontend/src/space-workbench-config.js';
 import { validateEnglishPracticeState } from '../frontend/src/english-practice-model.js';
@@ -141,6 +142,10 @@ export function validateWorkspace(state) {
     try { validateCanvasTopicLabels(state.canvas.topicLabels); }
     catch { throw new ApiError(400, 'invalid_canvas_topic_labels'); }
   }
+  if (state.canvas?.topicBoxes !== undefined) {
+    try { validateCanvasTopicBoxes(state.canvas.topicBoxes); }
+    catch { throw new ApiError(400, 'invalid_canvas_topic_boxes'); }
+  }
   if (state.customBlocks !== undefined) {
     try { validateCustomBlocks(state.customBlocks); }
     catch { throw new ApiError(400, 'invalid_custom_blocks'); }
@@ -244,6 +249,7 @@ export function createStore(dataDir, { sessionMs = 30 * 86400000, historyLimit =
           const previous = JSON.parse(current.state);
           if (state.workbench === undefined && previous.workbench !== undefined) throw new ApiError(409, 'workspace_update_required');
           if (state.workspaceTopics === undefined && previous.workspaceTopics !== undefined) throw new ApiError(409, 'workspace_update_required');
+          if (state.canvas?.topicBoxes === undefined && previous.canvas?.topicBoxes?.length) throw new ApiError(409, 'workspace_update_required');
           if (state.customBlocks === undefined && previous.customBlocks?.items?.length) throw new ApiError(409, 'workspace_update_required');
           if (state.competitions === undefined && ['items', 'milestones', 'tasks'].some(key => previous.competitions?.[key]?.length)) throw new ApiError(409, 'workspace_update_required');
           if (state.fitness === undefined && previous.fitness?.entries?.length) throw new ApiError(409, 'workspace_update_required');

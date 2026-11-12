@@ -9,6 +9,7 @@ import {validateFitness, mergeFitness} from './fitness-model.js';
 import {validateCompetitions, mergeCompetitions} from './competitions-model.js';
 import {validateWorkbench} from './workbench-model.js';
 import {validateWorkspaceTopics,validateCanvasTopicLabels} from './workspace-topics-model.js';
+import {validateCanvasTopicBoxes} from './canvas-topic-boxes.js';
 import {validateCustomBlocks,mergeCustomBlocks} from './custom-blocks-model.js';
 import {validateSpaceWorkbench,validateSpaceStructure} from './space-workbench-config.js';
 import {isRecordColor, assignRecordColor} from './creation-colors.js';
@@ -323,7 +324,10 @@ function workspace(value) {
   }
   if (value.aiRequests !== undefined) result.aiRequests = records(value.aiRequests, aiRequest, 'AI 收件记录');
   if (value.aiDraft !== undefined) result.aiDraft = aiDraft(value.aiDraft);
-  if (value.canvas !== undefined) result.canvas = canvas(value.canvas);
+  if (value.canvas !== undefined) {
+    result.canvas = canvas(value.canvas);
+    if (value.canvas.topicBoxes !== undefined) result.canvas.topicBoxes = validateCanvasTopicBoxes(value.canvas.topicBoxes);
+  }
   if (value.courseCanvas !== undefined) result.courseCanvas = canvas(value.courseCanvas, '课程画布');
   if (value.boards !== undefined) {
     const boards = object(value.boards, '内页画布');
@@ -477,7 +481,11 @@ export function mergeBackup(current, incoming) {
   for (const key of ['canvas', 'courseCanvas']) {
     if (!source[key]) continue;
     if (!state[key]?.customized) {
-      if (JSON.stringify(state[key]) !== JSON.stringify(source[key])) { state[key] = structuredClone(source[key]); count++; }
+      const layout = structuredClone(source[key]);
+      if (key === 'canvas' && layout.topicBoxes === undefined && state.canvas?.topicBoxes !== undefined) {
+        layout.topicBoxes = state.canvas.topicBoxes;
+      }
+      if (JSON.stringify(state[key]) !== JSON.stringify(layout)) { state[key] = layout; count++; }
     } else mergeRecords(state[key].cards ||= [], source[key].cards);
   }
   if (source.boards) {

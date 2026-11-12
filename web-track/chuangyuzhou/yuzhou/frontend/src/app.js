@@ -2,7 +2,7 @@ import {icon} from './icons.js';
 import {escapeHTML as esc,putFile,getFile,download,VERSION} from './services.js';
 import {seedEnglish} from './english-state.js';
 import {mountCanvas,ensureCanvas} from './canvas.js';
-import {createWorkspaceTopicActions,mountWorkspaceTopics} from './workspace-topics.js';
+import {mountWorkspaceTopics} from './workspace-topics.js';
 import {visibleWorkspaceTopicCards} from './workspace-topics-model.js';
 import {mountSpace,openSpaceDialog,saveSpaceFiles} from './spaces.js';
 import {mountAI,mountAIComposer,openAIConversation} from './ai.js';
@@ -280,9 +280,14 @@ function updateShellCounts(){
     const el=document.querySelector(`[data-count="${id}"]`);if(el)el.textContent=count||'';
   }
 }
-function workspaceTopicConnection(){
-  return {
-    state:()=>state, cards:()=>visibleWorkspaceTopicCards(state), session:topicsSession,
+function mountTopics(view){
+  return mountWorkspaceTopics({
+    root:view.root, state:()=>state, cards:()=>visibleWorkspaceTopicCards(state), session:topicsSession,
+    openCard:id=>{
+      if(!visibleWorkspaceTopicCards(state).some(card=>card.id===id)){toast('这张卡片已不在工作台上。');return;}
+      return makeContext().enterCard(id);
+    },
+    showCanvas:()=>go('home'),
     loadDraft:()=>{
       if(!topicsDraftKey)return null;
       try{return JSON.parse(workspaceStorage.getItem(topicsDraftKey)||'null');}catch{return null;}
@@ -301,43 +306,10 @@ function workspaceTopicConnection(){
         canApply:()=>state===source&&cloudEditTick===editTick&&!dialog.open&&!hasUnsavedCloudFields(),
         apply:adoptCloudState
       });
-    }:null
-  };
-}
-function mountTopics(view){
-  return mountWorkspaceTopics({
-    ...workspaceTopicConnection(), root:view.root,
-    openCard:id=>{
-      if(!visibleWorkspaceTopicCards(state).some(card=>card.id===id)){toast('这张卡片已不在工作台上。');return;}
-      return makeContext().enterCard(id);
-    },
-    showCanvas:()=>go('home'),
+    }:null,
     scrollTarget:window
   });
 }
-function normalizeTopicStoragePreference(value){
-  const closed=Array.isArray(value?.closed)?value.closed.filter(item=>typeof item==='string'&&item.length<=256).slice(0,2048):[];
-  const preference={enabled:value?.enabled===true,closed:[...new Set(closed)]};
-  const view=value?.view;
-  if(view&&[view.x,view.y,view.zoom].every(Number.isFinite)){
-    preference.view={
-      x:Math.max(-150000,Math.min(150000,view.x)),
-      y:Math.max(-150000,Math.min(150000,view.y)),
-      zoom:Math.max(.3,Math.min(1.6,view.zoom))
-    };
-  }
-  return preference;
-}
-const canvasTopicStorageKey=cloudClient?.draftKey(`canvas-topic-storage-${mode}`)||`${key(mode)}:canvas-topic-storage`;
-const canvasTopicStorage={
-  load(){
-    try{return normalizeTopicStoragePreference(JSON.parse(workspaceStorage.getItem(canvasTopicStorageKey)||'null'));}
-    catch{return {enabled:false,closed:[]};}
-  },
-  save(preference){
-    workspaceStorage.setItem(canvasTopicStorageKey,JSON.stringify(normalizeTopicStoragePreference(preference)));
-  }
-};
 function resetRouteScroll(){
   if(location.hash!==topicsHash)window.scrollTo({top:0,behavior:'instant'});
 }
@@ -628,11 +600,7 @@ function render(){
   if(route==='home'&&subroute==='topics')cleanupView=mountTopics(view);
   else if(route==='home'){
     ensureCanvas(state);
-    cleanupView=mountCanvas({
-      ...view,fitOnMount:subroute==='layout',showTopics:()=>go('home','topics'),
-      topicStorage:canvasTopicStorage,
-      topicActions:cloudClient?createWorkspaceTopicActions(workspaceTopicConnection()):null
-    });
+    cleanupView=mountCanvas({...view,fitOnMount:subroute==='layout',showTopics:()=>go('home','topics')});
     if(subroute==='layout')history.replaceState(null,'','#/home');
   }
   if(route==='ai')cleanupView=mountAI(view,state.spaces.some(s=>s.id===subroute)?`space:${subroute}`:subroute);
