@@ -4,6 +4,7 @@ import {isWorkspaceTopicCandidateId, normalizeTopicName, TOPIC_CARD_LIMIT, TOPIC
 import {canvasCardFill, homeCanvasCardAppearance} from './canvas.js';
 import {getCustomBlocks} from './custom-blocks-model.js';
 import {getSpaceIconMap} from './space-icons.js';
+import {mountWorkspaceTopicDrag} from './workspace-topic-drag.js';
 
 const API = '/api/workspace/topics';
 const sessions = new WeakMap();
@@ -64,29 +65,46 @@ export function mountWorkspaceTopics({
   let active = true;
   let pollTimer;
   let scrollTimer;
+  let indexFrame;
+  let indexJump;
+  let moveDraft;
   let attemptedRecovery = null;
   let scrollRestored = false;
   const restoreTop = view.scrollTop;
   const rendered = new WeakMap();
 
   root.innerHTML = [
-    '<div class="wt-page">',
+    '<div class="wt-page" data-topics-view>',
     '  <header class="wt-header">',
-    '    <div><p class="wt-eyebrow">工作台 · 主题视图</p><h1>按主题查看</h1>',
-    '    <p>把相关卡片放在同一个主题里，随时打开原卡片。</p></div>',
+    '    <h1>按主题查看</h1>',
     '    <button type="button" class="btn" data-topics-action="canvas">'+icon('arrow-left', 16)+'返回画布</button>',
     '  </header>',
     '  <section class="wt-toolbar" aria-label="查找与归类">',
     '    <label class="wt-search"><span class="sr-only">搜索卡片或主题</span>'+icon('search', 17),
     '      <input type="search" placeholder="搜索卡片或主题" maxlength="100" data-topics-search></label>',
     '    <div class="wt-tools"><span data-topics-count></span>',
-    '      <button type="button" class="btn primary" data-topics-action="suggest">'+icon('sparkles', 17)+'AI 归类</button></div>',
+    '      <button type="button" class="btn primary" data-topics-action="suggest" title="AI 会读取所选卡片的名称、类型和简介">'+icon('sparkles', 17)+'AI 归类</button>',
+    '      <button type="button" class="btn wt-undo" data-topics-action="undo" aria-label="撤销此批归类" title="撤销上次归类调整" hidden>'+icon('arrow-left', 16)+'<span>撤销</span></button></div>',
     '    <p class="wt-hint" data-topics-hint></p>',
     '  </section>',
     '  <p class="wt-status" data-topics-status role="status" aria-live="polite" hidden></p>',
     '  <div data-topics-review></div>',
-    '  <div data-topics-receipt></div>',
-    '  <section class="wt-groups" aria-label="主题分组" data-topics-groups></section>',
+    '  <div data-topics-recovery></div>',
+    '  <div class="wt-content">',
+    '    <section class="wt-groups" aria-label="主题分组" data-topics-groups></section>',
+    '    <nav class="wt-index" aria-label="主题目录" hidden><span class="wt-index-heading">主题</span>',
+    '      <div class="wt-index-track" aria-hidden="true"></div><div class="wt-index-list"></div></nav>',
+    '  </div>',
+    '  <dialog class="wt-move" data-topics-move-dialog aria-labelledby="wt-move-title">',
+    '    <form data-topics-move-form>',
+    '      <h2 id="wt-move-title">移动卡片</h2><p data-topics-move-card></p>',
+    '      <label>目标主题<select data-topics-move-target required></select></label>',
+    '      <label data-topics-new-label hidden>新主题名称<input data-topics-new-topic maxlength="'+TOPIC_NAME_LIMIT+'" autocomplete="off" disabled></label>',
+    '      <p data-topics-move-error role="alert" hidden></p>',
+    '      <div class="wt-move-actions"><button type="button" class="btn" data-topics-action="cancel-move">取消</button>',
+    '        <button type="submit" class="btn primary" data-topics-move-submit>移动</button></div>',
+    '    </form>',
+    '  </dialog>',
     '</div>'
   ].join('\n');
 
@@ -96,7 +114,14 @@ export function mountWorkspaceTopics({
   const status = $('[data-topics-status]');
   const reviewHost = $('[data-topics-review]');
   const groupsHost = $('[data-topics-groups]');
-  const receiptHost = $('[data-topics-receipt]');
+  const recoveryHost = $('[data-topics-recovery]');
+  const index = $('.wt-index');
+  const indexList = $('.wt-index-list');
+  const moveDialog = $('[data-topics-move-dialog]');
+  const moveForm = $('[data-topics-move-form]');
+  const moveTarget = $('[data-topics-move-target]');
+  const newTopic = $('[data-topics-new-topic]');
+  const moveError = $('[data-topics-move-error]');
   search.value = view.query;
 
   function paint(host, markup) {
@@ -112,6 +137,12 @@ export function mountWorkspaceTopics({
     return view.selected.filter(id => allowed.has(id));
   };
   const busy = () => shared.generation || shared.writing;
+  const moveLocked = () => !connected || Boolean(view.operation || view.review) || busy();
+  const canMove = id => !moveLocked() && !moveDialog.open && currentCards().some(card => card.id === id);
+  const assignmentFor = id => {
+    const row = currentTopics().assignments?.find(item => item.id === id);
+    return row ? {topic: row.topic, batchId: row.batchId} : null;
+  };
   const reviewCards = () => (view.review?.cards || []).filter(isCandidate);
   function chosenChanges() {
     try {
@@ -154,27 +185,39 @@ export function mountWorkspaceTopics({
     const topics = groupedCards(currentCards(), currentTopics().assignments || [], view.query);
     const selected = new Set(view.selected);
     const closed = new Set(view.closed);
-    const locked = !connected || Boolean(view.review || view.operation) || busy();
+    const locked = moveLocked();
+    if (connected && topics.length && !view.query.trim() && !topics.some(([topic]) => topic === null)) {
+      topics.push([null, []]);
+    }
     const workspace = get(state);
     const layouts = new Map((workspace?.canvas?.cards || []).map(card => [card.id, card]));
     const records = new Map([...(workspace?.spaces || []), ...getCustomBlocks(workspace).items].map(card => [card.id, card]));
     const spaceIcons = getSpaceIconMap(workspace);
     paint(groupsHost, topics.map(([topic, entries]) => {
       const key = topicKey(topic);
-      return '<details class="wt-group" data-topics-group="'+esc(key)+'"'+(closed.has(key) ? '' : ' open')+'>'+
+      return '<details class="wt-group" data-topics-group="'+esc(key)+'" data-topics-drop="'+esc(key)+'"'+(closed.has(key) ? '' : ' open')+'>'+
         '<summary><span class="wt-group-dot" aria-hidden="true"></span><strong>'+esc(topic || '未归类')+
         '</strong><span class="wt-count">'+entries.length+' 张</span></summary>'+
-        '<ul class="wt-cards">'+entries.map(card => {
+        (entries.length ? '<ul class="wt-cards">'+entries.map(card => {
           const appearance = homeCanvasCardAppearance(layouts.get(card.id) || card, records.get(card.id), spaceIcons.get(card.id));
           return '<li class="wt-card" style="--wt-card-color:'+appearance.color+';--wt-card-fill:'+canvasCardFill(appearance.color)+'">'+
             '<button type="button" class="wt-card-link" data-topics-open="'+esc(card.id)+'">'+
             '<span class="wt-card-mark" aria-hidden="true">'+icon(appearance.icon, 18)+'</span>'+
             '<span class="wt-card-label"><small>'+esc(kinds[card.kind] || '')+'</small><strong>'+esc(card.title)+'</strong></span>'+
             '</button>'+
+            '<button type="button" class="wt-card-move" data-topics-move="'+esc(card.id)+'" aria-label="移动'+esc(card.title)+'到其他主题" title="移动到其他主题"'+
+            (locked ? ' disabled' : '')+'>'+icon('more', 17)+'</button>'+
             '<label class="wt-select"><input type="checkbox" data-topics-select="'+esc(card.id)+'" aria-label="选择'+esc(card.title)+'"'+
             (selected.has(card.id) ? ' checked' : '')+(locked ? ' disabled' : '')+'></label></li>';
-        }).join('')+'</ul></details>';
+        }).join('')+'</ul>' : '<p class="wt-group-empty">拖到这里可移出主题</p>')+'</details>';
     }).join('') || '<p class="wt-empty">'+(view.query.trim() ? '没有符合搜索条件的卡片。' : '工作台还没有可查看的卡片。')+'</p>');
+    index.hidden = !topics.length;
+    paint(indexList, topics.map(([topic]) => {
+      const key = esc(topicKey(topic));
+      const name = esc(topic ?? '未归类');
+      return '<button type="button" class="wt-index-link" data-topics-jump="'+key+'" data-topics-drop="'+key+'" title="'+name+'">'+name+'</button>';
+    }).join(''));
+    scheduleIndex();
   }
 
   function drawActions() {
@@ -182,13 +225,114 @@ export function mountWorkspaceTopics({
     $('[data-topics-count]').textContent = '已选 '+count+' 张';
     $('[data-topics-action="suggest"]').disabled = !connected || !count || Boolean(view.review || view.operation) || busy();
     $('[data-topics-hint]').textContent = connected
-      ? '勾选要整理的卡片。AI 会查看选中卡片的名称、类型和简介。'
+      ? '勾选卡片交给 AI 归类，长按可拖到其他主题。'
       : '连接个人工作台后可使用 AI 归类。';
     const confirm = $('[data-topics-action="confirm"]');
     if (confirm) {
       const changes = chosenChanges();
       confirm.disabled = !changes.length || busy() || Boolean(view.operation || view.review?.stale);
     }
+  }
+
+  function scheduleIndex() {
+    if (indexFrame !== undefined) return;
+    indexFrame = requestAnimationFrame(() => {
+      indexFrame = undefined;
+      const groups = Array.from(groupsHost.querySelectorAll('[data-topics-group]'));
+      if (!groups.length) return;
+      const bounds = scrollTarget === window
+        ? {top: 0, bottom: window.innerHeight}
+        : scrollTarget.getBoundingClientRect();
+      const start = groups[0].getBoundingClientRect().top;
+      const end = groups.at(-1).getBoundingClientRect().bottom;
+      const indexStyle = getComputedStyle(index);
+      const stickyTop = parseFloat(indexStyle.top) || 0;
+      const offset = bounds.top + stickyTop + (indexStyle.gridRowStart === '1' ? index.offsetHeight : 0) + 10;
+      const scrollDistance = Math.max(1, end - start - (bounds.bottom - offset));
+      const progress = Math.max(0, Math.min(1, (offset - start) / scrollDistance));
+      index.style.setProperty('--wt-progress', String(progress));
+      const current = groups.find(group => group.dataset.topicsGroup === indexJump?.key)
+        ?? (progress === 1 ? groups.at(-1) : groups.findLast(group => group.getBoundingClientRect().top <= offset)) ?? groups[0];
+      for (const button of indexList.querySelectorAll('[data-topics-jump]')) {
+        if (button.dataset.topicsJump === current.dataset.topicsGroup) {
+          button.setAttribute('aria-current', 'location');
+          if (!page.classList.contains('wt-dragging')) {
+            const list = indexList.getBoundingClientRect();
+            const link = button.getBoundingClientRect();
+            const top = link.top < list.top ? link.top - list.top : Math.max(0, link.bottom - list.bottom);
+            const left = link.left < list.left ? link.left - list.left : Math.max(0, link.right - list.right);
+            if (top || left) indexList.scrollBy({top, left, behavior: 'instant'});
+          }
+        } else button.removeAttribute('aria-current');
+      }
+    });
+  }
+
+  function jumpToTopic(key) {
+    const group = Array.from(groupsHost.querySelectorAll('[data-topics-group]')).find(item => item.dataset.topicsGroup === key);
+    if (!group) return;
+    group.open = true;
+    group.scrollIntoView({block: 'start', behavior: 'instant'});
+    group.querySelector('summary').focus({preventScroll: true});
+    indexJump = {key, top: scrollPosition()};
+    scheduleIndex();
+  }
+
+  function openMove(id) {
+    if (!canMove(id)) return;
+    const cards = currentCards();
+    const expected = assignmentFor(id);
+    const topics = groupedCards(cards, currentTopics().assignments || [], '').map(([topic]) => topic);
+    if (!topics.includes(null)) topics.push(null);
+    moveDraft = {id, expected, topics};
+    $('[data-topics-move-card]').textContent = cards.find(card => card.id === id).title;
+    moveTarget.replaceChildren(...topics.map((topic, position) => new Option(topic ?? '未归类', String(position))),
+      new Option('＋ 新建主题', 'new'));
+    moveTarget.value = String(topics.indexOf(expected?.topic ?? null));
+    newTopic.value = '';
+    updateMoveForm();
+    moveDialog.showModal();
+  }
+
+  function updateMoveForm() {
+    const creating = moveTarget.value === 'new';
+    $('[data-topics-new-label]').hidden = !creating;
+    newTopic.disabled = !creating;
+    newTopic.required = creating;
+    moveError.hidden = true;
+    $('[data-topics-move-submit]').disabled = creating ? !newTopic.value.trim()
+      : moveDraft.topics[Number(moveTarget.value)] === (moveDraft.expected?.topic ?? null);
+  }
+
+  function submitMove(event) {
+    event.preventDefault();
+    if (!moveDraft) return;
+    const {id, expected, topics} = moveDraft;
+    let topic = topics[Number(moveTarget.value)];
+    if (moveTarget.value === 'new') {
+      try { topic = normalizeTopicName(newTopic.value); }
+      catch {
+        moveError.textContent = '请输入有效的主题名称，最多 '+TOPIC_NAME_LIMIT+' 字。';
+        moveError.hidden = false;
+        newTopic.focus();
+        return;
+      }
+      if (topic === '未归类' || topics.includes(topic)) {
+        moveError.textContent = '这个主题已在列表中，请直接选择。';
+        moveError.hidden = false;
+        return;
+      }
+    }
+    if (topic === undefined || topic === (expected?.topic ?? null)) return;
+    moveDialog.close();
+    startMove(id, topic, expected);
+  }
+
+  function startMove(cardId, topic, expected) {
+    if (!canMove(cardId) || topic === (expected?.topic ?? null)) return;
+    captureScroll();
+    view.operation = {kind: 'move', batchId: crypto.randomUUID(), cardId, topic, expected};
+    void runOperation('new');
   }
 
   function drawReview() {
@@ -242,27 +386,16 @@ export function mountWorkspaceTopics({
   }
 
   function drawReceipt() {
-    if (view.operation) {
-      paint(receiptHost, '<div class="wt-receipt"><span>'+
-        (shared.writing ? '正在核对保存结果…' : '保存结果待核对。')+'</span>'+
-        '<button type="button" class="btn" data-topics-action="retry"'+(shared.writing || !connected ? ' disabled' : '')+
-        '>查询并重试</button></div>');
-      return;
-    }
     const receipts = (currentTopics().receipts || []).filter(receipt => receipt.changes.some(isCandidate));
     const receipt = receipts.find(item => item.batchId === view.lastBatchId) || receipts.at(-1);
-    if (!receipt) {
-      paint(receiptHost, '');
-      return;
-    }
-    const undone = receipt.status === 'undone';
-    const count = receipt.changes.filter(isCandidate).length;
-    const skipped = receipt.skipped?.filter(isWorkspaceTopicCandidateId).length || 0;
-    const text = undone ? '已恢复 '+(count - skipped)+' 张卡片的原分组'+(skipped ? '，保留了 '+skipped+' 张卡片后续调整' : '')+'。'
-      : '本批已归类 '+count+' 张卡片。';
-    paint(receiptHost, '<div class="wt-receipt"><span>'+text+'</span>'+
-      (undone ? '' : '<button type="button" class="btn" data-topics-action="undo" data-batch="'+esc(receipt.batchId)+
-        '"'+(!connected || busy() || view.review ? ' disabled' : '')+'>撤销此批归类</button>')+'</div>');
+    const undo = $('[data-topics-action="undo"]');
+    undo.hidden = receipt?.status !== 'confirmed';
+    undo.disabled = moveLocked();
+    undo.dataset.batch = receipt?.batchId ?? '';
+    paint(recoveryHost, view.operation && !shared.writing
+      ? '<div class="wt-recovery"><span>保存结果待核对。</span>'+
+        '<button type="button" class="btn" data-topics-action="retry"'+(!connected ? ' disabled' : '')+
+        '>查询并重试</button></div>' : '');
   }
 
   function draw() {
@@ -342,13 +475,24 @@ export function mountWorkspaceTopics({
     const operation = view.operation;
     if (!connected || !operation || busy()) return;
     const {kind, batchId} = operation;
-    const endpoint = kind === 'confirm' ? '/confirm' : '/undo';
-    const expected = kind === 'confirm' ? 'confirmed' : 'undone';
+    const endpoint = '/'+kind;
+    const expectedStatus = kind === 'undo' ? 'undone' : 'confirmed';
+    const body = kind === 'confirm' ? {draftId: batchId, changes: operation.changes}
+      : kind === 'move' ? {batchId, cardId: operation.cardId, topic: operation.topic, expected: operation.expected}
+      : {batchId};
     const lookup = () => request(API+'/receipt?batchId='+encodeURIComponent(batchId));
     const matches = receipt => receipt?.batchId === batchId &&
-      (receipt.status === expected || (kind === 'confirm' && receipt.status === 'undone'));
-    const matchesReview = receipt => kind !== 'confirm' || (receipt.changes.length === operation.changes.length &&
-      receipt.changes.every(change => operation.changes.some(row => row.id === change.id && row.topic === change.topic)));
+      (receipt.status === expectedStatus || (kind !== 'undo' && receipt.status === 'undone'));
+    const matchesOperation = receipt => {
+      if (kind === 'undo') return true;
+      if (kind === 'confirm') {
+        return receipt.kind !== 'move' && receipt.changes.length === operation.changes.length &&
+          receipt.changes.every(change => operation.changes.some(row => row.id === change.id && row.topic === change.topic));
+      }
+      const change = receipt.changes[0];
+      return receipt.kind === 'move' && receipt.changes.length === 1 && change.id === operation.cardId && change.topic === operation.topic &&
+        change.previous?.topic === operation.expected?.topic && change.previous?.batchId === operation.expected?.batchId;
+    };
     shared.writing = true;
     shared.notice = '';
     emit();
@@ -356,8 +500,8 @@ export function mountWorkspaceTopics({
       if (!await persist()) return;
       const known = mode === 'new' ? null : (await lookup()).receipt;
       if (mode === 'check' && !matches(known)) return;
-      if (matches(known) && !matchesReview(known)) {
-        const conflict = new Error('本批已按其他审核内容保存，请查看当前分组后重新生成建议。');
+      if (matches(known) && !matchesOperation(known)) {
+        const conflict = new Error('该操作已保存其他内容，请查看当前分组后重试。');
         conflict.code = 'TOPIC_BATCH_CONFLICT';
         throw conflict;
       }
@@ -367,8 +511,7 @@ export function mountWorkspaceTopics({
         try { ({result, applied} = await mutate(async () => ({receipt: known}))); }
         catch { result = {receipt: known}; applied = false; }
       } else {
-        ({result, applied} = await mutate(() => request(API+endpoint, {method: 'POST', body: kind === 'confirm'
-          ? {draftId: batchId, changes: operation.changes} : {batchId}})));
+        ({result, applied} = await mutate(() => request(API+endpoint, {method: 'POST', body})));
       }
       if (!matches(result.receipt)) throw new Error('尚未取得保存回执。');
       view.lastBatchId = batchId;
@@ -377,11 +520,21 @@ export function mountWorkspaceTopics({
         view.review = null;
         view.selected = [];
       }
+      if (kind === 'move' && result.receipt.status === 'confirmed') {
+        view.closed = view.closed.filter(key => key !== topicKey(operation.topic));
+      }
+      const skipped = result.receipt.skipped?.filter(isWorkspaceTopicCandidateId).length ?? 0;
       shared.notice = applied === false ? '云端已保存。请处理当前页面的同步提示，再查看最新分组。'
-        : kind === 'confirm' ? '主题归类已保存。' : '已核对并保存撤销结果。';
+        : kind === 'confirm' ? '主题归类已保存。'
+        : kind === 'undo' ? (skipped ? '已撤销可恢复的分组，保留了 '+skipped+' 张卡片的后续调整。' : '已撤销上次归类调整。')
+        : result.receipt.status === 'undone' ? '这次移动已撤销。' : '已移至「'+(operation.topic ?? '未归类')+'」。';
       await persist();
     } catch (error) {
-      if (['TOPIC_DRAFT_STALE', 'TOPIC_DRAFT_MISSING', 'TOPIC_DRAFT_NOT_READY', 'TOPIC_BATCH_CONFLICT'].includes(error.code)) {
+      if (kind === 'move' && ['TOPIC_MOVE_STALE', 'TOPIC_BATCH_CONFLICT'].includes(error.code)) {
+        view.operation = null;
+        try { await mutate(async () => null); } catch { /* Cloud sync reports whether the current state could be refreshed. */ }
+        shared.notice = error.message || '卡片分组已有变化，请查看最新结果后再移动。';
+      } else if (['TOPIC_DRAFT_STALE', 'TOPIC_DRAFT_MISSING', 'TOPIC_DRAFT_NOT_READY', 'TOPIC_BATCH_CONFLICT'].includes(error.code)) {
         view.operation = null;
         if (view.review) {
           view.review.stale = true;
@@ -401,9 +554,8 @@ export function mountWorkspaceTopics({
     }
   }
 
-  function captureScroll() {
-    view.scrollTop = scrollTarget === window ? window.scrollY : scrollTarget.scrollTop;
-  }
+  const scrollPosition = () => scrollTarget === window ? window.scrollY : scrollTarget.scrollTop;
+  function captureScroll() { view.scrollTop = scrollPosition(); }
 
   function saveScroll() {
     captureScroll();
@@ -413,6 +565,14 @@ export function mountWorkspaceTopics({
   function click(event) {
     const control = event.target.closest('button');
     if (!control || control.disabled) return;
+    if (control.hasAttribute('data-topics-jump')) {
+      jumpToTopic(control.dataset.topicsJump);
+      return;
+    }
+    if (control.hasAttribute('data-topics-move')) {
+      openMove(control.dataset.topicsMove);
+      return;
+    }
     if (control.hasAttribute('data-topics-open')) {
       const id = control.dataset.topicsOpen;
       if (currentCards().some(card => card.id === id)) {
@@ -451,13 +611,19 @@ export function mountWorkspaceTopics({
         }
         break;
       case 'retry': void runOperation('retry'); break;
+      case 'cancel-move': moveDialog.close(); break;
     }
   }
 
   function input(event) {
     const target = event.target;
+    if (target === newTopic && moveDraft) {
+      updateMoveForm();
+      return;
+    }
     if (target === search) {
       view.query = search.value;
+      indexJump = null;
       drawGroups();
       void persist();
       return;
@@ -476,6 +642,11 @@ export function mountWorkspaceTopics({
 
   function change(event) {
     const target = event.target;
+    if (target === moveTarget && moveDraft) {
+      updateMoveForm();
+      if (moveTarget.value === 'new') newTopic.focus();
+      return;
+    }
     if (target.hasAttribute('data-topics-select') && !view.review && !view.operation && !busy()) {
       const id = target.dataset.topicsSelect;
       if (!currentCards().some(card => card.id === id)) return;
@@ -507,12 +678,15 @@ export function mountWorkspaceTopics({
     const wasClosed = view.closed.includes(key);
     if (wasClosed === !group.open) return;
     view.closed = group.open ? view.closed.filter(item => item !== key) : [...view.closed, key];
+    scheduleIndex();
     void persist();
   }
 
   const onScroll = () => {
     if (!scrollRestored) return;
     captureScroll();
+    if (indexJump && view.scrollTop !== indexJump.top) indexJump = null;
+    scheduleIndex();
     clearTimeout(scrollTimer);
     scrollTimer = setTimeout(() => void persist(), 150);
   };
@@ -527,7 +701,12 @@ export function mountWorkspaceTopics({
   page.addEventListener('input', input);
   page.addEventListener('change', change);
   page.addEventListener('toggle', toggle, true);
+  moveForm.addEventListener('submit', submitMove);
+  const stopDrag = mountWorkspaceTopicDrag({page, scrollTarget, canMove, onStart: assignmentFor, onDrop: startMove});
+  const indexResize = new ResizeObserver(scheduleIndex);
+  indexResize.observe(groupsHost);
   scrollTarget.addEventListener('scroll', onScroll, {passive: true});
+  window.addEventListener('resize', scheduleIndex);
   shared.listeners.add(draw);
   draw();
   const restoreFrame = requestAnimationFrame(() => {
@@ -535,12 +714,14 @@ export function mountWorkspaceTopics({
     if (scrollTarget === window) window.scrollTo({top: restoreTop, behavior: 'instant'});
     else scrollTarget.scrollTop = restoreTop;
     scrollRestored = true;
+    scheduleIndex();
     recover();
   });
 
   return () => {
     active = false;
     cancelAnimationFrame(restoreFrame);
+    cancelAnimationFrame(indexFrame);
     clearTimeout(pollTimer);
     clearTimeout(scrollTimer);
     shared.listeners.delete(draw);
@@ -548,7 +729,12 @@ export function mountWorkspaceTopics({
     page.removeEventListener('input', input);
     page.removeEventListener('change', change);
     page.removeEventListener('toggle', toggle, true);
+    moveForm.removeEventListener('submit', submitMove);
+    if (moveDialog.open) moveDialog.close();
+    stopDrag();
+    indexResize.disconnect();
     scrollTarget.removeEventListener('scroll', onScroll);
+    window.removeEventListener('resize', scheduleIndex);
     void persist();
   };
 }

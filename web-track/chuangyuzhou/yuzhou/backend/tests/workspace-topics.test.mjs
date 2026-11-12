@@ -19,7 +19,7 @@ const newWorkspace=()=>({schema:1,mode:'personal',profile:{name:'合成账号'},
 });
 const defaultModel=({user})=>({cards:JSON.parse(user).cards.map(({id})=>({id,topic:'参赛整理',reason:'同一批次的主题建议'}))});
 
-async function fixture(t,runModel=defaultModel){
+async function fixture(t,runModel=defaultModel,{configureModel=true}={}){
   const root=assertRuntimePath(join(RUNTIME_ROOT,'tests-temp'));
   await mkdir(root,{recursive:true});
   const dataDir=assertRuntimePath(await mkdtemp(join(root,'workspace-topics-')));
@@ -47,7 +47,9 @@ async function fixture(t,runModel=defaultModel){
   const first=client(),second=client();
   assert.equal((await first('/api/auth/setup','POST',{...credentials,setupToken})).status,201);
   assert.equal((await second('/api/auth/login','POST',credentials)).status,200);
-  assert.equal((await first('/api/model/config','PUT',{provider:'deepseek',model:'deepseek-flash',apiKey:'synthetic-fixture-no-network'})).status,200);
+  if(configureModel){
+    assert.equal((await first('/api/model/config','PUT',{provider:'deepseek',model:'deepseek-flash',apiKey:'synthetic-fixture-no-network'})).status,200);
+  }
   app.store.saveWorkspace(0,newWorkspace());
   async function draft(id,api=first){
     for(let attempt=0;attempt<150;attempt++){
@@ -71,6 +73,7 @@ async function fixture(t,runModel=defaultModel){
 function withoutTopics(state){const {workspaceTopics,...original}=state;return original;}
 const confirm=(api,draftId,changes)=>api(`${apiRoot}/confirm`,'POST',{draftId,changes});
 const undo=(api,batchId)=>api(`${apiRoot}/undo`,'POST',{batchId});
+const move=(api,body)=>api(`${apiRoot}/move`,'POST',body);
 
 test('topic preview sends only selected card metadata, survives process restart, and leaves the workspace unchanged',async t=>{
   const calls=[];
@@ -178,4 +181,62 @@ test('a malformed model result cannot target extra cards or become a confirmable
   assert.equal(failed.status,'failed');assert.equal(failed.error.code,'INVALID_PROPOSAL');assert.equal(failed.draft,null);
   assert.equal((await confirm(f.first,draftId,[{id:'tasks',topic:'未审核'}])).body.error,'TOPIC_DRAFT_NOT_READY');
   assert.equal(f.workspace().state.workspaceTopics,undefined);
+});
+
+test('manual moves persist and undo through the existing receipt API without a configured model',async t=>{
+  const f=await fixture(t,()=>assert.fail('Manual moves must not call the model'),{configureModel:false});
+  const before=f.workspace();
+  const newTheme={batchId:randomUUID(),cardId:'project-space',topic:'  新主题  ',expected:null};
+  assert.equal((await move(f.anonymous,newTheme)).status,401);
+  const saved=await move(f.first,newTheme);
+  assert.equal(saved.status,200);
+  assert.equal(saved.body.receipt.kind,'move');
+  assert.deepEqual(saved.body.receipt.changes,[{id:'project-space',topic:'新主题',previous:null}]);
+  assert.equal(saved.body.workspaceRevision,before.revision+1);
+  const after=f.workspace();
+  assert.deepEqual(withoutTopics(after.state),before.state);
+  await f.restart();
+  const recovered=await f.second(`${apiRoot}/receipt?batchId=${newTheme.batchId}`);
+  assert.deepEqual(recovered.body,saved.body);
+  assert.deepEqual((await move(f.second,{...newTheme,topic:'新主题'})).body,saved.body);
+  assert.equal((await move(f.second,{...newTheme,topic:'另一个主题'})).body.error,'TOPIC_BATCH_CONFLICT');
+  assert.deepEqual(f.workspace(),after);
+
+  const expected={topic:'新主题',batchId:newTheme.batchId};
+  const toUnclassified={...newTheme,batchId:randomUUID(),topic:null,expected};
+  assert.equal((await move(f.second,{...toUnclassified,topic:'新主题'})).body.error,'TOPIC_NO_CHANGES');
+  const unclassified=await move(f.first,toUnclassified);
+  assert.equal(unclassified.status,200);
+  assert.deepEqual(unclassified.body.receipt.changes,[{id:'project-space',topic:null,previous:expected}]);
+  const undone=await undo(f.second,toUnclassified.batchId);
+  assert.equal(undone.status,200);
+  assert.equal(undone.body.receipt.kind,'move');
+  assert.deepEqual(f.workspace().state.workspaceTopics.assignments,[{id:'project-space',topic:'新主题',batchId:toUnclassified.batchId}]);
+  assert.deepEqual((await move(f.first,toUnclassified)).body,undone.body);
+  assert.deepEqual(withoutTopics(f.workspace().state),before.state);
+});
+
+test('manual moves reject stale, hidden and reserved targets without overwriting newer grouping or a draft',async t=>{
+  const f=await fixture(t);
+  const draft=await f.suggest(['project-space','tasks']);
+  const operation={batchId:randomUUID(),cardId:'project-space',topic:'人工调整',expected:null};
+  assert.equal((await move(f.first,{...operation,batchId:draft.id})).body.error,'TOPIC_BATCH_CONFLICT');
+  for(const cardId of ['ai','hidden-space','no-such-card']){
+    const blocked=await move(f.first,{...operation,cardId});
+    assert.equal(blocked.status,409);
+    assert.equal(blocked.body.error,'TOPIC_MOVE_STALE');
+    assert.equal(blocked.body.cardId,cardId);
+  }
+  assert.equal((await move(f.first,{...operation,expected:{topic:null}})).body.error,'TOPIC_INVALID_INPUT');
+  assert.equal(f.workspace().state.workspaceTopics,undefined);
+  assert.equal((await move(f.second,operation)).status,200);
+  const current=f.workspace();
+  const conflict=await move(f.first,{...operation,batchId:randomUUID(),topic:'旧窗口的分组'});
+  assert.equal(conflict.body.error,'TOPIC_MOVE_STALE');
+  assert.equal((await confirm(f.first,draft.id,[{id:'project-space',topic:'草稿建议'}])).body.error,'TOPIC_DRAFT_STALE');
+  assert.deepEqual(f.workspace(),current);
+  assert.equal((await confirm(f.first,draft.id,[{id:'tasks',topic:'仍可确认的建议'}])).status,200);
+  assert.equal((await undo(f.second,operation.batchId)).status,200);
+  assert.equal((await move(f.first,{...operation,batchId:randomUUID()})).body.error,'TOPIC_MOVE_STALE',
+    'A move followed by undo leaves an assignment version even when the card returns to unclassified');
 });

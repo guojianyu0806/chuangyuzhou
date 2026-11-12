@@ -10,6 +10,7 @@ const invalid=()=>fail(400,'TOPIC_INVALID_INPUT','本次归类的数据格式不
 const emptyTopics=()=>({assignments:[],receipts:[]});
 const knownFields=(row,keys)=>row&&typeof row==='object'&&!Array.isArray(row)&&Object.keys(row).length===keys.length&&keys.every(key=>Object.hasOwn(row,key));
 const idOrder=(a,b)=>a.id<b.id?-1:a.id>b.id?1:0;
+const hashRequest=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
 export function checkTopicBatchId(id){if(!isTopicBatchId(id))invalid();return id;}
 
@@ -67,6 +68,16 @@ function readChanges(value){
   return changes;
 }
 
+function saveTopicChanges(store,{state,revision,topics,batchId,requestHash,changes,kind}){
+  const assignments=new Map(topics.assignments.map(row=>[row.id,row]));
+  for(const {id,topic} of changes)assignments.set(id,{id,topic,batchId});
+  if(assignments.size>TOPIC_ASSIGNMENT_LIMIT||topics.receipts.length>=TOPIC_RECEIPT_LIMIT)fail(409,'TOPIC_HISTORY_LIMIT','主题归类记录已达到容量上限，已保留当前分组。');
+  const receipt={batchId,status:'confirmed',requestHash,confirmedAt:new Date().toISOString(),changes,...(kind?{kind}:{})};
+  state.workspaceTopics={assignments:[...assignments.values()],receipts:[...topics.receipts,receipt]};
+  const saved=store.saveWorkspace(revision,state);
+  return {receipt,workspaceRevision:saved.revision};
+}
+
 export function readTopicReceipt(store,batchId){
   checkTopicBatchId(batchId);
   const {state,revision}=store.getWorkspace();
@@ -78,12 +89,12 @@ export function confirmWorkspaceTopics(store,body,draft){
   if(!knownFields(body,['draftId','changes']))invalid();
   const batchId=checkTopicBatchId(body.draftId);
   const reviewed=readChanges(body.changes);
-  const requestHash=createHash('sha256').update(JSON.stringify(reviewed)).digest('hex');
+  const requestHash=hashRequest(reviewed);
   const {state,revision}=store.getWorkspace();
   const topics=state?.workspaceTopics||emptyTopics();
   const existing=topics.receipts.find(row=>row.batchId===batchId);
   if(existing){
-    if(existing.requestHash!==requestHash)fail(409,'TOPIC_BATCH_CONFLICT','本批归类已经确认，请查看已保存的结果。');
+    if(existing.kind||existing.requestHash!==requestHash)fail(409,'TOPIC_BATCH_CONFLICT','本批归类已经确认，请查看已保存的结果。');
     return {receipt:existing,workspaceRevision:revision};
   }
   if(!draft)fail(404,'TOPIC_DRAFT_MISSING','未找到本次归类草稿，请重新生成。');
@@ -95,13 +106,41 @@ export function confirmWorkspaceTopics(store,body,draft){
   if(conflicts.length)stale(conflicts);
   const changes=reviewed.filter(({id,topic})=>current.get(id).assignment?.topic!==topic).map(row=>({...row,previous:current.get(row.id).assignment}));
   if(!changes.length)fail(409,'TOPIC_NO_CHANGES','归类与当前分组一致，请调整至少一张卡片再保存。');
-  const assignments=new Map(topics.assignments.map(row=>[row.id,row]));
-  for(const {id,topic} of changes)assignments.set(id,{id,topic,batchId});
-  if(assignments.size>TOPIC_ASSIGNMENT_LIMIT||topics.receipts.length>=TOPIC_RECEIPT_LIMIT)fail(409,'TOPIC_HISTORY_LIMIT','主题归类记录已达到容量上限，已保留当前分组。');
-  const receipt={batchId,status:'confirmed',requestHash,confirmedAt:new Date().toISOString(),changes};
-  state.workspaceTopics={assignments:[...assignments.values()],receipts:[...topics.receipts,receipt]};
-  const saved=store.saveWorkspace(revision,state);
-  return {receipt,workspaceRevision:saved.revision};
+  return saveTopicChanges(store,{state,revision,topics,batchId,requestHash,changes});
+}
+
+function readNullableTopic(value){
+  try{return value===null?null:normalizeTopicName(value);}
+  catch{invalid();}
+}
+
+export function moveWorkspaceTopicCard(store,body,hasDraft){
+  if(!knownFields(body,['batchId','cardId','topic','expected'])||!isTopicCardId(body.cardId))invalid();
+  const {cardId,expected}=body;
+  const batchId=checkTopicBatchId(body.batchId);
+  const topic=readNullableTopic(body.topic);
+  let expectedAssignment=null;
+  if(expected!==null){
+    if(!knownFields(expected,['topic','batchId']))invalid();
+    expectedAssignment={topic:readNullableTopic(expected.topic),batchId:checkTopicBatchId(expected.batchId)};
+  }
+  const kind='move';
+  const requestHash=hashRequest({kind,cardId,topic,expected:expectedAssignment});
+  const {state,revision}=store.getWorkspace();
+  const topics=state?.workspaceTopics||emptyTopics();
+  const existing=topics.receipts.find(row=>row.batchId===batchId);
+  if(existing){
+    if(existing.kind!==kind||existing.requestHash!==requestHash)fail(409,'TOPIC_BATCH_CONFLICT','这个编号已用于其他归类操作。');
+    return {receipt:existing,workspaceRevision:revision};
+  }
+  if(hasDraft)fail(409,'TOPIC_BATCH_CONFLICT','这个编号已用于归类草稿。');
+  const card=currentCards(state).get(cardId);
+  const previous=card?.assignment;
+  if(!card||previous?.batchId!==expectedAssignment?.batchId||previous?.topic!==expectedAssignment?.topic){
+    fail(409,'TOPIC_MOVE_STALE','卡片或分组已有变化，请查看当前分组后再移动。',{cardId});
+  }
+  if((previous?.topic??null)===topic)fail(409,'TOPIC_NO_CHANGES','卡片已经在这个分组。');
+  return saveTopicChanges(store,{state,revision,topics,batchId,requestHash,changes:[{id:cardId,topic,previous}],kind});
 }
 
 export function undoWorkspaceTopics(store,body){

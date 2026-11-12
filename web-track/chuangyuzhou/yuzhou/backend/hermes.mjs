@@ -10,7 +10,7 @@ import {WORKSPACE_QUERY_CAPABILITIES,validateWorkspaceQueries,runWorkspaceQuery,
 import { assertRuntimePath, prepareDataDirectory, RUNTIME_ROOT } from '../runtime.mjs';
 import { readModelEnvironment } from './model-environment.mjs';
 import { ApiError } from './store.mjs';
-import {buildTopicPrompt, checkTopicBatchId, confirmWorkspaceTopics, readTopicReceipt, readTopicSelection, snapshotTopicCards, undoWorkspaceTopics, validateTopicSuggestion} from './workspace-topics.mjs';
+import {buildTopicPrompt, checkTopicBatchId, confirmWorkspaceTopics, moveWorkspaceTopicCard, readTopicReceipt, readTopicSelection, snapshotTopicCards, undoWorkspaceTopics, validateTopicSuggestion} from './workspace-topics.mjs';
 import {isWorkspaceTopicCandidateId} from '../frontend/src/workspace-topics-model.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -552,6 +552,10 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
         if(req.method==='POST'&&path==='/api/workspace/topics/confirm'){
           const body=await readJson(req,16*1024);
           json(res,200,confirmWorkspaceTopics(store,body,topicJob(body?.draftId)));return true;
+        }
+        if(req.method==='POST'&&path==='/api/workspace/topics/move'){
+          const body=await readJson(req,4096);
+          json(res,200,moveWorkspaceTopicCard(store,body,jobs.has(body?.batchId)));return true;
         }
         if(req.method==='GET'&&path==='/api/workspace/topics/receipt'){
           json(res,200,readTopicReceipt(store,url.searchParams.get('batchId')));return true;

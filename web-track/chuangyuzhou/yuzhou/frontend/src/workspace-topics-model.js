@@ -66,17 +66,21 @@ function assignment(value,withCard){
   fields(value,withCard?['id','topic','batchId']:['topic','batchId']);
   return {...(withCard?{id:cardId(value.id)}:{}),topic:value.topic===null?null:topicName(value.topic),batchId:batchId(value.batchId)};
 }
-function change(value){
+function change(value,allowUnclassified){
   fields(value,['id','topic','previous']);
-  return {id:cardId(value.id),topic:topicName(value.topic),previous:value.previous===null?null:assignment(value.previous,false)};
+  const topic=allowUnclassified&&value.topic===null?null:topicName(value.topic);
+  return {id:cardId(value.id),topic,previous:value.previous===null?null:assignment(value.previous,false)};
 }
 function receipt(value){
-  fields(value,['batchId','status','requestHash','confirmedAt','changes'],['undoneAt','skipped']);
+  fields(value,['batchId','status','requestHash','confirmedAt','changes'],['undoneAt','skipped','kind']);
   if(!['confirmed','undone'].includes(value.status)||typeof value.requestHash!=='string'||!/^[a-f0-9]{64}$/.test(value.requestHash))invalid();
-  const changes=list(value.changes,TOPIC_CARD_LIMIT,change,row=>row.id);
+  const isMove=Object.hasOwn(value,'kind');
+  if(isMove&&value.kind!=='move')invalid();
+  const changes=list(value.changes,isMove?1:TOPIC_CARD_LIMIT,row=>change(row,isMove),row=>row.id);
   if(!changes.length)invalid();
-  const base={batchId:batchId(value.batchId),status:value.status,requestHash:value.requestHash,confirmedAt:stamp(value.confirmedAt),changes};
-  if(changes.some(row=>row.previous?.batchId===base.batchId||row.previous?.topic===row.topic))invalid();
+  const base={batchId:batchId(value.batchId),status:value.status,requestHash:value.requestHash,confirmedAt:stamp(value.confirmedAt),changes,
+    ...(isMove?{kind:'move'}:{})};
+  if(changes.some(row=>row.previous?.batchId===base.batchId||(row.previous?.topic??null)===row.topic))invalid();
   if(value.status==='confirmed'){
     if(Object.hasOwn(value,'undoneAt')||Object.hasOwn(value,'skipped'))invalid();
     return base;

@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-11-11-web-dev-031",
-  "sourceCommit": "3c47be67765662b60c09fe558338eb21b6a30d9e",
+  "release": "2026-11-12-web-dev-032",
+  "sourceCommit": "973851f91d4a780d3526ce27a2cf23ce82366d56",
   "defaultPort": 4396,
   "privateRuntimeIncluded": false,
-  "baselineRecord": "../evidence/WEB-031/source-baseline.json",
+  "baselineRecord": "../evidence/WEB-032/source-baseline.json",
   "files": [
     {
       "path": ".env.example",
@@ -30,8 +30,8 @@
     },
     {
       "path": "RELEASE-CHANGES.json",
-      "bytes": 2632,
-      "sha256": "bf23ab90d42c5ce3a979b060928c89ba7dc44c49a136040f22d83076a72c9a56"
+      "bytes": 2299,
+      "sha256": "165e306af8926e4654bbc28d29dcc756db9a4e05f2d6ff62f03d844ab249cde7"
     },
     {
       "path": "SOURCE-NOTICE.md",
@@ -135,8 +135,8 @@
     },
     {
       "path": "yuzhou/backend/hermes.mjs",
-      "bytes": 62672,
-      "sha256": "daff57c7e258432b05d7e0c6bf29d27dc242832e7b2ebfb2403fed8c4359bbb5"
+      "bytes": 62919,
+      "sha256": "aa0fca4585581076613ec4764fc3da2b9244364815847ca43815d200e8c59c4c"
     },
     {
       "path": "yuzhou/backend/hermes_runner.py",
@@ -355,8 +355,8 @@
     },
     {
       "path": "yuzhou/backend/tests/workspace-topics.test.mjs",
-      "bytes": 11733,
-      "sha256": "21ec0df8aa23763314d1eee021d5d5dac17ae95f23e01a0c60eb3b652bfc5ac2"
+      "bytes": 15579,
+      "sha256": "8c232011a9417a8b10d67161964fcfd1772dfd067f145702ed60fee212a5193f"
     },
     {
       "path": "yuzhou/backend/workspace-queries.mjs",
@@ -365,8 +365,8 @@
     },
     {
       "path": "yuzhou/backend/workspace-topics.mjs",
-      "bytes": 7610,
-      "sha256": "cb77adbca5dac0b138f9a3b60571c4f2d6fb499bb9aae580450be396c5bb7e1d"
+      "bytes": 9613,
+      "sha256": "d37bdd69f3740052e6127eebdc4d5c7a94642512eac1d667ab4759b3c83ec035"
     },
     {
       "path": "yuzhou/deployment/README.md",
@@ -490,8 +490,8 @@
     },
     {
       "path": "yuzhou/frontend/src/app.js",
-      "bytes": 86368,
-      "sha256": "0203207138ede390cc55fdd3cb4f184ea3afc2a28d5f1265941f03cdba7b2436"
+      "bytes": 86447,
+      "sha256": "0383752d8a967141c27f5866e6b2f9f04d0dbcdd4d3839d3dca9f1739c4a9fb2"
     },
     {
       "path": "yuzhou/frontend/src/archive-removal.js",
@@ -1024,19 +1024,24 @@
       "sha256": "c4c274b237a222b9b96776fb886ab809efad00c51a0bcffcb63b6ded45068489"
     },
     {
+      "path": "yuzhou/frontend/src/workspace-topic-drag.js",
+      "bytes": 7204,
+      "sha256": "46137391cfb5a6031e3ccdaad1a0db55f93bc8e77388967a9acb2383306c296b"
+    },
+    {
       "path": "yuzhou/frontend/src/workspace-topics-model.js",
-      "bytes": 5517,
-      "sha256": "1c756ce61b271af0ff344a172853a8dfe2b5d4f324a11bd560457355138e9c64"
+      "bytes": 5756,
+      "sha256": "fedcefc0bcbd9529eb7af94afe6086d55ab98872ac4e0ba33da3545014ed5dbe"
     },
     {
       "path": "yuzhou/frontend/src/workspace-topics.css",
-      "bytes": 5417,
-      "sha256": "2413341e0cfd19b95eb1af754c017904ec2810b0d7a34a32e85547e6103ee89f"
+      "bytes": 10371,
+      "sha256": "f1762c96d1508fd2228c9f043eccf022b061962ef475050a6897b9c149be59df"
     },
     {
       "path": "yuzhou/frontend/src/workspace-topics.js",
-      "bytes": 24757,
-      "sha256": "76fa8df9269e660b7b43c406bcbb6ec52ba45bdb03aa4323f53b5078065d2bba"
+      "bytes": 34198,
+      "sha256": "e3ec0829c99afa9b95c4db5fd16a4aa6bfb61d27565fef31883c692bb2d515d5"
     },
     {
       "path": "yuzhou/frontend/start.cmd",

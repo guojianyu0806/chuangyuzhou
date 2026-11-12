@@ -516,7 +516,7 @@ function moreMenu(){modal({title:'我的空间',body:`<div class="more-menu">${[
 function notifications(){modal({title:'通知与动态',body:`<div class="notification-item"><span class="summary-icon violet">${icon('sparkles',23)}</span><div><strong>欢迎来到创宇宙</strong><p>${cloudClient?'个人空间已连接当前工作台服务。':'完整界面已就绪，可以开始记录与整理。当前内容仅保存在本机；AI 需独立配置。'}</p><small>界面版本 ${VERSION}</small></div></div><div class="notification-item"><span class="summary-icon cyan">${icon('cloud',23)}</span><div><strong>${cloudClient?esc(cloudClient.label):'云端连接待完成'}</strong><p>${cloudClient?'在偏好与连接中管理 DeepSeek、查看同步状态与导出备份。':'服务器部署后，可启用跨设备同步、模型任务和版本更新通知。'}</p><button class="text-btn" data-go="settings">查看连接状态 ${icon('arrow-right',16)}</button></div></div>`});}
 function renderReturnNavigation(){
   document.querySelector('[data-return-navigation]')?.remove();
-  if(route==='welcome')return;
+  if(route==='welcome'||location.hash===topicsHash)return;
   const target=returnNavigation.target(state,location.hash);if(target===location.hash)return;
   const navigation=document.createElement('nav');navigation.className='workspace-return';navigation.dataset.returnNavigation='';navigation.setAttribute('aria-label','返回与当前位置');
   navigation.innerHTML=`<button class="btn" type="button" data-return-source>${icon('arrow-left',17)} 返回${esc(routeLabel(state,target))}</button><span>${esc(routeLabel(state,location.hash))}</span>`;
@@ -693,7 +693,7 @@ function updateCloudShell(){
   banner.querySelector('[data-cloud-retry]')?.addEventListener('click',async()=>{try{await cloudClient.storage?.retry();if(cloudClient.pending)await cloudClient.flush();else await cloudClient.poll();}catch(error){toast(error.message);}});
   const label=document.querySelector('[data-cloud-status]');if(label)label.textContent=cloudClient.label;
 }
-const immersiveBusy=()=>!!document.querySelector('[data-dream-detail-open],.surface-is-fullscreen');
+const immersiveBusy=()=>!!document.querySelector('[data-dream-detail-open],.surface-is-fullscreen,[data-topics-move-dialog][open]');
 function hasUnsavedCloudFields(){
   for(const field of cloudDirtyFields)if(!field.isConnected)cloudDirtyFields.delete(field);
   cloudEditing=cloudDirtyFields.size>0;
@@ -739,7 +739,7 @@ function renderCloudSettings(){
 }
 if(cloudClient){
   cloudClient.subscribe(updateCloudShell);
-  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')&&!event.target.closest('[data-local-ai-draft]')&&!event.target.matches('[data-ledger-filter],[data-calendar-filter],[data-timetable-view],[data-dream-view],[data-inspiration-view],[data-fitness-date],[data-competition-filter]')){cloudDirtyFields.add(event.target);cloudEditing=true;cloudEditTick++;}});
+  document.addEventListener('input',event=>{if(event.target.matches('input,textarea,select,[contenteditable]')&&!event.target.closest('[data-local-ai-draft],[data-topics-view]')&&!event.target.matches('[data-ledger-filter],[data-calendar-filter],[data-timetable-view],[data-dream-view],[data-inspiration-view],[data-fitness-date],[data-competition-filter]')){cloudDirtyFields.add(event.target);cloudEditing=true;cloudEditTick++;}});
   document.addEventListener('ai-request-added',event=>{
     const host=event.target;
     // A successful composer submission saves and clears only its own draft.
