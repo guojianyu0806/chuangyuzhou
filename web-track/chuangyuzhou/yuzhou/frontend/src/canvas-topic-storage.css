@@ -101,6 +101,42 @@
   font-variant-numeric: tabular-nums;
 }
 
+.cv-topic-box[data-collapsed] .cv-topic-box-head {
+  inset: 8px 8px auto;
+  grid-template-columns: minmax(0, 1fr) 38px 38px;
+  gap: 4px;
+  height: 56px;
+}
+
+.cv-topic-box[data-collapsed] .cv-topic-box-toggle {
+  gap: 5px;
+  padding-inline: 7px;
+}
+
+.cv-topic-box[data-collapsed] .cv-topic-box-toggle > svg {
+  display: none;
+}
+
+.cv-topic-box[data-collapsed] .cv-topic-box-count {
+  display: inline-flex;
+  box-sizing: border-box;
+  inline-size: 104px;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 5px;
+  border-radius: 8px;
+  background: #513575;
+  color: #fff;
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.cv-topic-box[data-collapsed] .cv-topic-box-count > strong {
+  font-size: 30px;
+  font-weight: 800;
+}
+
 .cv-topic-box-chevron {
   display: grid;
   place-items: center;

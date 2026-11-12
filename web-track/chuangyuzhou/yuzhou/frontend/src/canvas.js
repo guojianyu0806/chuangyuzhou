@@ -266,7 +266,7 @@ export function mountCanvas(ctx, collection) {
         style="left:${region.x}px;top:${region.y}px;width:${region.w}px;height:${region.h}px;--cv-topic-color:${COLORS[parseInt(id.slice(0,8),16)%COLORS.length]}">
         <div class="cv-topic-box-head">
           <button type="button" class="cv-topic-box-toggle" data-cv="topic-box-toggle" aria-expanded="${!collapsed}">
-            ${icon('folder',20)}<span class="cv-topic-box-title">${esc(title)}</span><span class="cv-topic-box-count">${region.count} 张</span>
+            ${icon('folder',20)}<span class="cv-topic-box-title">${esc(title)}</span><span class="cv-topic-box-count">${collapsed?`<strong>${region.count}</strong>`:region.count} 张</span>
             <span class="cv-topic-box-chevron">${icon('chevron-down',16)}</span>
           </button>
           <button type="button" class="cv-topic-box-drag" data-cv="topic-box-drag" aria-label="移动${esc(title)}收纳盒" title="拖动或按方向键移动">${dragIcon}</button>
