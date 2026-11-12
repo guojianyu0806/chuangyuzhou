@@ -9,9 +9,10 @@ import {mountSurfaceFullscreen} from './fullscreen.js';
 import {WORKBENCH_MODULES,getWorkbench} from './workbench-model.js';
 import {getCustomBlocks,updateCustomBlock,CUSTOM_BLOCK_KINDS} from './custom-blocks-model.js';
 import {getSpaceIconMap} from './space-icons.js';
-import {isWorkspaceTopicCandidateId,validateCanvasTopicLabels} from './workspace-topics-model.js';
+import {isWorkspaceTopicCandidateId,normalizeTopicName,TOPIC_NAME_LIMIT,validateCanvasTopicLabels} from './workspace-topics-model.js';
 import {customBlockSummary,customBlockType} from './custom-blocks.js';
 import {blockCardPreview,spaceCardPreview,mountCardPreviewFit} from './card-previews.js';
+import {layoutCanvasTopicStorage} from './canvas-topic-storage.js';
 const POSITIONS = {
   ai:      { x:36, y:40, w:540, h:380, label:'把零散，变有序。' },
   courses: { x:612, y:40, w:310, h:272, label:'让知识，连成线。' },
@@ -132,10 +133,24 @@ export function mountCanvas(ctx, collection) {
   const collectionText=(key,item,fallback)=>typeof collection?.[key]==='function'?collection[key](item):collection?.[key]??fallback;
   let alive=true,editing=false,spaceHeld=false,interaction=null,suppressClickUntil=0,saveTimer=0,composerCleanup=null,previewCleanup=null,raf=0,dragDepth=new Map();
   const pointers=new Map(),cardElements=new Map();
-  let presentation=normalizePresentation(canvas.presentation,matchMedia('(max-width:680px)').matches?'list':'canvas');
+  const {topicStorage,topicActions}=collection?{}:ctx;
+  const topicPreference=topicStorage?.load()||{};
+  let topicEnabled=topicPreference.enabled===true;
+  let topicView=topicPreference.view||null,topicSaveTimer=0,topicLayout=null;
+  const closedTopics=new Set(topicPreference.closed||[]);
+  let normalPresentation=normalizePresentation(canvas.presentation,matchMedia('(max-width:680px)').matches?'list':'canvas');
+  let presentation=topicEnabled?'canvas':normalPresentation;
   let stackRaf=0,stackReady=false,stackFocus=0,stackDrag=null,lastStackPointer=0;
   const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)');
   const visibleCards=()=>collection?canvas.cards.filter(c=>itemById.has(c.id)&&(!collection.matches||collection.matches(itemById.get(c.id)))):visibleCanvasCards(state,canvas);
+  const displayedCards=()=>topicEnabled?topicLayout?.cards||[]:visibleCards();
+  const camera=()=>topicEnabled?topicView||canvas.view:canvas.view;
+  const setCamera=view=>{if(topicEnabled)topicView=view;else canvas.view=view;};
+  const storeTopicView=()=>{
+    clearTimeout(topicSaveTimer);topicSaveTimer=0;
+    try { topicStorage?.save({enabled:topicEnabled,closed:[...closedTopics],view:topicView});return true; }
+    catch { toast('暂未记住收纳视图，请重试。');return false; }
+  };
   const dataFor=card=>{
     if(collection){const item=itemById.get(card.id);return {...item,color:color(card.color||item?.color),label:item?.subtitle||''};}
     const preset=presets[card.id];
@@ -148,6 +163,15 @@ export function mountCanvas(ctx, collection) {
   const persist=()=>{if(!alive)return false;try{save();return true;}catch{return false;/* App save handler explains quota or concurrent-window errors. */}};
   const markCustomized=()=>{canvas.customized=true;canvas.modifiedAt=new Date().toISOString();};
   const delayedSave=()=>{markCustomized();clearTimeout(saveTimer);saveTimer=setTimeout(persist,260);};
+  function saveCamera(){
+    if(topicEnabled)return storeTopicView();
+    markCustomized();
+    return persist();
+  }
+  const delayedCameraSave=()=>{
+    if(!topicEnabled){delayedSave();return;}
+    clearTimeout(topicSaveTimer);topicSaveTimer=setTimeout(storeTopicView,260);
+  };
   const safeIcon=(name,size=20)=>icon(name||'folder',size);
   const dragIcon='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="8" cy="5" r="1.5"/><circle cx="16" cy="5" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="8" cy="19" r="1.5"/><circle cx="16" cy="19" r="1.5"/></svg>';
   const resizeIcon='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 19 10-10M15 19l4-4"/></svg>';
@@ -168,13 +192,31 @@ export function mountCanvas(ctx, collection) {
   fullscreenButton.setAttribute('aria-label','全屏画布');fullscreenButton.setAttribute('aria-pressed','false');fullscreenButton.title='全屏画布';
   fullscreenButton.innerHTML=`${fitIcon}<span>全屏</span>`;
   const headerActions=section.querySelector('.cv-head-actions');
+  let storageButton,topicUndoButton,topicRetryButton;
+  if(topicStorage){
+    storageButton=document.createElement('button');
+    storageButton.type='button';storageButton.className='cv-button cv-topic-storage-button';storageButton.dataset.cv='topic-storage';
+    storageButton.innerHTML=icon('folder',17)+'<span>主题收纳</span>';
+    storageButton.setAttribute('aria-pressed','false');
+    headerActions.prepend(storageButton);
+    if(topicActions){
+      topicUndoButton=document.createElement('button');
+      topicUndoButton.type='button';topicUndoButton.className='cv-button cv-topic-storage-action';topicUndoButton.dataset.cv='topic-undo';topicUndoButton.hidden=true;
+      topicUndoButton.textContent='撤销归类';
+      topicRetryButton=document.createElement('button');
+      topicRetryButton.type='button';topicRetryButton.className='cv-button cv-topic-storage-action';topicRetryButton.dataset.cv='topic-retry';topicRetryButton.hidden=true;
+      topicRetryButton.textContent='重试保存';
+      storageButton.after(topicUndoButton,topicRetryButton);
+    }
+  }
   if(!collection&&ctx.showTopics){
     const topicsButton=document.createElement('button');
     topicsButton.type='button';
     topicsButton.className='cv-button cv-topics-toggle';
     topicsButton.innerHTML=icon('layers',17)+'<span>按主题查看</span>';
     topicsButton.addEventListener('click',ctx.showTopics);
-    headerActions.prepend(topicsButton);
+    if(storageButton)headerActions.insertBefore(topicsButton,storageButton.nextSibling);
+    else headerActions.prepend(topicsButton);
   }
   headerActions.append(section.querySelector('.cv-zoom-controls'));
   section.querySelector('.cv-compact-header').append(fullscreenButton);
@@ -186,10 +228,14 @@ export function mountCanvas(ctx, collection) {
     if(!alive||!CARD_PRESENTATIONS.includes(action))return;
     if(interaction)finish({type:'pointercancel',pointerId:interaction.id});
     finishStackPointer({type:'pointercancel',pointerId:stackDrag?.id});
-    presentation=action;canvas.presentation=action;stackReady=false;markCustomized();
+    const wasStorage=topicEnabled;
+    topicEnabled=false;normalPresentation=action;presentation=action;
+    if(wasStorage)storeTopicView();
+    canvas.presentation=action;stackReady=false;markCustomized();
     if(action!=='canvas')setEditing(false);
     section.querySelector('[data-cv="arrange"]').title=`排列方式：${presentationLabel(action)}`;
-    applyView();persist();
+    if(wasStorage){drawCards();refreshTopicActions();}else applyView();
+    persist();
   }
   function presentationLabel(value){return ({canvas:'自由画布',list:'自适应','grid-2':'两列','grid-3':'三列',stack:'堆叠'})[value];}
   function arrangeDialog(){
@@ -246,18 +292,35 @@ export function mountCanvas(ctx, collection) {
     return `<div class="cv-card-copy"><span class="cv-card-kicker">${d.type==='course'?'MY CLASSROOM':d.type==='project'?'MY PROJECT':'MY OWN SPACE'}</span><h2>${esc(d.title||'未命名空间')}</h2><p>${esc(d.description||'收藏资料、记录想法，安排属于你的事。')}</p></div>${spaceCardPreview(d,state.tasks)}<div class="cv-custom-art" aria-hidden="true">${safeIcon(d.icon,72)}</div><div class="cv-space-counts"><span>${files} 份文件</span><span>${notes} 篇笔记</span>${tasks?`<span>${tasks} 件待办</span>`:''}</div>`;
   }
 
+  function topicRegionsMarkup(){
+    return (topicLayout?.regions||[]).map((region,index)=>{
+      const {key,topic,count,x,y,w,h,collapsed}=region;
+      const label=topic??'未归类';
+      return `<div class="cv-topic-storage-region" data-topic-storage-key="${esc(key)}" ${collapsed?'data-collapsed':''} style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;--cv-topic-color:${topic===null?'#a79ab9':COLORS[index%COLORS.length]}">
+        <button type="button" class="cv-topic-storage-toggle" data-cv="topic-collapse" aria-expanded="${!collapsed}" title="${esc(label)}">
+          ${icon('folder',20)}<span class="cv-topic-storage-title">${esc(label)}</span><span class="cv-topic-storage-count">${count} 张</span>
+          <span class="cv-topic-storage-chevron">${icon('chevron-down',16)}</span>
+        </button></div>`;
+    }).join('');
+  }
+
   function drawCards() {
     stackReady=false;
     itemById.clear();for(const item of collection?.items||homeItems())itemById.set(item.id,item);
     composerCleanup?.();composerCleanup=null;previewCleanup?.();previewCleanup=null;
     const topicsByCard=new Map((state.workspaceTopics?.assignments||[]).map(row=>[row.id,row.topic]));
     const labeledTopics=new Set((collection?[]:homeCanvasTopicLabels(state)).map(label=>topicsByCard.get(label.id)??null));
-    world.innerHTML=visibleCards().map((card,index)=>{
+    topicLayout=topicEnabled?layoutCanvasTopicStorage(visibleCards(),state.workspaceTopics?.assignments||[],closedTopics):null;
+    world.innerHTML=topicRegionsMarkup()+displayedCards().map((card,index)=>{
       const d=dataFor(card);
-      const topic=topicsByCard.get(card.id)??null,showTopic=isWorkspaceTopicCandidateId(card.id)&&labeledTopics.has(topic);
+      const eligible=isWorkspaceTopicCandidateId(card.id);
+      const topic=topicsByCard.get(card.id)??null,showTopic=!topicEnabled&&eligible&&labeledTopics.has(topic);
+      const movable=topicEnabled&&eligible&&topicActions;
+      const dragLabel=movable?`拖动${d.title}到其他主题`:`拖动${d.title}卡片，或使用方向键调整位置`;
+      const menuLabel=movable?`移动${d.title}到其他主题`:`设置${d.title}卡片`;
       const typeLabel=collection?collectionText('cardLabel',d,'内容卡片'):card.id==='ai'?'智能伙伴':presets[card.id]?'工作台模块':card.id.startsWith('block:')?'自定义方块':'自建空间';
-      return `<article class="cv-card cv-card-${collection?'collection':presets[card.id]?card.id:'custom'} ${card.h<260?'cv-compact':''} ${card.h<330?'cv-short':''}" data-card="${esc(card.id)}" style="--card-color:${color(d.color)};--card-fill:${canvasCardFill(d.color)};--card-order:${index};width:${card.w}px;height:${card.h}px;transform:translate(${card.x}px,${card.y}px)" tabindex="0" aria-label="${esc(d.title)}，按Enter打开">
-      <header class="cv-card-head"><span class="cv-space-symbol">${safeIcon(d.icon,20)}</span><span class="cv-stack-title">${esc(d.title)}</span><span class="cv-card-top-label${showTopic?' cv-topic-label':''}"${showTopic?` data-topic-anchor="${esc(card.id)}"`:''}>${esc(showTopic?topic??'未归类':typeLabel)}</span><button type="button" class="cv-drag" data-cv="drag" title="拖动卡片；方向键移动" aria-label="拖动${esc(d.title)}卡片，或使用方向键调整位置">${dragIcon}</button><button type="button" class="cv-card-menu" data-cv="card-menu" title="卡片设置" aria-label="设置${esc(d.title)}卡片">${icon('more',19)}</button></header>
+      return `<article class="cv-card cv-card-${collection?'collection':presets[card.id]?card.id:'custom'} ${card.h<260?'cv-compact':''} ${card.h<330?'cv-short':''}" data-card="${esc(card.id)}" ${movable?'data-topic-movable':''} style="--card-color:${color(d.color)};--card-fill:${canvasCardFill(d.color)};--card-order:${index};width:${card.w}px;height:${card.h}px;transform:translate(${card.x}px,${card.y}px)" tabindex="0" aria-label="${esc(d.title)}，按Enter打开">
+      <header class="cv-card-head"><span class="cv-space-symbol">${safeIcon(d.icon,20)}</span><span class="cv-stack-title">${esc(d.title)}</span><span class="cv-card-top-label${showTopic?' cv-topic-label':''}"${showTopic?` data-topic-anchor="${esc(card.id)}"`:''}>${esc(showTopic?topic??'未归类':typeLabel)}</span><button type="button" class="cv-drag" data-cv="drag" title="${esc(dragLabel)}" aria-label="${esc(dragLabel)}">${dragIcon}</button><button type="button" class="cv-card-menu" data-cv="card-menu" title="${movable?'移动到其他主题':'卡片设置'}" aria-label="${esc(menuLabel)}">${icon('more',19)}</button></header>
       <div class="cv-card-body">${cardContent(card)}</div><footer class="cv-card-foot"><span>${esc(collectionText('footLabel',d,card.id==='ai'?'对话 → 确认 → 归档':card.id.startsWith('block:')?'自己定义内容与交互':card.id==='competitions'?'截止 · 清单 · 参赛档案':card.id==='calendar'?'计划 · 标注 · 注意事项':card.id==='ledger'?'按日期记录 · 按项目汇总':card.id==='timetable'?'教学周 · 单双周 · 上课地点':'拖入文件，直接收进这里'))}</span><button type="button" data-cv="enter" aria-label="进入${esc(d.title)}">${esc(collectionText('enterLabel',d,card.id==='ai'?'打开伙伴':card.id.startsWith('block:')?'打开方块':'进入空间'))}${icon('arrow-right',17)}</button></footer>
       <button class="cv-resize" type="button" data-cv="resize" title="拖动调整大小；方向键微调" aria-label="调整${esc(d.title)}卡片大小">${resizeIcon}</button><div class="cv-drop-overlay">${icon('upload',34)}<strong>松手，放入${esc(d.title)}</strong><span>文件保存在本机</span></div></article>`;
     }).join('');
@@ -277,7 +340,7 @@ export function mountCanvas(ctx, collection) {
 
   function applyView() {
     if(!alive)return;
-    const v=canvas.view,free=presentation==='canvas',stack=presentation==='stack',grid=presentation.startsWith('grid-');
+    const v=camera(),free=presentation==='canvas',stack=presentation==='stack',grid=presentation.startsWith('grid-');
     world.style.transform=free?`translate(${v.x}px,${v.y}px) scale(${v.zoom})`:'';
     viewport.style.setProperty('--dot-size',`${32*v.zoom}px`);
     viewport.style.setProperty('--dot-x',`${v.x}px`);
@@ -286,6 +349,8 @@ export function mountCanvas(ctx, collection) {
     section.classList.toggle('is-list-mode',!free);
     section.classList.toggle('is-grid-mode',grid);
     section.classList.toggle('is-stack-mode',stack);
+    section.classList.toggle('cv-topic-storage',topicEnabled);
+    storageButton?.setAttribute('aria-pressed',String(topicEnabled));
     viewport.classList.toggle('is-list',presentation==='list'||grid);
     viewport.classList.toggle('is-grid',grid);
     viewport.classList.toggle('is-grid-2',presentation==='grid-2');
@@ -294,7 +359,7 @@ export function mountCanvas(ctx, collection) {
     section.querySelectorAll('.cv-zoom-controls button').forEach(button=>button.disabled=!free);
     section.querySelector('[data-cv="arrange"]').title=`排列方式：${presentationLabel(presentation)}`;
     stackRail.hidden=stackLine.hidden=stackControls.hidden=!stack;
-    viewport.setAttribute('aria-label',stack?'堆叠卡片，滑动浏览；拖动左侧指针调整展开位置':free?'工作区画布，可拖动背景平移；使用下方按钮缩放':'工作区卡片网格');
+    viewport.setAttribute('aria-label',topicEnabled?'主题收纳画布，展开收纳区查看卡片':stack?'堆叠卡片，滑动浏览；拖动左侧指针调整展开位置':free?'工作区画布，可拖动背景平移；使用下方按钮缩放':'工作区卡片网格');
     if(stack){
       if(!stackReady){
         const metrics=getStackMetrics();world.style.height=`${metrics.worldHeight}px`;
@@ -304,7 +369,7 @@ export function mountCanvas(ctx, collection) {
       paintStack();
     }else{
       world.style.height='';
-      for(const card of visibleCards()){
+      for(const card of displayedCards()){
         const el=cardEl(card.id);if(!el)continue;
         placeCard(card);el.style.zIndex='';el.style.removeProperty('--stack-open');el.classList.remove('is-stack-focused');el.removeAttribute('aria-current');
         el.setAttribute('aria-label',`${dataFor(card).title}，按Enter打开`);
@@ -355,12 +420,13 @@ export function mountCanvas(ctx, collection) {
     section.classList.remove('is-stack-adjusting');requestStackPaint();return true;
   }
   function fitAll() {
-    const b=canvasBounds(visibleCards()),r=viewport.getBoundingClientRect();
+    const b=canvasBounds(topicEnabled?topicLayout.bounds:visibleCards()),r=viewport.getBoundingClientRect();
     const zoom=clamp(Math.min((r.width-72)/b.w,(r.height-72)/b.h,1),.3,1.6);
-    canvas.view={x:(r.width-b.w*zoom)/2-b.x*zoom,y:(r.height-b.h*zoom)/2-b.y*zoom,zoom};
-    markCustomized();applyView();persist();
+    setCamera({x:(r.width-b.w*zoom)/2-b.x*zoom,y:(r.height-b.h*zoom)/2-b.y*zoom,zoom});
+    applyView();saveCamera();
   }
   function homeView(initial=false) {
+    if(topicEnabled){fitAll();return;}
     const r=viewport.getBoundingClientRect();
     const zoom=clamp((r.width-64)/1280,.55,1);
     canvas.view={x:28-36*zoom,y:30-40*zoom,zoom};
@@ -368,7 +434,8 @@ export function mountCanvas(ctx, collection) {
   }
   function scaleView(factor) {
     const r=viewport.getBoundingClientRect();
-    canvas.view=zoomAt(canvas.view,canvas.view.zoom*factor,{x:r.width/2,y:r.height/2});applyView();delayedSave();
+    const v=camera();
+    setCamera(zoomAt(v,v.zoom*factor,{x:r.width/2,y:r.height/2}));applyView();delayedCameraSave();
   }
   function cardEl(id) {return cardElements.get(id);}
   function placeCard(card) {
@@ -379,6 +446,77 @@ export function mountCanvas(ctx, collection) {
   }
   function announce(message) {live.textContent=message;}
   function setEditing(value) {editing=value;section.classList.toggle('is-editing',editing);section.querySelector('.cv-edit-message').hidden=!editing;}
+  let lastTopicNotice=topicActions?.snapshot().notice;
+  function refreshTopicActions(){
+    if(!topicActions)return;
+    const {blocked,busy,pending,canUndo,notice}=topicActions.snapshot();
+    topicUndoButton.hidden=!topicEnabled||!canUndo;
+    topicUndoButton.disabled=blocked;
+    topicRetryButton.hidden=!topicEnabled||!pending||busy;
+    topicRetryButton.disabled=busy;
+    if(topicEnabled&&notice&&notice!==lastTopicNotice)toast(notice);
+    lastTopicNotice=notice;
+  }
+  function toggleTopicStorage(){
+    if(interaction)finish({type:'pointercancel',pointerId:interaction.id});
+    finishStackPointer({type:'pointercancel',pointerId:stackDrag?.id});
+    topicEnabled=!topicEnabled;
+    presentation=topicEnabled?'canvas':normalPresentation;
+    setEditing(false);
+    drawCards();
+    if(topicEnabled&&!topicView)fitAll();
+    else storeTopicView();
+    refreshTopicActions();
+    if(topicEnabled)void topicActions?.recover();
+  }
+  function toggleTopicRegion(key){
+    const previous=topicLayout?.regions.find(region=>region.key===key);
+    if(!previous)return;
+    if(previous.collapsed)closedTopics.delete(key);else closedTopics.add(key);
+    drawCards();
+    const next=topicLayout.regions.find(region=>region.key===key);
+    const v=camera();
+    setCamera({...v,x:v.x+(previous.x-next.x)*v.zoom,y:v.y+(previous.y-next.y)*v.zoom});
+    applyView();storeTopicView();
+    Array.from(world.querySelectorAll('[data-topic-storage-key]')).find(node=>node.dataset.topicStorageKey===key)
+      ?.querySelector('button').focus({preventScroll:true});
+  }
+  function topicAssignment(id){
+    const row=state.workspaceTopics?.assignments.find(item=>item.id===id);
+    return row?{topic:row.topic,batchId:row.batchId}:null;
+  }
+  const canMoveTopic=card=>Boolean(topicEnabled&&topicActions&&card&&isWorkspaceTopicCandidateId(card.id)&&!topicActions.snapshot().blocked);
+  function topicMoveDialog(card){
+    if(!canMoveTopic(card)){toast('请先处理正在进行的归类操作。');return;}
+    const expected=topicAssignment(card.id),current=expected?.topic??null;
+    const topics=topicLayout.regions.map(region=>region.topic).filter(topic=>topic!==current);
+    const options=topics.map((topic,index)=>`<option value="${index}">${esc(topic??'未归类')}</option>`).join('');
+    modal({title:`移动 ${dataFor(card).title}`,body:`<label class="field">目标主题<select name="target">${options}<option value="new">新建主题</option></select></label><label class="field" data-cv-new-topic ${topics.length?'hidden':''}>新主题名称<input name="topic" maxlength="${TOPIC_NAME_LIMIT}" ${topics.length?'disabled':'required'}></label>`,submitLabel:'移动',rememberDraft:false,onSubmit:form=>{
+      const selection=form.get('target');
+      const topic=selection==='new'?normalizeTopicName(String(form.get('topic')||'')):topics[Number(selection)];
+      if(selection==='new'&&(topic==='未归类'||topic===current||topics.includes(topic)))throw new Error('这个主题已在列表中，请直接选择。');
+      if(topic===undefined||!canMoveTopic(card))return false;
+      ctx.closeModal();
+      void topicActions.move(card.id,topic,expected);
+      return false;
+    }});
+    const field=document.querySelector('#modal [data-cv-new-topic]');
+    document.querySelector('#modal [name="target"]')?.addEventListener('change',event=>{
+      const creating=event.target.value==='new',input=field.querySelector('input');
+      field.hidden=!creating;input.disabled=!creating;input.required=creating;
+      if(creating)input.focus();
+    });
+  }
+  function topicDropTarget(clientX,clientY,origin){
+    const rect=viewport.getBoundingClientRect(),v=camera();
+    if(clientX<rect.left||clientY<rect.top||clientX>rect.right||clientY>rect.bottom)return null;
+    const x=(clientX-rect.left-viewport.clientLeft-v.x)/v.zoom;
+    const y=(clientY-rect.top-viewport.clientTop-v.y)/v.zoom;
+    return topicLayout.regions.find(region=>region.topic!==origin&&x>=region.x&&x<=region.x+region.w&&y>=region.y&&y<=region.y+region.h)||null;
+  }
+  function highlightTopicDrop(key){
+    for(const region of world.querySelectorAll('[data-topic-storage-key]'))region.classList.toggle('is-topic-drop',region.dataset.topicStorageKey===key);
+  }
   function cardSettings(card) {
     const d=dataFor(card),minWidth=card.id==='ai'?390:220,minHeight=card.id==='ai'?350:220;
     modal({title:`${d.title} · 卡片外观`,body:`<p class="cv-settings-hint">调节这张卡片的颜色、尺寸和摆放位置。</p><label class="field">卡片颜色<div class="cv-color-options">${COLORS.map(c=>`<button type="button" class="cv-color-swatch" data-pick-color="${c}" style="--swatch:${c}" aria-label="选择颜色 ${c}">${c===d.color?icon('check',17):''}</button>`).join('')}<input type="color" name="color" value="${color(d.color)}" aria-label="自定义卡片颜色"></div></label><div class="form-grid"><label class="field">宽度<input type="number" name="width" value="${Math.round(card.w)}" min="${minWidth}" max="1100" step="1" required></label><label class="field">高度<input type="number" name="height" value="${Math.round(card.h)}" min="${minHeight}" max="850" step="1" required></label><label class="field">横向位置<input type="number" name="x" value="${Math.round(card.x)}" min="-100000" max="100000" step="1" required></label><label class="field">纵向位置<input type="number" name="y" value="${Math.round(card.y)}" min="-100000" max="100000" step="1" required></label></div>${(collection?(collection.onEdit!==undefined?collection.onEdit:ctx.editSpace):!presets[card.id]&&ctx.editSpace)?`<button type="button" class="btn" data-manage-space>${esc(collection?.manageLabel||'编辑卡片内容')}</button>`:''}`,onSubmit:form=>{
@@ -407,14 +545,18 @@ export function mountCanvas(ctx, collection) {
       if(action==='create')return !collection&&ctx.openBuilder?ctx.openBuilder():ctx.createSpace?.();
       if(action==='fullscreen')return fullscreen.toggle();
       if(action==='arrange')return arrangeDialog();
+      if(action==='topic-storage')return toggleTopicStorage();
+      if(action==='topic-collapse')return toggleTopicRegion(button.closest('[data-topic-storage-key]').dataset.topicStorageKey);
+      if(action==='topic-undo')return void topicActions?.undo();
+      if(action==='topic-retry')return void topicActions?.retry();
       if(CARD_PRESENTATIONS.includes(action))return selectPresentation(action);
       if(action==='stack-prev'||action==='stack-next')return selectStack(Math.round(stackFocus)+(action==='stack-prev'?-1:1));
       if(action==='zoom-in')return scaleView(1.15);
       if(action==='zoom-out')return scaleView(1/1.15);
-      if(action==='reset-zoom')return scaleView(1/canvas.view.zoom);
+      if(action==='reset-zoom')return scaleView(1/camera().zoom);
       if(action==='fit')return fitAll();
       if(action==='home')return homeView();
-      if(action==='card-menu'&&card)return cardSettings(card);
+      if(action==='card-menu'&&card)return topicEnabled?topicMoveDialog(card):cardSettings(card);
       if(action==='enter'&&card)return ctx.enterCard?.(card.id,el);
       if(action==='ai')return ctx.enterCard?.('ai',cardEl('ai'))||(!ctx.enterCard&&go('ai'));
       if(action==='vocabulary')return go('english','vocabulary');
@@ -441,32 +583,44 @@ export function mountCanvas(ctx, collection) {
     if(event.target.closest('input,textarea,select,[contenteditable="true"],[data-ai-host]')&&!spaceHeld&&event.button!==1)return;
     const el=event.target.closest('[data-card]'),action=event.target.closest('[data-cv]')?.dataset.cv;
     if(event.target.closest('button,a,label')&&!event.target.closest('[data-card-open]')&&!['drag','resize'].includes(action)&&!spaceHeld&&event.button!==1)return;
+    const card=canvas.cards.find(c=>c.id===el?.dataset.card),forcePan=spaceHeld||event.button===1;
+    if(topicEnabled&&!forcePan&&(action==='resize'||(action==='drag'&&!canMoveTopic(card))))return;
     if(event.pointerType==='touch')pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
     if(pointers.size===2){
       finish(null,false);
       const points=[...pointers.values()],r=viewport.getBoundingClientRect(),middle={x:(points[0].x+points[1].x)/2-r.left,y:(points[0].y+points[1].y)/2-r.top};
-      interaction={type:'pinch',distance:Math.hypot(points[1].x-points[0].x,points[1].y-points[0].y),middle,view:{...canvas.view},moved:true};
+      interaction={type:'pinch',distance:Math.hypot(points[1].x-points[0].x,points[1].y-points[0].y),middle,view:{...camera()},moved:true};
       viewport.setPointerCapture(event.pointerId);viewport.classList.add('is-panning');event.preventDefault();return;
     }
     if(interaction)return;
-    const card=canvas.cards.find(c=>c.id===el?.dataset.card),forcePan=spaceHeld||event.button===1;
-    const type=forcePan?'pan':action==='resize'?'resize':action==='drag'||(editing&&card)?'move':card?'press':'pan';
-    if(!type)return;
-    interaction={type,id:event.pointerId,card,el,x:event.clientX,y:event.clientY,lastX:event.clientX,lastY:event.clientY,view:{...canvas.view},original:card?{x:card.x,y:card.y,w:card.w,h:card.h}:null,moved:false,held:false};
+    const type=forcePan?'pan':action==='resize'?'resize':action==='drag'?(topicEnabled?'topic-card':'move'):(editing&&card)?'move':card?'press':'pan';
+    interaction={type,id:event.pointerId,card,el,x:event.clientX,y:event.clientY,lastX:event.clientX,lastY:event.clientY,view:{...camera()},original:card?{x:card.x,y:card.y,w:card.w,h:card.h}:null,moved:false,held:false};
     viewport.setPointerCapture(event.pointerId);
     if(type!=='press')viewport.classList.add(type==='pan'?'is-panning':'is-positioning');
     if(type==='press'){
       const pending=interaction;
       el.classList.add('is-pressing');event.preventDefault();
+      if(topicEnabled&&!canMoveTopic(card))return;
       pending.timer=setTimeout(()=>{
         if(!alive||interaction!==pending||!el.isConnected)return;
-        pending.type='move';pending.held=true;pending.x=pending.lastX;pending.y=pending.lastY;
+        if(topicEnabled){
+          if(!canMoveTopic(card))return;
+          startTopicDrag(pending);
+        }else pending.type='move';
+        pending.held=true;pending.x=pending.lastX;pending.y=pending.lastY;
         el.classList.remove('is-pressing');el.classList.add('is-positioned','is-longpress-lifted');
         viewport.classList.add('is-positioning');
-        announce('卡片已拿起，拖动后松手保存');
+        announce(topicEnabled?'卡片已拿起，拖到其他主题后松手':'卡片已拿起，拖动后松手保存');
       },450);
     }
+    if(type==='topic-card'){startTopicDrag(interaction);el.classList.add('is-positioned');event.preventDefault();}
     if(type==='move'||type==='resize'){el.classList.add('is-positioned');event.preventDefault();}
+  }
+  function startTopicDrag(i){
+    i.type='topic-card';
+    i.expected=topicAssignment(i.card.id);
+    i.displayCard=displayedCards().find(card=>card.id===i.card.id);
+    viewport.classList.add('is-topic-dragging');
   }
   function move(event) {
     if(stackDrag&&stackDrag.id===event.pointerId){event.preventDefault();canvas.stackPointer=stackPointerValue(event);requestStackPaint();return;}
@@ -476,7 +630,7 @@ export function mountCanvas(ctx, collection) {
       if(pointers.size<2)return;
       const points=[...pointers.values()],r=viewport.getBoundingClientRect(),middle={x:(points[0].x+points[1].x)/2-r.left,y:(points[0].y+points[1].y)/2-r.top},distance=Math.hypot(points[1].x-points[0].x,points[1].y-points[0].y);
       const next=zoomAt(i.view,i.view.zoom*distance/Math.max(1,i.distance),i.middle);
-      next.x+=middle.x-i.middle.x;next.y+=middle.y-i.middle.y;canvas.view=next;applyView();event.preventDefault();return;
+      next.x+=middle.x-i.middle.x;next.y+=middle.y-i.middle.y;setCamera(next);applyView();event.preventDefault();return;
     }
     if(i.id!==event.pointerId)return;
     const dx=event.clientX-i.x,dy=event.clientY-i.y;
@@ -489,7 +643,12 @@ export function mountCanvas(ctx, collection) {
     }
     if(Math.hypot(dx,dy)<4&&!i.moved)return;
     i.moved=true;suppressClickUntil=Date.now()+350;
-    if(i.type==='pan'){canvas.view.x=i.view.x+dx;canvas.view.y=i.view.y+dy;applyView();}
+    if(i.type==='pan'){setCamera({...i.view,x:i.view.x+dx,y:i.view.y+dy});applyView();}
+    else if(i.type==='topic-card'){
+      const v=camera(),card=i.displayCard;
+      i.el.style.transform=`translate(${card.x+dx/v.zoom}px,${card.y+dy/v.zoom}px)`;
+      highlightTopicDrop(topicDropTarget(event.clientX,event.clientY,i.expected?.topic??null)?.key);
+    }
     else if(i.type==='move'){
       const snap=value=>canvas.snap?Math.round(value/16)*16:value;
       i.card.x=clamp(snap(i.original.x+dx/canvas.view.zoom),-100000,100000);i.card.y=clamp(snap(i.original.y+dy/canvas.view.zoom),-100000,100000);placeCard(i.card);
@@ -509,16 +668,22 @@ export function mountCanvas(ctx, collection) {
     const cancelledPointers=event?.type==='pointercancel'?[...pointers.keys()]:[];
     if(event?.type==='pointercancel')pointers.clear();
     clearTimeout(i.timer);
-    if(event?.type==='pointercancel'){
+    let targetTopic;
+    if(i.type==='topic-card'){
+      if(i.moved&&event?.type==='pointerup'&&canMoveTopic(i.card))targetTopic=topicDropTarget(event.clientX,event.clientY,i.expected?.topic??null);
+      placeCard(i.displayCard);
+      highlightTopicDrop();
+      viewport.classList.remove('is-topic-dragging');
+    }else if(event?.type==='pointercancel'){
       if((i.type==='move'||i.type==='resize')&&i.original&&i.card){Object.assign(i.card,i.original);placeCard(i.card);}
-      else {canvas.view={...i.view};applyView();}
+      else {setCamera({...i.view});applyView();}
     }
     else if(i.moved){
       if((i.type==='move'||i.type==='resize')&&i.card){
         const index=canvas.cards.indexOf(i.card);if(index>=0){canvas.cards.splice(index,1);canvas.cards.push(i.card);}
         if(i.el?.isConnected)world.append(i.el);
       }
-      markCustomized();const saved=persist();announce(saved?(i.type==='move'?'卡片位置已保存':i.type==='resize'?'卡片大小已保存':'视野已保存'):'暂未保存，请处理保存提示');
+      const saved=saveCamera();announce(saved?(i.type==='move'?'卡片位置已保存':i.type==='resize'?'卡片大小已保存':'视野已保存'):'暂未保存，请处理保存提示');
     }
     if(i.moved||i.held||i.type==='press')suppressClickUntil=Date.now()+350;
     i.el?.classList.remove('is-positioned','is-pressing','is-longpress-lifted');viewport.classList.remove('is-panning','is-positioning');interaction=null;
@@ -527,15 +692,18 @@ export function mountCanvas(ctx, collection) {
     // dispatch a delayed lostpointercapture and cancel the newly started pinch.
     if(clearPointers&&i.id!==undefined&&viewport.hasPointerCapture(i.id))viewport.releasePointerCapture(i.id);
     if(event&&viewport.hasPointerCapture(event.pointerId))viewport.releasePointerCapture(event.pointerId);
+    if(targetTopic)void topicActions.move(i.card.id,targetTopic.topic,i.expected);
     if(event?.type==='pointerup'&&!i.moved&&i.type==='press')ctx.enterCard?.(i.card.id,i.el);
   }
   function wheel(event) {
     if(presentation!=='canvas'||event.target.closest('textarea,[data-ai-host]'))return;
     event.preventDefault();
+    if(interaction?.type==='topic-card')return;
     const r=viewport.getBoundingClientRect(),unit=event.deltaMode===1?16:event.deltaMode===2?r.height:1;
-    if(event.ctrlKey||event.metaKey)canvas.view=zoomAt(canvas.view,canvas.view.zoom*Math.exp(-event.deltaY*unit*.002),{x:event.clientX-r.left,y:event.clientY-r.top});
-    else{canvas.view.x-=event.shiftKey?event.deltaY*unit:event.deltaX*unit;canvas.view.y-=event.shiftKey?event.deltaX*unit:event.deltaY*unit;}
-    applyView();delayedSave();
+    const v=camera();
+    if(event.ctrlKey||event.metaKey)setCamera(zoomAt(v,v.zoom*Math.exp(-event.deltaY*unit*.002),{x:event.clientX-r.left,y:event.clientY-r.top}));
+    else setCamera({...v,x:v.x-(event.shiftKey?event.deltaY*unit:event.deltaX*unit),y:v.y-(event.shiftKey?event.deltaX*unit:event.deltaY*unit)});
+    applyView();delayedCameraSave();
   }
   function keydown(event) {
     if(event.target.closest('input,textarea,select,[contenteditable="true"]')||document.querySelector('dialog[open]'))return;
@@ -549,16 +717,20 @@ export function mountCanvas(ctx, collection) {
       if(event.key==='Enter'&&event.target.matches('.cv-card')&&!event.target.classList.contains('is-stack-focused')){event.preventDefault();selectStack(visibleCards().findIndex(c=>c.id===event.target.dataset.card));return;}
       if(event.key==='Escape'&&stackDrag){finishStackPointer({type:'pointercancel',pointerId:stackDrag.id});return;}
     }
-    if(event.code==='Space'&&section.contains(event.target)&&presentation==='canvas'){spaceHeld=true;viewport.classList.add('can-pan');event.preventDefault();}
+    if(event.code==='Space'&&section.contains(event.target)&&presentation==='canvas'&&!event.target.closest('button,a,label')){spaceHeld=true;viewport.classList.add('can-pan');event.preventDefault();}
     const target=event.target.closest('[data-card]'),card=canvas.cards.find(c=>c.id===target?.dataset.card),action=event.target.closest('[data-cv]')?.dataset.cv;
-    if(card&&['drag','resize'].includes(action)&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)&&presentation==='canvas'){
+    if(card&&['drag','resize'].includes(action)&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)&&presentation==='canvas'&&!topicEnabled){
       event.preventDefault();const step=event.shiftKey?40:8,dx=event.key==='ArrowRight'?step:event.key==='ArrowLeft'?-step:0,dy=event.key==='ArrowDown'?step:event.key==='ArrowUp'?-step:0;
       if(action==='drag'){card.x=clamp(card.x+dx,-100000,100000);card.y=clamp(card.y+dy,-100000,100000);}else{card.w=clamp(card.w+dx,card.id==='ai'?390:220,1100);card.h=clamp(card.h+dy,card.id==='ai'?350:220,850);}
       markCustomized();placeCard(card);delayedSave();announce(action==='drag'?'卡片位置已调整':'卡片大小已调整');return;
     }
     if(event.key==='Enter'&&target===event.target){event.preventDefault();ctx.enterCard?.(card.id,target);}
     if(event.key==='Escape'){if(interaction)finish({type:'pointercancel',pointerId:interaction.id});setEditing(false);spaceHeld=false;viewport.classList.remove('can-pan');pointers.clear();}
-    if(presentation==='canvas'&&event.target===viewport&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){event.preventDefault();canvas.view.x+=event.key==='ArrowRight'?-60:event.key==='ArrowLeft'?60:0;canvas.view.y+=event.key==='ArrowDown'?-60:event.key==='ArrowUp'?60:0;applyView();delayedSave();}
+    if(presentation==='canvas'&&event.target===viewport&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){
+      event.preventDefault();
+      const v=camera(),dx=event.key==='ArrowRight'?-60:event.key==='ArrowLeft'?60:0,dy=event.key==='ArrowDown'?-60:event.key==='ArrowUp'?60:0;
+      setCamera({...v,x:v.x+dx,y:v.y+dy});applyView();delayedCameraSave();
+    }
   }
   function keyup(event) {if(event.code==='Space'){spaceHeld=false;viewport.classList.remove('can-pan');}}
   function blur(){spaceHeld=false;viewport.classList.remove('can-pan');if(interaction)finish({type:'pointercancel',pointerId:interaction.id});if(stackDrag)finishStackPointer({type:'pointercancel',pointerId:stackDrag.id});pointers.clear();}
@@ -587,7 +759,12 @@ export function mountCanvas(ctx, collection) {
   }
 
   drawCards();
-  if(ctx.fitOnMount&&presentation==='canvas'){fitAll();canvas.initialized=true;persist();}
+  const unsubscribeTopics=topicActions?.subscribe(refreshTopicActions);
+  refreshTopicActions();
+  if(topicEnabled){
+    if(!topicView||ctx.fitOnMount)fitAll();
+    void topicActions?.recover();
+  }else if(ctx.fitOnMount&&presentation==='canvas'){fitAll();canvas.initialized=true;persist();}
   else if(!canvas.initialized){homeView(true);canvas.initialized=true;persist();}
   else if(addedCard&&presentation==='canvas'&&visibleCards().some(card=>card.id===addedCard.id)){
     const card=canvas.cards.find(card=>card.id===addedCard.id),bounds=viewport.getBoundingClientRect();
@@ -619,7 +796,8 @@ export function mountCanvas(ctx, collection) {
     fullscreen.destroy();
     if(stackDrag)finishStackPointer({type:'pointercancel',pointerId:stackDrag.id});
     if(interaction)finish({type:'pointercancel',pointerId:interaction.id});
-    if(saveTimer){clearTimeout(saveTimer);persist();}alive=false;cancelAnimationFrame(raf);cancelAnimationFrame(stackRaf);clearTimeout(section._cvStatusTimer);resizeObserver.disconnect();composerCleanup?.();previewCleanup?.();pointers.clear();
+    if(saveTimer){clearTimeout(saveTimer);persist();}if(topicSaveTimer)storeTopicView();unsubscribeTopics?.();
+    alive=false;cancelAnimationFrame(raf);cancelAnimationFrame(stackRaf);clearTimeout(section._cvStatusTimer);resizeObserver.disconnect();composerCleanup?.();previewCleanup?.();pointers.clear();
     stackScroll.removeEventListener('scroll',requestStackPaint);section.removeEventListener('focusin',stackFocusIn);
     section.removeEventListener('click',onClick);viewport.removeEventListener('pointerdown',begin);viewport.removeEventListener('pointermove',move);viewport.removeEventListener('pointerup',finish);viewport.removeEventListener('pointercancel',finish);viewport.removeEventListener('wheel',wheel);section.removeEventListener('keydown',keydown);window.removeEventListener('keyup',keyup);window.removeEventListener('blur',blur);
     viewport.removeEventListener('dragenter',fileDrag);viewport.removeEventListener('dragover',fileDrag);viewport.removeEventListener('dragleave',fileDrag);viewport.removeEventListener('drop',drop);

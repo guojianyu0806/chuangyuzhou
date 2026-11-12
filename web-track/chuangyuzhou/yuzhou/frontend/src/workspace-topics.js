@@ -40,6 +40,176 @@ function viewSession(key, loadDraft) {
   return sessions.get(key);
 }
 
+function topicOperationSession({session, state, cards, loadDraft, saveDraft, request, mutate}) {
+  const shared = viewSession(session, loadDraft);
+  const view = shared.view;
+  const connected = typeof request === 'function' && typeof mutate === 'function';
+  const currentCards = () => get(cards) || [];
+  const currentTopics = () => get(state)?.workspaceTopics || {};
+  const busy = () => shared.generation || shared.writing;
+  const moveLocked = () => !connected || Boolean(view.operation || view.review) || busy();
+  const emit = () => shared.listeners.forEach(listener => listener());
+
+  function lastReceipt() {
+    const receipts = (currentTopics().receipts || []).filter(receipt => receipt.changes.some(isCandidate));
+    return receipts.find(item => item.batchId === view.lastBatchId) || receipts.at(-1);
+  }
+
+  function move(cardId, topic, expected) {
+    if (moveLocked() || topic === (expected?.topic ?? null) || !currentCards().some(card => card.id === cardId)) return;
+    view.operation = {kind: 'move', batchId: crypto.randomUUID(), cardId, topic, expected};
+    return runOperation('new');
+  }
+
+  function undo(batchId) {
+    if (moveLocked() || !batchId) return;
+    view.operation = {kind: 'undo', batchId};
+    return runOperation('new');
+  }
+
+  async function persist() {
+    if (!saveDraft) return true;
+    const version = ++shared.saveVersion;
+    try {
+      await saveDraft(structuredClone(view));
+      if (version === shared.saveVersion && shared.storageError) {
+        shared.storageError = '';
+        emit();
+      }
+      return true;
+    } catch {
+      if (version === shared.saveVersion) {
+        shared.storageError = '本机草稿尚未保存，请保留此页面并重试。';
+        emit();
+      }
+      return false;
+    }
+  }
+
+  async function runOperation(mode) {
+    const operation = view.operation;
+    if (!connected || !operation || busy()) return;
+    const {kind, batchId} = operation;
+    const endpoint = '/'+kind;
+    const expectedStatus = kind === 'undo' ? 'undone' : 'confirmed';
+    const body = kind === 'confirm' ? {draftId: batchId, changes: operation.changes}
+      : kind === 'move' ? {batchId, cardId: operation.cardId, topic: operation.topic, expected: operation.expected}
+      : {batchId};
+    const lookup = () => request(API+'/receipt?batchId='+encodeURIComponent(batchId));
+    const matches = receipt => receipt?.batchId === batchId &&
+      (receipt.status === expectedStatus || (kind !== 'undo' && receipt.status === 'undone'));
+    const matchesOperation = receipt => {
+      if (kind === 'undo') return true;
+      if (kind === 'confirm') {
+        return receipt.kind !== 'move' && receipt.changes.length === operation.changes.length &&
+          receipt.changes.every(change => operation.changes.some(row => row.id === change.id && row.topic === change.topic));
+      }
+      const change = receipt.changes[0];
+      return receipt.kind === 'move' && receipt.changes.length === 1 && change.id === operation.cardId && change.topic === operation.topic &&
+        change.previous?.topic === operation.expected?.topic && change.previous?.batchId === operation.expected?.batchId;
+    };
+    shared.writing = true;
+    shared.notice = '';
+    emit();
+    try {
+      if (!await persist()) return;
+      const known = mode === 'new' ? null : (await lookup()).receipt;
+      if (mode === 'check' && !matches(known)) return;
+      if (matches(known) && !matchesOperation(known)) {
+        const conflict = new Error('该操作已保存其他内容，请查看当前分组后重试。');
+        conflict.code = 'TOPIC_BATCH_CONFLICT';
+        throw conflict;
+      }
+      let result, applied;
+      if (matches(known)) {
+        // A receipt is durable even if a newer edit prevents adopting the remote snapshot.
+        try { ({result, applied} = await mutate(async () => ({receipt: known}))); }
+        catch { result = {receipt: known}; applied = false; }
+      } else {
+        ({result, applied} = await mutate(() => request(API+endpoint, {method: 'POST', body})));
+      }
+      if (!matches(result.receipt)) throw new Error('尚未取得保存回执。');
+      view.lastBatchId = batchId;
+      view.operation = null;
+      if (kind === 'confirm') {
+        view.review = null;
+        view.selected = [];
+      }
+      if (kind === 'move' && result.receipt.status === 'confirmed') {
+        view.closed = view.closed.filter(key => key !== topicKey(operation.topic));
+      }
+      const skipped = result.receipt.skipped?.filter(isWorkspaceTopicCandidateId).length ?? 0;
+      shared.notice = applied === false ? '云端已保存。请处理当前页面的同步提示，再查看最新分组。'
+        : kind === 'confirm' ? '主题归类已保存。'
+        : kind === 'undo' ? (skipped ? '已撤销可恢复的分组，保留了 '+skipped+' 张卡片的后续调整。' : '已撤销上次归类调整。')
+        : result.receipt.status === 'undone' ? '这次移动已撤销。' : '已移至「'+(operation.topic ?? '未归类')+'」。';
+      await persist();
+      return {receipt: result.receipt, applied};
+    } catch (error) {
+      if (kind === 'move' && ['TOPIC_MOVE_STALE', 'TOPIC_BATCH_CONFLICT'].includes(error.code)) {
+        view.operation = null;
+        try { await mutate(async () => null); } catch { /* Cloud sync reports whether the current state could be refreshed. */ }
+        shared.notice = error.message || '卡片分组已有变化，请查看最新结果后再移动。';
+      } else if (['TOPIC_DRAFT_STALE', 'TOPIC_DRAFT_MISSING', 'TOPIC_DRAFT_NOT_READY', 'TOPIC_BATCH_CONFLICT'].includes(error.code)) {
+        view.operation = null;
+        if (view.review) {
+          view.review.stale = true;
+          view.review.error = error.message || '卡片或主题已有变化，请重新审核。';
+        }
+        shared.notice = '';
+      } else if (['TOPIC_NO_CHANGES', 'TOPIC_INVALID_INPUT', 'TOPIC_BATCH_MISSING', 'TOPIC_HISTORY_LIMIT'].includes(error.code)) {
+        view.operation = null;
+        shared.notice = error.message;
+      } else {
+        shared.notice = error.status ? error.message : '连接暂时中断。草稿已保留，可查询并重试。';
+      }
+      await persist();
+    } finally {
+      shared.writing = false;
+      emit();
+    }
+  }
+
+  return {shared, view, connected, currentCards, currentTopics, busy, moveLocked, emit, lastReceipt, move, undo, persist, runOperation};
+}
+
+export function createWorkspaceTopicActions(options) {
+  const actions = topicOperationSession(options);
+  const {shared, view, busy, moveLocked, lastReceipt, runOperation} = actions;
+  const pending = () => view.operation?.kind === 'move' || view.operation?.kind === 'undo';
+  let attemptedRecovery;
+  function undoableMove() {
+    const receipt = lastReceipt();
+    return receipt?.status === 'confirmed' && receipt.kind === 'move' ? receipt : null;
+  }
+  function snapshot() {
+    return {
+      blocked: moveLocked(),
+      busy: busy(),
+      pending: pending(),
+      canUndo: !moveLocked() && Boolean(undoableMove()),
+      notice: [shared.storageError, shared.notice].filter(Boolean).join(' ')
+    };
+  }
+  return {
+    snapshot,
+    subscribe(listener) {
+      const notify = () => listener(snapshot());
+      shared.listeners.add(notify);
+      return () => shared.listeners.delete(notify);
+    },
+    move: actions.move,
+    retry: () => pending() && runOperation('retry'),
+    undo: () => actions.undo(undoableMove()?.batchId),
+    recover() {
+      if (pending() && !busy() && attemptedRecovery !== view.operation) {
+        attemptedRecovery = view.operation;
+        return runOperation('check');
+      }
+    }
+  };
+}
+
 function groupedCards(cards, assignments, query) {
   const topics = new Map(assignments.map(({id, topic}) => [id, topic]));
   const groups = new Map();
@@ -58,10 +228,8 @@ export function mountWorkspaceTopics({
   root, state, cards, openCard, showCanvas, loadDraft, saveDraft, request, mutate, sync,
   session = root, scrollTarget = window
 }) {
-  const shared = viewSession(session, loadDraft);
-  const view = shared.view;
-  const connected = typeof request === 'function' && typeof mutate === 'function';
-  const emit = () => shared.listeners.forEach(listener => listener());
+  const operations = topicOperationSession({session, state, cards, loadDraft, saveDraft, request, mutate});
+  const {shared, view, connected, currentCards, currentTopics, busy, moveLocked, emit, lastReceipt, persist, runOperation} = operations;
   let active = true;
   let pollTimer;
   let scrollTimer;
@@ -130,14 +298,10 @@ export function mountWorkspaceTopics({
     host.innerHTML = markup;
   }
 
-  const currentCards = () => get(cards) || [];
-  const currentTopics = () => get(state)?.workspaceTopics || {};
   const selectedCards = () => {
     const allowed = new Set(currentCards().map(card => card.id));
     return view.selected.filter(id => allowed.has(id));
   };
-  const busy = () => shared.generation || shared.writing;
-  const moveLocked = () => !connected || Boolean(view.operation || view.review) || busy();
   const canMove = id => !moveLocked() && !moveDialog.open && currentCards().some(card => card.id === id);
   const assignmentFor = id => {
     const row = currentTopics().assignments?.find(item => item.id === id);
@@ -160,25 +324,6 @@ export function mountWorkspaceTopics({
     status.textContent = message;
     status.hidden = !message;
     status.classList.toggle('wt-status-error', Boolean(shared.storageError || view.review?.stale));
-  }
-
-  async function persist() {
-    if (!saveDraft) return true;
-    const version = ++shared.saveVersion;
-    try {
-      await saveDraft(structuredClone(view));
-      if (version === shared.saveVersion && shared.storageError) {
-        shared.storageError = '';
-        emit();
-      }
-      return true;
-    } catch {
-      if (version === shared.saveVersion) {
-        shared.storageError = '本机草稿尚未保存，请保留此页面并重试。';
-        emit();
-      }
-      return false;
-    }
   }
 
   function drawGroups() {
@@ -331,8 +476,7 @@ export function mountWorkspaceTopics({
   function startMove(cardId, topic, expected) {
     if (!canMove(cardId) || topic === (expected?.topic ?? null)) return;
     captureScroll();
-    view.operation = {kind: 'move', batchId: crypto.randomUUID(), cardId, topic, expected};
-    void runOperation('new');
+    void operations.move(cardId, topic, expected);
   }
 
   function drawReview() {
@@ -386,8 +530,7 @@ export function mountWorkspaceTopics({
   }
 
   function drawReceipt() {
-    const receipts = (currentTopics().receipts || []).filter(receipt => receipt.changes.some(isCandidate));
-    const receipt = receipts.find(item => item.batchId === view.lastBatchId) || receipts.at(-1);
+    const receipt = lastReceipt();
     const undo = $('[data-topics-action="undo"]');
     undo.hidden = receipt?.status !== 'confirmed';
     undo.disabled = moveLocked();
@@ -471,89 +614,6 @@ export function mountWorkspaceTopics({
     }
   }
 
-  async function runOperation(mode) {
-    const operation = view.operation;
-    if (!connected || !operation || busy()) return;
-    const {kind, batchId} = operation;
-    const endpoint = '/'+kind;
-    const expectedStatus = kind === 'undo' ? 'undone' : 'confirmed';
-    const body = kind === 'confirm' ? {draftId: batchId, changes: operation.changes}
-      : kind === 'move' ? {batchId, cardId: operation.cardId, topic: operation.topic, expected: operation.expected}
-      : {batchId};
-    const lookup = () => request(API+'/receipt?batchId='+encodeURIComponent(batchId));
-    const matches = receipt => receipt?.batchId === batchId &&
-      (receipt.status === expectedStatus || (kind !== 'undo' && receipt.status === 'undone'));
-    const matchesOperation = receipt => {
-      if (kind === 'undo') return true;
-      if (kind === 'confirm') {
-        return receipt.kind !== 'move' && receipt.changes.length === operation.changes.length &&
-          receipt.changes.every(change => operation.changes.some(row => row.id === change.id && row.topic === change.topic));
-      }
-      const change = receipt.changes[0];
-      return receipt.kind === 'move' && receipt.changes.length === 1 && change.id === operation.cardId && change.topic === operation.topic &&
-        change.previous?.topic === operation.expected?.topic && change.previous?.batchId === operation.expected?.batchId;
-    };
-    shared.writing = true;
-    shared.notice = '';
-    emit();
-    try {
-      if (!await persist()) return;
-      const known = mode === 'new' ? null : (await lookup()).receipt;
-      if (mode === 'check' && !matches(known)) return;
-      if (matches(known) && !matchesOperation(known)) {
-        const conflict = new Error('该操作已保存其他内容，请查看当前分组后重试。');
-        conflict.code = 'TOPIC_BATCH_CONFLICT';
-        throw conflict;
-      }
-      let result, applied;
-      if (matches(known)) {
-        // A receipt is durable even if a newer edit prevents adopting the remote snapshot.
-        try { ({result, applied} = await mutate(async () => ({receipt: known}))); }
-        catch { result = {receipt: known}; applied = false; }
-      } else {
-        ({result, applied} = await mutate(() => request(API+endpoint, {method: 'POST', body})));
-      }
-      if (!matches(result.receipt)) throw new Error('尚未取得保存回执。');
-      view.lastBatchId = batchId;
-      view.operation = null;
-      if (kind === 'confirm') {
-        view.review = null;
-        view.selected = [];
-      }
-      if (kind === 'move' && result.receipt.status === 'confirmed') {
-        view.closed = view.closed.filter(key => key !== topicKey(operation.topic));
-      }
-      const skipped = result.receipt.skipped?.filter(isWorkspaceTopicCandidateId).length ?? 0;
-      shared.notice = applied === false ? '云端已保存。请处理当前页面的同步提示，再查看最新分组。'
-        : kind === 'confirm' ? '主题归类已保存。'
-        : kind === 'undo' ? (skipped ? '已撤销可恢复的分组，保留了 '+skipped+' 张卡片的后续调整。' : '已撤销上次归类调整。')
-        : result.receipt.status === 'undone' ? '这次移动已撤销。' : '已移至「'+(operation.topic ?? '未归类')+'」。';
-      await persist();
-    } catch (error) {
-      if (kind === 'move' && ['TOPIC_MOVE_STALE', 'TOPIC_BATCH_CONFLICT'].includes(error.code)) {
-        view.operation = null;
-        try { await mutate(async () => null); } catch { /* Cloud sync reports whether the current state could be refreshed. */ }
-        shared.notice = error.message || '卡片分组已有变化，请查看最新结果后再移动。';
-      } else if (['TOPIC_DRAFT_STALE', 'TOPIC_DRAFT_MISSING', 'TOPIC_DRAFT_NOT_READY', 'TOPIC_BATCH_CONFLICT'].includes(error.code)) {
-        view.operation = null;
-        if (view.review) {
-          view.review.stale = true;
-          view.review.error = error.message || '卡片或主题已有变化，请重新审核。';
-        }
-        shared.notice = '';
-      } else if (['TOPIC_NO_CHANGES', 'TOPIC_INVALID_INPUT', 'TOPIC_BATCH_MISSING', 'TOPIC_HISTORY_LIMIT'].includes(error.code)) {
-        view.operation = null;
-        shared.notice = error.message;
-      } else {
-        shared.notice = error.status ? error.message : '连接暂时中断。草稿已保留，可查询并重试。';
-      }
-      await persist();
-    } finally {
-      shared.writing = false;
-      emit();
-    }
-  }
-
   const scrollPosition = () => scrollTarget === window ? window.scrollY : scrollTarget.scrollTop;
   function captureScroll() { view.scrollTop = scrollPosition(); }
 
@@ -605,11 +665,7 @@ export function mountWorkspaceTopics({
         break;
       }
       case 'undo':
-        if (!busy() && !view.operation && !view.review) {
-          view.operation = {kind: 'undo', batchId: control.dataset.batch};
-          void runOperation('new');
-        }
-        break;
+        void operations.undo(control.dataset.batch); break;
       case 'retry': void runOperation('retry'); break;
       case 'cancel-move': moveDialog.close(); break;
     }

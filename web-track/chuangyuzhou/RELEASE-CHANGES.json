@@ -1,58 +1,52 @@
 {
-  "recordId": "WEB-032",
+  "recordId": "WEB-033",
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-11-12-web-dev-032",
-  "sourceCommit": "973851f91d4a780d3526ce27a2cf23ce82366d56",
-  "selectedRelease": "2026-11-11-web-dev-031",
+  "release": "2026-11-12-web-dev-033",
+  "sourceCommit": "8bb34e82be1831a5fa201c1a986a3a27efd864a0",
+  "selectedRelease": "2026-11-12-web-dev-032",
   "changes": [
     {
-      "path": "yuzhou/backend/hermes.mjs",
-      "bytes": 62919,
-      "sha256": "aa0fca4585581076613ec4764fc3da2b9244364815847ca43815d200e8c59c4c",
-      "baselineSha256": "daff57c7e258432b05d7e0c6bf29d27dc242832e7b2ebfb2403fed8c4359bbb5"
-    },
-    {
-      "path": "yuzhou/backend/tests/workspace-topics.test.mjs",
-      "bytes": 15579,
-      "sha256": "8c232011a9417a8b10d67161964fcfd1772dfd067f145702ed60fee212a5193f",
-      "baselineSha256": "21ec0df8aa23763314d1eee021d5d5dac17ae95f23e01a0c60eb3b652bfc5ac2"
-    },
-    {
-      "path": "yuzhou/backend/workspace-topics.mjs",
-      "bytes": 9613,
-      "sha256": "d37bdd69f3740052e6127eebdc4d5c7a94642512eac1d667ab4759b3c83ec035",
-      "baselineSha256": "cb77adbca5dac0b138f9a3b60571c4f2d6fb499bb9aae580450be396c5bb7e1d"
+      "path": "yuzhou/frontend/index.html",
+      "bytes": 2635,
+      "sha256": "b400d424c25a30c8d07a50ef66702e9b13f8d657f1ba4b1dd7c11df0fb4dc269",
+      "baselineSha256": "05aaaf33253fae3c23e69ec2e9c46150fc5522e3272f37d85a217cfac965af1c"
     },
     {
       "path": "yuzhou/frontend/src/app.js",
-      "bytes": 86447,
-      "sha256": "0383752d8a967141c27f5866e6b2f9f04d0dbcdd4d3839d3dca9f1739c4a9fb2",
-      "baselineSha256": "0203207138ede390cc55fdd3cb4f184ea3afc2a28d5f1265941f03cdba7b2436"
+      "bytes": 87786,
+      "sha256": "91bc2da4d5c661d68a30233c97aeda5fb8c248a8734eddb2c47deaa01d858b10",
+      "baselineSha256": "0383752d8a967141c27f5866e6b2f9f04d0dbcdd4d3839d3dca9f1739c4a9fb2"
     },
     {
-      "path": "yuzhou/frontend/src/workspace-topic-drag.js",
-      "bytes": 7204,
-      "sha256": "46137391cfb5a6031e3ccdaad1a0db55f93bc8e77388967a9acb2383306c296b",
+      "path": "yuzhou/frontend/src/canvas-topic-storage.css",
+      "bytes": 2929,
+      "sha256": "ed3033a39fc55a68d9e16fda8d5576eb4c26a9e6996e537a0d4cabc7fd2498b3",
       "baselineSha256": null
     },
     {
-      "path": "yuzhou/frontend/src/workspace-topics-model.js",
-      "bytes": 5756,
-      "sha256": "fedcefc0bcbd9529eb7af94afe6086d55ab98872ac4e0ba33da3545014ed5dbe",
-      "baselineSha256": "1c756ce61b271af0ff344a172853a8dfe2b5d4f324a11bd560457355138e9c64"
+      "path": "yuzhou/frontend/src/canvas-topic-storage.js",
+      "bytes": 4105,
+      "sha256": "231d9dc51d4f098df29078c7999d8b0f51938549ba779c075cf89fd5e71bc799",
+      "baselineSha256": null
     },
     {
-      "path": "yuzhou/frontend/src/workspace-topics.css",
-      "bytes": 10371,
-      "sha256": "f1762c96d1508fd2228c9f043eccf022b061962ef475050a6897b9c149be59df",
-      "baselineSha256": "2413341e0cfd19b95eb1af754c017904ec2810b0d7a34a32e85547e6103ee89f"
+      "path": "yuzhou/frontend/src/canvas.js",
+      "bytes": 68689,
+      "sha256": "4c80aea8deb19c0a02c9a722c41ee43fb89f16a65bc089e42f5058c8819e8938",
+      "baselineSha256": "6efbeceb8720f1b10f1934d097f7487c909c688d4a962b6b1ed5c3c6a715ad57"
     },
     {
       "path": "yuzhou/frontend/src/workspace-topics.js",
-      "bytes": 34198,
-      "sha256": "e3ec0829c99afa9b95c4db5fd16a4aa6bfb61d27565fef31883c692bb2d515d5",
-      "baselineSha256": "76fa8df9269e660b7b43c406bcbb6ec52ba45bdb03aa4323f53b5078065d2bba"
+      "bytes": 36262,
+      "sha256": "2aa1d7c158114f3b8475629313920837827f5e4f9f06f564484e4d9d45b460b7",
+      "baselineSha256": "e3ec0829c99afa9b95c4db5fd16a4aa6bfb61d27565fef31883c692bb2d515d5"
+    },
+    {
+      "path": "yuzhou/frontend/tests/canvas-topic-storage.test.mjs",
+      "bytes": 3568,
+      "sha256": "d63203477cf7e894ff238098cb2e30bcab248f1f8a3b7a365f54501d499d003d",
+      "baselineSha256": null
     }
   ]
 }
