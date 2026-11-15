@@ -98,6 +98,25 @@ test('startup disk failure still exposes downloaded content with an actionable s
   disk.reject=false;await store.retry();assert.equal(JSON.parse(disk.values.get(sync)).revision,8);
 });
 
+test('a timed out initial workspace read leaves the pending snapshot and revision intact',async()=>{
+  const state=sample('本机未同步内容'),pending={id:tab,state};
+  const disk=backend(),store=await createWorkspaceStorage(account,{legacy:legacy(),backend:disk});
+  const client=clientWith(store),requests=[];
+  client.pending=pending;client.persist();await store.settled();
+  client.request=async(path,options)=>{
+    requests.push({path,options});
+    throw new DOMException('Synthetic connection timeout','TimeoutError');
+  };
+  assert.deepEqual(await client.initialize({}),state);
+  assert.deepEqual(client.pending,pending);
+  assert.equal(client.revision,2);
+  assert.equal(client.status,'offline');
+  assert.equal(requests.length,1);
+  assert.equal(requests[0].path,'/api/workspace');
+  assert.ok(requests[0].options.signal instanceof AbortSignal);
+  assert.deepEqual(JSON.parse(store.getItem(sync)).pending,pending);
+});
+
 test('explicit remote loading waits for a durable recovery copy and protects edits made during that wait',async()=>{
   const disk=backend(),store=await createWorkspaceStorage(account,{legacy:legacy(),backend:disk}),client=clientWith(store);client.pending={id:tab,state:sample('local')};
   client.request=async()=>({revision:3,state:sample('remote')});let release;disk.hold=new Promise(done=>release=done);

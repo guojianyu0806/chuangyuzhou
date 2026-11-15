@@ -42,7 +42,17 @@
 </head>
 <body>
   <a class="skip-link" href="#main">跳至主要内容</a>
-  <div id="app"></div>
+  <div id="app">
+    <main id="main" class="startup-screen" tabindex="-1">
+      <div class="startup-status">
+        <div class="loading-status" role="status">
+          <span class="loading-spinner" aria-hidden="true"></span>
+          <span>正在打开工作台…</span>
+        </div>
+        <p class="startup-slow">加载时间较长。若页面一直没有打开，可以刷新后重试。</p>
+      </div>
+    </main>
+  </div>
   <dialog id="modal" aria-labelledby="modal-title"></dialog>
   <aside id="ai-drawer" class="ai-drawer" role="dialog" aria-modal="true" aria-label="学习助手" hidden></aside>
   <div id="toasts" class="toasts" role="status" aria-live="polite"></div>

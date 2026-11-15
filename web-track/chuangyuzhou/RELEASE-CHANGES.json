@@ -1,64 +1,40 @@
 {
-  "recordId": "WEB-038",
+  "recordId": "WEB-040",
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-11-15-web-dev-038",
-  "sourceCommit": "3f169b649b81f1f6de1d4fde23564f690c206a87",
-  "selectedRelease": "2026-11-15-web-dev-037",
+  "release": "2026-11-15-web-dev-040",
+  "sourceCommit": "f942452d736508ed72df52a77180a9c39502cbe7",
+  "selectedRelease": "2026-11-15-web-dev-038",
   "changes": [
     {
-      "path": "yuzhou/frontend/src/backup.js",
-      "bytes": 37448,
-      "sha256": "352169bba2570a2ad2ede94e7833bc3a80725ecbdb02643f415a20ea757894b6",
-      "baselineSha256": "8c2ec13e66b62e19cd545432c9068b072e6a61ae81fe9d1db1e2698b150d3993"
+      "path": "yuzhou/frontend/index.html",
+      "bytes": 3049,
+      "sha256": "62082d90c2233e86ec4bc65c14c4fcb515b0bcc6960bb3d32b55fd90c30e568d",
+      "baselineSha256": "b400d424c25a30c8d07a50ef66702e9b13f8d657f1ba4b1dd7c11df0fb4dc269"
     },
     {
-      "path": "yuzhou/frontend/src/canvas-topic-storage.css",
-      "bytes": 5832,
-      "sha256": "56b26317d7c358663b542c53cbeb0671bc469bd7136b10a17826272a9744ffe3",
-      "baselineSha256": "72948ab4490c4a3e478314919c775708da24ecc13c840d2d1d9c03d894408fdc"
+      "path": "yuzhou/frontend/src/app.css",
+      "bytes": 45428,
+      "sha256": "4089b9a9f92d41a3449fb85167f71b2f91c4e86c46560be9a443d4b4aa62883f",
+      "baselineSha256": "1e2673db31252c4099b5cb7e1ded0caa10630634b5aa97d1790b05e29ddfce39"
     },
     {
-      "path": "yuzhou/frontend/src/canvas.css",
-      "bytes": 48104,
-      "sha256": "f756b5c93ed2fcddae3ac47185895de36012a6f95274f7783b31d43c7a7986ba",
-      "baselineSha256": "be3bce4ec064ff4ed31e05f374da8d06f0d31a304dfc51bd436f004d060bba3b"
+      "path": "yuzhou/frontend/src/cloud.js",
+      "bytes": 30419,
+      "sha256": "19ea933a03e6d73476cbab1acfbd4feda973d7222633807dc3da9a5ac4f26b8a",
+      "baselineSha256": "3b534e9deca3e3ed1607e8134382ca69b20bce12b56154eaef12690a19c1a2bb"
     },
     {
-      "path": "yuzhou/frontend/src/canvas.js",
-      "bytes": 73003,
-      "sha256": "9982b9e1933b44ce58f130c2fe0cecb48b6ccbf5ae3f3d2b2fe167f63199a77b",
-      "baselineSha256": "c4e24f9beaf9f2b1a02e962a0691aec63aa371d020aa72fb669cc483c63d1a35"
+      "path": "yuzhou/frontend/tests/web-browser-startup.test.mjs",
+      "bytes": 6808,
+      "sha256": "bf475dfd84c2ca38a5b7a542f516c68cdb515cd71e23b8d13c27fe76443671af",
+      "baselineSha256": "c8fc63a1c3390aa6d4200ce3c217443fb3d7c0e21699238752d7f2fbe4b51ad7"
     },
     {
-      "path": "yuzhou/frontend/src/card-layouts.js",
-      "bytes": 3523,
-      "sha256": "39ab2565767153c8d813802963878e19d14e1449d65f12dc6cb3cca062344063",
-      "baselineSha256": "74fb60855affc7689450fb6658f2e44e7287567964929f0e5cc646c58909557c"
-    },
-    {
-      "path": "yuzhou/frontend/src/workspace-actions-study.js",
-      "bytes": 34944,
-      "sha256": "5d140221ce78f56cca4918958dd5c4002da1cd71f1af6ad464ad8676010d2299",
-      "baselineSha256": "e229cc92b941a9e0a6a8b5b3d48821aaed0e0904463c5249c128d3b01ca042c6"
-    },
-    {
-      "path": "yuzhou/frontend/tests/canvas-topic-labels.test.mjs",
-      "bytes": 8956,
-      "sha256": "0b04836b0566c1f521bea3394964db0311ab108892ce67f943621c81a2185c16",
-      "baselineSha256": "1e4a0abbb4701fbef1defff9d084e4d5ded494cb8348b96e21ddf99f766769e2"
-    },
-    {
-      "path": "yuzhou/frontend/tests/card-layouts.test.mjs",
-      "bytes": 7269,
-      "sha256": "fbaea30d8c480452bfbb46849f066c40bedf239b4c0822015ef400a321965172",
-      "baselineSha256": "afac18b03312c8e626273d94107ab38d82c18f1785ebc7f6486417ac06155608"
-    },
-    {
-      "path": "yuzhou/frontend/tests/workspace-actions-study.test.mjs",
-      "bytes": 23264,
-      "sha256": "c4b85d8e6247a21dfc22d01056580675ca4f85bafb7ab5bed1463cea128d1257",
-      "baselineSha256": "3994c3a2d477eefccf1818144697ab531ba5d63eb94daaec098f72075fe7cb37"
+      "path": "yuzhou/frontend/tests/workspace-storage.test.mjs",
+      "bytes": 11808,
+      "sha256": "64a895c7898be9843a27c1d3668f138eac272b5e078a068ba5e52251ea87d041",
+      "baselineSha256": "998066a154b2095ddd834e5f6ecd12ba493dee8ecf88879cc7e8604e5ff8ccbf"
     }
   ]
 }

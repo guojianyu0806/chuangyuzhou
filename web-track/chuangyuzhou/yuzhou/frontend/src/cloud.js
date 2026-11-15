@@ -3,6 +3,8 @@ import {modelStatusLabel,modelEngineDescription} from './model-status.js';
 import {createWorkspaceStorage,sameWorkspaceContent} from './workspace-storage.js';
 
 const stamp = () => new Date().toISOString();
+const AUTH_TIMEOUT_MS = 15_000;
+const WORKSPACE_STARTUP_TIMEOUT_MS = 30_000;
 const isLocalInstance=()=>['127.0.0.1','localhost','[::1]'].includes(globalThis.location?.hostname);
 const connectionUnavailable=()=>isLocalInstance()?'暂时无法连接本机工作台。电脑重启或服务窗口关闭后，请运行比赛目录中的“启动创宇宙.cmd”，再重试；本设备改动仍保留。':'暂时无法连接工作台，请检查网络后重试；本设备改动仍保留。';
 const clone = value => JSON.parse(JSON.stringify(value));
@@ -124,7 +126,7 @@ export class CloudClient {
     this.revision=cached?.revision||0;
     this.pending=cached?.pending||null;
     let remote;
-    try{remote=await this.request('/api/workspace');}catch(error){
+    try{remote=await this.request('/api/workspace',{signal:AbortSignal.timeout(WORKSPACE_STARTUP_TIMEOUT_MS)});}catch(error){
       const stored=read(this.key('personal'),this.storage||localStorage);
       if(error.status!==401)this.setStatus('offline',connectionUnavailable());
       return this.pending?.state||stored||empty;
@@ -309,39 +311,56 @@ export class CloudClient {
   async logout() {await this.flush();await this.request('/api/auth/logout',{method:'POST'});location.reload();}
 }
 
-function authView(setup,error='') {
+function authView(setup) {
   const app=document.querySelector('#app');
-  app.innerHTML=`<main class="cloud-entry" id="main"><section class="cloud-welcome"><img src="./icon.svg" alt="" width="56" height="56"><span class="eyebrow">创宇宙</span><h1>搭建一个，<br>属于你的工作台。</h1><p>从空白或模板开始，组合你需要的模块。<br>让 AI 伙伴帮你搭建、排列和管理。</p><div class="cloud-entry-tags"><span>自由组合</span><span>场景模板</span><span>AI 伙伴</span></div></section><section class="cloud-login-card"><span class="cloud-entry-mark">✳</span><h2>${setup?'建立你的工作台':'欢迎回到创宇宙'}</h2><p class="muted">${setup?'设置账号，开始建立自己的工作台。':'登录账号，继续你的记录与计划。'}</p><form id="cloud-auth-form"><label class="field">账号<input name="username" required minlength="2" maxlength="64" autocomplete="username" placeholder="例如 yuzhou"></label><label class="field">密码<input name="password" type="password" required ${setup?'minlength="12"':''} maxlength="256" autocomplete="${setup?'new-password':'current-password'}" placeholder="${setup?'至少 12 位字符':'输入你的密码'}"></label>${setup?'<label class="field">初始化口令<input name="setupToken" type="password" required autocomplete="off" placeholder="部署时生成的初始化口令"></label><p class="small muted">口令仅用于首次建立账号，不会保存到浏览器。</p>':''}<p id="cloud-auth-error" class="cloud-error" role="alert">${esc(error)}</p><button class="btn primary full" type="submit">${setup?'创建账号并进入':'登录工作台'} →</button></form><p class="cloud-entry-foot">私人工作台 · 登录后访问你的工作区</p></section></main>`;
+  app.innerHTML=`<main class="cloud-entry" id="main"><section class="cloud-welcome"><img src="./icon.svg" alt="" width="56" height="56"><span class="eyebrow">创宇宙</span><h1>搭建一个，<br>属于你的工作台。</h1><p>从空白或模板开始，组合你需要的模块。<br>让 AI 伙伴帮你搭建、排列和管理。</p><div class="cloud-entry-tags"><span>自由组合</span><span>场景模板</span><span>AI 伙伴</span></div></section><section class="cloud-login-card"><span class="cloud-entry-mark">✳</span><h2>${setup?'建立你的工作台':'欢迎回到创宇宙'}</h2><p class="muted">${setup?'设置账号，开始建立自己的工作台。':'登录账号，继续你的记录与计划。'}</p><form id="cloud-auth-form"><label class="field">账号<input name="username" required minlength="2" maxlength="64" autocomplete="username" placeholder="例如 yuzhou"></label><label class="field">密码<input name="password" type="password" required ${setup?'minlength="12"':''} maxlength="256" autocomplete="${setup?'new-password':'current-password'}" placeholder="${setup?'至少 12 位字符':'输入你的密码'}"></label>${setup?'<label class="field">初始化口令<input name="setupToken" type="password" required autocomplete="off" placeholder="部署时生成的初始化口令"></label><p class="small muted">口令仅用于首次建立账号，不会保存到浏览器。</p>':''}<p id="cloud-auth-error" class="cloud-error" role="alert"></p><button class="btn primary full" type="submit">${setup?'创建账号并进入':'登录工作台'} →</button><p class="loading-status auth-loading" role="status" hidden><span class="loading-spinner" aria-hidden="true"></span><span>${setup?'正在创建工作台…':'正在登录并打开工作台…'}</span></p></form><p class="cloud-entry-foot">私人工作台 · 登录后访问你的工作区</p></section></main>`;
   return app.querySelector('form');
+}
+
+function startupProblem(title, message, retryLabel) {
+  document.querySelector('#app').innerHTML=`<main class="cloud-entry cloud-unavailable" id="main" tabindex="-1"><section class="cloud-login-card"><h1>${esc(title)}</h1><p role="alert">${esc(message)}</p><button class="btn primary" id="browser-retry">${esc(retryLabel)}</button></section></main>`;
+  document.querySelector('#browser-retry').onclick=()=>location.reload();
+  return new Promise(()=>{});
+}
+
+async function readSession() {
+  const response=await fetch('/api/auth/session',{
+    cache:'no-store',credentials:'same-origin',signal:AbortSignal.timeout(AUTH_TIMEOUT_MS)
+  });
+  if(!response.ok)throw new Error('暂时无法确认登录状态，请重试。');
+  return response.json();
 }
 
 async function authenticate(session) {
   return new Promise(resolve=>{
     const form=authView(!!session.setupRequired);
     form.onsubmit=async event=>{
-      event.preventDefault();const button=form.querySelector('button');button.disabled=true;
+      event.preventDefault();
+      const button=form.querySelector('button');
+      if(button.disabled)return;
+      const status=form.querySelector('.auth-loading');
+      const errorMessageNode=form.querySelector('#cloud-auth-error');
+      button.disabled=true;status.hidden=false;errorMessageNode.textContent='';
       const data=new FormData(form);
       try{
-        const response=await fetch(session.setupRequired?'/api/auth/setup':'/api/auth/login',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(data))});
+        const response=await fetch(session.setupRequired?'/api/auth/setup':'/api/auth/login',{method:'POST',credentials:'same-origin',signal:AbortSignal.timeout(AUTH_TIMEOUT_MS),headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(data))});
         const result=await response.json();
         if(!response.ok)throw new Error(errorMessage(result,'登录未成功，请检查账号信息。'));
         form.reset();
-        const check=await fetch('/api/auth/session',{cache:'no-store',credentials:'same-origin'});
-        if(!check.ok)throw new Error('暂时无法确认登录状态，请重试。');
-        const verified=await check.json();if(!verified.authenticated)throw new Error('登录状态尚未建立，请重试。');
+        const verified=await readSession();
+        if(!verified.authenticated)throw new Error('登录状态尚未建立，请重试。');
         resolve(verified);
-      }catch(error){form.querySelector('#cloud-auth-error').textContent=error.message;button.disabled=false;}
+      }catch(error){
+        errorMessageNode.textContent=error.name==='TimeoutError'?'等待时间较长，请刷新页面确认登录状态后再试。':error.message;
+        status.hidden=true;button.disabled=false;
+      }
     };
   });
 }
 
 export async function bootstrapCloud() {
   const problem=browserSupportProblem();
-  if(problem){
-    document.querySelector('#app').innerHTML=`<main class="cloud-entry cloud-unavailable"><section class="cloud-login-card"><h1>${esc(problem.title)}</h1><p role="alert">${esc(problem.message)}</p><button class="btn primary" id="browser-retry">重新检查</button></section></main>`;
-    document.querySelector('#browser-retry').onclick=()=>location.reload();
-    return new Promise(()=>{});
-  }
+  if(problem)return startupProblem(problem.title,problem.message,'重新检查');
   let health;
   try{
     const response=await fetch('/api/health',{cache:'no-store',signal:AbortSignal.timeout(6000)});
@@ -350,18 +369,15 @@ export async function bootstrapCloud() {
     sessionStorage.setItem('czb-yuzhou-cloud-server','1');
   }catch(error){
     if(['127.0.0.1','localhost','[::1]'].includes(location.hostname)&&!sessionStorage.getItem('czb-yuzhou-cloud-server'))return null;
-    const hint=connectionUnavailable();
-    document.querySelector('#app').innerHTML=`<main class="cloud-entry cloud-unavailable"><section class="cloud-login-card"><h1>暂时无法连接工作台</h1><p>${esc(hint)}</p><button class="btn primary" id="cloud-retry">重新连接</button></section></main>`;
-    document.querySelector('#cloud-retry').onclick=()=>location.reload();return new Promise(()=>{});
+    return startupProblem('暂时无法连接工作台',connectionUnavailable(),'重新连接');
   }
   let session;
-  try{const res=await fetch('/api/auth/session',{cache:'no-store',credentials:'same-origin'});if(!res.ok)throw new Error();session=await res.json();}
-  catch{const form=authView(false,'暂时无法检查登录状态，请重试。');form.onsubmit=event=>{event.preventDefault();location.reload();};return new Promise(()=>{});}
+  try{session=await readSession();}
+  catch{return startupProblem('暂时无法检查登录状态','请检查连接后重试。','重试登录检查');}
   if(!session.authenticated)session=await authenticate(session);
   try{const client=new CloudClient(session);await client.prepareStorage();return client;}
   catch{
-    document.querySelector('#app').innerHTML='<main class="cloud-entry cloud-unavailable"><section class="cloud-login-card"><h1>本机数据存储暂不可用</h1><p>旧缓存仍保留。请保留原页面，检查浏览器存储权限后重试；请勿清除浏览器数据。</p><button class="btn primary" id="storage-retry">重试加载</button></section></main>';
-    document.querySelector('#storage-retry').onclick=()=>location.reload();return new Promise(()=>{});
+    return startupProblem('本机数据存储暂不可用','旧缓存仍保留。请保留原页面，检查浏览器存储权限后重试；请勿清除浏览器数据。','重试加载');
   }
 }
 

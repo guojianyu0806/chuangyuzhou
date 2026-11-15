@@ -65,6 +65,24 @@ test('secure remote login page preserves setup and login behavior without claimi
   assert.deepEqual(f.requests.map(call=>call.path),['/api/health','/api/auth/session']);
 });
 
+test('a timed out session check shows a retry action without asking for credentials',async t=>{
+  const f=fixture(t);
+  let sessionRequest;
+  replaceGlobal(t,'fetch',async(path,options)=>{
+    if(path==='/api/health')return new Response(JSON.stringify({mode:'cloud'}));
+    sessionRequest={path,options};
+    throw new DOMException('Synthetic connection timeout','TimeoutError');
+  });
+  bootstrapCloud();
+  await settle();
+  assert.equal(sessionRequest.path,'/api/auth/session');
+  assert.ok(sessionRequest.options.signal instanceof AbortSignal);
+  assert.match(f.app.innerHTML,/暂时无法检查登录状态/);
+  assert.doesNotMatch(f.app.innerHTML,/type="password"/);
+  f.retry.onclick();
+  assert.deepEqual(f.events,['reload']);
+});
+
 test('local secure contexts retain support while missing persistent storage is diagnosed',()=>{
   const supported={isSecureContext:true,crypto:webcrypto,indexedDB:{},localStorage:memoryStorage(),sessionStorage:memoryStorage()};
   assert.equal(browserSupportProblem(supported),null);

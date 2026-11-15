@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-11-15-web-dev-038",
-  "sourceCommit": "3f169b649b81f1f6de1d4fde23564f690c206a87",
+  "release": "2026-11-15-web-dev-040",
+  "sourceCommit": "f942452d736508ed72df52a77180a9c39502cbe7",
   "defaultPort": 4396,
   "privateRuntimeIncluded": false,
-  "baselineRecord": "../evidence/WEB-038/source-baseline.json",
+  "baselineRecord": "../evidence/WEB-040/source-baseline.json",
   "files": [
     {
       "path": ".env.example",
@@ -30,8 +30,8 @@
     },
     {
       "path": "RELEASE-CHANGES.json",
-      "bytes": 2649,
-      "sha256": "2c72ab7c6b3f48b09b42a00fb76707a5e8db01b12c8566f2f6834d8353f15a85"
+      "bytes": 1558,
+      "sha256": "96c29d4468eb6ff9ac2546d05364d18bdffc1787a1817c1719a62993822553fd"
     },
     {
       "path": "SOURCE-NOTICE.md",
@@ -420,8 +420,8 @@
     },
     {
       "path": "yuzhou/frontend/index.html",
-      "bytes": 2635,
-      "sha256": "b400d424c25a30c8d07a50ef66702e9b13f8d657f1ba4b1dd7c11df0fb4dc269"
+      "bytes": 3049,
+      "sha256": "62082d90c2233e86ec4bc65c14c4fcb515b0bcc6960bb3d32b55fd90c30e568d"
     },
     {
       "path": "yuzhou/frontend/launch.mjs",
@@ -485,8 +485,8 @@
     },
     {
       "path": "yuzhou/frontend/src/app.css",
-      "bytes": 44385,
-      "sha256": "1e2673db31252c4099b5cb7e1ded0caa10630634b5aa97d1790b05e29ddfce39"
+      "bytes": 45428,
+      "sha256": "4089b9a9f92d41a3449fb85167f71b2f91c4e86c46560be9a443d4b4aa62883f"
     },
     {
       "path": "yuzhou/frontend/src/app.js",
@@ -590,8 +590,8 @@
     },
     {
       "path": "yuzhou/frontend/src/cloud.js",
-      "bytes": 30235,
-      "sha256": "3b534e9deca3e3ed1607e8134382ca69b20bce12b56154eaef12690a19c1a2bb"
+      "bytes": 30419,
+      "sha256": "19ea933a03e6d73476cbab1acfbd4feda973d7222633807dc3da9a5ac4f26b8a"
     },
     {
       "path": "yuzhou/frontend/src/companion.css",
@@ -1465,8 +1465,8 @@
     },
     {
       "path": "yuzhou/frontend/tests/web-browser-startup.test.mjs",
-      "bytes": 6069,
-      "sha256": "c8fc63a1c3390aa6d4200ce3c217443fb3d7c0e21699238752d7f2fbe4b51ad7"
+      "bytes": 6808,
+      "sha256": "bf475dfd84c2ca38a5b7a542f516c68cdb515cd71e23b8d13c27fe76443671af"
     },
     {
       "path": "yuzhou/frontend/tests/welcome-layout-controls.test.mjs",
@@ -1540,8 +1540,8 @@
     },
     {
       "path": "yuzhou/frontend/tests/workspace-storage.test.mjs",
-      "bytes": 10873,
-      "sha256": "998066a154b2095ddd834e5f6ecd12ba493dee8ecf88879cc7e8604e5ff8ccbf"
+      "bytes": 11808,
+      "sha256": "64a895c7898be9843a27c1d3668f138eac272b5e078a068ba5e52251ea87d041"
     },
     {
       "path": "yuzhou/frontend/tests/workspace-undo-lifecycle.test.mjs",
