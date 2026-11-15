@@ -491,12 +491,12 @@ export function mountCanvas(ctx, collection) {
   function toggleBox(box){
     if(commitBoxes(boxes().map(item=>item.id===box.id?{...item,collapsed:!item.collapsed}:item)))focusBox(box.id,'topic-box-toggle');
   }
-  function dropBoxAt(event){
-    const rect=viewport.getBoundingClientRect(),view=canvas.view;
-    if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)return undefined;
-    const x=(event.clientX-rect.left-viewport.clientLeft-view.x)/view.zoom;
-    const y=(event.clientY-rect.top-viewport.clientTop-view.y)/view.zoom;
-    return boxLayout.regions.findLast(box=>x>=box.x&&x<=box.x+box.w&&y>=box.y&&y<=box.y+box.h)||null;
+  function dropBoxAt(event,draggedCard){
+    const hit=document.elementsFromPoint(event.clientX,event.clientY).find(node=>!draggedCard.contains(node));
+    if(!hit||!viewport.contains(hit))return undefined;
+    return hit.closest('[data-topic-box]')?.dataset.topicBox
+      ??hit.closest('[data-topic-box-member]')?.dataset.topicBoxMember
+      ??null;
   }
   function highlightBox(id){
     world.querySelector('.cv-topic-box.is-topic-drop')?.classList.remove('is-topic-drop');
@@ -525,13 +525,12 @@ export function mountCanvas(ctx, collection) {
       if(member&&point)member.style.transform=`translate(${point.x+dx}px,${point.y+dy}px)`;
     }
   }
-  function finishBoxCardMove(gesture,event){
-    const target=dropBoxAt(event);
-    if(target===undefined)return;
+  function finishBoxCardMove(gesture,event,targetId){
+    if(targetId===undefined)return;
     const {card,sourceBox}=gesture;
-    if(target){
-      if(target.id===sourceBox)return;
-      const box=boxes().find(item=>item.id===target.id);
+    if(targetId!==null){
+      const box=boxes().find(item=>item.id===targetId);
+      if(!box||box.id===sourceBox)return;
       if(commitBoxes(setCanvasTopicBoxMembers(boxes(),box.id,[...box.cardIds,card.id])))announce(`已放入${box.title}`);
       return;
     }
@@ -670,9 +669,10 @@ export function mountCanvas(ctx, collection) {
     if(i.type==='pan'){canvas.view.x=i.view.x+dx;canvas.view.y=i.view.y+dy;applyView();}
     else if(i.type==='move-box')previewBoxMove(i,movedPosition(i,event));
     else if(i.type==='box-card'){
-      const position=movedPosition(i,event),target=dropBoxAt(event);
+      const position=movedPosition(i,event);
       i.el.style.transform=`translate(${position.x}px,${position.y}px)`;
-      highlightBox(target?.id===i.sourceBox?null:target?.id);
+      const targetId=dropBoxAt(event,i.el);
+      highlightBox(targetId===i.sourceBox?null:targetId);
     }
     else if(i.type==='move'){
       const snap=value=>canvas.snap?Math.round(value/16)*16:value;
@@ -694,10 +694,12 @@ export function mountCanvas(ctx, collection) {
     if(event?.type==='pointercancel')pointers.clear();
     clearTimeout(i.timer);
     const boxGesture=i.type==='move-box'||i.type==='box-card';
+    let targetId;
     if(i.type==='move-box'){
       previewBoxMove(i,i.position);
       i.el.classList.remove('is-topic-box-moving');
     }else if(i.type==='box-card'){
+      if(i.moved&&event?.type==='pointerup')targetId=dropBoxAt(event,i.el);
       placeCard(i.card);
       highlightBox();
       viewport.classList.remove('is-topic-box-dragging');
@@ -721,7 +723,7 @@ export function mountCanvas(ctx, collection) {
     if(clearPointers&&i.id!==undefined&&viewport.hasPointerCapture(i.id))viewport.releasePointerCapture(i.id);
     if(event&&viewport.hasPointerCapture(event.pointerId))viewport.releasePointerCapture(event.pointerId);
     if(boxGesture&&i.moved&&event?.type==='pointerup'){
-      if(i.type==='box-card')finishBoxCardMove(i,event);
+      if(i.type==='box-card')finishBoxCardMove(i,event,targetId);
       else{
         const position=movedPosition(i,event);
         if(commitBoxes(boxes().map(box=>box.id===i.box.id?{...box,...position}:box)))focusBox(i.box.id,'topic-box-drag');

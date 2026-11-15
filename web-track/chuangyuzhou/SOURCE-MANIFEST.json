@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-11-12-web-dev-035",
-  "sourceCommit": "3d6c3b0845f9b1cac91fb149d16d540305107efb",
+  "release": "2026-11-15-web-dev-036",
+  "sourceCommit": "1edaa7fb49fb90786a9f08a0f476063b50d3df57",
   "defaultPort": 4396,
   "privateRuntimeIncluded": false,
-  "baselineRecord": "../evidence/WEB-035/source-baseline.json",
+  "baselineRecord": "../evidence/WEB-036/source-baseline.json",
   "files": [
     {
       "path": ".env.example",
@@ -31,7 +31,7 @@
     {
       "path": "RELEASE-CHANGES.json",
       "bytes": 769,
-      "sha256": "45f76e5684dd73d34b5b5f7805cfceb00cb16fc81b9f8704ccd021f016dde5fe"
+      "sha256": "46718e5c73b68374aa5c7b9157a8b04c4e506a7264fa74e174dce2d32ac84f2b"
     },
     {
       "path": "SOURCE-NOTICE.md",
@@ -560,8 +560,8 @@
     },
     {
       "path": "yuzhou/frontend/src/canvas-topic-storage.css",
-      "bytes": 4886,
-      "sha256": "1aeb835b5b1f79776ffd5e6b201fd4fd47e32044fe2027eec80f8d12e20a6c4c"
+      "bytes": 5022,
+      "sha256": "72948ab4490c4a3e478314919c775708da24ecc13c840d2d1d9c03d894408fdc"
     },
     {
       "path": "yuzhou/frontend/src/canvas.css",
@@ -570,8 +570,8 @@
     },
     {
       "path": "yuzhou/frontend/src/canvas.js",
-      "bytes": 70989,
-      "sha256": "f26dac47f7af551e4784eaa5035571fb018176b3991289b1f73ddaefa457c07c"
+      "bytes": 70975,
+      "sha256": "c4e24f9beaf9f2b1a02e962a0691aec63aa371d020aa72fb669cc483c63d1a35"
     },
     {
       "path": "yuzhou/frontend/src/card-layouts.js",
