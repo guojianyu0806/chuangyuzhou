@@ -8,6 +8,7 @@ import {applyWorkspaceActions,previewWorkspaceActions,undoWorkspaceActions} from
 import {validateBackup} from '../src/backup.js';
 
 const date='2026-09-21T04:00:00.000Z';
+const boxId='00000000-0000-4000-8000-000000000001';
 const term={id:'existing-term',title:'秋季学期',campus:'呈贡',weekOne:'2026-08-31',totalWeeks:20,teachingWeeks:18,notes:'',periods:[{id:1,start:'08:30',end:'09:15'},{id:2,start:'09:25',end:'10:10'}],entries:[]};
 function fixture(){return {profile:{name:'同学',major:'软件工程',provider:'deepseek'},ui:{sidebarPinned:false,lastCreatedColor:'#AE88FF'},calendar:{version:1,events:[]},timetable:{version:1,activeTermId:term.id,terms:[structuredClone(term)]},english:{plan:{examDate:'',target:'',dailyMinutes:'',focus:'reading'},words:[],sessions:[],mistakes:[],attempts:[],readingAnswers:{},readingResult:null,drafts:{writing:'旧草稿',translation:'',listening:''},draftUpdatedAt:{},audio:null},courses:[{id:'course-1'}],spaces:[{id:'space-1'}],tasks:[],captures:[]};}
 function context(extra={}){let count=0;return {uid:()=>`created-${++count}`,now:date,requestId:'request-test',assignColor:assignRecordColor,userTexts:['我今天实际读了 25 分钟英语。','我已经掌握 perspective 这个词。','我已经回顾这道错题。'],resolveReference:(value,entities)=>value==='$newterm'&&entities.includes('timetableTerm')?'created-1':value,...extra};}
@@ -186,6 +187,67 @@ test('canvas card geometry and color changes leave other cards/data intact and r
   assert.equal(state.canvas.cards[0].x,100);assert.deepEqual(state.canvas.cards[1],other);assert.equal(undo(state,item),true);
   for(const data of [{w:300},{h:300},{x:Infinity},{y:100001},{color:'javascript:alert(1)'}])assert.throws(()=>apply(state,action('canvasCard','update',data,{id:'ai',containerId:'home'})));
   state.canvas.cards[0].x=5;assert.equal(undo(state,item),false);
+});
+
+for (const withMembers of [true,false]) {
+  test(`AI canvas updates and backup undo preserve ${withMembers?'populated boxes and legacy labels':'an empty box list'}`,async()=>{
+    const request={
+      id:'request-test',text:'关闭网格吸附，把便签移到右边。',files:[],targetId:'workspace',
+      status:'waiting_model',createdAt:date,updatedAt:date,
+    };
+    const state={...fixture(),schema:1,mode:'personal',courses:[],spaces:[],updatedAt:date,aiRequests:[request]};
+    state.canvas={
+      cards:[
+        {id:'tasks',x:0,y:0,w:300,h:300,color:'#63E6DC'},
+        {id:'inbox',x:0,y:400,w:300,h:300,color:'#AE88FF'},
+        {id:'block:note',x:400,y:0,w:340,h:280,color:'#112233'},
+      ],
+      snap:true,initialized:true,presentation:'canvas',
+      topicBoxes:withMembers?[{id:boxId,title:'课程复习',x:100,y:200,collapsed:true,cardIds:['tasks','inbox']}]:[],
+    };
+    if(withMembers)state.canvas.topicLabels=[{id:'block:note',offsetX:10,offsetY:20}];
+    const before=structuredClone(state.canvas);
+    const actions=[
+      action('canvasSettings','update',{snap:false},{id:'home'}),
+      action('canvasCard','update',{x:750,y:450},{id:'block:note',containerId:'home'}),
+    ];
+    assert.equal(previewWorkspaceActions(state,actions,{requestId:request.id,now:date}).length,2);
+    assert.deepEqual(state.canvas,before);
+    const receipt=applyWorkspaceActions(state,request.id,actions,context());
+    assert.equal(state.canvas.snap,false);
+    assert.deepEqual(state.canvas.cards,[...before.cards.slice(0,2),{...before.cards[2],x:750,y:450}]);
+    assert.deepEqual(state.canvas.topicBoxes,before.topicBoxes);
+    assert.deepEqual(state.canvas.topicLabels,before.topicLabels);
+
+    Object.assign(request,{status:'filed',receipt});
+    const backup={format:'lumi-backup',version:1,exportedAt:date,state,files:[]};
+    const restored=validateBackup(JSON.parse(JSON.stringify(backup))).state;
+    const result=await undoWorkspaceActions({state:restored,save:()=>{}},restored.aiRequests[0].receipt,request.id);
+    assert.deepEqual(result,{removed:2,retained:0});
+    assert.deepEqual(restored.canvas,before);
+  });
+}
+
+test('AI canvas changes reject direct topic data edits and undo protects later manual membership edits',()=>{
+  const state=fixture();
+  state.canvas={
+    cards:[{id:'tasks',x:0,y:0,w:300,h:300,color:'#63E6DC'}],snap:true,initialized:true,
+    topicBoxes:[{id:boxId,title:'课程复习',x:100,y:200,collapsed:false,cardIds:[]}],
+  };
+  for (const field of ['topicBoxes','topicLabels']) {
+    assert.throws(()=>apply(state,action('canvasSettings','update',{[field]:[]},{id:'home'})),/不支持字段/);
+    assert.throws(()=>apply(state,action('canvasCard','update',{[field]:[]},{id:'tasks',containerId:'home'})),/不支持字段/);
+  }
+  const settings=apply(state,action('canvasSettings','update',{snap:false},{id:'home'}));
+  const card=apply(state,action('canvasCard','update',{x:500},{id:'tasks',containerId:'home'}));
+  state.canvas.topicBoxes[0].cardIds.push('tasks');
+  const topicBoxes=structuredClone(state.canvas.topicBoxes);
+
+  assert.equal(undo(state,card),true);
+  assert.equal(state.canvas.cards[0].x,0);
+  assert.equal(undo(state,settings),false);
+  assert.equal(state.canvas.snap,false);
+  assert.deepEqual(state.canvas.topicBoxes,topicBoxes);
 });
 
 test('all adapters reject unknown properties, prototype keys and unsupported destructive operations',()=>{

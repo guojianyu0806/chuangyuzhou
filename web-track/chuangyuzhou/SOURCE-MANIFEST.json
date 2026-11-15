@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "product": "创宇宙",
   "trackId": 10037,
-  "release": "2026-11-15-web-dev-036",
-  "sourceCommit": "1edaa7fb49fb90786a9f08a0f476063b50d3df57",
+  "release": "2026-11-15-web-dev-037",
+  "sourceCommit": "f65b57f6aebec0357b81964ee05c8e8ae69d60a6",
   "defaultPort": 4396,
   "privateRuntimeIncluded": false,
-  "baselineRecord": "../evidence/WEB-036/source-baseline.json",
+  "baselineRecord": "../evidence/WEB-037/source-baseline.json",
   "files": [
     {
       "path": ".env.example",
@@ -30,8 +30,8 @@
     },
     {
       "path": "RELEASE-CHANGES.json",
-      "bytes": 769,
-      "sha256": "46718e5c73b68374aa5c7b9157a8b04c4e506a7264fa74e174dce2d32ac84f2b"
+      "bytes": 797,
+      "sha256": "c81661ed21b26eb7d45856f6a9e5ea88a6faf85656555b26c160930745368392"
     },
     {
       "path": "SOURCE-NOTICE.md",
@@ -1015,8 +1015,8 @@
     },
     {
       "path": "yuzhou/frontend/src/workspace-actions-study.js",
-      "bytes": 34490,
-      "sha256": "20647d9bf106b891de690a0fe062d1afa846c0c41837efab273345705b631784"
+      "bytes": 34831,
+      "sha256": "e229cc92b941a9e0a6a8b5b3d48821aaed0e0904463c5249c128d3b01ca042c6"
     },
     {
       "path": "yuzhou/frontend/src/workspace-actions.js",
@@ -1525,8 +1525,8 @@
     },
     {
       "path": "yuzhou/frontend/tests/workspace-actions-study.test.mjs",
-      "bytes": 19874,
-      "sha256": "df3a4fb97180306f60553c09cc5d641594a010cd0c3c845052cccfeb85759d38"
+      "bytes": 23237,
+      "sha256": "3994c3a2d477eefccf1818144697ab531ba5d63eb94daaec098f72075fe7cb37"
     },
     {
       "path": "yuzhou/frontend/tests/workspace-board-undo.test.mjs",
