@@ -1,0 +1,34 @@
+{
+  "sourceCommit": "977ff30a5a1300d767b5a4fac11da34cb8fee498",
+  "publicMain": "977ff30a5a1300d767b5a4fac11da34cb8fee498",
+  "release": "releases/2026-11-15_创宇宙Web网盘直接上传_v5",
+  "packageFiles": 8,
+  "sourceFilesVerified": 522,
+  "manifestFilesVerified": 328,
+  "sha256": {
+    "00_作品材料说明.txt": "88746a99c56bcec6e5d5b07041a27170532a20c7e03bef617f9b19bfa4c7125e",
+    "01_创宇宙Web源码_977ff30.zip": "76e054cf1b6ca6c04ab58d8a7a2a19c47ef5ab5fdc595a58ff4fe1f0f713f95e",
+    "02_创宇宙Web技术文档_v5.pdf": "26354d8eb06c9086f8ba32a7c3bfe0e6af0420f9642361f93287bf9bd73c5e1d",
+    "03_创宇宙Web演示视频_v2.mp4": "4927391077cd1a141695bd7a1fdb9c43d03e2ae475cb113f103b91b0fa9d78cf",
+    "04_AI开发过程与验收证据_v5.zip": "80552543a3275b2af7e927fbf4dac61220614737e8878b8f5b17c9dd9785ab69",
+    "05_创宇宙Web作品介绍文档_v2.pdf": "c20ca2b5e4d32d501242bd4d3caab9d1264f36146c0f3e4fcb4e6d1033077aa6",
+    "作品链接.txt": "5b7ec5ae7d87984da2d5c14a5eeb0cc7ab079edaa20c76d34a6d72dac4089da8"
+  },
+  "bothZipCrcPassed": true,
+  "bundleHeads": [
+    "977ff30a5a1300d767b5a4fac11da34cb8fee498 HEAD",
+    "977ff30a5a1300d767b5a4fac11da34cb8fee498 refs/heads/codex/web-ai-topics",
+    "c0ac0564c5e93ea0ba9a7af001dc5e12b685754e refs/heads/codex/web-separation-baseline",
+    "8d3b22714badc7abc532f09e04f1fc02efdf4780 refs/heads/codex/yuzhou-historical-snapshots"
+  ],
+  "oldFilesRechecked": 83,
+  "pdfPages": {
+    "02_创宇宙Web技术文档_v5.pdf": 20,
+    "05_创宇宙Web作品介绍文档_v2.pdf": 9
+  },
+  "videoSeconds": 413.942132,
+  "videoDimensions": [
+    1920,
+    1080
+  ]
+}
