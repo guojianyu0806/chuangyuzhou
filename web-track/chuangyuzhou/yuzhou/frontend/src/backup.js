@@ -10,6 +10,7 @@ import {validateCompetitions, mergeCompetitions} from './competitions-model.js';
 import {validateWorkbench} from './workbench-model.js';
 import {validateWorkspaceTopics,validateCanvasTopicLabels} from './workspace-topics-model.js';
 import {validateCanvasTopicBoxes} from './canvas-topic-boxes.js';
+import {CANVAS_FIT_MIN_ZOOM} from './card-layouts.js';
 import {validateCustomBlocks,mergeCustomBlocks} from './custom-blocks-model.js';
 import {validateSpaceWorkbench,validateSpaceStructure} from './space-workbench-config.js';
 import {isRecordColor, assignRecordColor} from './creation-colors.js';
@@ -218,7 +219,7 @@ function canvas(value, label = '主页画布') {
   };
   if (value.view !== undefined) {
     const view = object(value.view, '画布视角');
-    result.view = {x: finite(view.x, '画布视角横坐标'), y: finite(view.y, '画布视角纵坐标'), zoom: finite(view.zoom, '画布缩放', .3, 1.6)};
+    result.view = {x: finite(view.x, '画布视角横坐标'), y: finite(view.y, '画布视角纵坐标'), zoom: finite(view.zoom, '画布缩放', CANVAS_FIT_MIN_ZOOM, 1.6)};
   }
   if (value.presentation !== undefined) result.presentation = choice(value.presentation, ['canvas','list','grid-2','grid-3','stack'], '画布展示方式');
   if (value.stackPointer !== undefined) result.stackPointer = finite(value.stackPointer, '堆叠指针位置', 0, 1);

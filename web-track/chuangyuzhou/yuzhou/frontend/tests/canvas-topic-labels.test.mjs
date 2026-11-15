@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {homeCanvasTopicLabels,visibleCanvasCards} from '../src/canvas.js';
+import {homeCanvasCardTopics,homeCanvasTopicLabels,visibleCanvasCards} from '../src/canvas.js';
 import {validateCanvasTopicLabels,visibleWorkspaceTopicCards} from '../src/workspace-topics-model.js';
 import {validateBackup,mergeBackup} from '../src/backup.js';
 import {createWorkbench} from '../src/workbench-model.js';
@@ -25,6 +25,22 @@ function workspace(){
   };
 }
 const backup=state=>({format:'lumi-backup',version:1,exportedAt:stamp,state,files:[]});
+
+test('ordinary home cards show current assignments without creating labels or box membership',()=>{
+  const state=workspace();
+  createCustomBlock(state,{kind:'note',title:'顶层方块'},{id:'block:root',now:stamp});
+  state.canvas.cards.push(card('block:root',720,70),card('missing'));
+  state.workspaceTopics={assignments:[
+    {id:'project',topic:'课程复习'},{id:'block:root',topic:'课程复习'},
+    {id:'ai',topic:'旧主题'},{id:'missing',topic:'旧主题'},
+  ],receipts:[]};
+  const before=structuredClone(state);
+  assert.deepEqual([...homeCanvasCardTopics(state)],[['project','课程复习'],['block:root','课程复习']]);
+  assert.deepEqual(state,before);
+  state.workspaceTopics.assignments[0].topic='小组项目';
+  state.workspaceTopics.assignments[1].topic=null;
+  assert.deepEqual([...homeCanvasCardTopics(state)],[['project','小组项目']]);
+});
 
 test('canvas labels are opt-in and reading old or empty layouts leaves state untouched',()=>{
   const state=workspace();
@@ -131,6 +147,7 @@ test('label configuration validates anchors, finite offsets, uniqueness and exac
 test('backup roundtrip retains label anchors and card geometry while legacy canvases stay opt-in',()=>{
   const source=workspace();
   source.canvas.topicLabels=[label('project',-14,-28),label('ai',0,-30)];
+  source.canvas.view={x:12,y:60,zoom:.142};
   const before=structuredClone(source);
   const checked=validateBackup(JSON.parse(JSON.stringify(backup(source))));
   assert.deepEqual(checked.state.canvas,source.canvas);
@@ -142,6 +159,7 @@ test('backup roundtrip retains label anchors and card geometry while legacy canv
   assert.deepEqual(restored.state.canvas,source.canvas);
   assert.equal(restored.state.canvas.cards.length,2);
   assert.equal(homeCanvasTopicLabels(restored.state).length,1,'unassigned anchors still share one current theme');
+  assert.deepEqual([...homeCanvasCardTopics(restored.state)],[['project','未归类']]);
 
   const legacy=workspace();
   const oldBackup=validateBackup(backup(legacy));

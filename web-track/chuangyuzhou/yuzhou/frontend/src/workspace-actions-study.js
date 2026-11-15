@@ -6,6 +6,7 @@ import {isValidDate} from './ledger-model.js';
 import {ENGLISH_DRAFT_PROMPTS} from './english-draft-prompts.js';
 import {validateCanvasTopicBoxes} from './canvas-topic-boxes.js';
 import {validateCanvasTopicLabels} from './workspace-topics-model.js';
+import {CANVAS_FIT_MIN_ZOOM} from './card-layouts.js';
 
 const fail = message => { throw new Error(message); };
 const clone = value => structuredClone(value);
@@ -295,8 +296,8 @@ const uiAdapter=singleton({entity:'uiSettings',label:'界面偏好',recordId:'ui
 
 const cardRules={x:v=>number(v,-100000,100000),y:v=>number(v,-100000,100000),w:v=>number(v,220,1100),h:v=>number(v,220,850),color};
 const cardRecord=value=>recordFields(value,{id,...cardRules});
-const viewRule=value=>fields(value,{x:v=>number(v,-150000,150000),y:v=>number(v,-150000,150000),zoom:v=>number(v,.3,1.6)},['x','y','zoom']);
-const canvasRules={snap:bool,presentation:v=>choice(v,['canvas','list','grid-2','grid-3','stack']),stackPointer:v=>number(v,0,1),view:viewRule};
+const viewRule=minZoom=>value=>fields(value,{x:v=>number(v,-150000,150000),y:v=>number(v,-150000,150000),zoom:v=>number(v,minZoom,1.6)},['x','y','zoom']);
+const canvasRules={snap:bool,presentation:v=>choice(v,['canvas','list','grid-2','grid-3','stack']),stackPointer:v=>number(v,0,1),view:viewRule(.3)};
 function canvasRecord(value) {
   return fields(value,{
     cards:value=>{
@@ -306,6 +307,7 @@ function canvasRecord(value) {
       return cards;
     },
     ...canvasRules,initialized:bool,modifiedAt:stamp,customized:bool,
+    view:viewRule(CANVAS_FIT_MIN_ZOOM),
     // Keep user-managed topic data in saved records and undo snapshots.
     topicBoxes:validateCanvasTopicBoxes,
     topicLabels:validateCanvasTopicLabels,

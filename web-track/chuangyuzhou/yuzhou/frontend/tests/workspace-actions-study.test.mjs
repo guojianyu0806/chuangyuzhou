@@ -202,7 +202,7 @@ for (const withMembers of [true,false]) {
         {id:'inbox',x:0,y:400,w:300,h:300,color:'#AE88FF'},
         {id:'block:note',x:400,y:0,w:340,h:280,color:'#112233'},
       ],
-      snap:true,initialized:true,presentation:'canvas',
+      snap:true,initialized:true,presentation:'canvas',view:{x:29,y:84,zoom:.142},
       topicBoxes:withMembers?[{id:boxId,title:'课程复习',x:100,y:200,collapsed:true,cardIds:['tasks','inbox']}]:[],
     };
     if(withMembers)state.canvas.topicLabels=[{id:'block:note',offsetX:10,offsetY:20}];

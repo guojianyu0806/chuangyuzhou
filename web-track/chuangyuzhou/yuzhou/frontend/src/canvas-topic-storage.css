@@ -1,9 +1,15 @@
-.cv-topic-box-create {
+.cv-topic-box-create,
+.cv-topic-box-locate {
   border-color: #cfbce8;
   color: #57397d;
 }
 
+.cv-topic-box-locate {
+  flex: none;
+}
+
 .cv-topic-box-create[hidden],
+.cv-topic-box-locate[hidden],
 .space-desktop.is-list-mode .cv-topic-box,
 .cv-card[data-topic-box-member][hidden] {
   display: none;
@@ -69,6 +75,15 @@
 }
 
 .cv-topic-box-head > button:focus-visible {
+  outline: 3px solid #7950c8;
+  outline-offset: 2px;
+}
+
+.cv-topic-box.is-topic-box-located .cv-topic-box-head {
+  z-index: 6;
+}
+
+.cv-topic-box.is-topic-box-located .cv-topic-box-toggle:focus {
   outline: 3px solid #7950c8;
   outline-offset: 2px;
 }
@@ -239,4 +254,36 @@
 .cv-topic-box-option small {
   color: #625175;
   font-size: 11px;
+}
+
+.cv-topic-box-directory {
+  display: grid;
+  gap: 6px;
+  max-height: 52dvh;
+  margin: 0;
+  padding: 2px;
+  overflow: auto;
+  list-style: none;
+}
+
+.cv-topic-box-directory button {
+  display: grid;
+  width: 100%;
+  min-height: 48px;
+  gap: 2px;
+  padding: 6px 10px;
+  border: 1px solid #e4d9f1;
+  border-radius: 9px;
+  background: #fdfbff;
+  color: #493461;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+
+.cv-topic-box-directory button:hover {
+  background: #f3ebff;
+}
+
+.cv-topic-box-directory small {
+  color: #625175;
 }

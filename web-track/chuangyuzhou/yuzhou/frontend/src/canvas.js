@@ -3,7 +3,7 @@ import {projectCalendarLinks} from './calendar-links.js';
 import {summarizeCompetitions} from './competitions-model.js';
 /* Free-position workspace canvas. Persisted coordinates are independent of viewport size. */
 import {formatMoney,localDate,selectEntries,summarizeEntries} from './ledger-model.js';
-import {CARD_PRESENTATIONS,normalizePresentation,normalizeStackPointer,stackMetrics,stackLayout} from './card-layouts.js';
+import {CANVAS_FIT_MIN_ZOOM,CARD_PRESENTATIONS,fitCanvasView,normalizePresentation,normalizeStackPointer,stackMetrics,stackLayout} from './card-layouts.js';
 import {weekForDate,entriesForWeek} from './timetable-model.js';
 import {mountSurfaceFullscreen} from './fullscreen.js';
 import {WORKBENCH_MODULES,getWorkbench} from './workbench-model.js';
@@ -72,7 +72,7 @@ export function ensureCanvas(state, presets = PRESETS) {
     if(!validColor(card.color))card.color=def.color;
   }
   const v=canvas.view;
-  canvas.view={x:clamp(finite(v?.x,0),-150000,150000),y:clamp(finite(v?.y,0),-150000,150000),zoom:clamp(finite(v?.zoom,1),.3,1.6)};
+  canvas.view={x:clamp(finite(v?.x,0),-150000,150000),y:clamp(finite(v?.y,0),-150000,150000),zoom:clamp(finite(v?.zoom,1),CANVAS_FIT_MIN_ZOOM,1.6)};
   canvas.snap=canvas.snap!==false;
   canvas.stackPointer=normalizeStackPointer(canvas.stackPointer);
   return canvas;
@@ -85,7 +85,7 @@ export function canvasBounds(cards) {
 }
 
 export function zoomAt(view,zoom,point) {
-  const next=clamp(zoom,.3,1.6),ratio=next/view.zoom;
+  const next=clamp(zoom,Math.min(.3,view.zoom),1.6),ratio=next/view.zoom;
   return {zoom:next,x:point.x-(point.x-view.x)*ratio,y:point.y-(point.y-view.y)*ratio};
 }
 
@@ -111,6 +111,18 @@ export function homeCanvasTopicLabels(state){
     seen.add(topic);
     return [{...label,text:topic??'未归类',x:card.x+label.offsetX,y:card.y+label.offsetY}];
   });
+}
+
+export function homeCanvasCardTopics(state,cards=visibleCanvasCards(state)){
+  const assignments=new Map((state.workspaceTopics?.assignments||[]).map(({id,topic})=>[id,topic]));
+  const showUnassigned=homeCanvasTopicLabels(state).some(label=>!assignments.get(label.id));
+  const topics=new Map();
+  for(const {id} of cards){
+    if(!isWorkspaceTopicCandidateId(id))continue;
+    const topic=assignments.get(id)??(showUnassigned?'未归类':null);
+    if(topic)topics.set(id,topic);
+  }
+  return topics;
 }
 
 export function mountCanvas(ctx, collection) {
@@ -172,13 +184,19 @@ export function mountCanvas(ctx, collection) {
   fullscreenButton.setAttribute('aria-label','全屏画布');fullscreenButton.setAttribute('aria-pressed','false');fullscreenButton.title='全屏画布';
   fullscreenButton.innerHTML=`${fitIcon}<span>全屏</span>`;
   const headerActions=section.querySelector('.cv-head-actions');
-  let createBoxButton;
+  let createBoxButton,locateBoxButton;
   if(!collection){
     createBoxButton=document.createElement('button');
     createBoxButton.type='button';createBoxButton.className='cv-button cv-topic-box-create';createBoxButton.dataset.cv='topic-box-create';
     createBoxButton.innerHTML=icon('folder',17)+'<span>收纳盒</span>';
     createBoxButton.title='新建收纳盒';
     headerActions.prepend(createBoxButton);
+    locateBoxButton=document.createElement('button');
+    locateBoxButton.type='button';locateBoxButton.className='cv-button cv-topic-box-locate';
+    locateBoxButton.dataset.cv='topic-box-directory';
+    locateBoxButton.innerHTML=icon('search',17)+'<span>找盒子</span>';
+    locateBoxButton.setAttribute('aria-haspopup','dialog');
+    headerActions.after(locateBoxButton);
   }
   if(!collection&&ctx.showTopics){
     const topicsButton=document.createElement('button');
@@ -265,7 +283,7 @@ export function mountCanvas(ctx, collection) {
       return `<div class="cv-topic-box" data-topic-box="${esc(id)}" ${collapsed?'data-collapsed':''}
         style="left:${region.x}px;top:${region.y}px;width:${region.w}px;height:${region.h}px;--cv-topic-color:${COLORS[parseInt(id.slice(0,8),16)%COLORS.length]}">
         <div class="cv-topic-box-head">
-          <button type="button" class="cv-topic-box-toggle" data-cv="topic-box-toggle" aria-expanded="${!collapsed}">
+          <button type="button" class="cv-topic-box-toggle" data-cv="topic-box-toggle" aria-expanded="${!collapsed}" title="${esc(title)}">
             ${icon('folder',20)}<span class="cv-topic-box-title">${esc(title)}</span><span class="cv-topic-box-count">${collapsed?`<strong>${region.count}</strong>`:region.count} 张</span>
             <span class="cv-topic-box-chevron">${icon('chevron-down',16)}</span>
           </button>
@@ -281,16 +299,16 @@ export function mountCanvas(ctx, collection) {
     stackReady=false;
     itemById.clear();for(const item of collection?.items||homeItems())itemById.set(item.id,item);
     composerCleanup?.();composerCleanup=null;previewCleanup?.();previewCleanup=null;
-    const topicsByCard=new Map((state.workspaceTopics?.assignments||[]).map(row=>[row.id,row.topic]));
-    const labeledTopics=new Set((collection?[]:homeCanvasTopicLabels(state)).map(label=>topicsByCard.get(label.id)??null));
-    boxLayout=presentation==='canvas'&&boxes().length?layoutCanvasTopicBoxes(visibleCards(),boxes()):null;
+    const cards=visibleCards();
+    const topicsByCard=collection?new Map():homeCanvasCardTopics(state,cards);
+    boxLayout=presentation==='canvas'&&boxes().length?layoutCanvasTopicBoxes(cards,boxes()):null;
     world.innerHTML=boxMarkup()+renderedCards().map((card,index)=>{
       const d=dataFor(card);
       const boxId=boxLayout?.memberships.get(card.id);
-      const topic=topicsByCard.get(card.id)??null,showTopic=isWorkspaceTopicCandidateId(card.id)&&labeledTopics.has(topic);
+      const topic=topicsByCard.get(card.id);
       const typeLabel=collection?collectionText('cardLabel',d,'内容卡片'):card.id==='ai'?'智能伙伴':presets[card.id]?'工作台模块':card.id.startsWith('block:')?'自定义方块':'自建空间';
       return `<article class="cv-card cv-card-${collection?'collection':presets[card.id]?card.id:'custom'} ${card.h<260?'cv-compact':''} ${card.h<330?'cv-short':''}" data-card="${esc(card.id)}"${boxId?` data-topic-box-member="${esc(boxId)}"`:''} style="--card-color:${color(d.color)};--card-fill:${canvasCardFill(d.color)};--card-order:${index};width:${card.w}px;height:${card.h}px;transform:translate(${card.x}px,${card.y}px)" tabindex="0" aria-label="${esc(d.title)}，按Enter打开">
-      <header class="cv-card-head"><span class="cv-space-symbol">${safeIcon(d.icon,20)}</span><span class="cv-stack-title">${esc(d.title)}</span><span class="cv-card-top-label${showTopic?' cv-topic-label':''}"${showTopic?` data-topic-anchor="${esc(card.id)}"`:''}>${esc(showTopic?topic??'未归类':typeLabel)}</span><button type="button" class="cv-drag" data-cv="drag" title="拖动卡片；方向键移动" aria-label="拖动${esc(d.title)}卡片，或使用方向键调整位置">${dragIcon}</button><button type="button" class="cv-card-menu" data-cv="card-menu" title="卡片设置" aria-label="设置${esc(d.title)}卡片">${icon('more',19)}</button></header>
+      <header class="cv-card-head"><span class="cv-space-symbol">${safeIcon(d.icon,20)}</span><span class="cv-stack-title">${esc(d.title)}</span><span class="cv-card-top-label${topic?' cv-topic-label':''}"${topic?` data-topic-anchor="${esc(card.id)}" title="${esc(topic)}"`:''}>${esc(topic??typeLabel)}</span><button type="button" class="cv-drag" data-cv="drag" title="拖动卡片；方向键移动" aria-label="拖动${esc(d.title)}卡片，或使用方向键调整位置">${dragIcon}</button><button type="button" class="cv-card-menu" data-cv="card-menu" title="卡片设置" aria-label="设置${esc(d.title)}卡片">${icon('more',19)}</button></header>
       <div class="cv-card-body">${cardContent(card)}</div><footer class="cv-card-foot"><span>${esc(collectionText('footLabel',d,card.id==='ai'?'对话 → 确认 → 归档':card.id.startsWith('block:')?'自己定义内容与交互':card.id==='competitions'?'截止 · 清单 · 参赛档案':card.id==='calendar'?'计划 · 标注 · 注意事项':card.id==='ledger'?'按日期记录 · 按项目汇总':card.id==='timetable'?'教学周 · 单双周 · 上课地点':'拖入文件，直接收进这里'))}</span><button type="button" data-cv="enter" aria-label="进入${esc(d.title)}">${esc(collectionText('enterLabel',d,card.id==='ai'?'打开伙伴':card.id.startsWith('block:')?'打开方块':'进入空间'))}${icon('arrow-right',17)}</button></footer>
       <button class="cv-resize" type="button" data-cv="resize" title="拖动调整大小；方向键微调" aria-label="调整${esc(d.title)}卡片大小">${resizeIcon}</button><div class="cv-drop-overlay">${icon('upload',34)}<strong>松手，放入${esc(d.title)}</strong><span>文件保存在本机</span></div></article>`;
     }).join('');
@@ -315,11 +333,12 @@ export function mountCanvas(ctx, collection) {
     viewport.style.setProperty('--dot-size',`${32*v.zoom}px`);
     viewport.style.setProperty('--dot-x',`${v.x}px`);
     viewport.style.setProperty('--dot-y',`${v.y}px`);
-    section.querySelector('.cv-zoom-number').textContent=`${Math.round(v.zoom*100)}%`;
+    section.querySelector('.cv-zoom-number').textContent=v.zoom<.01?'<1%':`${Math.round(v.zoom*100)}%`;
     section.classList.toggle('is-list-mode',!free);
     section.classList.toggle('is-grid-mode',grid);
     section.classList.toggle('is-stack-mode',stack);
     if(createBoxButton)createBoxButton.hidden=!free;
+    if(locateBoxButton)locateBoxButton.hidden=!free||!boxes().length;
     viewport.classList.toggle('is-list',presentation==='list'||grid);
     viewport.classList.toggle('is-grid',grid);
     viewport.classList.toggle('is-grid-2',presentation==='grid-2');
@@ -390,9 +409,7 @@ export function mountCanvas(ctx, collection) {
   }
   function fitAll() {
     const b=canvasBounds(boxLayout?[...visibleCards().filter(card=>!boxLayout.memberships.has(card.id)),...boxLayout.regions]:visibleCards());
-    const r=viewport.getBoundingClientRect();
-    const zoom=clamp(Math.min((r.width-72)/b.w,(r.height-72)/b.h,1),.3,1.6);
-    canvas.view={x:(r.width-b.w*zoom)/2-b.x*zoom,y:(r.height-b.h*zoom)/2-b.y*zoom,zoom};
+    canvas.view=fitCanvasView(b,viewport.clientWidth,viewport.clientHeight);
     markCustomized();applyView();persist();
   }
   function homeView(initial=false) {
@@ -420,6 +437,27 @@ export function mountCanvas(ctx, collection) {
   }
   function focusBox(id,action){
     boxElement(id)?.querySelector(`[data-cv="${action}"]`)?.focus({preventScroll:true});
+  }
+  function openBoxDirectory(){
+    if(!boxLayout?.regions.length)return;
+    const body=`<ul class="cv-topic-box-directory">${boxLayout.regions.map((region,index)=>{
+      const {id,title,collapsed}=boxes()[index];
+      return `<li><button type="button" data-cv-locate-box="${esc(id)}"><span>${esc(title)}</span><small>${region.count} 张 · ${collapsed?'已折叠':'已展开'}</small></button></li>`;
+    }).join('')}</ul>`;
+    modal({title:'定位收纳盒',body,rememberDraft:false});
+    document.querySelector('#modal .cv-topic-box-directory')?.addEventListener('click',event=>{
+      const id=event.target.closest('[data-cv-locate-box]')?.dataset.cvLocateBox;
+      const box=boxes().find(item=>item.id===id);
+      const region=boxLayout?.regions.find(item=>item.id===id);
+      if(!box||!region)return;
+      ctx.closeModal();
+      world.querySelector('.is-topic-box-located')?.classList.remove('is-topic-box-located');
+      boxElement(id)?.classList.add('is-topic-box-located');
+      canvas.view=fitCanvasView({...region,h:TOPIC_BOX_HEADER},viewport.clientWidth,viewport.clientHeight);
+      applyView();delayedSave();
+      focusBox(id,'topic-box-toggle');
+      announce(`已定位到${box.title}`);
+    });
   }
   function commitBoxes(next,{card,position}={}){
     const previousBoxes=canvas.topicBoxes,customized=canvas.customized,modifiedAt=canvas.modifiedAt,updatedAt=state.updatedAt;
@@ -569,6 +607,7 @@ export function mountCanvas(ctx, collection) {
       if(action==='fullscreen')return fullscreen.toggle();
       if(action==='arrange')return arrangeDialog();
       if(action==='topic-box-create')return openBoxEditor();
+      if(action==='topic-box-directory')return openBoxDirectory();
       const box=boxes().find(item=>item.id===button.closest('[data-topic-box]')?.dataset.topicBox);
       if(action==='topic-box-toggle'&&box)return toggleBox(box);
       if(action==='topic-box-menu'&&box)return openBoxEditor(box);
