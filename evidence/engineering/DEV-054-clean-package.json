@@ -1,0 +1,17 @@
+{
+  "normal": {
+    "health": true,
+    "brotli": true,
+    "etag304": true,
+    "application": "68b6af9"
+  },
+  "demo": {
+    "provider": "local simulated",
+    "origin": "http://localhost:4398",
+    "cleanArchive": true,
+    "selected": 3,
+    "editAndDraftRefresh": true,
+    "confirmAndRefresh": true,
+    "undo": true
+  }
+}
