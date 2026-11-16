@@ -70,8 +70,8 @@ test('status check is not displayed as a running reply and prevents duplicate su
   assert.equal(jobFor(ctx.state,request.id).status,'failed');
 });
 
-test('unconfigured AI explains both startup environment and settings configuration paths',async()=>{
+test('unconfigured AI points to settings and preserves the source draft',async()=>{
   const {ctx,request,calls}=fixture({configured:false,engineAvailable:true});
-  await assert.rejects(startAIJob(ctx,request),/启动环境变量.*偏好与连接.*API Key/);
+  await assert.rejects(startAIJob(ctx,request),/偏好与连接.*API Key.*原文已收好/);
   assert.deepEqual(calls,['/api/model/status']);
 });

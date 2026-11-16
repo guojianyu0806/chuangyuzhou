@@ -9,7 +9,7 @@ const isLocalInstance=()=>['127.0.0.1','localhost','[::1]'].includes(globalThis.
 const connectionUnavailable=()=>isLocalInstance()?'暂时无法连接本机工作台。电脑重启或服务窗口关闭后，请运行比赛目录中的“启动宇宙完整副本.cmd”，再重试；本设备改动仍保留。':'暂时无法连接工作台，请检查网络后重试；本设备改动仍保留。';
 const clone = value => JSON.parse(JSON.stringify(value));
 const read = (key,storage=localStorage) => { try { return JSON.parse(storage.getItem(key) || 'null'); } catch { return null; } };
-const apiMessages={unauthorized:'登录已过期，请重新登录。',invalid_credentials:'账号或密码不正确。',setup_token_invalid:'初始化口令不正确，请检查后重试。',setup_closed:'账号已经建立，请刷新页面后登录。',csrf_invalid:'登录信息已更新，请重新登录。',csrf_forbidden:'登录信息已更新，请重新登录。',rate_limited:'尝试次数较多，请稍后再试。',revision_conflict:'其他设备有新内容，请先处理同步冲突。',missing_files:'部分附件尚未上传完整，请保留本机副本后重试。',invalid_password:'密码需要包含 12 至 256 位字符。',invalid_username:'请使用 2 至 64 位用户名。',file_not_found:'附件暂时不可用。',model_not_configured:'请通过启动环境变量或偏好与连接配置 DeepSeek API Key。'};
+const apiMessages={unauthorized:'登录已过期，请重新登录。',invalid_credentials:'账号或密码不正确。',setup_token_invalid:'初始化口令不正确，请检查后重试。',setup_closed:'账号已经建立，请刷新页面后登录。',csrf_invalid:'登录信息已更新，请重新登录。',csrf_forbidden:'登录信息已更新，请重新登录。',rate_limited:'尝试次数较多，请稍后再试。',revision_conflict:'其他设备有新内容，请先处理同步冲突。',missing_files:'部分附件尚未上传完整，请保留本机副本后重试。',invalid_password:'密码需要包含 12 至 256 位字符。',invalid_username:'请使用 2 至 64 位用户名。',file_not_found:'附件暂时不可用。',model_not_configured:'请先在「偏好与连接」中配置 DeepSeek API Key。'};
 Object.assign(apiMessages,{invalid_calendar:'日历格式有误，请检查日期、时间及内容。',authentication_required:'登录已过期，请重新登录。',too_many_attempts:'尝试次数较多，请稍后再试。',password_length_12_to_256:'密码需要包含 12 至 256 位字符。'});
 Object.assign(apiMessages,{invalid_ledger:'账目格式有误，请检查金额、日期及所属项目。',invalid_timetable:'课表格式有误，请检查学期、周次与节次。',workspace_update_required:'此页面缺少新版资料。请先导出本设备改动，再刷新页面并加载云端内容。'});
 Object.assign(apiMessages,{invalid_fitness:'运动记录格式有误，请检查日期、时长、里程和热量。',invalid_fitness_reference:'运动记录关联的空间已不存在，请同步最新工作区后重试。',invalid_space_fitness_enabled:'运动统计开关格式有误，请重新保存空间设置。'});
@@ -392,7 +392,7 @@ export function mountModelSettings(container,client,toast) {
     currentStatus=info;configurationKnown=true;client.modelStatus=info;if(!container.isConnected)return;
     container.querySelector('#cloud-model-badge').textContent=modelStatusLabel(info);
     container.querySelector('#cloud-hermes-state').textContent=modelEngineDescription(info);
-    container.querySelector('#cloud-model-configuration').textContent=managed()?'模型由启动环境配置，修改后重启工作台。页面不显示密钥，也不能保存或清除该配置。':'可通过启动环境变量或下方设置配置模型。下方保存的专用 API Key 仅保存在工作台服务端，不会回填到页面；保存配置不会触发模型调用。';
+    container.querySelector('#cloud-model-configuration').textContent=managed()?'模型由启动环境配置，修改后重启工作台。页面不显示密钥，也不能保存或清除该配置。':'在下方设置当前工作台的模型。保存的专用 API Key 仅保存在工作台服务端，不会回填到页面；保存配置不会触发模型调用。';
     form.elements.apiKey.placeholder=managed()?'密钥由启动环境提供，不会返回页面':'输入新的 API Key；留空保留现有密钥';
     if(managed())form.elements.apiKey.value='';
     const formats=Object.entries(info.extractionCapabilities||{}).filter(([,available])=>available===true).map(([name])=>name.toUpperCase());
