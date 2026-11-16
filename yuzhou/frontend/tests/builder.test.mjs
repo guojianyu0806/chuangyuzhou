@@ -10,7 +10,7 @@ function fixture(template='blank') {
   const events={},messages=[],calls=[];
   const root={innerHTML:'',querySelector:()=>null,addEventListener:(name,fn)=>{events[name]=fn;},removeEventListener:(name,fn)=>{if(events[name]===fn)delete events[name];},contains:()=>true};
   const ctx={state,root,toast:value=>messages.push(value),save:()=>{calls.push('save');state.updatedAt='saved';},modal:value=>{ctx.dialog=value;},go:(...args)=>calls.push(['go',...args]),createSpace:()=>calls.push('new-space'),askAssistant:prompt=>calls.push(['ask',prompt])};
-  const click=(action,id)=>{const button={dataset:{wbAction:action,id},disabled:false};events.click?.({target:{closest:()=>button}});};
+  const click=(action,id)=>{const button={dataset:{wbAction:action,id},disabled:false};return events.click?.({target:{closest:()=>button}});};
   return {state,ctx,root,click,messages,calls,events};
 }
 
@@ -147,32 +147,45 @@ test('daily builder exposes no sample import controls and preserves optional mod
   assert.deepEqual(f.state,before);
 });
 
-test('daily review remains non-mutating until save and can undo in the same mount',()=>{
+test('daily review remains non-mutating until save and can undo in the same mount',async()=>{
   const f=galleryFixture();Object.assign(f.state,structuredClone(planShowcaseGallery(f.state).nextState));
-  const before=structuredClone(f.state);mountBuilder(f.ctx);f.click('daily-review');
+  const before=structuredClone(f.state);mountBuilder(f.ctx);await f.click('daily-review');
   assert.equal(f.ctx.dialog.title,'整理为日常工作台');assert.deepEqual(f.state,before);
   f.ctx.dialog.onSubmit();assert.equal(f.state.spaces.find(x=>x.id===SHOWCASE_GALLERY_SPACE_ID).title,'工作台使用手册');
   f.click('daily-undo');assert.deepEqual({...f.state,updatedAt:before.updatedAt},before);
   assert.deepEqual(f.calls,['save','save']);
 });
 
-test('stale and unmounted daily previews refuse to save',()=>{
+test('stale and unmounted daily previews refuse to save',async()=>{
   for(const reason of ['stale','unmounted']){
     const f=galleryFixture();Object.assign(f.state,structuredClone(planShowcaseGallery(f.state).nextState));
-    const before=structuredClone(f.state),cleanup=mountBuilder(f.ctx);f.click('daily-review');
+    const before=structuredClone(f.state),cleanup=mountBuilder(f.ctx);await f.click('daily-review');
     if(reason==='stale')f.ctx.isCurrent=()=>false;else cleanup();
     assert.throws(()=>f.ctx.dialog.onSubmit(),/工作台已更新/);assert.deepEqual(f.state,before);assert.deepEqual(f.calls,[]);
   }
 });
 
-test('daily save failure preserves source records and reports the actual error',()=>{
-  const f=galleryFixture();Object.assign(f.state,structuredClone(planShowcaseGallery(f.state).nextState));
-  const before=structuredClone(f.state);f.ctx.save=()=>{throw Error('保存失败');};
-  mountBuilder(f.ctx);f.click('daily-review');assert.throws(()=>f.ctx.dialog.onSubmit(),/保存失败/);assert.deepEqual(f.state,before);
+test('late daily review does not open on another page or replace a newer dialog',async()=>{
+  for(const reason of ['unmounted','dialog']){
+    const f=galleryFixture(),cleanup=mountBuilder(f.ctx),before=structuredClone(f.state);
+    const pending=f.click('daily-review');
+    if(reason==='unmounted')cleanup();
+    else f.root.ownerDocument={querySelector:()=>({open:true})};
+    await pending;
+    assert.equal(f.ctx.dialog,undefined);
+    assert.deepEqual(f.state,before);
+    assert.deepEqual(f.calls,[]);
+  }
 });
 
-test('ordinary workspace has no conversion to save and obsolete import actions do nothing',()=>{
-  const f=galleryFixture(),before=structuredClone(f.state);mountBuilder(f.ctx);f.click('daily-review');
+test('daily save failure preserves source records and reports the actual error',async()=>{
+  const f=galleryFixture();Object.assign(f.state,structuredClone(planShowcaseGallery(f.state).nextState));
+  const before=structuredClone(f.state);f.ctx.save=()=>{throw Error('保存失败');};
+  mountBuilder(f.ctx);await f.click('daily-review');assert.throws(()=>f.ctx.dialog.onSubmit(),/保存失败/);assert.deepEqual(f.state,before);
+});
+
+test('ordinary workspace has no conversion to save and obsolete import actions do nothing',async()=>{
+  const f=galleryFixture(),before=structuredClone(f.state);mountBuilder(f.ctx);await f.click('daily-review');
   assert.equal(f.ctx.dialog.onSubmit,undefined);
   f.click('add-gallery');f.click('add-showcase');assert.deepEqual(f.state,before);assert.deepEqual(f.calls,[]);
 });

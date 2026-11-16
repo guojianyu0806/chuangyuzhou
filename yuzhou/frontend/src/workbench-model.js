@@ -20,7 +20,7 @@ const templates = [
   {id:'research',title:'研究与创作',description:'围绕资料、笔记、灵感与推进计划搭建。',moduleIds:['ai','courses','inbox','tasks','calendar']},
   {id:'student',title:'学习与课程',description:'连接课程资料、学期课表、待办与英语练习。',moduleIds:['ai','courses','timetable','tasks','calendar','english']},
   {id:'life',title:'日常生活',description:'把日程、待办、收支和生活记录放在一起。',moduleIds:['ai','tasks','calendar','ledger','inbox','review']},
-  {id:'full',title:'完整宇宙',description:'启用原宇宙的全部内置模块，保留完整个人工作台。',moduleIds:WORKBENCH_MODULES.map(module=>module.id)},
+  {id:'full',title:'完整创宇宙',description:'启用既有全部内置模块，保留完整个人工作台。',moduleIds:WORKBENCH_MODULES.map(module=>module.id)},
 ];
 export const WORKBENCH_TEMPLATES = freezeRows(templates.map(template=>({...template,moduleIds:Object.freeze([...template.moduleIds])})));
 const moduleById = new Map(WORKBENCH_MODULES.map(module=>[module.id,module]));

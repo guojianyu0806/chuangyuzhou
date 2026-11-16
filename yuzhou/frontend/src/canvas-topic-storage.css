@@ -1,0 +1,289 @@
+.cv-topic-box-create,
+.cv-topic-box-locate {
+  border-color: #cfbce8;
+  color: #57397d;
+}
+
+.cv-topic-box-locate {
+  flex: none;
+}
+
+.cv-topic-box-create[hidden],
+.cv-topic-box-locate[hidden],
+.space-desktop.is-list-mode .cv-topic-box,
+.cv-card[data-topic-box-member][hidden] {
+  display: none;
+}
+
+.cv-viewport:not(.is-list, .is-stack) .cv-card[data-topic-box-member] .cv-resize {
+  display: none;
+}
+
+.cv-topic-box {
+  --cv-box-color: var(--cv-topic-color, #b8a4e9);
+  position: absolute;
+  pointer-events: none;
+}
+
+/* The frame sits behind the cards. Controls stay reachable in an overlapping layout. */
+.cv-topic-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 2px solid color-mix(in srgb, var(--cv-box-color) 76%, #8a759f);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--cv-box-color) 23%, #fbf8ffd6);
+  box-shadow: inset 0 1px #fffb;
+}
+
+/* Only a card drag needs to hit the box body. */
+.cv-viewport.is-topic-box-dragging .cv-topic-box::before {
+  pointer-events: auto;
+}
+
+.cv-topic-box[data-collapsed]::before {
+  background: color-mix(in srgb, var(--cv-box-color) 36%, #fffafd);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--cv-box-color) 42%, transparent), inset 0 1px #fffb;
+}
+
+.cv-topic-box-head {
+  position: absolute;
+  inset: 10px 10px auto;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px 44px;
+  align-items: stretch;
+  gap: 5px;
+  height: 52px;
+  pointer-events: none;
+}
+
+.cv-topic-box-head > button {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--cv-box-color) 70%, #f8f4ff);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--cv-box-color) 17%, #fff);
+  color: #50376e;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.cv-topic-box-head > button:hover {
+  border-color: color-mix(in srgb, var(--cv-box-color) 68%, #7960a2);
+  background: color-mix(in srgb, var(--cv-box-color) 34%, #fff);
+}
+
+.cv-topic-box-head > button:focus-visible {
+  outline: 3px solid #7950c8;
+  outline-offset: 2px;
+}
+
+.cv-topic-box.is-topic-box-located .cv-topic-box-head {
+  z-index: 6;
+}
+
+.cv-topic-box.is-topic-box-located .cv-topic-box-toggle:focus {
+  outline: 3px solid #7950c8;
+  outline-offset: 2px;
+}
+
+.cv-topic-box-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 9px;
+  color: #372a50;
+  text-align: start;
+  white-space: nowrap;
+}
+
+.cv-topic-box-toggle > svg,
+.cv-topic-box-chevron {
+  flex: none;
+  color: #654a86;
+}
+
+.cv-topic-box-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 19px;
+  font-weight: 750;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+
+.cv-topic-box-count {
+  flex: none;
+  color: #58456a;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cv-topic-box[data-collapsed] .cv-topic-box-head {
+  inset: 8px 8px auto;
+  grid-template-columns: minmax(0, 1fr) 38px 38px;
+  gap: 4px;
+  height: 56px;
+}
+
+.cv-topic-box[data-collapsed] .cv-topic-box-toggle {
+  gap: 5px;
+  padding-inline: 7px;
+}
+
+.cv-topic-box[data-collapsed] .cv-topic-box-toggle > svg {
+  display: none;
+}
+
+.cv-topic-box[data-collapsed] .cv-topic-box-count {
+  display: inline-flex;
+  box-sizing: border-box;
+  inline-size: 104px;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 5px;
+  border-radius: 8px;
+  background: #513575;
+  color: #fff;
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.cv-topic-box[data-collapsed] .cv-topic-box-count > strong {
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.cv-topic-box-chevron {
+  display: grid;
+  place-items: center;
+}
+
+.cv-topic-box-toggle[aria-expanded="false"] .cv-topic-box-chevron {
+  transform: rotate(-90deg);
+}
+
+.cv-topic-box-head > :is(.cv-topic-box-drag, .cv-topic-box-menu) {
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.cv-topic-box-drag {
+  cursor: grab;
+}
+
+.cv-topic-box.is-topic-box-moving .cv-topic-box-drag,
+.cv-viewport.is-topic-box-moving,
+.cv-card.is-topic-box-dragging {
+  cursor: grabbing;
+}
+
+.cv-topic-box.is-topic-box-moving .cv-topic-box-head {
+  z-index: 210;
+}
+
+.cv-topic-box.is-topic-drop::before {
+  border-color: #7950c8;
+  background: color-mix(in srgb, var(--cv-box-color) 45%, #fcf9ffee);
+  box-shadow: inset 0 0 0 2px #7950c8, 0 0 0 5px #7950c82b;
+}
+
+.cv-topic-box.is-topic-drop .cv-topic-box-toggle {
+  border-color: #7950c8;
+  background: #f0e8ff;
+  color: #442670;
+}
+
+.cv-topic-box-empty {
+  position: absolute;
+  inset: 70px 16px 10px;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: #5d4d74;
+  font-size: 16px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.cv-topic-box-options {
+  display: grid;
+  gap: 5px;
+  max-height: min(42dvh, 300px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 2px;
+}
+
+.cv-topic-box-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  padding: 5px 8px;
+  border: 1px solid #eee8f6;
+  border-radius: 8px;
+  background: #fdfbff;
+  color: #493461;
+  cursor: pointer;
+}
+
+.cv-topic-box-option:has(input:checked) {
+  border-color: #cbb7ef;
+  background: #f5efff;
+}
+
+.cv-topic-box-option > input[type="checkbox"] {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #7950c8;
+}
+
+.cv-topic-box-option > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cv-topic-box-option small {
+  color: #625175;
+  font-size: 11px;
+}
+
+.cv-topic-box-directory {
+  display: grid;
+  gap: 6px;
+  max-height: 52dvh;
+  margin: 0;
+  padding: 2px;
+  overflow: auto;
+  list-style: none;
+}
+
+.cv-topic-box-directory button {
+  display: grid;
+  width: 100%;
+  min-height: 48px;
+  gap: 2px;
+  padding: 6px 10px;
+  border: 1px solid #e4d9f1;
+  border-radius: 9px;
+  background: #fdfbff;
+  color: #493461;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+
+.cv-topic-box-directory button:hover {
+  background: #f3ebff;
+}
+
+.cv-topic-box-directory small {
+  color: #625175;
+}

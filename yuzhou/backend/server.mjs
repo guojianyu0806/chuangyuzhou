@@ -8,6 +8,7 @@ import { pipeline } from 'node:stream/promises';
 import { ApiError, createStore, digest, secretEqual, hashPassword, verifyPassword, validateCredentials, FILE_ID, MAX_FILE_BYTES, MAX_STATE_BYTES } from './store.mjs';
 import { isCliEntry } from './is-cli.mjs';
 import { DocumentExtractionError } from './extractor.mjs';
+import { createStaticTextSender } from './static-text.mjs';
 import { prepareDataDirectory, assertRuntimePath, assertOrdinaryPath, FRONTEND_ROOT, COOKIE_NAME } from '../runtime.mjs';
 
 export const VERSION = '0.15.0';
@@ -53,6 +54,7 @@ export async function createWorkbenchServer(options = {}) {
   const store = createStore(dataDir, options.storeOptions);
   const modelService = options.modelService || (options.modelFactory ? await options.modelFactory({ dataDir: store.directory, store }) : null);
   const fileUploadCounts = new Map();
+  const sendStaticText = createStaticTextSender();
   let activeExtractions = 0;
   function securityHeaders(res) {
     res.setHeader('Cache-Control', 'no-store');
@@ -134,7 +136,7 @@ export async function createWorkbenchServer(options = {}) {
     const url = new URL(req.url || '/', 'http://localhost');
     if (path === '/api/health' && req.method === 'GET') { json(res, 200, { ok: true, mode: 'cloud', version: VERSION, edition: 'competition-copy' }); return; }
     if (path === '/api/instance' && req.method === 'GET') {
-      json(res, 200, { application: 'czb-yuzhou', instanceId: digest(`${frontendDir}\n${dataDir}`), version: VERSION }); return;
+      json(res, 200, { application: 'czb-yuzhou', instanceId: digest(`${frontendDir}\n${dataDir}`), version: VERSION, accessMode: secureCookie ? 'web' : 'local' }); return;
     }
     if (path === '/version.json') {
       if (!['GET', 'HEAD'].includes(req.method)) throw new ApiError(405, 'method_not_allowed');
@@ -205,7 +207,7 @@ export async function createWorkbenchServer(options = {}) {
       const fileMatch = path.match(/^\/api\/files\/([^/]+)$/);
       if (fileMatch && req.method === 'PUT') { await uploadFile(req, res, fileMatch[1], session); return; }
       if (fileMatch && ['GET', 'HEAD'].includes(req.method)) { sendFile(req, res, fileMatch[1]); return; }
-      if (/^\/api\/(?:model|ai)(?:\/|$)/.test(path)) {
+      if (/^\/api\/(?:model|ai|workspace\/topics)(?:\/|$)/.test(path)) {
         if (modelService && await modelService.handle(req, res, { url, session, readJson, json })) return;
         if (path === '/api/model/status' && req.method === 'GET') { json(res, 200, { configured: false, provider: 'deepseek', hermesAvailable: false }); return; }
       }
@@ -216,16 +218,24 @@ export async function createWorkbenchServer(options = {}) {
     const permitted = ['/index.html', '/miniapp-runtime.html', '/icon.svg', '/manifest.webmanifest'].includes(asset) || /^\/src\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]+\.(?:js|css|svg|png|jpg|woff2)$/.test(asset);
     if (!permitted) throw new ApiError(404, 'not_found');
     const candidate = join(frontendDir, asset.slice(1));
-    let real;
-    try { assertOrdinaryPath(candidate, FRONTEND_ROOT); real = realpathSync(candidate); if (!real.startsWith(frontendDir + sep) || !statSync(real).isFile()) throw new Error(); } catch { throw new ApiError(404, 'not_found'); }
+    let real, fileStat;
+    try {
+      assertOrdinaryPath(candidate, FRONTEND_ROOT);
+      real = realpathSync(candidate);
+      if (!real.startsWith(frontendDir + sep)) throw new Error();
+      fileStat = statSync(real, { bigint: true });
+      if (!fileStat.isFile()) throw new Error();
+    } catch { throw new ApiError(404, 'not_found'); }
+    const extension = extname(real);
+    if (extension === '.js' || extension === '.css') return sendStaticText(req, res, real, fileStat, mime[extension]);
     if(asset==='/miniapp-runtime.html'){
       // Only the fixed renderer can be framed. Generated code is never a main-page script.
       res.setHeader('X-Frame-Options','SAMEORIGIN');
       res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=(), payment=(), usb=()');
       res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self' blob:; style-src 'self'; worker-src blob:; connect-src 'none'; img-src 'none'; media-src 'none'; font-src 'none'; object-src 'none'; frame-src 'none'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'; sandbox allow-scripts");
     }
-    res.setHeader('Content-Type', mime[extname(real)] || 'application/octet-stream');
-    res.setHeader('Content-Length', statSync(real).size);
+    res.setHeader('Content-Type', mime[extension] || 'application/octet-stream');
+    res.setHeader('Content-Length', fileStat.size.toString());
     res.writeHead(200);
     if (req.method === 'HEAD') { res.end(); return; }
     createReadStream(real).on('error', () => res.destroy()).pipe(res);

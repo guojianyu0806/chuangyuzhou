@@ -1,6 +1,7 @@
 import {parseAmount,isValidDate,validateLedger,validateLedgerEntry} from './ledger-model.js';
 import {isRecordColor} from './creation-colors.js';
 import {validateSpaceWorkbench} from './space-workbench-config.js';
+import {spaceWorkbenchLayout} from './space-workbench-model.js';
 
 const fail=message=>{throw new Error(message);};
 const clone=value=>structuredClone(value);
@@ -157,7 +158,7 @@ function containerBoards(state,entity,record,source=state){
   return Object.entries(state.boards||{}).filter(([key])=>key.startsWith(prefix)&&!parents.some(parent=>parent.id!==record.id&&parent.id.startsWith(record.id+':')&&key.startsWith(`${entity}:${parent.id}:`)));
 }
 function automaticBoard(key,board,entity,record,source){
-  const section=key.slice(`${entity}:${record.id}:`.length),sections=entity==='space'?['overview','notes','files','tasks']:['notes','files'];
+  const section=key.slice(`${entity}:${record.id}:`.length),sections=entity==='space'?['workbench','overview','notes','files','tasks']:['notes','files'];
   if(!sections.includes(section)||!object(board))return false;
   // Browsing initializes geometry without marking customization. A missing flag
   // alone is insufficient: preserve legacy/unrecognized layouts conservatively.
@@ -170,6 +171,19 @@ function automaticBoard(key,board,entity,record,source){
     if(!initial&&!(!board.initialized&&close(view.x,0)&&close(view.y,0)&&view.zoom===1))return false;
   }
   const cards=board.cards??[];if(!Array.isArray(cards))return false;
+  if(section==='workbench'){
+    // The space's first tab uses a different preset from its content boards.
+    // Recompute the real, untouched catalogue, including hidden built-in cards,
+    // rather than treating every workbench board as disposable.
+    const boards={...source.boards};delete boards[key];
+    let expected;try{expected=spaceWorkbenchLayout({...source,boards},record.id).cards;}catch{return false;}
+    return cards.length===expected.length&&cards.every((card,index)=>{
+      if(!object(card)||Object.keys(card).some(field=>!['id','x','y','w','h','color'].includes(field)))return false;
+      const preset=expected[index];
+      return card.id===preset.id&&['x','y','w','h'].every(field=>card[field]===preset[field])
+        &&typeof card.color==='string'&&card.color.toUpperCase()===preset.color.toUpperCase();
+    });
+  }
   if(!cards.length)return true;
   const parent=source[definitions[entity].collection]?.find(parent=>parent.id===record.id);
   const summaries=[{id:'notes',color:'#AE88FF'},{id:'files',color:'#63E6DC'},{id:'tasks',color:'#D8F649'},{id:'assistant',color:'#FF9CCE'}];

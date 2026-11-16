@@ -19,9 +19,16 @@ test('layout choices and pointer heights persist across devices and server resta
   });
   const original={schema:1,mode:'personal',profile:{},english:{},courses:[],tasks:[],captures:[],
     canvas:board('stack',.68),courseCanvas:board('grid-2',.22),boards:{tasks:board('grid-3',.5),'course:one:notes':board('stack',0)}};
+  original.canvas.topicLabels=[{id:'one',offsetX:8,offsetY:-32}];
   store.saveWorkspace(0,original);
   const secondDevice=store.getWorkspace();
   assert.deepEqual(secondDevice.state,original);
+  const invalid=structuredClone(secondDevice.state);
+  invalid.canvas.topicLabels[0].offsetY=Infinity;
+  assert.throws(()=>store.saveWorkspace(secondDevice.revision,invalid),error=>error.code==='invalid_number');
+  invalid.canvas.topicLabels[0].offsetY='-32';
+  assert.throws(()=>store.saveWorkspace(secondDevice.revision,invalid),error=>error.code==='invalid_canvas_topic_labels');
+  assert.equal(store.getWorkspace().revision,secondDevice.revision);
   secondDevice.state.canvas.presentation='grid-3';
   secondDevice.state.canvas.stackPointer=1;
   store.saveWorkspace(secondDevice.revision,secondDevice.state);

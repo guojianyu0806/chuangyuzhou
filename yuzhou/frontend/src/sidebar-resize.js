@@ -54,15 +54,18 @@ export function mountSidebarResize({body,sidebar,handle,pinButton,win=window,rea
     if(previous)handle.blur?.();
   }
   function cancel(){release();stopMotion();sync();}
-  function commit(value,{animate=false}={}){
+  function commit(value,{animate=false,rememberWidth=true}={}){
     const width=clamp(value),expanded=width>RAIL_COLLAPSED;
     committing=true;
     try{if(expanded!==!!readExpanded())writeExpanded(expanded);}catch(error){committing=false;stopMotion();sync();onError(error);return;}
-    if(expanded){
+    if(expanded&&rememberWidth){
       preferred=width;
       try{writeWidth(width);}catch{onError(new Error('宽度已调整，但本机未能记住设置。'));}
     }
     committing=false;sync({animate});
+  }
+  function toggleExpanded(){
+    commit(readExpanded()?RAIL_COLLAPSED:preferred,{animate:true,rememberWidth:false});
   }
   function down(event){
     if(mobile()||gesture||event.button!==0||!Number.isFinite(event.clientX))return;
@@ -84,17 +87,17 @@ export function mountSidebarResize({body,sidebar,handle,pinButton,win=window,rea
   function key(event){
     if(event.key==='Escape'&&gesture){event.preventDefault();cancel();return;}
     if(event.target!==handle||mobile()||gesture||event.ctrlKey||event.metaKey||event.altKey)return;
+    if(event.key==='Enter'){event.preventDefault();toggleExpanded();return;}
     let width;
     if(event.key==='ArrowRight')width=(motion?.to??current)+(event.shiftKey?40:20);
     if(event.key==='ArrowLeft')width=(motion?.to??current)-(event.shiftKey?40:20);
     if(event.key==='Home')width=RAIL_COLLAPSED;
     if(event.key==='End')width=max();
-    if(event.key==='Enter')width=readExpanded()?RAIL_COLLAPSED:preferred;
-    if(width!==undefined){event.preventDefault();commit(width,{animate:['Home','End','Enter'].includes(event.key)});}
+    if(width!==undefined){event.preventDefault();commit(width,{animate:['Home','End'].includes(event.key)});}
   }
-  function reset(){if(!mobile()){release();stopMotion();commit(RAIL_DEFAULT,{animate:true});}}
+  function doubleClick(){if(!mobile()){release();toggleExpanded();}}
   function resize(){cancel();}
-  const listeners=[['pointerdown',down],['pointermove',move],['pointerup',up],['pointercancel',pointerCancel],['lostpointercapture',pointerCancel],['dblclick',reset]];
+  const listeners=[['pointerdown',down],['pointermove',move],['pointerup',up],['pointercancel',pointerCancel],['lostpointercapture',pointerCancel],['dblclick',doubleClick]];
   for(const [name,fn] of listeners)handle.addEventListener(name,fn);
   win.addEventListener('keydown',key);win.addEventListener('blur',cancel);win.addEventListener('resize',resize);
   const motionPreference=()=>{if(reduced.matches){stopMotion();sync();}};

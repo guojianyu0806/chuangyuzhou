@@ -1,9 +1,11 @@
+// Historical browser script: review only; use documented isolated tests.
+throw new Error('SUBMISSION_LEGACY_BROWSER_DISABLED: configure an isolated browser test explicitly before reuse.');
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { readFile } from 'node:fs/promises';
 
 const require = createRequire(import.meta.url);
-const { chromium } = require('C:/Users/g2806/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const { chromium } = require('playwright');
 const base = process.env.WORKBENCH_TEST_URL || 'http://127.0.0.1:4397';
 const browser = await chromium.launch({ headless: true, channel: 'msedge' });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'zh-CN', timezoneId: 'Asia/Shanghai', acceptDownloads: true });

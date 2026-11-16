@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {applyWorkspaceActions,undoWorkspaceActions} from '../src/workspace-actions.js';
 import {ensureCanvas} from '../src/canvas.js';
+import {spaceWorkbenchLayout,placeSpaceBlock} from '../src/space-workbench-model.js';
 
 const NOW='2026-10-15T12:00:00.000Z';
 const fixture=()=>({spaces:[],courses:[],tasks:[],captures:[],aiRequests:[{id:'request',text:'建立活动空间及准备事项',status:'waiting_model',files:[{id:'attachment',blobId:'blob',name:'资料.txt',type:'text/plain',size:4,createdAt:NOW}]}],ui:{}});
@@ -15,6 +16,11 @@ function openedBoard(items=[]){
   const zoom=.75;board.view={x:28-36*zoom,y:30-40*zoom,zoom};board.initialized=true;
   return board;
 }
+function openedWorkbench(state,id){
+  const board=spaceWorkbenchLayout(state,id),zoom=.55;
+  board.view={x:28-36*zoom,y:30-40*zoom,zoom};board.initialized=true;
+  return board;
+}
 const undo=(state,receipt,save=()=>{})=>undoWorkspaceActions({state,save},receipt,'request');
 
 test('browsing and reloading a newly created linked space permits complete undo and removes only its automatic boards',async()=>{
@@ -22,6 +28,7 @@ test('browsing and reloading a newly created linked space permits complete undo 
   const space=state.spaces[0],spaceId=space.id;
   state.spaces.push({...structuredClone(space),id:spaceId+':child',title:'另一空间',notes:[],files:[]});
   state.boards={
+    [`space:${spaceId}:workbench`]:openedWorkbench(state,spaceId),
     [`space:${spaceId}:overview`]:openedBoard(overview()),
     [`space:${spaceId}:notes`]:openedBoard(space.notes),
     [`space:${spaceId}:files`]:openedBoard(),
@@ -30,7 +37,7 @@ test('browsing and reloading a newly created linked space permits complete undo 
     'space:unrelated:overview':openedBoard(overview()),
     tasks:openedBoard(state.tasks),
   };
-  const preserved=Object.fromEntries(Object.entries(state.boards).filter(([key])=>![`space:${spaceId}:overview`,`space:${spaceId}:notes`,`space:${spaceId}:files`,`space:${spaceId}:tasks`].includes(key)));
+  const preserved=Object.fromEntries(Object.entries(state.boards).filter(([key])=>![`space:${spaceId}:workbench`,`space:${spaceId}:overview`,`space:${spaceId}:notes`,`space:${spaceId}:files`,`space:${spaceId}:tasks`].includes(key)));
   const restored=JSON.parse(JSON.stringify(state));
   assert.deepEqual(await undo(restored,receipt),{removed:3,retained:0});
   assert.deepEqual(restored.spaces.map(row=>row.id),[spaceId+':child']);assert.deepEqual(restored.tasks,[]);
@@ -45,11 +52,47 @@ test('course note and file boards created by browsing do not leave an empty cour
 
 test('undo removes even empty automatic boards and restores both boards and records when saving fails',async()=>{
   const state=fixture(),receipt=apply(state,[create('space',{title:'空间'})]),spaceId=state.spaces[0].id;
-  state.boards={[`space:${spaceId}:notes`]:openedBoard(),[`space:${spaceId}:files`]:{}};
+  state.boards={[`space:${spaceId}:workbench`]:openedWorkbench(state,spaceId),[`space:${spaceId}:notes`]:openedBoard(),[`space:${spaceId}:files`]:{}};
   const before=structuredClone(state);
   await assert.rejects(()=>undo(state,receipt,()=>{throw new Error('save failed');}),/save failed/);
   assert.deepEqual(state,before);
   assert.deepEqual(await undo(state,receipt),{removed:1,retained:0});assert.deepEqual(state.spaces,[]);assert.deepEqual(state.boards,{});
+});
+
+test('the actual default workbench, including hidden presets, is disposable for normal and fitness spaces',async()=>{
+  for(const type of ['project','fitness']){
+    const state=fixture(),receipt=apply(state,[create('space',{title:'浏览后撤销',type})]),space=state.spaces[0];
+    state.boards={[`space:${space.id}:workbench`]:openedWorkbench(state,space.id)};
+    assert.equal(state.boards[`space:${space.id}:workbench`].cards.length,14);
+    const restored=JSON.parse(JSON.stringify(state));
+    assert.deepEqual(await undo(restored,receipt),{removed:1,retained:0});
+    assert.deepEqual(restored.spaces,[]);assert.deepEqual(restored.boards,{});
+  }
+});
+
+test('workbench card, geometry, view, and settings changes keep the parent and the exact layout',async()=>{
+  const edits=[board=>board.cards[0].x+=8,board=>board.cards[0].y+=8,board=>board.cards[0].w+=20,
+    board=>board.cards[0].h+=20,board=>board.cards[0].color='#123456',board=>board.cards.pop(),
+    board=>board.cards.reverse(),board=>board.cards.push({id:'unknown-card',x:0,y:0,w:340,h:300,color:'#123456'}),
+    board=>board.cards[0].extra='later edit',board=>board.view.x+=5,board=>board.presentation='grid-2',
+    board=>board.snap=false,board=>board.stackPointer=.7,board=>board.customized=true,
+    board=>board.modifiedAt=NOW,board=>board.extraLayout={label:'保留'}];
+  for(const edit of edits){
+    const state=fixture(),receipt=apply(state,[create('space',{title:'保留工作台布局'})]),space=state.spaces[0];
+    const board=openedWorkbench(state,space.id);edit(board);state.boards={[`space:${space.id}:workbench`]:board};
+    const before=structuredClone(state);
+    assert.deepEqual(await undo(state,receipt),{removed:0,retained:1});
+    assert.deepEqual(state.spaces,before.spaces);assert.deepEqual(state.boards,before.boards);
+  }
+});
+
+test('a real later placement that enables a shared module retains the parent and scoped configuration',async()=>{
+  const state=fixture(),receipt=apply(state,[create('space',{title:'后续已搭建'})]),space=state.spaces[0];
+  state.boards={[`space:${space.id}:workbench`]:openedWorkbench(state,space.id)};
+  placeSpaceBlock(state,space.id,'module:calendar',{x:1200,y:400});
+  const before=structuredClone(state);
+  assert.deepEqual(await undo(state,receipt),{removed:0,retained:1});
+  assert.deepEqual(state.spaces,before.spaces);assert.deepEqual(state.boards,before.boards);
 });
 
 test('explicit customization and modified timestamps retain the parent and its board',async()=>{

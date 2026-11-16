@@ -1,3 +1,5 @@
+// Historical browser script: review only; use documented isolated tests.
+throw new Error('SUBMISSION_LEGACY_BROWSER_DISABLED: configure an isolated browser test explicitly before reuse.');
 // Exercise bookkeeping through its UI against an isolated real SQLite server.
 // Never reads production credentials, cookies, data, or any bank/payment API.
 import assert from 'node:assert/strict';
@@ -8,7 +10,7 @@ import {createWorkbenchServer} from '../../backend/server.mjs';
 import {validateBackup, mergeBackup} from '../src/backup.js';
 
 const require = createRequire(import.meta.url);
-const {chromium} = require('C:/Users/g2806/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium} = require('playwright');
 const runtime = resolve('frontend/.runtime');
 const visuals = resolve('.workbench/visual-qa');
 await Promise.all([mkdir(runtime, {recursive: true}), mkdir(visuals, {recursive: true})]);

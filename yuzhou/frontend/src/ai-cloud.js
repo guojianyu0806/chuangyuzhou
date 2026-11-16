@@ -14,7 +14,7 @@ export async function startAIJob(ctx, request) {
   cache.jobs.set(request.id, {requestId:request.id,status:'checking',starting:true}); emit(ctx.state);
   try {
     const status = await ctx.cloud.request('/api/model/status'); ctx.cloud.modelStatus = status;
-    if (!status.configured) throw new Error('请先在“偏好与连接”中保存 DeepSeek API Key。原文已收好。');
+    if (!status.configured) throw new Error('请先通过启动环境变量或“偏好与连接”配置 DeepSeek API Key。原文已收好。');
     if (!engineAvailable(status)) throw new Error('本比赛独立 AI 引擎待配置，原文和附件已保留。');
     cache.jobs.set(request.id, {requestId:request.id,status:'queued',starting:true}); emit(ctx.state);
     ensureConversation(request,ctx.uid);ctx.save(ctx.state);

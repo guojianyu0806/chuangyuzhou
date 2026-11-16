@@ -1,5 +1,12 @@
 /** Pure presentation geometry; these coordinates never replace saved canvas positions. */
 export const CARD_PRESENTATIONS = Object.freeze(['canvas', 'list', 'grid-2', 'grid-3', 'stack']);
+export const CANVAS_FIT_MIN_ZOOM = .0001;
+
+export function fitCanvasView({x, y, w, h}, width, height) {
+  const padding = Math.min(36, width * .08, height * .08);
+  const zoom = Math.max(CANVAS_FIT_MIN_ZOOM, Math.min((width - 2 * padding) / w, (height - 2 * padding) / h, 1));
+  return {x:(width - w * zoom) / 2 - x * zoom, y:(height - h * zoom) / 2 - y * zoom, zoom};
+}
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const finiteNumber = (value, fallback) => {

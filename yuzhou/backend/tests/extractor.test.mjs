@@ -15,10 +15,7 @@ function fixture(t) {
 }
 function put(root, name, content) { const path = join(root, name); writeFileSync(path, content); return path; }
 const rejected = code => error => error instanceof DocumentExtractionError && error.code === code && Number.isInteger(error.status);
-const python = [
-  'C:/Users/g2806/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe',
-  'E:/应用/Python313/python.exe',
-].find(existsSync);
+const python = [join(RUNTIME_ROOT, 'extractor-venv', 'Scripts', 'python.exe'), join(RUNTIME_ROOT, 'extractor-venv', 'bin', 'python')].find(existsSync);
 
 test('native text works without Python and does not claim unavailable Office/PDF/OCR', async t => {
   const root = fixture(t); const extractor = createDocumentExtractor();

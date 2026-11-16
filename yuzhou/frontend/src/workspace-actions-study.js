@@ -3,7 +3,10 @@
 import {validateCalendar} from './calendar-model.js';
 import {validateTimetable} from './timetable-model.js';
 import {isValidDate} from './ledger-model.js';
-import {WRITING_PROMPTS,TRANSLATION_PROMPTS} from './english-content.js';
+import {ENGLISH_DRAFT_PROMPTS} from './english-draft-prompts.js';
+import {validateCanvasTopicBoxes} from './canvas-topic-boxes.js';
+import {validateCanvasTopicLabels} from './workspace-topics-model.js';
+import {CANVAS_FIT_MIN_ZOOM} from './card-layouts.js';
 
 const fail = message => { throw new Error(message); };
 const clone = value => structuredClone(value);
@@ -251,7 +254,7 @@ const termSettingsAdapter=singleton({entity:'timetableSettings',label:'当前学
   write:(state,record)=>{state.timetable=validateTimetable({...timetableOf(state),activeTermId:record.activeTermId});},
 });
 const draftRecord=value=>fields(value,{content:v=>text(v,100000),updatedAt:v=>v===''?'':stamp(v)},['content','updatedAt']);
-const draftPrompts={writing:WRITING_PROMPTS,translation:TRANSLATION_PROMPTS};
+const draftPrompts={writing:Object.values(ENGLISH_DRAFT_PROMPTS.writing),translation:Object.values(ENGLISH_DRAFT_PROMPTS.translation)};
 const draftTargets=[...DRAFTS.map(type=>({id:type,type,legacy:true,title:type==='listening'?'听力笔记':`${type==='writing'?'写作':'翻译'} · ${draftPrompts[type].find(prompt=>prompt.legacy)?.title||'原有草稿'}`})),
   ...Object.entries(draftPrompts).flatMap(([type,prompts])=>prompts.filter(prompt=>!prompt.legacy).map(prompt=>({id:`${type}:${prompt.id}`,type,promptId:prompt.id,legacy:false,title:`${type==='writing'?'写作':'翻译'} · ${prompt.title}`})))];
 const draftTarget=draftId=>{const target=draftTargets.find(target=>target.id===draftId);if(!target)fail('请选择已知题目的英语草稿编号。');return target;};
@@ -293,10 +296,22 @@ const uiAdapter=singleton({entity:'uiSettings',label:'界面偏好',recordId:'ui
 
 const cardRules={x:v=>number(v,-100000,100000),y:v=>number(v,-100000,100000),w:v=>number(v,220,1100),h:v=>number(v,220,850),color};
 const cardRecord=value=>recordFields(value,{id,...cardRules});
-const viewRule=value=>fields(value,{x:v=>number(v,-150000,150000),y:v=>number(v,-150000,150000),zoom:v=>number(v,.3,1.6)},['x','y','zoom']);
-const canvasRules={snap:bool,presentation:v=>choice(v,['canvas','list','grid-2','grid-3','stack']),stackPointer:v=>number(v,0,1),view:viewRule};
+const viewRule=minZoom=>value=>fields(value,{x:v=>number(v,-150000,150000),y:v=>number(v,-150000,150000),zoom:v=>number(v,minZoom,1.6)},['x','y','zoom']);
+const canvasRules={snap:bool,presentation:v=>choice(v,['canvas','list','grid-2','grid-3','stack']),stackPointer:v=>number(v,0,1),view:viewRule(.3)};
 function canvasRecord(value) {
-  return fields(value,{cards:value=>{if(!Array.isArray(value)||value.length>10000)fail('画布卡片数量无效。');const cards=value.map(cardRecord);if(new Set(cards.map(card=>card.id)).size!==cards.length)fail('画布卡片编号重复。');return cards;},...canvasRules,initialized:bool,modifiedAt:stamp,customized:bool},['cards','snap','initialized']);
+  return fields(value,{
+    cards:value=>{
+      if(!Array.isArray(value)||value.length>10000)fail('画布卡片数量无效。');
+      const cards=value.map(cardRecord);
+      if(new Set(cards.map(card=>card.id)).size!==cards.length)fail('画布卡片编号重复。');
+      return cards;
+    },
+    ...canvasRules,initialized:bool,modifiedAt:stamp,customized:bool,
+    view:viewRule(CANVAS_FIT_MIN_ZOOM),
+    // Keep user-managed topic data in saved records and undo snapshots.
+    topicBoxes:validateCanvasTopicBoxes,
+    topicLabels:validateCanvasTopicLabels,
+  },['cards','snap','initialized']);
 }
 const emptyCanvas=()=>({cards:[],snap:true,initialized:false});
 function canvasLocation(state,canvasId) {

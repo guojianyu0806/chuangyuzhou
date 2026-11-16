@@ -1,3 +1,5 @@
+// Historical browser script: review only; use documented isolated tests.
+throw new Error('SUBMISSION_LEGACY_BROWSER_DISABLED: configure an isolated browser test explicitly before reuse.');
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {ensureCanvas,zoomAt,canvasBounds,canvasCardFill} from '../src/canvas.js';
@@ -21,7 +23,7 @@ const luminance=hex=>hex.slice(1).match(/../g).map(c=>parseInt(c,16)/255).map(n=
 for(const source of ['#000000','#ffffff','#7900ff','#003300','#ff0080','#040020'])assert.ok((luminance(canvasCardFill(source))+.05)/(luminance('#4c3d5b')+.05)>=4.5,`Unreadable card theme ${source}`);
 
 const require=createRequire(import.meta.url);
-const {chromium}=require('C:/Users/g2806/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=require('playwright');
 const browser=await chromium.launch({channel:'msedge',headless:true});
 const base=process.env.TEST_BASE_URL||'http://127.0.0.1:4397';
 const errors=[];

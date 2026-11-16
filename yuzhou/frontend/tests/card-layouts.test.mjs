@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CARD_PRESENTATIONS, normalizePresentation, normalizeStackPointer, stackMetrics, stackLayout } from '../src/card-layouts.js';
+import { CARD_PRESENTATIONS, fitCanvasView, normalizePresentation, normalizeStackPointer, stackMetrics, stackLayout } from '../src/card-layouts.js';
 
 const near = (actual, expected, tolerance = 1e-7) => assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} ≈ ${expected}`);
 const fixture = (overrides = {}) => ({ width: 390, height: 640, count: 9, pointer: .5, ...overrides });
@@ -8,6 +8,17 @@ const atCard = (index, options = fixture()) => {
   const m = stackMetrics(options);
   return stackLayout({ ...options, scrollTop: m.padding + index * m.step - m.pointerY });
 };
+
+test('fit centers wide canvas bounds in the actual viewport below the manual zoom floor', () => {
+  const bounds={x:-95,y:80,w:2800,h:860};
+  const view=fitCanvasView(bounds,390,560);
+  assert.ok(view.zoom<.3);
+  const left=view.x+bounds.x*view.zoom, top=view.y+bounds.y*view.zoom;
+  assert.ok(left>0&&top>0);
+  near(left*2+bounds.w*view.zoom,390);
+  near(top*2+bounds.h*view.zoom,560);
+  assert.equal(fitCanvasView({x:100,y:300,w:328,h:72},1280,720).zoom,1);
+});
 
 test('only known presentations survive; invalid persisted preferences have useful fallbacks', () => {
   assert.deepEqual(CARD_PRESENTATIONS, ['canvas', 'list', 'grid-2', 'grid-3', 'stack']);

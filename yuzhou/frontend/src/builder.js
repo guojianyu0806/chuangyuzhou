@@ -1,4 +1,3 @@
-import {planDailyWorkspace,applyDailyWorkspace} from './daily-workspace.js';
 import {WORKBENCH_MODULES,WORKBENCH_TEMPLATES,getWorkbench,getVisibleModules,configureWorkbench,applyWorkbenchTemplate} from './workbench-model.js';
 import {escapeHTML as esc} from './services.js';
 import {icon} from './icons.js';
@@ -65,6 +64,8 @@ export function builderHTML(state,{navigationSession={}}={}) {
 export function mountBuilder(ctx) {
   const {root,state,modal,toast}=ctx;
   let active=true,disposePlacement=null,disposeNavigation=null,undoDaily=null;
+  let dailyReviewPending=false;
+  const isCurrent=()=>active&&ctx.isCurrent?.()!==false;
   const session=ctx.builderSession||{};const placementSession=session.placement||=( {} ),navigationSession=session.navigation||=( {} );
   const createPresetAt=(id,placement)=>ctx.openCustomBlockEditor?.(createPresetInput(id),placement?{placement,onCreated(record){
     if(!active){ctx.refresh?.();return;}
@@ -105,15 +106,40 @@ export function mountBuilder(ctx) {
     const position=getWorkbench(state).modules.findIndex(module=>module.id===neighbor.id);
     change(workspace=>configureWorkbench(workspace,{moduleId:id,position}),'模块顺序已保存',{action:direction<0?'up':'down',id});
   }
+  async function reviewDaily(button) {
+    if(dailyReviewPending)return;
+    dailyReviewPending=true;
+    button.disabled=true;
+    try {
+      const {planDailyWorkspace,applyDailyWorkspace}=await import('./daily-workspace.js');
+      if(!isCurrent()||!root.contains(button)||root.ownerDocument?.querySelector('dialog[open]'))return;
+      const plan=planDailyWorkspace(state);
+      modal({
+        title:'整理为日常工作台',
+        submitLabel:plan.changes.length?'保存整理':undefined,
+        body:plan.changes.length?`<p>将整理 ${plan.changes.length} 项起始内容。计划、草稿和参考资料保留；占位账目、运动及完成记录归档，进度从实际记录开始。布局、关联和其他个人内容保持。</p><p>笔记原文保留在修订记录，来源标记不删除。在离开搭建台前可撤销；之后的新修改不会被撤销覆盖。</p><details><summary>查看涉及内容</summary><ul>${plan.changes.map(title=>`<li>${esc(title)}</li>`).join('')}</ul></details>`:'目前没有需要整理的起始内容。',
+        onSubmit:plan.changes.length?()=>{
+          if(!isCurrent())throw new Error('工作台已更新，请重新预览。');
+          undoDaily=applyDailyWorkspace(ctx,plan);
+          render();
+          const undo=root.querySelector('[data-wb-action="daily-undo"]');
+          if(undo)undo.hidden=false;
+          toast('起始资料已整理，等待保存完成。');
+        }:undefined
+      });
+    } catch(error) {
+      if(isCurrent()&&root.contains(button))toast(error.message||'未能加载资料整理，请刷新后重试。');
+    } finally {
+      dailyReviewPending=false;
+      button.disabled=false;
+    }
+  }
   function onClick(event) {
     const button=event.target.closest('[data-wb-action]');
     if(!active||!button||!root.contains(button)||button.disabled)return;
     const action=button.dataset.wbAction,id=button.dataset.id;
     try {
-      if(action==='daily-review'){
-        const plan=planDailyWorkspace(state);
-        modal({title:'整理为日常工作台',submitLabel:plan.changes.length?'保存整理':undefined,body:plan.changes.length?`<p>将整理 ${plan.changes.length} 项起始内容。计划、草稿和参考资料保留；占位账目、运动及完成记录归档，进度从实际记录开始。布局、关联和其他个人内容保持。</p><p>笔记原文保留在修订记录，来源标记不删除。在离开搭建台前可撤销；之后的新修改不会被撤销覆盖。</p><details><summary>查看涉及内容</summary><ul>${plan.changes.map(title=>`<li>${esc(title)}</li>`).join('')}</ul></details>`:'目前没有需要整理的起始内容。',onSubmit:plan.changes.length?()=>{if(!active||ctx.isCurrent?.()===false)throw new Error('工作台已更新，请重新预览。');undoDaily=applyDailyWorkspace(ctx,plan);render();const undo=root.querySelector('[data-wb-action="daily-undo"]');if(undo)undo.hidden=false;toast('起始资料已整理，等待保存完成。');}:undefined});
-      }
+      if(action==='daily-review')return reviewDaily(button);
       if(action==='daily-undo'&&undoDaily){undoDaily();undoDaily=null;render();toast('已撤销本次整理');}
       if(action==='home'){
         const config=getWorkbench(state);

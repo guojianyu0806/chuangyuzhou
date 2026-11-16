@@ -53,6 +53,25 @@ shield:'m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6z M8 12l3 3 5-6',
 flag:'M5 22V3c5-3 9 3 14 0v10c-5 3-9-3-14 0',
 image:'M3 3h18v18H3z m0 14 5-5 4 4 3-3 6 6 M8 7h.01',
 coffee:'M3 8h14v11H3z M17 9h2a3 3 0 0 1 0 6h-2 M2 22h16 M6 2v3 M11 2v3',
-bolt:'m13 2-9 12h7l-1 8 10-13h-7z'
+bolt:'m13 2-9 12h7l-1 8 10-13h-7z',
+bookmark:'M6 3h12v18l-6-4-6 4z',
+library:'M3 4h4v16H3z M9 4h4v16H9z m6 1 4-1 4 15-4 1z M4 8h2 M10 8h2',
+briefcase:'M3 7h18v13H3z M8 7V4h8v3 M3 12l9 2 9-2 M12 12v4',
+megaphone:'M3 9h5l11-5v16l-11-5H3z M8 15l2 6H6l-2-6 M22 9v6',
+map:'m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2z M9 3v16 M15 5v16',
+compass:'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0 M15 9l-2 4-4 2 2-4z',
+mountain:'m2 20 7-12 3 5 4-8 6 15z M7 12l2 2 2-2 M14 10l2 2 2-2',
+leaf:'M21 3C10 3 4 7 4 14a6 6 0 0 0 6 6c7 0 11-7 11-17z M3 21l10-10',
+trophy:'M7 4h10v5a5 5 0 0 1-10 0z M7 6H3v2a4 4 0 0 0 4 4 M17 6h4v2a4 4 0 0 1-4 4 M12 14v5 M8 21h8 M8 21v-2h8v2',
+camera:'M3 7h4l2-3h6l2 3h4v13H3z M16 13a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
+bulb:'M9 18h6 M10 21h4 M9 15c0-2-3-3-3-7a6 6 0 1 1 12 0c0 4-3 5-3 7z',
+palette:'M12 21a9 9 0 1 1 9-9 3 3 0 0 1-3 3h-2a2 2 0 0 0-1 4c0 1-1 2-3 2z M7 11h.01 M9 7h.01 M14 7h.01 M17 10h.01',
+music:'M9 17V5l12-2v12 M9 9l12-2 M9 17a3 2 0 1 1-6 0 3 2 0 0 1 6 0 M21 15a3 2 0 1 1-6 0 3 2 0 0 1 6 0',
+heart:'M12 20 4 12a5 5 0 0 1 8-6 5 5 0 0 1 8 6z',
+dumbbell:'M3 8h3v8H3z M6 6h3v12H6z M9 12h6 M15 6h3v12h-3z M18 8h3v8h-3z',
+clipboard:'M8 4H5v17h14V4h-3 M8 3h8v4H8z M8 12h8 M8 16h6',
+rocket:'M8 16l-4 4 M8 13l-5 1 2-5 5-2 M11 16l-1 5 5-2 2-5 M8 13C9 7 15 3 21 3c0 6-4 12-10 13z M17 8h.01',
+puzzle:'M3 4h6a3 3 0 1 0 6 0h6v6a3 3 0 1 0 0 6v5h-6a3 3 0 1 0-6 0H3v-6a3 3 0 1 0 0-6z'
 };
-export function icon(name,size=20) {return `<svg width="${Number(size)||20}" height="${Number(size)||20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name]||paths.file}"/></svg>`;}
+export const hasIcon=name=>typeof name==='string'&&Object.hasOwn(paths,name);
+export function icon(name,size=20) {return `<svg width="${Number(size)||20}" height="${Number(size)||20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${hasIcon(name)?paths[name]:paths.file}"/></svg>`;}

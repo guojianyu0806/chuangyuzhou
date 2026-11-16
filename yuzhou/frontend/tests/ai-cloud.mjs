@@ -1,3 +1,5 @@
+// Historical browser script: review only; use documented isolated tests.
+throw new Error('SUBMISSION_LEGACY_BROWSER_DISABLED: configure an isolated browser test explicitly before reuse.');
 // End-to-end UI test against a real isolated SQLite backend. Only model inference
 // is a deterministic fixture; no real provider credentials or model calls occur.
 import assert from 'node:assert/strict';
@@ -9,7 +11,7 @@ import { createWorkbenchServer } from '../../backend/server.mjs';
 import { createHermesService } from '../../backend/hermes.mjs';
 
 const require = createRequire(import.meta.url);
-const { chromium } = require('C:/Users/g2806/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const { chromium } = require('playwright');
 const runtime = resolve('frontend/.runtime');
 await mkdir(runtime, { recursive: true });
 const dataDir = await mkdtemp(resolve(runtime, 'ai-cloud-real-'));

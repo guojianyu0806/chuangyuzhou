@@ -1,5 +1,7 @@
 import {getWorkbench,getVisibleModules,validateWorkbench,validateNavigation,isNavigationId,MAX_NAVIGATION_ITEMS} from './workbench-model.js';
 
+import {getSpaceIconMap} from './space-icons.js';
+
 export {validateNavigation};
 const plain=value=>!!value&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
 const fail=label=>{throw new Error(`${label}无效。`);};
@@ -12,11 +14,12 @@ function availableItems(state,workbench) {
   ];
   const spaces=state?.spaces??[];
   if(!Array.isArray(spaces))fail('导航工作区');
+  const spaceIcons=getSpaceIconMap(state);
   for(const space of spaces){
     if(space.archived)continue;
     const id=`space:${space.id}`;
     if(typeof space.id!=='string'||!isNavigationId(id))fail('导航工作区编号');
-    items.push({id,title:String(space.title||'未命名工作区'),icon:typeof space.icon==='string'?space.icon:'folder',color:/^#[a-f\d]{6}$/i.test(space.color||'')?space.color:'#AE88FF',href:`#/space/${encodeURIComponent(space.id)}`,kind:'space',spaceId:space.id});
+    items.push({id,title:String(space.title||'未命名工作区'),icon:spaceIcons.get(space.id)||'folder',color:/^#[a-f\d]{6}$/i.test(space.color||'')?space.color:'#AE88FF',href:`#/space/${encodeURIComponent(space.id)}`,kind:'space',spaceId:space.id});
   }
   if(items.length>MAX_NAVIGATION_ITEMS||new Set(items.map(item=>item.id)).size!==items.length)fail('导航列表');
   return items;

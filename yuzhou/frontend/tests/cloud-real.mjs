@@ -1,10 +1,12 @@
+// Historical browser script: review only; use documented isolated tests.
+throw new Error('SUBMISSION_LEGACY_BROWSER_DISABLED: configure an isolated browser test explicitly before reuse.');
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdtemp,mkdir,rm} from 'node:fs/promises';
 import {resolve,sep} from 'node:path';
 import {createWorkbenchServer} from '../../backend/server.mjs';
 const require=createRequire(import.meta.url);
-const {chromium}=require('C:/Users/g2806/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=require('playwright');
 const runtime=resolve('frontend/.runtime');await mkdir(runtime,{recursive:true});const dataDir=await mkdtemp(resolve(runtime,'cloud-real-'));
 const app=await createWorkbenchServer({dataDir,secureCookie:false,setupToken:'test-only-initial-token'});
 await new Promise(resolve=>app.server.listen(0,'127.0.0.1',resolve));const base=`http://127.0.0.1:${app.server.address().port}`;

@@ -8,6 +8,9 @@ import {validateTimetable, mergeTimetables} from './timetable-model.js';
 import {validateFitness, mergeFitness} from './fitness-model.js';
 import {validateCompetitions, mergeCompetitions} from './competitions-model.js';
 import {validateWorkbench} from './workbench-model.js';
+import {validateWorkspaceTopics,validateCanvasTopicLabels} from './workspace-topics-model.js';
+import {validateCanvasTopicBoxes} from './canvas-topic-boxes.js';
+import {CANVAS_FIT_MIN_ZOOM} from './card-layouts.js';
 import {validateCustomBlocks,mergeCustomBlocks} from './custom-blocks-model.js';
 import {validateSpaceWorkbench,validateSpaceStructure} from './space-workbench-config.js';
 import {isRecordColor, assignRecordColor} from './creation-colors.js';
@@ -216,10 +219,11 @@ function canvas(value, label = '主页画布') {
   };
   if (value.view !== undefined) {
     const view = object(value.view, '画布视角');
-    result.view = {x: finite(view.x, '画布视角横坐标'), y: finite(view.y, '画布视角纵坐标'), zoom: finite(view.zoom, '画布缩放', .3, 1.6)};
+    result.view = {x: finite(view.x, '画布视角横坐标'), y: finite(view.y, '画布视角纵坐标'), zoom: finite(view.zoom, '画布缩放', CANVAS_FIT_MIN_ZOOM, 1.6)};
   }
   if (value.presentation !== undefined) result.presentation = choice(value.presentation, ['canvas','list','grid-2','grid-3','stack'], '画布展示方式');
   if (value.stackPointer !== undefined) result.stackPointer = finite(value.stackPointer, '堆叠指针位置', 0, 1);
+  if (value.topicLabels !== undefined) result.topicLabels = validateCanvasTopicLabels(value.topicLabels);
   return optionalFields(value, result, ['modifiedAt'], ['customized']);
 }
 function word(value) {
@@ -313,6 +317,7 @@ function workspace(value) {
   }
   if (value.competitions !== undefined) result.competitions = validateCompetitions(value.competitions);
   if (value.workbench !== undefined) result.workbench = validateWorkbench(value.workbench);
+  if (value.workspaceTopics !== undefined) result.workspaceTopics = validateWorkspaceTopics(value.workspaceTopics);
   if (value.customBlocks !== undefined) {
     result.customBlocks = validateCustomBlocks(value.customBlocks);
     const occupied=new Set([...(result.spaces||[]).map(item=>item.id),...result.courses.map(item=>item.id)]);
@@ -320,7 +325,10 @@ function workspace(value) {
   }
   if (value.aiRequests !== undefined) result.aiRequests = records(value.aiRequests, aiRequest, 'AI 收件记录');
   if (value.aiDraft !== undefined) result.aiDraft = aiDraft(value.aiDraft);
-  if (value.canvas !== undefined) result.canvas = canvas(value.canvas);
+  if (value.canvas !== undefined) {
+    result.canvas = canvas(value.canvas);
+    if (value.canvas.topicBoxes !== undefined) result.canvas.topicBoxes = validateCanvasTopicBoxes(value.canvas.topicBoxes);
+  }
   if (value.courseCanvas !== undefined) result.courseCanvas = canvas(value.courseCanvas, '课程画布');
   if (value.boards !== undefined) {
     const boards = object(value.boards, '内页画布');
@@ -474,7 +482,11 @@ export function mergeBackup(current, incoming) {
   for (const key of ['canvas', 'courseCanvas']) {
     if (!source[key]) continue;
     if (!state[key]?.customized) {
-      if (JSON.stringify(state[key]) !== JSON.stringify(source[key])) { state[key] = structuredClone(source[key]); count++; }
+      const layout = structuredClone(source[key]);
+      if (key === 'canvas' && layout.topicBoxes === undefined && state.canvas?.topicBoxes !== undefined) {
+        layout.topicBoxes = state.canvas.topicBoxes;
+      }
+      if (JSON.stringify(state[key]) !== JSON.stringify(layout)) { state[key] = layout; count++; }
     } else mergeRecords(state[key].cards ||= [], source[key].cards);
   }
   if (source.boards) {
@@ -493,6 +505,24 @@ export function mergeBackup(current, incoming) {
   // saved configuration; completed current choices still win over a backup.
   if (source.workbench !== undefined && (state.workbench === undefined || state.workbench.onboardingComplete === false)
       && JSON.stringify(state.workbench) !== JSON.stringify(source.workbench)) { state.workbench = structuredClone(source.workbench); count++; }
+  if (source.workspaceTopics) {
+    if (!state.workspaceTopics) {
+      state.workspaceTopics = structuredClone(source.workspaceTopics);
+      count++;
+    } else {
+      const topics = state.workspaceTopics;
+      const knownCards = new Set(topics.assignments.map(entry => entry.id));
+      const knownBatches = new Set(topics.receipts.map(receipt => receipt.batchId));
+      const additions = source.workspaceTopics.assignments.filter(entry => !knownCards.has(entry.id) && !knownBatches.has(entry.batchId));
+      if (additions.length) {
+        const addedBatches = new Set(additions.map(entry => entry.batchId));
+        topics.assignments.push(...structuredClone(additions));
+        topics.receipts.push(...structuredClone(source.workspaceTopics.receipts.filter(receipt => addedBatches.has(receipt.batchId))));
+        validateWorkspaceTopics(topics);
+        count += additions.length;
+      }
+    }
+  }
   if (source.workspaceVersion && (!state.workspaceVersion || state.workspaceVersion < source.workspaceVersion)) state.workspaceVersion = source.workspaceVersion;
   const en = state.english ||= english({});
   const imported = source.english;

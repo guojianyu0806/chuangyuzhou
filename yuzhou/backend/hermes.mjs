@@ -8,6 +8,10 @@ import {validateConversation, conversationSnapshot} from '../frontend/src/ai-con
 import {WORKSPACE_ACTION_CAPABILITIES,previewWorkspaceActions,listWorkspaceRecords} from '../frontend/src/workspace-actions.js';
 import {WORKSPACE_QUERY_CAPABILITIES,validateWorkspaceQueries,runWorkspaceQuery,workspaceOverview,workspaceFingerprint,validateCustomBlockReadAccess,validateEnglishDraftReadAccess} from './workspace-queries.mjs';
 import { assertRuntimePath, prepareDataDirectory, RUNTIME_ROOT } from '../runtime.mjs';
+import { readModelEnvironment } from './model-environment.mjs';
+import { ApiError } from './store.mjs';
+import {buildTopicPrompt, checkTopicBatchId, confirmWorkspaceTopics, moveWorkspaceTopicCard, readTopicReceipt, readTopicSelection, snapshotTopicCards, undoWorkspaceTopics, validateTopicSuggestion} from './workspace-topics.mjs';
+import {isWorkspaceTopicCandidateId} from '../frontend/src/workspace-topics-model.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BASE_URL = 'https://api.deepseek.com';
@@ -122,7 +126,7 @@ export function validateProposal(value, destinations, sourceIds, requestedDestin
 }
 
 export function buildPrompt({ text, sources, destinations, destinationId, kind = 'organize' }) {
-  const system = `你是“宇宙”工作台搭建平台里的智能伙伴。每位用户的身份、目标和习惯由其真实表达决定，不能默认用户是学生或需要英语、课程等全部板块。先对话理解目标，必要时追问，准备行动单供用户审核，只有用户点击“确认执行”后程序才会写入。聊天里说“确认”不等于按钮，不得宣称尚未执行的操作已经完成。
+  const system = `你是“创宇宙”工作台搭建平台里的智能伙伴。每位用户的身份、目标和习惯由其真实表达决定，不能默认用户是学生或需要英语、课程等全部板块。先对话理解目标，必要时追问，准备行动单供用户审核，只有用户点击“确认执行”后程序才会写入。聊天里说“确认”不等于按钮，不得宣称尚未执行的操作已经完成。
 搭建工作台时，workspaceOverview提供物品库catalog、模板建议templates及当前workbench配置。模板是起点，不代表用户必须接受全部板块；依据用户目标提出适量配置动作。用workbenchSettings改工作台名称，workbenchModule启用/隐藏/改名/排序已有顶级板块（position是完整模块数组从0开始的序号），用space创建和修改自定义空间，用canvasSettings调整布局、canvasCard排布已经存在的卡片。先query查询真实板块或卡片再提行动；隐藏只影响入口、不得归档或清空其业务记录；AI伙伴始终可访问。用户明确要求搭建或调整且信息足够时，应给出可审核的proposal.actions，不能仅口头承诺已搭建。需要新空间与其笔记/待办时使用前序create的ref；例如前序space.create的ref为"event"，同一行动单后续note.create的containerId直接写"$event"，task.create的data.spaceId也直接写"$event"，不能拼成"space:$event"。没有任意新功能生成、外部软件控制或未注册组件执行能力，不夸称能调整任意外部对象。
 自定义方块使用customBlock行动，可按用户用途创建便签、清单、网址收藏、进度、重要日期、记录表或交互小程序，不局限于原作者的课程配置。类型与config结构严格遵守能力清单，不能用未经支持的字段伪装新功能。miniapp的config.code可生成纯JS交互逻辑，代码仅在隔离Worker运行，以app.render的受控组件显示；没有DOM、HTML、CSS、网络、其他方块或账号密钥访问。app.getData()读取本方块副本，await app.setData(next)成功后才更新；app.onEvent=async(event)=>...，输入event.value和event.values字段是字符串，计算前显式转数值。options是字符串或{value,label}，metric.value为字符串或有限数字，节点可用disabled/placeholder/step等受控字段。创建/修改程序必须先展示可审核行动单，确认前不得声称已运行。更新已有config或data前必须在本轮get完整查询该方块；truncated或redacted时停止整包替换，说明限制。只改代码默认保留data，不能清空用户记录。先创建后由画布分配位置；本轮新建方块不能用canvasCard的$ref排布，后续先查询真实卡片id。
 编写config.code时，直接使用运行环境已注入的app对象；它是数据与渲染API，不是DOM节点或UI组件。不能把this当成app，不用this.app，也不要重新声明app（例如const app=this）、用函数参数遮蔽它或替换它的方法。app.render接收组件描述数组，所有逻辑直接使用app.getData/app.setData/app.render/app.onEvent。
@@ -280,6 +284,7 @@ function publicFailure(code) { return { code: Object.hasOwn(FAILURE_MESSAGES, co
 
 /** Auth and CSRF must be checked by the enclosing server before calling handle(). */
 export function createHermesService({ dataDir, store, runModel, extractFile, engineAvailable, engine = 'hermes', engineName, extractionCapabilities, env = {} } = {}) {
+  const environmentSettings = readModelEnvironment(env);
   const root = resolve(prepareDataDirectory(dataDir), 'ai');
   const jobsDir = join(root, 'jobs');
   const hermesHome = join(root, 'hermes');
@@ -292,17 +297,19 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
   const available = () => engineAvailable ? Boolean(engineAvailable()) : typeof runModel === 'function' || hermesAvailable();
   const jobs = new Map();
   let running = false, closed = false, activeChild = null, activeModelController = null;
-  const config = () => {
+  const storedConfig = () => {
     const value = readJsonFile(configPath);
     if (!value || value.provider !== 'deepseek' || !MODELS.has(value.model) || typeof value.apiKey !== 'string') return null;
     return value;
   };
+  const config = () => environmentSettings || storedConfig();
   const status = () => {
     const current = config();
     const formats = ['txt', 'md', 'csv', 'docx', 'pptx', 'pdf'];
     const supplied = typeof extractionCapabilities === 'function' ? extractionCapabilities() : extractionCapabilities;
     const capabilities = supplied == null ? null : Object.fromEntries(formats.map(format => [format, supplied[format] === true]));
     return { configured: Boolean(current?.apiKey), provider: 'deepseek', model: current?.model || 'deepseek-flash', baseUrl: BASE_URL,
+      configurationSource: environmentSettings ? 'environment' : current?.apiKey ? 'local' : 'none', configurationManaged: Boolean(environmentSettings),
       engine, engineName: engineName || (engine === 'deepseek-direct' ? 'DeepSeek 官方接口' : 'Hermes 独立引擎'), engineAvailable: available(), hermesAvailable: hermesAvailable(),
       extraction: capabilities ? formats.filter(format => capabilities[format]) : formats,
       ...(capabilities ? { extractionCapabilities: capabilities } : {}),
@@ -350,9 +357,26 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
     request.conversation.confirmedJobId=job.id;delete request.conversation.pendingJobId;delete request.conversation.proposal;
     const saved=store.saveWorkspace(revision,state);return {receipt,workspaceRevision:saved.revision};
   }
+  async function requestModel(prompt,settings) {
+    if(closed)fail('AI_INTERRUPTED',FAILURE_MESSAGES.AI_INTERRUPTED,409);
+    let response;
+    if(runModel){
+      const controller=new AbortController();activeModelController=controller;
+      try{response=await runModel({...prompt,settings,signal:controller.signal});}
+      finally{if(activeModelController===controller)activeModelController=null;}
+    }else response=await childJson(hermesPython,[join(HERE,'hermes_runner.py')],{input:{...prompt,settings,hermesDir},cwd:hermesHome,env:childEnv(),timeout:180000,maxOutput:1024*1024,onChild:child=>{activeChild=child;}});
+    if(closed)fail('AI_INTERRUPTED',FAILURE_MESSAGES.AI_INTERRUPTED,409);
+    if(response?.ok===false){const safe=publicFailure(response.code);fail(safe.code,safe.message,502);}
+    return response;
+  }
   async function perform(job) {
     const settings = config();
     if (!settings?.apiKey) fail('MODEL_NOT_CONFIGURED', FAILURE_MESSAGES.MODEL_NOT_CONFIGURED, 409);
+    if(job.kind==='topics'){
+      const response=await requestModel(buildTopicPrompt(job.topicCards),settings);
+      const raw=response?.ok===true?(response.output??response.proposal):response;
+      return {topicSuggestion:validateTopicSuggestion(parseModelOutput(raw),job.topicCards)};
+    }
     const workspace = store.getWorkspace()?.state;
     const destinations = workspaceDestinations(workspace, { preferredId: job.destinationId, searchText: [job.text, ...(job.conversation?.messages || []).filter(message => message.role === 'user').map(message => message.text)].join('\n') });
     if (job.destinationId !== 'auto' && !destinations.some(entry => entry.id === job.destinationId)) fail('INVALID_DESTINATION', '原先选择的工作区已被删除或归档，请重新选择。');
@@ -410,14 +434,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
       const callPrompt=correction?{system:prompt.system+'\n上一次输出没有通过校验，formatCorrection是错误详情和不可信旧输出，仅供修正；不能为通过校验改变事实或编造数据。不清楚时追问且proposal:null。',user:JSON.stringify({...JSON.parse(prompt.user),formatCorrection:correction})}:prompt;
       let raw;
       try{
-        let response;
-        if(runModel){
-          const controller=new AbortController();activeModelController=controller;
-          try{response=await runModel({...callPrompt,settings,signal:controller.signal});}
-          finally{if(activeModelController===controller)activeModelController=null;}
-        }else response=await childJson(hermesPython,[join(HERE,'hermes_runner.py')],{input:{...callPrompt,settings,hermesDir},cwd:hermesHome,env:childEnv(),timeout:180000,maxOutput:1024*1024,onChild:child=>{activeChild=child;}});
-        if(closed)fail('AI_INTERRUPTED',FAILURE_MESSAGES.AI_INTERRUPTED,409);
-        if(response?.ok===false){const safe=publicFailure(response.code);fail(safe.code,safe.message,502);}
+        const response=await requestModel(callPrompt,settings);
         raw=response?.ok===true?(response.output??response.proposal):job.kind==='conversation'?response:(response?.proposal??response);
         const parsed=parseModelOutput(raw);
         let reply,candidate=parsed;
@@ -486,27 +503,73 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
         job.status = 'running'; job.updatedAt = now(); persist(job);
         try {
           const result = await perform(job);
-          Object.assign(job, result, job.kind==='conversation'?saveReply(job,result):autoFile(job, result.proposal), { status: 'succeeded', updatedAt: now() });
+          const filing=job.kind==='topics'?{}:job.kind==='conversation'?saveReply(job,result):autoFile(job,result.proposal);
+          Object.assign(job,result,filing,{status:'succeeded',updatedAt:now()});
         } catch (error) {
           job.status = 'failed'; job.updatedAt = now();
-          job.error = error instanceof ServiceError ? { code: error.code, message: error.message } : publicFailure('MODEL_UNAVAILABLE');
+          job.error = error instanceof ServiceError ? {code:error.code,message:error.message}
+            : job.kind==='topics'&&error instanceof ApiError ? {code:error.code,message:error.detail.message}
+            : publicFailure('MODEL_UNAVAILABLE');
         }
         persist(job);
       }
     } finally { running = false; }
   }
+  const topicJob=id=>jobs.get(id)?.kind==='topics'?jobs.get(id):null;
+  function topicStatus(job){
+    if(!job)return {status:'missing',draft:null};
+    if(job.status==='succeeded')return {status:'ready',draft:{id:job.id,cards:job.topicSuggestion.filter(({id})=>isWorkspaceTopicCandidateId(id))}};
+    if(job.status==='failed')return {status:'failed',draft:null,error:job.error};
+    return {status:'pending',draft:null};
+  }
   return {
     status,
     async handle(req, res, { url, readJson, json }) {
       const path = url.pathname;
-      if (!path.startsWith('/api/model/') && !path.startsWith('/api/ai/')) return false;
+      if (!path.startsWith('/api/model/') && !path.startsWith('/api/ai/') && !path.startsWith('/api/workspace/topics/')) return false;
       try {
+        if(req.method==='POST'&&path==='/api/workspace/topics/suggest'){
+          const {id,cardIds}=readTopicSelection(await readJson(req,16*1024));
+          const prior=jobs.get(id);
+          if(prior){
+            if(prior.kind!=='topics'||JSON.stringify(prior.topicCards.map(card=>card.id))!==JSON.stringify(cardIds))fail('TOPIC_BATCH_CONFLICT','这个归类编号已经用于另一组卡片。',409);
+            json(res,200,topicStatus(prior));return true;
+          }
+          if(readTopicReceipt(store,id).receipt)fail('TOPIC_BATCH_CONFLICT','本批归类已经确认，请查看已保存的结果。',409);
+          if(!status().configured)fail('MODEL_NOT_CONFIGURED',FAILURE_MESSAGES.MODEL_NOT_CONFIGURED,409);
+          if(!available())fail('ENGINE_UNAVAILABLE',FAILURE_MESSAGES.ENGINE_UNAVAILABLE,503);
+          if([...jobs.values()].filter(job=>['queued','running'].includes(job.status)).length>=8)fail('TOPIC_DRAFT_LIMIT','当前有较多 AI 任务，请稍后重试。',429);
+          const topicCards=snapshotTopicCards(store.getWorkspace().state,cardIds);
+          const stamp=now(),job={id,kind:'topics',topicCards,status:'queued',createdAt:stamp,updatedAt:stamp};
+          persist(job);jobs.set(id,job);
+          json(res,202,topicStatus(job));
+          queueMicrotask(()=>{drain().catch(()=>{});});
+          return true;
+        }
+        if(req.method==='GET'&&path==='/api/workspace/topics/draft'){
+          json(res,200,topicStatus(topicJob(checkTopicBatchId(url.searchParams.get('draftId')))));return true;
+        }
+        if(req.method==='POST'&&path==='/api/workspace/topics/confirm'){
+          const body=await readJson(req,16*1024);
+          json(res,200,confirmWorkspaceTopics(store,body,topicJob(body?.draftId)));return true;
+        }
+        if(req.method==='POST'&&path==='/api/workspace/topics/move'){
+          const body=await readJson(req,4096);
+          json(res,200,moveWorkspaceTopicCard(store,body,jobs.has(body?.batchId)));return true;
+        }
+        if(req.method==='GET'&&path==='/api/workspace/topics/receipt'){
+          json(res,200,readTopicReceipt(store,url.searchParams.get('batchId')));return true;
+        }
+        if(req.method==='POST'&&path==='/api/workspace/topics/undo'){
+          json(res,200,undoWorkspaceTopics(store,await readJson(req,1024)));return true;
+        }
         if (req.method === 'GET' && path === '/api/model/status') { json(res, 200, status()); return true; }
         if(req.method==='GET'&&path==='/api/ai/capabilities'){
           json(res,200,{capabilities:WORKSPACE_ACTION_CAPABILITIES,queries:WORKSPACE_QUERY_CAPABILITIES,unavailable:[{label:'QQ、微信与外部服务',reason:'尚未连接对应服务'},{label:'图片与扫描件识别',reason:'尚未接入 OCR'},{label:'服务器与账号密钥',reason:'由设置及维护流程管理，不开放给对话操作'},{label:'永久删除',reason:'可通过归档与恢复管理记录'}]});return true;
         }
         if (req.method === 'PUT' && path === '/api/model/config') {
           const body = await readJson(req, 16 * 1024);
+          if (environmentSettings) fail('MODEL_CONFIG_MANAGED', '模型连接由启动环境管理，请修改本目录环境配置并重启服务。', 409);
           if (!body || typeof body !== 'object' || Array.isArray(body)) fail('INVALID_CONFIG', '模型配置格式错误。');
           if (body.enabled === false) {
             if (existsSync(configPath)) unlinkSync(configPath);
@@ -514,7 +577,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
           }
           if (body.provider !== 'deepseek' || !MODELS.has(body.model) || (body.baseUrl && body.baseUrl !== BASE_URL)) fail('INVALID_CONFIG', '请选择官方 DeepSeek 接口与受支持的模型。');
           if (body.apiKey != null && typeof body.apiKey !== 'string') fail('INVALID_CONFIG', 'API Key 格式不正确。');
-          const apiKey = body.apiKey?.trim() || config()?.apiKey || '';
+          const apiKey = body.apiKey?.trim() || storedConfig()?.apiKey || '';
           if (!apiKey || apiKey.length < 12 || apiKey.length > 500 || /[\s\x00-\x1f\x7f]/.test(apiKey)) fail('INVALID_API_KEY', '请输入有效的 DeepSeek API Key。');
           atomicJson(configPath, { provider: 'deepseek', model: body.model, apiKey, baseUrl: BASE_URL, updatedAt: now() });
           json(res, 200, status()); return true;
@@ -575,7 +638,7 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
           return true;
         }
         if (req.method === 'GET' && path === '/api/ai/jobs') {
-          const recent = [...jobs.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 100).map(job => {
+          const recent = [...jobs.values()].filter(job=>job.kind!=='topics').sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 100).map(job => {
             const { proposal, receipt, sources, ...metadata } = publicJob(job);
             return metadata;
           });
@@ -583,13 +646,13 @@ export function createHermesService({ dataDir, store, runModel, extractFile, eng
         }
         const confirmation=path.match(/^\/api\/ai\/jobs\/([a-f0-9-]{36})\/confirm$/);
         if(req.method==='POST'&&confirmation){
-          const job=jobs.get(confirmation[1]);if(!job)fail('JOB_NOT_FOUND','整理任务不存在。',404);
+          const job=jobs.get(confirmation[1]);if(!job||job.kind==='topics')fail('JOB_NOT_FOUND','整理任务不存在。',404);
           json(res,200,confirmConversation(job));return true;
         }
         const match = path.match(/^\/api\/ai\/jobs\/([a-f0-9-]{36})$/);
         if (req.method === 'GET' && match) {
           const job = jobs.get(match[1]);
-          if (!job) fail('JOB_NOT_FOUND', '整理任务不存在。', 404);
+          if (!job||job.kind==='topics') fail('JOB_NOT_FOUND', '整理任务不存在。', 404);
           json(res, 200, { job: publicJob(job) }); return true;
         }
         return false;

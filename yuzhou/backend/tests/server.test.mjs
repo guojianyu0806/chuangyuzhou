@@ -121,6 +121,36 @@ test('calendar persists independently and rejects malformed or stripping clients
   const persisted=(await f.api('/api/workspace')).body.state;assert.deepEqual(persisted.calendar,model.calendar);assert.equal(persisted.timetable,undefined);
 });
 
+test('workspace saves preserve topic boxes and reject stale or incomplete replacements', async t => {
+  const f = await fixture(t);
+  await f.setup();
+  const model = state();
+  model.spaces = [{id: 'archived-space', title: '归档资料', archived: true, notes: [], files: []}];
+  model.canvas = {cards: [{id: 'archived-space', x: 80, y: -40, w: 300, h: 260, color: '#9dc5ff'}], topicBoxes: [{
+    id: randomUUID(), title: '项目资料', x: 180, y: 420, collapsed: true, cardIds: ['archived-space'],
+  }]};
+  const write = (baseRevision, value) => f.api('/api/workspace', {method: 'PUT', body: {baseRevision, state: value}});
+  assert.equal((await write(0, model)).status, 200);
+  assert.deepEqual((await f.api('/api/workspace')).body.state.canvas, model.canvas);
+
+  const next = structuredClone(model);
+  next.canvas.topicBoxes[0].x = 510;
+  assert.equal((await write(1, next)).status, 200);
+  assert.equal((await write(1, model)).body.error, 'revision_conflict');
+
+  const old = structuredClone(next);
+  delete old.canvas.topicBoxes;
+  assert.equal((await write(2, old)).body.error, 'workspace_update_required');
+  const duplicate = structuredClone(next);
+  duplicate.canvas.topicBoxes.push({...duplicate.canvas.topicBoxes[0], id: randomUUID(), title: '第二个盒子'});
+  assert.equal((await write(2, duplicate)).body.error, 'invalid_canvas_topic_boxes');
+  assert.deepEqual((await f.api('/api/workspace')).body.state.canvas, next.canvas);
+
+  next.canvas.topicBoxes = [];
+  assert.equal((await write(2, next)).status, 200);
+  assert.deepEqual((await f.api('/api/workspace')).body.state.canvas, next.canvas);
+});
+
 test('setup creation is atomic under concurrent requests', async t => {
   const f = await fixture(t);
   const results = await Promise.all([f.setup(), f.setup()]);
